@@ -334,29 +334,36 @@ never says "tap", "click" or "below", so the view can never quietly become load-
 
 ---
 
-## Three surfaces, one responsibility layer
+## Sources and surfaces, one responsibility layer
 
-The devices around Margaret are not three integrations bolted on. They are two *kinds of
-evidence* and one *shared display*, feeding and reading **one** responsibility layer - and
-**MCP is the seam** that lets entirely different surfaces participate in the same system.
-The value is the seam, which is why only Alexa+ is entered and the rest stay honest
-adapter seams, not overclaimed integrations.
+The things around Margaret are not integrations bolted on. They are *kinds of evidence*
+and one *shared display*, feeding and reading **one** responsibility layer - and **MCP is
+the seam** that lets entirely different surfaces participate in the same system. Every
+inbound source lands through the same gate: it becomes an `INFERRED` proposal or an
+`observed` appointment - a *suggestion*, never a fact - and a human confirms it. Nothing
+is a fact until a person says so.
 
-| Surface | Kind of evidence | Status |
+| Source | Kind of evidence | Status |
 |---|---|---|
 | **Alexa+** | DECLARED - someone says it | **LIVE** (real MCP host + Bedrock) |
-| Ring | PHYSICAL - a sensor observed it | Adapter seam ([`src/domain/ring.ts`](src/domain/ring.ts) → `ingest_signal`), hand-fired |
+| **Google Calendar** | SCHEDULED - a dated commitment | **LIVE, two-way** (OAuth): events in as `observed` appointments; owned work written back to the shared calendar. Auto-synced on a heartbeat. |
+| **Gmail** | SCHEDULED - a calendar invite (.ics) | **LIVE** (OAuth read): an appointment-confirmation email's invite becomes an appointment. Never guesses a date from prose. |
+| **Ring** | PHYSICAL - a sensor observed it | **Real** HMAC-verified webhook → `INFERRED`, plus a real API client ([`src/connectors/ring.ts`](src/connectors/ring.ts)); a live doorbell event needs the webhook URL set in the Ring portal + a device. |
+| Bee / other sensors | AMBIENT | Not built - but `ingest_signal` is source-agnostic, so any sensor enters the same way. |
 | Fire TV | not evidence: the SHARED DISPLAY | Live ambient TV screen (below) |
 
-`ingest_signal` is deliberately source-agnostic, so a wearable or any other sensor would
-enter through the same path - but we only claim what runs today.
+The Google doors are real inbound/outbound connectors ([`src/connectors/`](src/connectors/)):
+given a linked Google account they read the real calendar and invite emails, and write
+owned, dated work back to the shared calendar so it appears on every family member's phone.
+A background loop keeps them in step without anyone running a command. Set them up with
+`npm run google:auth` (see [Running it](#running-it)).
 
 A physical signal is **evidence, not a verdict**: a Ring delivery becomes an `INFERRED`
 proposal that *"the prescription pickup may be done"* - a human confirms it; the system
 never closes a medical obligation on a sensor alone. It enters the same pipeline as a
 ride inferred from an appointment, which is exactly why it needs no change to the gap
-engine or the trust model. We deliberately do **not** claim a live Ring feed - the
-point is the seam, not the vendor.
+engine or the trust model. Ring has no polling API, so events arrive only by the
+HMAC-verified webhook; the API client verifies the account link and lists devices.
 
 **The shared display.** Fire TV is the third surface - not more evidence, but where the
 assembled truth is *seen*. It is one real React Native screen (rendered on Fire TV /
@@ -414,6 +421,28 @@ export BEDROCK_MODEL_ID=us.anthropic.claude-sonnet-4-5-20250929-v1:0
 
 See `.env.example`. Bedrock daily token quotas are per region, so a second region
 with model access enabled is a useful fallback when one is exhausted.
+
+### Connect real sources (optional)
+
+The Google and Ring doors read real accounts. They are off until configured, so the
+demo above needs none of this.
+
+```bash
+# Google Calendar + Gmail — one consent covers read, calendar write-back, and Gmail read
+GOOGLE_CLIENT_ID=... GOOGLE_CLIENT_SECRET=... npm run google:auth   # prints a refresh token
+# then, with GOOGLE_REFRESH_TOKEN in .env:
+CARECIRCLE_HOUSEHOLD=h_margaret npm run calendar:sync   # real events  -> board (INFERRED)
+CARECIRCLE_HOUSEHOLD=h_margaret npm run calendar:push   # owned work   -> shared calendar
+CARECIRCLE_HOUSEHOLD=h_margaret npm run email:sync      # invite email -> appointment
+
+# Ring — verify the account link and list real devices
+npm run ring:check     # needs RING_ACCESS_TOKEN (Ring Developer Playground) or a refresh token
+```
+
+Set `CARECIRCLE_CONNECTOR_INTERVAL_MS` (e.g. `300000`) and the server syncs the Google
+doors automatically on a heartbeat - no CLI needed. Ring device events arrive by webhook:
+point the Ring Developer Portal's callback at `https://<your public URL>/ring/webhook`
+(HMAC-verified with `RING_HMAC_KEY`).
 
 ## Preflight
 
@@ -531,6 +560,27 @@ Product feedback, written while building. Full detail in
    available - and explicitly unknown when it is not, rather than assumed.
 5. **Ambient state.** The most valuable moment is not a conversation. It is someone
    walking past the kitchen Echo and noticing Thursday still has no driver.
+
+---
+
+## Scaling and protocol roadmap
+
+CareCircle targets **MCP 2025-11-25** - the spec the Alexa+ ecosystem and the current
+SDK speak. That is a deliberate choice, not a floor we happened to hit.
+
+The one thing worth saying about scale: **state is already externalised to DynamoDB**,
+not held in a server session, so the care record is shared and durable across instances
+today. The MCP *connection* is per-session, so horizontal scaling on 2025-11-25 needs
+only session affinity at the load balancer - not a rewrite. Tool count (23) sits well
+under the ~50 where model tool-selection degrades, so no routing filter is needed.
+
+When volume ever warrants going fully stateless, the clean path is the
+**2026-07-28** revision, which removes the `initialize` handshake and per-connection
+sessions in favour of header-based versioning and server-minted state handles - making
+any instance able to serve any request behind a plain round-robin balancer. That is a
+post-submission migration (it needs an SDK that implements the stateless schema and would
+trade away compatibility with 2025-11-25 clients), captured here so the direction is
+explicit.
 
 ---
 

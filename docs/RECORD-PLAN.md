@@ -1,5 +1,12 @@
 # CareCircle — Build Plan: real connections, no seed data
 
+> **Status (live):** Google **Calendar** (inbound + write-back) and **Gmail** (invite →
+> appointment) are **built, tested, and auto-synced** on a background heartbeat. The
+> **Ring** API client (account link + device list) is built; Ring event intake is the
+> HMAC-verified webhook, live once the portal callback URL is set + a device fires.
+> Remaining doors: **Bee**, **WhatsApp**. All Google/Ring work is on `main`.
+
+
 Goal: connect **real accounts and devices** — your Google Calendar, your Gmail, WhatsApp,
 Ring, Bee — so real events flow into CareCircle and it actually works. No seed data, no
 `*-simulate` stubs. Every event in the demo is a real event that really happened.
