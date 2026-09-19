@@ -27,14 +27,28 @@ what happened        what must happen        who has it
 **And it is real - not a mockup.** Live MCP server you can hit right now, **311 tests**
 (including property-based proofs of the risk model), **~92-93%** measured tool-selection
 accuracy on Amazon Bedrock (124-126/135 across repeated runs), and a trust model **measured at 0% false accusations where a
-raw LLM hits 50%**. See it end-to-end in ~60 seconds, no AWS or keys required:
+raw LLM hits 50%**.
+
+### Try it live in your browser - no clone, no keys
+
+**[https://krqi2tpsif.us-east-1.awsapprunner.com](https://krqi2tpsif.us-east-1.awsapprunner.com)** - the Alexa+ console, running on Amazon
+Bedrock. Click **"Open the live demo"**, pick a household member (top-left), and type or
+speak. The one thing to try: ask **"Did Mom take her heart pill this morning?"** - it answers
+*"I can't say whether she took it; I can only tell you there's no record of it being logged,"*
+**never** *"she missed it."* That refusal is the whole product.
+
+The console drives the same append-only care record the voice surface and the Fire TV board
+read, so a claim you make in the browser shows up everywhere at once.
+
+### Or run the whole story locally in ~60 seconds
 
 ```bash
 git clone https://github.com/Osiyomeoh/carecircle && cd carecircle
 npm ci && npm run story
 ```
 
-Live server: `https://ypq2dfq2p7.us-east-1.awsapprunner.com/health`
+MCP endpoint (for your own client): `https://ypq2dfq2p7.us-east-1.awsapprunner.com/mcp`
+(returns 401 without a token - it enforces OAuth) · health: `/health`
 
 **Want to point your own client at it?** [`docs/MCP.md`](docs/MCP.md) is the
 integration guide: endpoint and handshake, ready-made Claude Desktop and MCPJam
