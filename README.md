@@ -224,7 +224,12 @@ The one model everything else serves is the **responsibility graph** -
 `ENTITY → EVENT → OBLIGATION → OWNERSHIP → STATE`, where no obligation can exist without
 provenance. It has its own deep dive: [`docs/RESPONSIBILITY-GRAPH.md`](docs/RESPONSIBILITY-GRAPH.md).
 
-![CareCircle MCP server architecture](docs/mcp-architecture.png)
+![CareCircle system architecture](docs/architecture.svg)
+
+Signals (Alexa+, Ring) are **captured** by the MCP server into one **shared responsibility
+graph**; deterministic engines **reason** over it (gap ranking, agent policy, the trust
+guard) and **act** through Fire TV, notifications, and voice. Every write carries provenance,
+and a human always confirms an inferred obligation - the dashed feedback loop.
 
 ```
                     Alexa+ / any MCP host
