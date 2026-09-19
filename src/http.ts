@@ -7,6 +7,7 @@ import { seedDemoHousehold, DEMO_TOKENS } from './demo/seed.js';
 import { resolverFromEnv } from './http/identity.js';
 import { notifierFromEnv } from './notify/notifier.js';
 import { startAgentLoop } from './agent-loop.js';
+import { startConnectorSync } from './connectors/scheduler.js';
 import { loadConfig } from './config.js';
 import { log } from './obs/log.js';
 
@@ -69,6 +70,13 @@ try {
 // (set CARECIRCLE_AGENT_INTERVAL_MS), always on in production.
 const stopAgent = startAgentLoop({ store, notifier, log });
 
+// --- the connector heartbeat ------------------------------------------------
+// Pulls the linked Google Calendar and appointment-invite emails in, and writes
+// owned work back to the shared calendar, on an interval - so the record and the
+// family's phones stay in step without anyone running a CLI. Off unless a Google
+// account is linked and CARECIRCLE_CONNECTOR_INTERVAL_MS is set.
+const stopConnectors = startConnectorSync({ store, log });
+
 // --- graceful shutdown ------------------------------------------------------
 let shuttingDown = false;
 async function shutdown(signal: string): Promise<void> {
@@ -81,6 +89,7 @@ async function shutdown(signal: string): Promise<void> {
   const timeout = new Promise<void>((resolve) => setTimeout(resolve, 10_000).unref());
   await Promise.race([closed, timeout]);
   stopAgent();
+  stopConnectors();
   try { await store.quiesce(); } catch { /* already logged at the write site */ }
   log.info('shutdown complete', { signal });
   process.exit(0);

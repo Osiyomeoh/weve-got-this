@@ -26,10 +26,13 @@ if (!clientId || !clientSecret) {
   process.exit(1);
 }
 
-// calendar.events covers both doors: reading upcoming events (inbound) and writing
-// owned, dated work back to the shared calendar (write-back). It does not grant
-// access to calendar settings or other calendars' metadata.
-const SCOPE = 'https://www.googleapis.com/auth/calendar.events';
+// Both Google doors in one consent: calendar.events (read upcoming events + write
+// owned work back to the shared calendar) and gmail.readonly (read invite emails).
+// Neither grants access to calendar settings or the ability to send mail.
+const SCOPE = [
+  'https://www.googleapis.com/auth/calendar.events',
+  'https://www.googleapis.com/auth/gmail.readonly',
+].join(' ');
 
 const server = createServer(async (req, res) => {
   const url = new URL(req.url ?? '/', `http://localhost`);
