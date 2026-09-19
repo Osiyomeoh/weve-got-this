@@ -4,8 +4,10 @@ import {
   calendarEventToAppointment,
   calendarIdempotencyKey,
   CALENDAR_REPORTER,
+  CARECIRCLE_SOURCE,
   type GoogleCalendarEvent,
 } from '../domain/calendar.js';
+import { planCalendarWriteback } from '../domain/calendar-writeback.js';
 
 /**
  * The Google Calendar connector: a real family calendar as a source of appointments.
@@ -33,6 +35,8 @@ export interface GoogleCredentials {
 export interface GoogleCalendarConfig extends GoogleCredentials {
   /** The calendar to read. 'primary' is the account's main calendar. */
   calendarId: string;
+  /** The calendar to write owned/dated work back to. Defaults to `calendarId`. */
+  writeCalendarId?: string;
   /** How far ahead to look, in days. Defaults to 30. */
   horizonDays?: number;
 }
@@ -59,11 +63,13 @@ export function googleCalendarConfigFromEnv(
   const refreshToken = env['GOOGLE_REFRESH_TOKEN']?.trim();
   if (!clientId || !clientSecret || !refreshToken) return null;
   const horizon = Number(env['GOOGLE_CALENDAR_HORIZON_DAYS']);
+  const writeCalendarId = env['GOOGLE_WRITE_CALENDAR_ID']?.trim();
   return {
     clientId,
     clientSecret,
     refreshToken,
     calendarId: env['GOOGLE_CALENDAR_ID']?.trim() || 'primary',
+    ...(writeCalendarId ? { writeCalendarId } : {}),
     ...(Number.isFinite(horizon) && horizon > 0 ? { horizonDays: horizon } : {}),
   };
 }
@@ -203,4 +209,102 @@ export async function runGoogleCalendarSync(
     accessToken, config.calendarId, now, config.horizonDays ?? 30,
   );
   return syncCalendarEvents(store, householdId, events, now, forMemberId);
+}
+
+// --- Write-back: CareCircle's committed state -> the shared calendar ----------
+
+/**
+ * List the events CareCircle previously wrote to a calendar, keyed by the
+ * obligation each represents. Uses Google's private-extended-property filter so we
+ * touch only our own events, never the family's other entries.
+ */
+export async function fetchCareCircleEvents(
+  accessToken: string,
+  calendarId: string,
+): Promise<Map<string, { eventId: string; summary?: string; start?: string }>> {
+  const params = new URLSearchParams({
+    privateExtendedProperty: `carecircleSource=${CARECIRCLE_SOURCE}`,
+    maxResults: '250',
+    showDeleted: 'false',
+  });
+  const url = `${CALENDAR_API}/${encodeURIComponent(calendarId)}/events?${params}`;
+  const res = await fetch(url, { headers: { authorization: `Bearer ${accessToken}` } });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Google Calendar list (write-back) failed (${res.status}): ${text.slice(0, 300)}`);
+  }
+  const json = (await res.json()) as { items?: Array<GoogleCalendarEvent & { id?: string }> };
+  const map = new Map<string, { eventId: string; summary?: string; start?: string }>();
+  for (const item of json.items ?? []) {
+    const oblId = item.extendedProperties?.private?.['carecircleObligationId'];
+    if (item.id && oblId) {
+      map.set(oblId, {
+        eventId: item.id,
+        ...(item.summary ? { summary: item.summary } : {}),
+        ...(item.start?.dateTime ? { start: item.start.dateTime } : {}),
+      });
+    }
+  }
+  return map;
+}
+
+async function insertEvent(accessToken: string, calendarId: string, body: GoogleCalendarEvent): Promise<void> {
+  const url = `${CALENDAR_API}/${encodeURIComponent(calendarId)}/events`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${accessToken}`, 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Google Calendar insert failed (${res.status}): ${text.slice(0, 300)}`);
+  }
+}
+
+async function patchEvent(accessToken: string, calendarId: string, eventId: string, body: GoogleCalendarEvent): Promise<void> {
+  const url = `${CALENDAR_API}/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`;
+  const res = await fetch(url, {
+    method: 'PATCH',
+    headers: { authorization: `Bearer ${accessToken}`, 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Google Calendar patch failed (${res.status}): ${text.slice(0, 300)}`);
+  }
+}
+
+export interface WritebackResult {
+  created: number;
+  updated: number;
+  unchanged: number;
+}
+
+/**
+ * Reconcile a household's real, dated obligations onto the shared calendar: create
+ * an event for each new one, patch the one whose owner or time changed, leave the
+ * rest untouched. Idempotent, and safe to run alongside the inbound sync because
+ * every event it writes is tagged so the inbound door skips it.
+ */
+export async function runCalendarWriteback(
+  store: CareStore,
+  householdId: string,
+  config: GoogleCalendarConfig,
+): Promise<WritebackResult> {
+  const accessToken = await refreshAccessToken(config);
+  const writeCalendarId = config.writeCalendarId ?? config.calendarId;
+
+  const state = store.getCareState(householdId);
+  const existing = await fetchCareCircleEvents(accessToken, writeCalendarId);
+  const plan = planCalendarWriteback(state.obligations, state.members, existing);
+
+  for (const c of plan.creates) await insertEvent(accessToken, writeCalendarId, c.body);
+  for (const u of plan.updates) await patchEvent(accessToken, writeCalendarId, u.eventId, u.body);
+
+  return {
+    created: plan.creates.length,
+    updated: plan.updates.length,
+    // Everything already on the calendar that we did not need to touch.
+    unchanged: Math.max(0, existing.size - plan.updates.length),
+  };
 }

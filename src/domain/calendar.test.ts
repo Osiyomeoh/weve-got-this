@@ -64,6 +64,15 @@ test('an untitled event has nothing to name, so it is skipped', () => {
   assert.equal(m.apply, false);
 });
 
+test('an event CareCircle wrote is never re-ingested (loop guard)', () => {
+  const m = calendarEventToAppointment(timed({
+    extendedProperties: { private: { carecircleSource: 'carecircle', carecircleObligationId: 'obl_1' } },
+  }));
+  assert.equal(m.apply, false);
+  if (m.apply) return;
+  assert.match(m.reason, /CareCircle/);
+});
+
 test('idempotency key is id + last-updated, so an edit re-applies and a re-poll does not', () => {
   assert.equal(calendarIdempotencyKey(timed()), 'gcal_1@2026-10-10T09:00:00Z');
   // Same event, edited later -> a new key -> will re-apply.

@@ -26,9 +26,10 @@ if (!clientId || !clientSecret) {
   process.exit(1);
 }
 
-// Read-only for now: the inbound calendar door only needs to see events. Write-back
-// (record_appointment -> shared calendar) will widen this to calendar.events later.
-const SCOPE = 'https://www.googleapis.com/auth/calendar.readonly';
+// calendar.events covers both doors: reading upcoming events (inbound) and writing
+// owned, dated work back to the shared calendar (write-back). It does not grant
+// access to calendar settings or other calendars' metadata.
+const SCOPE = 'https://www.googleapis.com/auth/calendar.events';
 
 const server = createServer(async (req, res) => {
   const url = new URL(req.url ?? '/', `http://localhost`);

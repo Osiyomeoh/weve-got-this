@@ -33,7 +33,17 @@ export interface GoogleCalendarEvent {
   start?: { dateTime?: string; date?: string; timeZone?: string };
   end?: { dateTime?: string; date?: string; timeZone?: string };
   attendees?: Array<{ self?: boolean; responseStatus?: string; email?: string }>;
+  /** App-private metadata. CareCircle stamps its own events here (see write-back). */
+  extendedProperties?: { private?: Record<string, string> };
 }
+
+/**
+ * The marker CareCircle writes into `extendedProperties.private.carecircleSource`
+ * on every event it creates. Its purpose is the loop guard below: an event this
+ * system wrote to the calendar must never be read back in as a new appointment, or
+ * write-back and inbound sync would feed each other forever.
+ */
+export const CARECIRCLE_SOURCE = 'carecircle';
 
 /** A calendar event mapped to the shared appointment path, or the reason it was skipped. */
 export type CalendarMapping =
@@ -60,6 +70,13 @@ export function calendarIdempotencyKey(event: GoogleCalendarEvent): string | nul
 export function calendarEventToAppointment(event: GoogleCalendarEvent): CalendarMapping {
   if (event.status === 'cancelled') {
     return { apply: false, reason: 'event is cancelled' };
+  }
+
+  // The loop guard: an event CareCircle itself wrote to the calendar (write-back)
+  // must not be re-ingested as a fresh appointment, or the two doors would feed
+  // each other. It is already in the record - that is why it is on the calendar.
+  if (event.extendedProperties?.private?.['carecircleSource'] === CARECIRCLE_SOURCE) {
+    return { apply: false, reason: 'authored by CareCircle (write-back), not re-ingested' };
   }
 
   // A timed start is what makes this an appointment. An all-day event (only `date`,

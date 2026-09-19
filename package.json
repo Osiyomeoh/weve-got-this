@@ -26,7 +26,8 @@
     "beat": "tsx --env-file-if-exists=.env scripts/beat.ts",
     "trust-distribution": "tsx --env-file-if-exists=.env scripts/trust-distribution.ts",
     "google:auth": "tsx --env-file-if-exists=.env scripts/google-auth.ts",
-    "calendar:sync": "tsx --env-file-if-exists=.env scripts/calendar-sync.ts"
+    "calendar:sync": "tsx --env-file-if-exists=.env scripts/calendar-sync.ts",
+    "calendar:push": "tsx --env-file-if-exists=.env scripts/calendar-push.ts"
   },
   "dependencies": {
     "@aws-sdk/client-bedrock": "^3.1131.0",
