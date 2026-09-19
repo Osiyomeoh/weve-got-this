@@ -120,6 +120,7 @@ export type EventSource =
   | 'device'    // some other device observed it
   | 'bee'       // an ambient wearable overheard it (seam)
   | 'calendar'  // a calendar sync produced it (seam)
+  | 'email'     // parsed from an email's calendar invite (seam)
   | 'pharmacy'  // a pharmacy system produced it (seam)
   | 'system';   // CareCircle itself derived it
 

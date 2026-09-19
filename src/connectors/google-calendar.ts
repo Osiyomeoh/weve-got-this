@@ -8,6 +8,10 @@ import {
   type GoogleCalendarEvent,
 } from '../domain/calendar.js';
 import { planCalendarWriteback } from '../domain/calendar-writeback.js';
+import { refreshAccessToken, type GoogleCredentials } from './google-oauth.js';
+
+export type { GoogleCredentials } from './google-oauth.js';
+export { refreshAccessToken } from './google-oauth.js';
 
 /**
  * The Google Calendar connector: a real family calendar as a source of appointments.
@@ -26,12 +30,6 @@ import { planCalendarWriteback } from '../domain/calendar-writeback.js';
  *  - `runGoogleCalendarSync` wires the two together for real use.
  */
 
-export interface GoogleCredentials {
-  clientId: string;
-  clientSecret: string;
-  refreshToken: string;
-}
-
 export interface GoogleCalendarConfig extends GoogleCredentials {
   /** The calendar to read. 'primary' is the account's main calendar. */
   calendarId: string;
@@ -47,7 +45,6 @@ export interface SyncResult {
   skipped: Array<{ key: string; reason: string }>;
 }
 
-const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const CALENDAR_API = 'https://www.googleapis.com/calendar/v3/calendars';
 
 /**
@@ -72,32 +69,6 @@ export function googleCalendarConfigFromEnv(
     ...(writeCalendarId ? { writeCalendarId } : {}),
     ...(Number.isFinite(horizon) && horizon > 0 ? { horizonDays: horizon } : {}),
   };
-}
-
-/**
- * Exchange a long-lived refresh token for a short-lived access token. This is the
- * standard OAuth 2.0 refresh grant - the refresh token is obtained once, out of
- * band (see scripts/google-auth.ts), and never leaves the server.
- */
-export async function refreshAccessToken(creds: GoogleCredentials): Promise<string> {
-  const body = new URLSearchParams({
-    client_id: creds.clientId,
-    client_secret: creds.clientSecret,
-    refresh_token: creds.refreshToken,
-    grant_type: 'refresh_token',
-  });
-  const res = await fetch(TOKEN_URL, {
-    method: 'POST',
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
-    body,
-  });
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(`Google token refresh failed (${res.status}): ${text.slice(0, 300)}`);
-  }
-  const json = (await res.json()) as { access_token?: string };
-  if (!json.access_token) throw new Error('Google token refresh returned no access_token.');
-  return json.access_token;
 }
 
 /**

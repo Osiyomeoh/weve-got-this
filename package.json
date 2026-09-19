@@ -27,7 +27,8 @@
     "trust-distribution": "tsx --env-file-if-exists=.env scripts/trust-distribution.ts",
     "google:auth": "tsx --env-file-if-exists=.env scripts/google-auth.ts",
     "calendar:sync": "tsx --env-file-if-exists=.env scripts/calendar-sync.ts",
-    "calendar:push": "tsx --env-file-if-exists=.env scripts/calendar-push.ts"
+    "calendar:push": "tsx --env-file-if-exists=.env scripts/calendar-push.ts",
+    "email:sync": "tsx --env-file-if-exists=.env scripts/email-sync.ts"
   },
   "dependencies": {
     "@aws-sdk/client-bedrock": "^3.1131.0",
