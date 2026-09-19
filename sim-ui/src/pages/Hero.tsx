@@ -25,9 +25,8 @@ import { useBoard } from '../lib/useBoard';
 
 const SURFACES = [
   { key: 'alexa', name: 'Alexa+', sub: 'declared', color: '#4ea1ff', status: 'live', angle: 0 },
-  { key: 'ring', name: 'Ring', sub: 'physical', color: '#25d3c2', status: 'seam', angle: Math.PI / 2 },
-  { key: 'bee', name: 'Bee', sub: 'ambient', color: '#ffb020', status: 'seam', angle: Math.PI },
-  { key: 'tv', name: 'Fire TV', sub: 'shared display', color: '#b46bff', status: 'seam', angle: (3 * Math.PI) / 2 },
+  { key: 'ring', name: 'Ring', sub: 'physical', color: '#25d3c2', status: 'seam', angle: (2 * Math.PI) / 3 },
+  { key: 'tv', name: 'Fire TV', sub: 'shared display', color: '#b46bff', status: 'seam', angle: (4 * Math.PI) / 3 },
 ] as const;
 
 const R = 4.2;
@@ -417,7 +416,7 @@ export default function Hero() {
                 <span className="ml-auto rounded-md border border-line px-2 py-0.5 text-[0.625rem] uppercase tracking-wider text-core">live</span>
               </div>
               <p className="mt-4 text-[0.875rem] leading-relaxed text-[#c3cad9]">
-                What a person tells you. The MCP server itself: 18 tools, per-member identity bound
+                What a person tells you. The MCP server itself: 23 tools, per-member identity bound
                 to the session rather than to the conversation, purchase-in-place, and an
                 interactive Care Board shipped as an MCP App.
               </p>
@@ -457,20 +456,6 @@ export default function Hero() {
                 Ring&rsquo;s webhook, and it does what every signal does here - proposes an
                 <b className="text-ink"> INFERRED</b> obligation a human still has to confirm. We
                 are honest that it is a seam, not a live partnership.
-              </p>
-            </div>
-
-            <div className="glass rounded-2xl p-7">
-              <div className="flex items-center gap-2.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-bee" />
-                <span className="font-semibold text-ink">Bee</span>
-                <span className="text-muted">· ambient evidence</span>
-                <span className="ml-auto rounded-md border border-line px-2 py-0.5 text-[0.625rem] uppercase tracking-wider text-muted">seam</span>
-              </div>
-              <p className="mt-4 text-[0.875rem] leading-relaxed text-[#c3cad9]">
-                The weakest evidence in the house, and deliberately the most gated. Always-on
-                listening near a vulnerable person earns the lowest confidence in the model, and
-                nothing it notices can ever become fact without a person saying so.
               </p>
             </div>
           </div>
