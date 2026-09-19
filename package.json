@@ -28,7 +28,8 @@
     "google:auth": "tsx --env-file-if-exists=.env scripts/google-auth.ts",
     "calendar:sync": "tsx --env-file-if-exists=.env scripts/calendar-sync.ts",
     "calendar:push": "tsx --env-file-if-exists=.env scripts/calendar-push.ts",
-    "email:sync": "tsx --env-file-if-exists=.env scripts/email-sync.ts"
+    "email:sync": "tsx --env-file-if-exists=.env scripts/email-sync.ts",
+    "ring:check": "tsx --env-file-if-exists=.env scripts/ring-check.ts"
   },
   "dependencies": {
     "@aws-sdk/client-bedrock": "^3.1131.0",
