@@ -2,11 +2,11 @@ import { randomUUID } from 'node:crypto';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { detectCareGaps, pendingProposals } from '../domain/gaps.js';
-import { orphanedBy, proposeFromAppointment } from '../domain/inference.js';
+import { orphanedBy } from '../domain/inference.js';
 import { candidatesFor } from '../domain/delegation.js';
 import { runAgentOnce } from '../domain/agent-runner.js';
 import { deliberate, AGENT_ID } from '../domain/agent.js';
-import { implausible, toInstant } from '../domain/time.js';
+import { applyAppointment } from '../domain/appointments.js';
 import { interpretSignal, type CareSignal } from '../domain/signals.js';
 import { offerFor, offerSpoken, formatPrice, type OfferKind, type PurchaseOffer } from '../domain/commerce.js';
 import { can, canActOn, capabilitiesOf, NotPermittedError, require as requireCap } from '../domain/auth.js';
@@ -212,60 +212,23 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
     try {
       const me = actor();
       requireCap(me, 'create_obligation');
-      const s = state();
-      const recipient = forMemberId
-        ? store.getMember(forMemberId)
-        : s.members.find((m) => m.role === 'care_recipient');
-      if (!recipient) {
-        return guidance('I don\'t know who this appointment is for. Ask whose appointment it is.');
-      }
-      const subject = recipient.spokenAs ?? recipient.name;
-
-      // "Thursday at ten" reaches us as a timestamp a language model invented, and
-      // a model does not reliably know today's date. Two guards before this becomes
-      // an appointment somebody relies on.
-      const at = toInstant(startsAt, s.household.timezone);
-      if (!at) {
-        return guidance(
-          `I couldn't make sense of "${startsAt}" as a date and time. `
-          + 'Ask them which day and time they meant.',
-        );
-      }
-      const doubtful = implausible(at, now());
-      if (doubtful) return guidance(doubtful.spoken);
-
-      const event = await store.appendEvent({
-        householdId: me.householdId,
-        kind: 'appointment_scheduled',
+      // Spoken by a person, so it travels the shared appointment path as `voice` /
+      // `reported`. The Google Calendar connector calls the same applyAppointment with
+      // `calendar` / `observed` - identical logic, honest about where it came from.
+      const result = await applyAppointment(store, me.householdId, {
+        kind,
+        startsAt,
+        ...(forMemberId ? { forMemberId } : {}),
+        ...(detail ? { detail } : {}),
         reportedBy: me.id,
-        occurredAt: at,
         source: 'voice',
         confidence: 'reported',
-        ...(detail ? { detail } : {}),
-        data: { appointmentKind: kind, forMemberId: recipient.id },
-      });
+      }, now());
 
-      const seeds = proposeFromAppointment(kind, subject, at);
-      const proposed = await Promise.all(seeds.map((seed) => store.createObligation({
-        householdId: me.householdId,
-        what: seed.what,
-        status: 'PROPOSED',
-        consequence: seed.consequence,
-        provenance: seed.provenance,
-        ownerId: null,
-        ...(seed.dueAt ? { dueAt: seed.dueAt } : {}),
-        sourceEventId: event.id,
-        // The work is for this recipient; their standing needs (e.g. accessible transport)
-        // then flow into how the gap ranks once a human confirms the proposal.
-        aboutEntityId: recipient.id,
-      })));
-
-      const spoken = proposed.length === 0
-        ? `Noted - ${kind} for ${subject}.`
-        : `Noted - ${kind} for ${subject}. ${seeds[0]!.ask}`;
-      return reply(spoken, {
-        eventId: event.id,
-        proposals: proposed.map((o, i) => ({ id: o.id, what: o.what, ask: seeds[i]!.ask })),
+      if (!result.ok) return guidance(result.spoken);
+      return reply(result.spoken, {
+        eventId: result.eventId,
+        proposals: result.proposals,
       });
     } catch (err) { return guidance(describeError(err)); }
   });
