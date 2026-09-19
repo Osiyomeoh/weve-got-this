@@ -1,7 +1,7 @@
 # The Responsibility Graph
 
 This is the core intellectual asset of CareCircle. Everything else — the MCP tools, the
-Alexa+ conversation, Ring/Bee evidence, the Fire TV board, the trust benchmark — is an
+Alexa+ conversation, Ring evidence, the Fire TV board, the trust benchmark — is an
 *interface to* or a *proof of* this one model.
 
 > We did not build a better task list. We built a graph that makes responsibility

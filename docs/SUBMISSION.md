@@ -84,7 +84,7 @@ different surfaces feed one shared responsibility system.
 - Alexa+ MCP server - Streamable HTTP, spec 2025-11-25, **23 tools**, session-bound identity.
 - The Care Gap engine - `EVENTS → OBLIGATIONS → OWNERSHIP`, deterministic, never narrated by a model.
 - The trust / provenance model - `CONFIRMED` / `INFERRED` / `NOT_LOGGED`, enforced in the type system and tests (**Known ≠ Assumed**).
-- `ingest_signal` - the generic external-signal tool: any physical or wearable event becomes an `INFERRED` proposal a human must confirm. **This is the Ring and Bee seam, and it runs today.**
+- `ingest_signal` - the generic external-signal tool: any physical or wearable event becomes an `INFERRED` proposal a human must confirm. **This is the external-evidence seam; the Ring adapter uses it today, and the same path would accept a Bee or other wearable signal unchanged.**
 - Ownership / claiming / assignment, purchase-in-place (`reorder_prescription` / `confirm_purchase`), multi-person identity, SNS notifications (record-only fallback), DynamoDB persistence, App Runner deployment.
 - The shared multi-device board (the simulator) - the same view a Fire TV would render.
 - **290 tests**, adversarial suite, CI.
