@@ -334,20 +334,22 @@ never says "tap", "click" or "below", so the view can never quietly become load-
 
 ---
 
-## Four surfaces, one responsibility layer
+## Three surfaces, one responsibility layer
 
-The devices around Margaret are not four integrations bolted on. They are four *kinds of
-evidence* feeding **one** responsibility layer - and **MCP is the seam** that lets
-entirely different surfaces participate in the same system. The value is the seam, which
-is why only Alexa+ is entered and the rest stay honest adapter seams, not overclaimed
-integrations.
+The devices around Margaret are not three integrations bolted on. They are two *kinds of
+evidence* and one *shared display*, feeding and reading **one** responsibility layer - and
+**MCP is the seam** that lets entirely different surfaces participate in the same system.
+The value is the seam, which is why only Alexa+ is entered and the rest stay honest
+adapter seams, not overclaimed integrations.
 
 | Surface | Kind of evidence | Status |
 |---|---|---|
 | **Alexa+** | DECLARED - someone says it | **LIVE** (real MCP host + Bedrock) |
 | Ring | PHYSICAL - a sensor observed it | Adapter seam ([`src/domain/ring.ts`](src/domain/ring.ts) → `ingest_signal`), hand-fired |
-| Bee | AMBIENT - overheard, nobody typed it | Adapter seam (another `ingest_signal` source) |
 | Fire TV | not evidence: the SHARED DISPLAY | Live ambient TV screen (below) |
+
+`ingest_signal` is deliberately source-agnostic, so a wearable or any other sensor would
+enter through the same path - but we only claim what runs today.
 
 A physical signal is **evidence, not a verdict**: a Ring delivery becomes an `INFERRED`
 proposal that *"the prescription pickup may be done"* - a human confirms it; the system
@@ -356,7 +358,7 @@ ride inferred from an appointment, which is exactly why it needs no change to th
 engine or the trust model. We deliberately do **not** claim a live Ring feed - the
 point is the seam, not the vendor.
 
-**The shared display.** Fire TV is the fourth surface - not more evidence, but where the
+**The shared display.** Fire TV is the third surface - not more evidence, but where the
 assembled truth is *seen*. It is one real React Native screen (rendered on Fire TV /
 Android TV / web from the same code) built as **ambient TV content**: a calm clock over
 which care gaps arrive as sliding notification cards, the way a TV OS surfaces an alert -
