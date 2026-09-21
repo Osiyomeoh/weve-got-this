@@ -38,7 +38,11 @@ parent back home is a *stronger* wedge than the US-default), not US-first.
 Ordered by leverage. Each is a wrapper around tools that already exist; almost no new
 engine work.
 
-### 1. First-run onboarding — a real family starts their own circle (HIGHEST LEVERAGE)
+### 1. First-run onboarding — a real family starts their own circle  ✅ DONE (2026-09-21)
+
+> Shipped: `src/domain/onboarding.ts` (pure step machine) + `get_started` tool + planner
+> rule. A newcomer is guided one step at a time and lands on their own first Care Gap.
+> `create_circle → add_recipient → add_care_detail → ready`. 24 tools, verified live.
 
 Today `create_household` / `add_member` / `add_medication` exist and work, and
 self-signup identity is wired (`CARECIRCLE_ALLOW_SELF_SIGNUP`, `bootstrapSubject`,
@@ -55,7 +59,11 @@ fallback in `sim-ui`. "Set up a care circle for my mum" →
 Acceptance: a stranger with no knowledge of the tools sets up a working circle for their
 own family in under five minutes and sees a gap that is about *their* person, by name.
 
-### 2. Un-seed for real use — separate the demo from the product
+### 2. Un-seed for real use — separate the demo from the product  ✅ ALREADY DONE
+
+> `seedDemo = identity === 'jwt' ? false : ...` and the server *refuses* to seed a JWT
+> (production) store. The customer path already never seeds Margaret; the live household
+> is just persisted in DynamoDB from before. No work needed.
 
 The hard-seeded Margaret household is right for the demo and wrong for a customer. A real
 first run must start **empty** and fill from onboarding. Keep the seeded demo behind the
