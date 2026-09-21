@@ -84,14 +84,21 @@ whole thesis delivered as a first experience, not explained.
 Acceptance: the setup flow's final screen/utterance is a real gap + the agent's offer,
 generated from the customer's own data.
 
-### 4. The selling artifact — store listing (Amazon requires it, and it forces the right thinking)
+### 4. The selling artifact — store listing  ✅ DONE (2026-09-21)
+
+> Shipped: `docs/STORE-LISTING.md` — tagline, description, who-it's-for (global/diaspora
+> lead), 8 sample utterances, the privacy promise, and the screenshot shot-list.
 
 Write `docs/STORE-LISTING.md`: tagline, one-paragraph description, who it is for, 6–8
 sample utterances, the privacy promise (below), and 3–4 screenshots. This is not
 marketing fluff — Amazon's certification mandates it, and writing it is the fastest way
 to discover where the product is still thinking like an engine.
 
-### 5. Trust & privacy, stated for a paying customer
+### 5. Trust & privacy, stated for a paying customer  ✅ DONE (2026-09-21)
+
+> The plain-language privacy promise is in `docs/STORE-LISTING.md`, built from the
+> real invariants: no-accusation, say-who-said-so, asks-never-assigns, role scoping,
+> traceable decisions.
 
 It is a family's **health-adjacent data**. A customer will not adopt without knowing what
 is stored, what is not, and who can see it. We already have unusually strong material —
