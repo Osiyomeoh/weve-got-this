@@ -143,6 +143,12 @@ env.update({
     # household and ask, once, about slipping work. The policy owns all restraint
     # (quiet hours, fatigue); this only sets how often it gets the chance.
     "CARECIRCLE_AGENT_INTERVAL_MS": os.environ.get("CARECIRCLE_AGENT_INTERVAL_MS", "900000"),
+    # Self-serve onboarding: an authenticated-but-unmapped caller (the /setup
+    # screen's founder token) may create its own care circle and becomes its
+    # primary caregiver. Demo tokens still resolve first, so nothing existing
+    # changes; households stay isolated (see the adversarial suite). Required for
+    # the judge-facing /setup flow.
+    "CARECIRCLE_ALLOW_SELF_SIGNUP": os.environ.get("CARECIRCLE_ALLOW_SELF_SIGNUP", "true"),
 })
 for key in ("CARECIRCLE_OAUTH_SECRET", "CARECIRCLE_PUBLIC_URL", "CARECIRCLE_OAUTH_REDIRECTS", "RING_HMAC_KEY", "RING_HOUSEHOLD_ID"):
     value = os.environ.get(key)
