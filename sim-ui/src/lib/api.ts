@@ -45,6 +45,8 @@ export interface ToolCall {
   name: string;
   arguments: Record<string, unknown>;
   result: string;
+  /** Structured payload the tool returned alongside the spoken line. */
+  structured?: unknown;
   isError: boolean;
   ms: number;
 }
@@ -107,7 +109,34 @@ export const api = {
       method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ memberId, tool, args }),
     }).then(jsonOrThrow),
+  /** Reset the onboarding demo so setup starts from a blank new circle. */
+  resetSetup: (): Promise<{ ok: boolean }> =>
+    fetch('/api/setup/reset', { method: 'POST' }).then(jsonOrThrow),
+  /** Refresh the founder's session after the circle is created (see src/sim/app.ts). */
+  rebindSetup: (): Promise<{ ok: boolean }> =>
+    fetch('/api/setup/rebind', { method: 'POST' }).then(jsonOrThrow),
 };
+
+/** The founder pseudo-member the onboarding screen acts as (see src/sim/app.ts). */
+export const FOUNDER_ID = '__founder__';
+
+export type OnboardingStep = 'create_circle' | 'add_recipient' | 'add_care_detail' | 'ready';
+
+export interface OnboardingProgress {
+  step: OnboardingStep;
+  done: OnboardingStep[];
+  complete: boolean;
+  spoken: string;
+  firstGap?: { what: string; because: string };
+}
+
+/** Read where setup is, straight from the server's get_started tool. */
+export async function getStarted(memberId: string = FOUNDER_ID): Promise<OnboardingProgress> {
+  const call = await api.act(memberId, 'get_started', {});
+  const s = call.structured as OnboardingProgress | undefined;
+  // Fall back to a minimal shape if structured content is absent.
+  return s ?? { step: 'create_circle', done: [], complete: false, spoken: call.result };
+}
 
 export interface Member { id: string; label: string; sub: string; }
 export const MEMBERS: Member[] = [

@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import express from 'express';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -28,6 +29,18 @@ const here = dirname(fileURLToPath(import.meta.url));
 /** member id -> its connected host. Created lazily on first utterance. */
 const hosts = new Map<string, SimulatedAlexa>();
 const tokenFor = new Map(Object.entries(DEMO_TOKENS).map(([token, member]) => [member, token]));
+
+// The onboarding screen drives setup as a brand-new family. It authenticates with
+// a token that maps to no member, so - where the server permits self-signup - it
+// arrives as a bootstrap principal whose only move is create_household, then
+// becomes that circle's primary caregiver. `__founder__` is a pseudo-member id the
+// sim uses to reach that host; it is not a real member and holds no seeded data.
+const FOUNDER_ID = '__founder__';
+// A fresh token per onboarding run, so each begins as an unmapped bootstrap
+// principal. Once a token creates a circle it maps to that member for good and can
+// never bootstrap again - so "set up another" mints a new one.
+function newFounderToken(): string { return `founder-${randomUUID()}`; }
+tokenFor.set(FOUNDER_ID, newFounderToken());
 
 async function hostFor(memberId: string): Promise<SimulatedAlexa> {
   const existing = hosts.get(memberId);
@@ -199,6 +212,23 @@ app.post('/api/say', async (req, res) => {
  * items, where a misheard referring expression would assign a hospital trip to the
  * wrong person.
  */
+// Start onboarding over with a brand-new family: a fresh bootstrap token, and no
+// cached session, so the next call begins at "create your circle".
+app.post('/api/setup/reset', async (_req, res) => {
+  hosts.delete(FOUNDER_ID);
+  tokenFor.set(FOUNDER_ID, newFounderToken());
+  res.json({ ok: true });
+});
+
+// After the circle is created the founder's token maps to a real member, but the
+// open session is still bound to the bootstrap principal - and the server refuses
+// a mid-session identity change (its credential-swap guard). So drop the session,
+// keeping the now-mapped token, and the next call reconnects as that member.
+app.post('/api/setup/rebind', async (_req, res) => {
+  hosts.delete(FOUNDER_ID);
+  res.json({ ok: true });
+});
+
 app.post('/api/act', async (req, res) => {
   const { memberId, tool, args } = req.body as {
     memberId?: string; tool?: string; args?: Record<string, unknown>;
