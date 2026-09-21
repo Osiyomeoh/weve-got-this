@@ -3,7 +3,7 @@ dist/
 .env
 *.log
 carecircle.db*
-evals-results.json
+evals-results*.json
 
 # Fire TV (Android) app build artifacts + signing
 firetv/local.properties
