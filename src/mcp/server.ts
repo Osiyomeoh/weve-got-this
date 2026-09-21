@@ -55,6 +55,42 @@ function guidance(text: string) {
   return { content: [{ type: 'text' as const, text }], isError: true };
 }
 
+/**
+ * Declared output shapes, per the Alexa+ MCP design guide: "don't leave extension
+ * fields undeclared ... treat your schema as a promise." Every tool already returns
+ * structuredContent on success; these advertise its shape to the model. Fields are
+ * optional and nested arrays left loose on purpose - the honest promise is "these
+ * keys, when present." Error results carry no structured content and the SDK skips
+ * them, so guidance() paths are unaffected.
+ */
+const arr = z.array(z.unknown());
+const OUT = {
+  log_care_event: { eventId: z.string().optional(), matchedMedication: z.string().nullable().optional() },
+  record_appointment: { eventId: z.string().optional(), proposals: arr.optional() },
+  add_note: { eventId: z.string().optional() },
+  get_care_gaps: { recordedToday: arr.optional(), gaps: arr.optional() },
+  claim_obligation: { obligationId: z.string().optional(), ownerId: z.string().nullable().optional() },
+  assign_obligation: { obligationId: z.string().optional(), ownerId: z.string().nullable().optional() },
+  request_owner: { obligationId: z.string().optional(), askedOfId: z.string().optional(), status: z.string().optional() },
+  respond_to_request: { status: z.string().optional(), ownerId: z.string().nullable().optional() },
+  get_my_requests: { requests: arr.optional() },
+  get_provenance: { obligationId: z.string().optional(), what: z.string().optional(), owner: z.string().nullable().optional(), chain: arr.optional() },
+  confirm_proposal: { obligationId: z.string().optional() },
+  resolve_obligation: { obligationId: z.string().optional() },
+  run_care_agent: { would: arr.optional(), heldBack: arr.optional(), asked: arr.optional(), dryRun: z.boolean().optional() },
+  get_care_summary: { medicationsLogged: z.number().optional(), medications: arr.optional(), notes: arr.optional(), gaps: arr.optional(), pendingProposals: arr.optional() },
+  get_shift_brief: { medications: arr.optional(), assignedToMe: arr.optional() },
+  notify_member: { eventId: z.string().optional(), recipientId: z.string().optional(), channel: z.string().optional(), delivered: z.boolean().optional() },
+  ingest_signal: { eventId: z.string().optional(), resolvesCandidate: z.unknown().optional() },
+  reorder_prescription: { eventId: z.string().optional() },
+  confirm_purchase: { placed: z.boolean().optional(), amountCents: z.number().optional(), closedObligation: z.string().nullable().optional() },
+  get_started: { step: z.string().optional(), done: arr.optional(), complete: z.boolean().optional(), firstGap: z.unknown().optional() },
+  create_household: { householdId: z.string().optional(), memberId: z.string().optional() },
+  add_member: { memberId: z.string().optional() },
+  add_medication: { medicationId: z.string().optional() },
+  remove_member: { memberId: z.string().optional(), released: z.number().optional() },
+} satisfies Record<string, z.ZodRawShape>;
+
 function describeError(err: unknown): string {
   if (err instanceof NotPermittedError) return err.message;
   if (err instanceof HouseholdScopeError) return err.message;
@@ -138,6 +174,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
         .describe('Only when logging on behalf of someone else. Defaults to the speaker.'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
+    outputSchema: OUT.log_care_event,
   }, async ({ kind, medicationName, detail, occurredAt, aboutMemberId }) => {
     try {
       const me = actor();
@@ -209,6 +246,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
       detail: z.string().optional().describe('Anything else said about it.'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
+    outputSchema: OUT.record_appointment,
   }, async ({ kind, startsAt, forMemberId, detail }) => {
     try {
       const me = actor();
@@ -257,6 +295,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
       }).optional().describe('Set when the note says someone cannot do something in a time window.'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
+    outputSchema: OUT.add_note,
   }, async ({ note, aboutMemberId, unavailable }) => {
     try {
       const me = actor();
@@ -325,6 +364,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
         .describe('Only include dated items within this many days. Omit for everything.'),
     },
     annotations: { readOnlyHint: true, idempotentHint: true },
+    outputSchema: OUT.get_care_gaps,
     // On a host that can draw, this same call also renders the Care Board (see
     // ./app/care-board.ts). The spoken answer is unchanged and still correct on
     // its own: the view is an enhancement, never a precondition.
@@ -379,6 +419,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
       + '- call get_care_gaps to find it, then claim it, rather than doing nothing.',
     inputSchema: { obligationId: z.string().describe('Which piece of work. From get_care_gaps.') },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
+    outputSchema: OUT.claim_obligation,
   }, async ({ obligationId }) => {
     try {
       const me = actor();
@@ -411,6 +452,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
       assigneeName: z.string().describe('Who to give it to, as the speaker named them.'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
+    outputSchema: OUT.assign_obligation,
   }, async ({ obligationId, assigneeName }) => {
     try {
       const me = actor();
@@ -456,6 +498,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
         .describe('Who to ask, as the speaker named them. Omit to let CareCircle suggest someone.'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
+    outputSchema: OUT.request_owner,
   }, async ({ obligationId, assigneeName }) => {
     try {
       const me = actor();
@@ -554,6 +597,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
       note: z.string().optional().describe('Anything they said about why, in their words.'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
+    outputSchema: OUT.respond_to_request,
   }, async ({ obligationId, accepted, note }) => {
     try {
       const me = actor();
@@ -624,6 +668,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
       + 'which request they mean.',
     inputSchema: {},
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
+    outputSchema: OUT.get_my_requests,
   }, async () => {
     try {
       const me = actor();
@@ -667,6 +712,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
       obligationId: z.string().describe('Which piece of work to explain. From get_care_gaps.'),
     },
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
+    outputSchema: OUT.get_provenance,
   }, async ({ obligationId }) => {
     try {
       const me = actor();
@@ -700,6 +746,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
       confirmed: z.boolean().describe('True if the person said it is needed, false if not.'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
+    outputSchema: OUT.confirm_proposal,
   }, async ({ obligationId, confirmed }) => {
     try {
       const me = actor();
@@ -731,6 +778,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
       note: z.string().optional().describe('Anything they said about how it went.'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
+    outputSchema: OUT.resolve_obligation,
   }, async ({ obligationId, note }) => {
     try {
       const me = actor();
@@ -772,6 +820,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
         .describe('When true, report what it would do without asking anyone. Defaults to false.'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
+    outputSchema: OUT.run_care_agent,
   }, async ({ dryRun }) => {
     try {
       const me = actor();
@@ -812,6 +861,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
       + '"catch me up". For unowned work specifically, get_care_gaps is sharper.',
     inputSchema: {},
     annotations: { readOnlyHint: true, idempotentHint: true },
+    outputSchema: OUT.get_care_summary,
   }, async () => {
     try {
       const me = actor();
@@ -868,6 +918,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
       + 'not expose the whole family record.',
     inputSchema: {},
     annotations: { readOnlyHint: true, idempotentHint: true },
+    outputSchema: OUT.get_shift_brief,
   }, async () => {
     try {
       const me = actor();
@@ -904,6 +955,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
       message: z.string().describe('What to tell them, in the speaker\'s own words.'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
+    outputSchema: OUT.notify_member,
   }, async ({ recipientName, message }) => {
     try {
       const me = actor();
@@ -959,6 +1011,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
       detail: z.string().optional().describe('Anything the device reported, kept verbatim.'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
+    outputSchema: OUT.ingest_signal,
   }, async ({ source, kind, occurredAt, detail }) => {
     try {
       const me = actor();
@@ -1033,6 +1086,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
         .describe('The pickup/refill Care Gap this would close, if known.'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
+    outputSchema: OUT.reorder_prescription,
   }, async ({ medicationName, obligationId }) => {
     try {
       const me = actor();
@@ -1065,6 +1119,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
       confirmed: z.boolean().describe('True to place the order, false to decline it.'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
+    outputSchema: OUT.confirm_purchase,
   }, async ({ offerId, confirmed }) => {
     try {
       const me = actor();
@@ -1136,6 +1191,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
       + 'then call get_started again for the next step. Do not ask for everything at once.',
     inputSchema: {},
     annotations: { readOnlyHint: true, idempotentHint: true },
+    outputSchema: OUT.get_started,
   }, async () => {
     try {
       // An unmapped-but-authenticated caller belongs to no circle yet - the one moment
@@ -1165,6 +1221,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
       spokenAs: z.string().optional().describe('How the caller is referred to when spoken about.'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
+    outputSchema: OUT.create_household,
   }, async ({ name, timezone, callerName, spokenAs }) => {
     try {
       const subject = bootstrapSubject(actorId);
@@ -1209,6 +1266,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
         .describe('Their care needs someone who can give hands-on help, not just anyone free.'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
+    outputSchema: OUT.add_member,
   }, async ({ name, role, spokenAs, subject, needsAccessibleTransport, requiresAssistance }) => {
     try {
       const me = actor();
@@ -1243,6 +1301,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
       forMemberId: z.string().optional().describe('Who it is for. Defaults to the care recipient.'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
+    outputSchema: OUT.add_medication,
   }, async ({ name, times, forMemberId }) => {
     try {
       const me = actor();
@@ -1270,6 +1329,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
       memberId: z.string().describe('Who to remove.'),
     },
     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true },
+    outputSchema: OUT.remove_member,
   }, async ({ memberId }) => {
     try {
       const me = actor();
