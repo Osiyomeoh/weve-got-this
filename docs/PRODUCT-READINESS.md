@@ -74,7 +74,13 @@ symptom of this not being separated.
 Acceptance: `seedDemo=false` gives a clean empty start; the demo household still exists
 for filming behind its flag.
 
-### 3. The "aha" in the first five minutes — day-one value
+### 3. The "aha" in the first five minutes — day-one value  ✅ DONE (2026-09-21)
+
+> Both halves shipped. Voice: `get_started` lands on the first gap. Screen: `/setup`
+> in sim-ui walks four steps and ends on the family's own first Care Gap, computed by
+> the real engine from what they typed. Verified in a browser end to end. The screen
+> runs against a self-signup deployment (static identity); enabling self-signup on the
+> JWT production sim is a separate posture decision.
 
 A customer keeps what helps immediately. The moment that earns the keep: they enter their
 mum's meds and one appointment, and CareCircle *immediately* shows the first thing nobody
