@@ -6,6 +6,7 @@ import { orphanedBy } from '../domain/inference.js';
 import { candidatesFor } from '../domain/delegation.js';
 import { runAgentOnce } from '../domain/agent-runner.js';
 import { deliberate, AGENT_ID } from '../domain/agent.js';
+import { onboardingProgress } from '../domain/onboarding.js';
 import { applyAppointment } from '../domain/appointments.js';
 import { interpretSignal, type CareSignal } from '../domain/signals.js';
 import { offerFor, offerSpoken, formatPrice, type OfferKind, type PurchaseOffer } from '../domain/commerce.js';
@@ -1118,6 +1119,38 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
   });
 
   // --- 15. "Set up a care circle for my mother." - onboarding bootstrap --
+  // --- First run: guide a new family in ---------------------------------
+  // Every setup tool already exists; this is the thing that tells a newcomer where
+  // they are and what the one next step is, so onboarding is a guided conversation
+  // rather than a toolbox. Read-only, and deterministic: the step is recomputed from
+  // the record every time, so it can never drift from what is actually set up.
+  server.registerTool('get_started', {
+    title: 'Set up, or pick up where setup left off',
+    description:
+      'Call this FIRST whenever someone new arrives, asks to get set up, says "set up a '
+      + 'care circle", or seems not to belong to a circle yet. It returns the single next '
+      + 'onboarding step, already phrased to speak: create the circle, add the person being '
+      + 'cared for, add one medication or appointment, or - once there is enough - the first '
+      + 'thing that needs an owner. Follow the spoken step, do that one action with the '
+      + 'matching tool (create_household, add_member, add_medication, record_appointment), '
+      + 'then call get_started again for the next step. Do not ask for everything at once.',
+    inputSchema: {},
+    annotations: { readOnlyHint: true, idempotentHint: true },
+  }, async () => {
+    try {
+      // An unmapped-but-authenticated caller belongs to no circle yet - the one moment
+      // create_household is the only move, and the only time state is null.
+      const unmapped = bootstrapSubject(actorId) !== null;
+      const progress = onboardingProgress(unmapped ? null : state(), { now: now() });
+      return reply(progress.spoken, {
+        step: progress.step,
+        done: progress.done,
+        complete: progress.complete,
+        ...(progress.firstGap ? { firstGap: progress.firstGap } : {}),
+      });
+    } catch (err) { return guidance(describeError(err)); }
+  });
+
   server.registerTool('create_household', {
     title: 'Create a new care circle',
     description:

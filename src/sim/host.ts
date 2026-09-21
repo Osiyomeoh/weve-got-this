@@ -34,6 +34,7 @@ Rules:
 - When someone confirms, claims, or closes something with a short phrase whose subject is left implicit - "yes", "that's right", "I've got it", "I can take that one", "that's sorted" - they are acting on work that already exists, not saying nothing. Call get_care_gaps to find what they mean, then the matching tool (confirm_proposal, claim_obligation, resolve_obligation). Never treat an implicit reference as "nothing to do".
 - Someone can ASK another person to take work on without assigning it to them. "Ask David if he can drive her" is request_owner; they still have to say yes, and the work stays unowned until they do. "I'll do it" is claim_obligation. Answering something you were asked is respond_to_request.
 - When a tool returns an error, follow the instruction inside it - usually asking the person a question.
+- If someone is new, has no care circle yet, or asks to get set up ("set up a care circle", "help me start", "I want to add my mum"), call get_started FIRST and follow the single step it gives back. Do that one action, then call get_started again for the next step. Never ask them to fill in everything at once - it is a conversation, one step at a time, and it ends the moment there is a real thing on the board to act on.
 - Be brief. This is a voice conversation, not a chat window.`;
 
 /**
