@@ -152,7 +152,7 @@ env.update({
 })
 for key in ("CARECIRCLE_OAUTH_SECRET", "CARECIRCLE_PUBLIC_URL", "CARECIRCLE_OAUTH_REDIRECTS", "RING_HMAC_KEY", "RING_HOUSEHOLD_ID",
             # Telegram reply channel (the live delegation-loop channel).
-            "TELEGRAM_BOT_TOKEN", "TELEGRAM_RECIPIENTS", "TELEGRAM_WEBHOOK_SECRET", "TELEGRAM_HOUSEHOLD_ID",
+            "TELEGRAM_BOT_TOKEN", "TELEGRAM_RECIPIENTS", "TELEGRAM_WEBHOOK_SECRET", "TELEGRAM_HOUSEHOLD_ID", "TELEGRAM_GROUP_CHAT_ID",
             # WhatsApp reply channel (once the Meta app is verified).
             "WHATSAPP_TOKEN", "WHATSAPP_PHONE_NUMBER_ID", "WHATSAPP_APP_SECRET", "WHATSAPP_VERIFY_TOKEN", "WHATSAPP_RECIPIENTS", "WHATSAPP_HOUSEHOLD_ID",
             # Bee connector (once a wearable is capturing).
