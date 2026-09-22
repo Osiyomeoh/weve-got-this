@@ -559,7 +559,7 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
       );
       const delivery = await notifier.deliver({
         to: target.memberId, toName: target.name, from: me.spokenAs ?? me.name,
-        message: `${me.spokenAs ?? me.name} asked: can you take "${o.what}"?`,
+        message: `${me.spokenAs ?? me.name} asked if you can take this on:\n\n${o.what}\n\nReply "yes" or "can't".`,
       });
       await store.appendEvent({
         householdId: me.householdId,
