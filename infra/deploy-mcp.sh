@@ -151,6 +151,11 @@ env.update({
     "CARECIRCLE_ALLOW_SELF_SIGNUP": os.environ.get("CARECIRCLE_ALLOW_SELF_SIGNUP", "true"),
 })
 for key in ("CARECIRCLE_OAUTH_SECRET", "CARECIRCLE_PUBLIC_URL", "CARECIRCLE_OAUTH_REDIRECTS", "RING_HMAC_KEY", "RING_HOUSEHOLD_ID",
+            # The connector heartbeat: how often Google/Bee are polled (off when unset).
+            "CARECIRCLE_CONNECTOR_INTERVAL_MS",
+            # Google doors (Calendar + Gmail) share one OAuth refresh grant.
+            "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_REFRESH_TOKEN",
+            "GOOGLE_CALENDAR_ID", "GOOGLE_WRITE_CALENDAR_ID", "GOOGLE_CALENDAR_HORIZON_DAYS", "GMAIL_QUERY",
             # Telegram reply channel (the live delegation-loop channel).
             "TELEGRAM_BOT_TOKEN", "TELEGRAM_RECIPIENTS", "TELEGRAM_WEBHOOK_SECRET", "TELEGRAM_HOUSEHOLD_ID", "TELEGRAM_GROUP_CHAT_ID",
             # WhatsApp reply channel (once the Meta app is verified).
