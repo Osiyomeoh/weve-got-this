@@ -140,10 +140,11 @@ const tgMemberByChat = ((): Map<string, string> => {
   }
   return m;
 })();
+const tgBotToken = process.env['TELEGRAM_BOT_TOKEN'] ?? '';
 app.post(
   '/telegram/webhook',
   createTelegramWebhook({
-    store, secretToken: tgSecret,
+    store, secretToken: tgSecret, botToken: tgBotToken,
     memberByChat: tgMemberByChat, householdId: tgHousehold, ...(now ? { now } : {}),
   }),
 );

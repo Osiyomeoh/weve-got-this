@@ -25,8 +25,11 @@ export { interpretReply, type ReplyIntent } from './whatsapp.js';
 
 /** A single inbound text message, normalised away from Telegram's nesting. */
 export interface TelegramInbound {
-  /** The chat id the message came from, as a string (Telegram ids are numeric). */
+  /** The chat the message came from (a person in a DM, or the family group). */
   chatId: string;
+  /** Who sent it - the person's own Telegram user id. In a DM this equals chatId;
+   *  in a group it is how we tell one family member's reply from another's. */
+  fromId: string;
   /** The message text. */
   text: string;
   /** Telegram's update id, for idempotency. */
@@ -38,6 +41,7 @@ interface TgUpdate {
   message?: {
     message_id?: number;
     text?: string;
+    from?: { id?: number | string };
     chat?: { id?: number | string };
   };
 }
@@ -53,7 +57,11 @@ export function parseTelegramUpdate(payload: unknown): TelegramInbound[] {
   const updateId = typeof u.update_id === 'number' ? String(u.update_id) : '';
   const chatRaw = u.message?.chat?.id;
   const chatId = chatRaw === undefined || chatRaw === null ? '' : String(chatRaw);
+  const fromRaw = u.message?.from?.id;
+  // In a DM Telegram still sends `from`, and it equals the chat; fall back to the
+  // chat id so a payload without `from` (older fixtures, channel posts) still resolves.
+  const fromId = fromRaw === undefined || fromRaw === null ? chatId : String(fromRaw);
   const text = typeof u.message?.text === 'string' ? u.message.text.trim() : '';
   if (!updateId || !chatId || !text) return [];
-  return [{ chatId, text, updateId }];
+  return [{ chatId, fromId, text, updateId }];
 }

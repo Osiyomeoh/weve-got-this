@@ -32,9 +32,17 @@ function mockRes(): Response & { statusCode: number; body: unknown } {
   return res as unknown as Response & { statusCode: number; body: unknown };
 }
 
-const update = (chatId: number | string, text: string, updateId = 1): unknown => ({
-  update_id: updateId, message: { message_id: 10, chat: { id: chatId }, text },
+const update = (chatId: number | string, text: string, updateId = 1, fromId?: number | string): unknown => ({
+  update_id: updateId,
+  message: { message_id: 10, chat: { id: chatId }, text, ...(fromId !== undefined ? { from: { id: fromId } } : {}) },
 });
+
+function captureFetch(calls: Array<{ url: string; body: unknown }>): typeof fetch {
+  return (async (url: string | URL | Request, init?: RequestInit) => {
+    calls.push({ url: String(url), body: init?.body ? JSON.parse(String(init.body)) : undefined });
+    return { ok: true, status: 200, json: async () => ({ ok: true, result: { message_id: 1 } }), text: async () => '' } as unknown as Response;
+  }) as unknown as typeof fetch;
+}
 
 function postReq(body: unknown, token: string | undefined): Request {
   return { body, header: (n: string) => (n.toLowerCase() === SECRET_TOKEN_HEADER ? token : undefined) } as unknown as Request;
@@ -67,6 +75,28 @@ test('a reply from an unknown chat is acknowledged but acts on nothing', async (
   assert.equal(res.statusCode, 200);
   assert.equal((res.body as { results: Array<{ status: string }> }).results[0]!.status, 'unknown-sender');
   assert.equal(store.getCareState(HH).obligations[0]!.status, 'REQUESTED');
+});
+
+test('the bot answers in the chat the reply came from', async () => {
+  const calls: Array<{ url: string; body: unknown }> = [];
+  const h = createTelegramWebhook({
+    store, secretToken: SECRET, botToken: 'bot:tok', fetchImpl: captureFetch(calls),
+    memberByChat: new Map([['987654', 'm_renee']]), householdId: HH, now: () => NOW,
+  });
+  await h(postReq(update('987654', "Yes, I'll take it"), SECRET), mockRes());
+  assert.equal(calls.length, 1, 'the bot posts one acknowledgement');
+  assert.equal((calls[0]!.body as { chat_id: string }).chat_id, '987654');
+  assert.match((calls[0]!.body as { text: string }).text, /yours now/);
+});
+
+test('a group reply is attributed to the sender, not the group chat', async () => {
+  const res = mockRes();
+  // chat is the group (-100…), the person answering is 987654 (Renee)
+  await handler()(postReq(update('-100200300', 'yes', 1, 987654), SECRET), res);
+  assert.equal(res.statusCode, 200);
+  const o = store.getCareState(HH).obligations[0]!;
+  assert.equal(o.status, 'ASSIGNED');
+  assert.equal(o.ownerId, 'm_renee');
 });
 
 test('a redelivered update id is not acted on twice', async () => {

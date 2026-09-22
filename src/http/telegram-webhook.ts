@@ -2,6 +2,7 @@ import { timingSafeEqual } from 'node:crypto';
 import type { Request, Response } from 'express';
 import type { CareStore } from '../store/store.js';
 import { parseTelegramUpdate, interpretReply } from '../domain/telegram.js';
+import { sendTelegramMessage } from '../notify/telegram.js';
 import { applyRequestResponse } from '../domain/request-response.js';
 import { SeenEvents } from './ring-webhook.js';
 
@@ -37,19 +38,31 @@ export interface TelegramWebhookOptions {
   store: CareStore;
   /** The secret token we set when registering the webhook, echoed by Telegram. */
   secretToken: string;
-  /** chat id -> member id. Inverse of the outbound recipients map. */
+  /** Telegram user id -> member id. Inverse of the outbound recipients map. In a
+   *  group this is how we tell whose reply it is; in a DM the id is the same. */
   memberByChat: Map<string, string>;
   /** Which household these replies belong to. */
   householdId: string;
+  /** The bot token, so the bot can post its answer back into the chat. Without it,
+   *  replies are still acted on but the bot stays silent. */
+  botToken?: string;
   seen?: SeenEvents;
   now?: () => Date;
+  /** Injectable for tests; defaults to global fetch. */
+  fetchImpl?: typeof fetch;
 }
 
 export function createTelegramWebhook(opts: TelegramWebhookOptions) {
   const seen = opts.seen ?? new SeenEvents();
   const now = opts.now ?? (() => new Date());
-  const byChat = new Map<string, string>();
-  for (const [chatId, memberId] of opts.memberByChat) byChat.set(String(chatId), memberId);
+  const fetchImpl = opts.fetchImpl ?? fetch;
+  const byUser = new Map<string, string>();
+  for (const [userId, memberId] of opts.memberByChat) byUser.set(String(userId), memberId);
+  // Answer in the chat the message came from - the group if it was a group, the
+  // person if it was a DM - so the acknowledgement lands where the family can see it.
+  const answer = async (chatId: string, text: string): Promise<void> => {
+    if (opts.botToken) await sendTelegramMessage(opts.botToken, chatId, text, fetchImpl);
+  };
 
   return async function handle(req: Request, res: Response): Promise<void> {
     if (!opts.secretToken) {
@@ -67,13 +80,16 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
         results.push({ updateId: msg.updateId, status: 'duplicate' });
         continue;
       }
-      const memberId = byChat.get(msg.chatId);
+      const memberId = byUser.get(msg.fromId);
       if (!memberId) {
+        // A stranger, or a group member we do not know: acknowledge to Telegram
+        // (so it stops retrying) but stay silent in the chat and touch nothing.
         results.push({ updateId: msg.updateId, status: 'unknown-sender' });
         continue;
       }
       const intent = interpretReply(msg.text);
       if (!intent) {
+        // Not a yes or a no - ordinary group chatter. Ignore it without a peep.
         results.push({ updateId: msg.updateId, status: 'unparsed' });
         continue;
       }
@@ -83,6 +99,9 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
           { householdId: opts.householdId, memberId, accepted: intent === 'accepted', note: msg.text, channel: 'telegram' },
           now(),
         );
+        // The bot answers where the reply came from, so the loop is visible: a "yes"
+        // in the family group gets "that's yours now" in the family group.
+        await answer(msg.chatId, r.spoken);
         results.push({ updateId: msg.updateId, status: r.ok ? intent : 'no-open-request', ...(r.obligationId ? { obligationId: r.obligationId } : {}) });
       } catch (err) {
         results.push({ updateId: msg.updateId, status: 'error', detail: (err as Error).message });

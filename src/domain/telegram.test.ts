@@ -7,11 +7,21 @@ const update = (chatId: number | string, text: string, updateId = 1): unknown =>
   message: { message_id: 10, chat: { id: chatId }, text },
 });
 
-test('parses a text message out of a Telegram update, chat id as a string', () => {
+test('parses a text message out of a Telegram update, ids as strings', () => {
   const [m] = parseTelegramUpdate(update(123456, 'Yes I can'));
   assert.equal(m!.chatId, '123456');
+  assert.equal(m!.fromId, '123456'); // a DM: sender id falls back to the chat id
   assert.equal(m!.text, 'Yes I can');
   assert.equal(m!.updateId, '1');
+});
+
+test('in a group, the sender id is kept apart from the group chat id', () => {
+  const [m] = parseTelegramUpdate({
+    update_id: 5,
+    message: { message_id: 11, chat: { id: -100200300 }, from: { id: 987654 }, text: 'yes' },
+  });
+  assert.equal(m!.chatId, '-100200300'); // the group
+  assert.equal(m!.fromId, '987654');      // the person who answered
 });
 
 test('a non-message update (no text) carries no answer and is dropped', () => {

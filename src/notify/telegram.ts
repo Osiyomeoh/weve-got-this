@@ -20,8 +20,11 @@ import type { Notifier, DeliveryResult } from './notifier.js';
 export interface TelegramConfig {
   /** The bot token from @BotFather (e.g. "123456:ABC-DEF..."). */
   token: string;
-  /** member id -> Telegram chat id (numeric, carried as a string). */
+  /** member id -> Telegram user/chat id (numeric, carried as a string). */
   recipients: Map<string, string>;
+  /** Optional family group chat id: when set, asks post to the group (naming the
+   *  person) so the whole circle sees the loop, instead of a private message. */
+  groupChatId?: string;
   /** Injectable for tests; defaults to global fetch. */
   fetchImpl?: typeof fetch;
 }
@@ -36,7 +39,34 @@ export function telegramConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Tel
   } catch {
     return null; // a malformed map is a misconfiguration, not a reason to send blind
   }
-  return { token, recipients };
+  const groupChatId = env['TELEGRAM_GROUP_CHAT_ID']?.trim();
+  return { token, recipients, ...(groupChatId ? { groupChatId } : {}) };
+}
+
+/**
+ * Post one message to a chat via the Bot API. Shared by the notifier (asks) and the
+ * webhook (acknowledgements), so a reply is answered in the same place it arrived.
+ * Returns success and the new message id, or a reason - it never throws.
+ */
+export async function sendTelegramMessage(
+  token: string, chatId: string, text: string, fetchImpl: typeof fetch = fetch,
+): Promise<{ ok: boolean; id?: string; detail?: string }> {
+  try {
+    const res = await fetchImpl(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text }),
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      return { ok: false, detail: `send failed (${res.status}): ${body.slice(0, 200)}` };
+    }
+    const json = (await res.json().catch(() => ({}))) as { result?: { message_id?: number } };
+    const id = json.result?.message_id;
+    return { ok: true, ...(id !== undefined ? { id: String(id) } : {}) };
+  } catch (err) {
+    return { ok: false, detail: `send failed: ${(err as Error).message}` };
+  }
 }
 
 export class TelegramNotifier implements Notifier {
@@ -50,29 +80,26 @@ export class TelegramNotifier implements Notifier {
   }
 
   async deliver(input: { to: string; toName: string; from: string; message: string }): Promise<DeliveryResult> {
+    // Group mode: post the ask into the family group, naming the person, so the
+    // whole circle sees who was asked and can watch the answer come back. A member
+    // with no mapping can still be named in the group - the group is the audience,
+    // not a private line - but if we have neither a group nor their own chat, we
+    // stay honest and do not claim to have reached them.
     const chatId = this.#cfg.recipients.get(input.to);
+    if (this.#cfg.groupChatId) {
+      const text = `${input.toName}, ${input.message}`;
+      const r = await sendTelegramMessage(this.#cfg.token, this.#cfg.groupChatId, text, this.#fetch);
+      return r.ok
+        ? { delivered: true, channel: 'telegram', ...(r.id ? { detail: r.id } : {}) }
+        : { delivered: false, channel: 'telegram', ...(r.detail ? { detail: r.detail } : {}) };
+    }
     if (!chatId) {
       // Honest: we did not message someone we have no chat with.
       return { delivered: false, channel: 'telegram', detail: 'no Telegram chat for this member' };
     }
-    try {
-      const res = await this.#fetch(
-        `https://api.telegram.org/bot${this.#cfg.token}/sendMessage`,
-        {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ chat_id: chatId, text: input.message }),
-        },
-      );
-      if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        return { delivered: false, channel: 'telegram', detail: `send failed (${res.status}): ${text.slice(0, 200)}` };
-      }
-      const json = (await res.json().catch(() => ({}))) as { result?: { message_id?: number } };
-      const id = json.result?.message_id;
-      return { delivered: true, channel: 'telegram', ...(id !== undefined ? { detail: String(id) } : {}) };
-    } catch (err) {
-      return { delivered: false, channel: 'telegram', detail: `send failed: ${(err as Error).message}` };
-    }
+    const r = await sendTelegramMessage(this.#cfg.token, chatId, input.message, this.#fetch);
+    return r.ok
+      ? { delivered: true, channel: 'telegram', ...(r.id ? { detail: r.id } : {}) }
+      : { delivered: false, channel: 'telegram', ...(r.detail ? { detail: r.detail } : {}) };
   }
 }

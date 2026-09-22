@@ -28,6 +28,19 @@ test('delivers to the mapped chat and reports the message id', async () => {
   assert.equal((calls[0]!.body as { chat_id: string }).chat_id, '987654');
 });
 
+test('in group mode the ask posts to the group, naming the person', async () => {
+  const calls: Array<{ url: string; body: unknown }> = [];
+  const n = new TelegramNotifier({
+    token: 't', recipients: new Map([['m_renee', '987654']]), groupChatId: '-100200300',
+    fetchImpl: stubFetch(calls, {}),
+  });
+  const r = await n.deliver({ to: 'm_renee', toName: 'Renee', from: 'David', message: 'can you take this on?' });
+  assert.equal(r.delivered, true);
+  assert.equal(calls.length, 1);
+  assert.equal((calls[0]!.body as { chat_id: string }).chat_id, '-100200300'); // the group, not the DM
+  assert.match((calls[0]!.body as { text: string }).text, /^Renee, /);          // named for the group
+});
+
 test('a member with no chat is not messaged, and says so honestly', async () => {
   const calls: Array<{ url: string; body: unknown }> = [];
   const n = new TelegramNotifier({ token: 't', recipients: new Map(), fetchImpl: stubFetch(calls, {}) });
