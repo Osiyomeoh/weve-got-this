@@ -7,8 +7,11 @@
 > **Bee** (facts + todos, GET /v1/facts + /v1/todos, Bearer) is **built and tested**
 > (2026-09-22): a todo → PROPOSED obligation, a fact → recorded observation, both
 > "heard, unconfirmed" via the same INFERRED gate; on the connector heartbeat, gated
-> behind `BEE_TOKEN` + `BEE_API_BASE`. Remaining door: **WhatsApp** (needs Meta
-> Business verification — external, not pure code). All Google/Ring/Bee work is on `main`.
+> behind `BEE_TOKEN` + `BEE_API_BASE`. **WhatsApp** (the delegation loop's reply
+> channel) is **built and tested** (2026-09-22): outbound asks via the Business Cloud
+> API, inbound Yes/Can't via a signed webhook → `respond`-equivalent, gated behind
+> `WHATSAPP_*`. All five doors' code is on `main`; going live on WhatsApp needs Meta
+> Business verification (external, not code).
 
 
 Goal: connect **real accounts and devices** — your Google Calendar, your Gmail, WhatsApp,
@@ -106,14 +109,26 @@ uses a recorded real payload as a fixture, but the running system uses your live
   wearable actively capturing data.
 - **Proof it works:** a real thing you said, captured by Bee, surfaces as a *suggestion*.
 
-### 1.4 WhatsApp (Business Cloud API — real messages, business sender)
-- Meta developer app + WhatsApp Business Cloud API test number; add your personal number as
-  a recipient.
-- Outbound "Ask Renee to drive Thursday" + inbound Yes/Can't → `request_owner` /
-  `respond_to_request`.
+### 1.4 WhatsApp (Business Cloud API — real messages, business sender) — ✅ BUILT (2026-09-22)
+- **Built.** Outbound: `src/notify/whatsapp.ts` — `WhatsAppNotifier` sits behind the same
+  `Notifier` seam as SNS/record-only and is preferred by `notifierFromEnv` when configured,
+  so the agent's ask buzzes a real phone via the Graph API. Members map to numbers by an
+  explicit env map (`WHATSAPP_RECIPIENTS`), never a field on the person; an unmapped member
+  is not messaged (`delivered:false`), never guessed. Inbound: `src/http/whatsapp-webhook.ts`
+  — GET verifies the subscription, POST takes signed (`X-Hub-Signature-256`, HMAC-SHA256 of
+  the raw body with the app secret) inbound replies; `src/domain/whatsapp.ts` reads Meta's
+  payload and interprets Yes/Can't conservatively (ambiguous → nothing). A reply is matched
+  only to the **sender's own** outstanding request via `src/domain/request-response.ts` (the
+  same transition `respond_to_request` makes), so a "yes" from someone nobody asked assigns
+  nothing. Idempotent by Meta message id. Tests: `domain/whatsapp.test.ts`,
+  `domain/request-response.test.ts`, `notify/whatsapp.test.ts`, `http/whatsapp-webhook.test.ts`.
+- **To go live:** Meta developer app + WhatsApp Business Cloud API number; set `WHATSAPP_TOKEN`,
+  `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`,
+  `WHATSAPP_RECIPIENTS` (JSON member→phone), `WHATSAPP_HOUSEHOLD_ID`; point Meta's webhook at
+  `/whatsapp/webhook`. The *sender* is always the Business line (Meta forbids driving a
+  personal account) — state it on screen. Business verification is the long-lead item.
 - **Proof it works:** a real WhatsApp message lands on your real phone; your reply updates the
   board. On-screen label: sent via CareCircle's WhatsApp Business line.
-- Start Meta onboarding **now** — it has the longest lead time.
 
 ### 1.5 Fire TV — decide the real target
 - Today the "board" is an MCP Apps UI widget, not a Fire TV app. Two honest options:

@@ -1,4 +1,5 @@
 import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
+import { WhatsAppNotifier, whatsAppConfigFromEnv } from './whatsapp.js';
 
 /**
  * Delivering a message to a member of the care circle.
@@ -14,7 +15,7 @@ export interface DeliveryResult {
   /** Whether the message left the system, as opposed to only being recorded. */
   delivered: boolean;
   /** How it went out, for the audit trail. */
-  channel: 'none' | 'sns';
+  channel: 'none' | 'sns' | 'whatsapp';
   detail?: string;
 }
 
@@ -69,8 +70,16 @@ export class SnsNotifier implements Notifier {
   }
 }
 
-/** Pick a notifier from the environment: SNS when a topic is named, else record-only. */
+/**
+ * Pick a notifier from the environment: WhatsApp when a Business number is configured
+ * (the real reply channel of the delegation loop), else SNS when a topic is named, else
+ * record-only. WhatsApp wins because a member who can answer "yes" on their own phone is
+ * the loop closing where the family already lives.
+ */
 export function notifierFromEnv(): Notifier {
+  const wa = whatsAppConfigFromEnv();
+  if (wa) return new WhatsAppNotifier(wa);
+
   const topicArn = process.env['CARECIRCLE_SNS_TOPIC'];
   if (!topicArn) return new RecordOnlyNotifier();
   return new SnsNotifier({

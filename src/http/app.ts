@@ -9,6 +9,7 @@ import { staticTokens, firstOf, BOOTSTRAP_PREFIX, type IdentityResolver } from '
 import { RecordOnlyNotifier, type Notifier } from '../notify/notifier.js';
 import { log } from '../obs/log.js';
 import { createRingWebhook } from './ring-webhook.js';
+import { createWhatsAppWebhook, createWhatsAppVerify } from './whatsapp-webhook.js';
 import { OAuthProvider, oauthResolver } from './oauth.js';
 
 /**
@@ -86,6 +87,35 @@ app.post(
   '/ring/webhook',
   express.raw({ type: '*/*', limit: '256kb' }),
   createRingWebhook({ store, hmacKey: ringKey, householdId: ringHousehold, ...(now ? { now } : {}) }),
+);
+
+// The WhatsApp webhook, likewise mounted before the JSON parser so the HMAC is
+// computed over exactly the bytes Meta sent. GET verifies the subscription; POST
+// takes signed inbound replies. Both are absent-of-effect unless configured.
+const waSecret = process.env['WHATSAPP_APP_SECRET'] ?? '';
+const waVerify = process.env['WHATSAPP_VERIFY_TOKEN'] ?? '';
+const waHousehold = process.env['WHATSAPP_HOUSEHOLD_ID'] ?? ringHousehold;
+const waMemberByPhone = ((): Map<string, string> => {
+  // Inverse of WHATSAPP_RECIPIENTS (member -> phone): phone -> member, for inbound.
+  const raw = process.env['WHATSAPP_RECIPIENTS']?.trim();
+  const m = new Map<string, string>();
+  if (raw) {
+    try {
+      for (const [memberId, phone] of Object.entries(JSON.parse(raw) as Record<string, string>)) {
+        m.set(phone, memberId);
+      }
+    } catch { /* a malformed map means no inbound mapping, not a crash */ }
+  }
+  return m;
+})();
+app.get('/whatsapp/webhook', createWhatsAppVerify({ verifyToken: waVerify }));
+app.post(
+  '/whatsapp/webhook',
+  express.raw({ type: '*/*', limit: '256kb' }),
+  createWhatsAppWebhook({
+    store, appSecret: waSecret, verifyToken: waVerify,
+    memberByPhone: waMemberByPhone, householdId: waHousehold, ...(now ? { now } : {}),
+  }),
 );
 
 app.use(express.json({ limit: '1mb' }));
