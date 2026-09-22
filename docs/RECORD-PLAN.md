@@ -10,8 +10,12 @@
 > behind `BEE_TOKEN` + `BEE_API_BASE`. **WhatsApp** (the delegation loop's reply
 > channel) is **built and tested** (2026-09-22): outbound asks via the Business Cloud
 > API, inbound Yes/Can't via a signed webhook → `respond`-equivalent, gated behind
-> `WHATSAPP_*`. All five doors' code is on `main`; going live on WhatsApp needs Meta
-> Business verification (external, not code).
+> `WHATSAPP_*`. **Telegram** is the same reply channel with **no verification wall** and
+> is **built and tested** (2026-09-22): a `@BotFather` bot token, outbound
+> `sendMessage`, inbound via a secret-token-gated webhook → the same
+> `applyRequestResponse`, gated behind `TELEGRAM_*` — this is the one we demo live (see
+> `docs/TELEGRAM-SETUP.md`). All doors' code is on `main`; going live on WhatsApp needs
+> Meta Business verification (external), Telegram needs only a bot token.
 
 
 Goal: connect **real accounts and devices** — your Google Calendar, your Gmail, WhatsApp,

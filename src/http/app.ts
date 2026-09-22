@@ -10,6 +10,7 @@ import { RecordOnlyNotifier, type Notifier } from '../notify/notifier.js';
 import { log } from '../obs/log.js';
 import { createRingWebhook } from './ring-webhook.js';
 import { createWhatsAppWebhook, createWhatsAppVerify } from './whatsapp-webhook.js';
+import { createTelegramWebhook } from './telegram-webhook.js';
 import { OAuthProvider, oauthResolver } from './oauth.js';
 
 /**
@@ -120,6 +121,32 @@ app.post(
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: false, limit: '1mb' }));
+
+// The Telegram webhook. Unlike Meta, Telegram does not sign the body - it echoes a
+// secret token in a header - so this needs no raw body and mounts after the JSON
+// parser. Absent-of-effect unless TELEGRAM_WEBHOOK_SECRET is set.
+const tgSecret = process.env['TELEGRAM_WEBHOOK_SECRET'] ?? '';
+const tgHousehold = process.env['TELEGRAM_HOUSEHOLD_ID'] ?? ringHousehold;
+const tgMemberByChat = ((): Map<string, string> => {
+  // Inverse of TELEGRAM_RECIPIENTS (member -> chat id): chat id -> member, for inbound.
+  const raw = process.env['TELEGRAM_RECIPIENTS']?.trim();
+  const m = new Map<string, string>();
+  if (raw) {
+    try {
+      for (const [memberId, chatId] of Object.entries(JSON.parse(raw) as Record<string, string>)) {
+        m.set(String(chatId), memberId);
+      }
+    } catch { /* a malformed map means no inbound mapping, not a crash */ }
+  }
+  return m;
+})();
+app.post(
+  '/telegram/webhook',
+  createTelegramWebhook({
+    store, secretToken: tgSecret,
+    memberByChat: tgMemberByChat, householdId: tgHousehold, ...(now ? { now } : {}),
+  }),
+);
 
 // --- OAuth 2.1 + PKCE -----------------------------------------------------
 // Enabled by setting a signing secret. Without one the endpoints are absent

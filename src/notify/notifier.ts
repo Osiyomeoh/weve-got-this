@@ -1,5 +1,6 @@
 import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
 import { WhatsAppNotifier, whatsAppConfigFromEnv } from './whatsapp.js';
+import { TelegramNotifier, telegramConfigFromEnv } from './telegram.js';
 
 /**
  * Delivering a message to a member of the care circle.
@@ -15,7 +16,7 @@ export interface DeliveryResult {
   /** Whether the message left the system, as opposed to only being recorded. */
   delivered: boolean;
   /** How it went out, for the audit trail. */
-  channel: 'none' | 'sns' | 'whatsapp';
+  channel: 'none' | 'sns' | 'whatsapp' | 'telegram';
   detail?: string;
 }
 
@@ -71,12 +72,17 @@ export class SnsNotifier implements Notifier {
 }
 
 /**
- * Pick a notifier from the environment: WhatsApp when a Business number is configured
- * (the real reply channel of the delegation loop), else SNS when a topic is named, else
- * record-only. WhatsApp wins because a member who can answer "yes" on their own phone is
- * the loop closing where the family already lives.
+ * Pick a notifier from the environment. Telegram first (a bot token stands the reply
+ * channel up in a minute, with no business verification - so it is the one we can
+ * actually run live), then WhatsApp when a Business number is configured, then SNS when
+ * a topic is named, else record-only. A push channel wins over record-only because a
+ * member who can answer "yes" in a chat they already have is the loop closing where the
+ * family already lives.
  */
 export function notifierFromEnv(): Notifier {
+  const tg = telegramConfigFromEnv();
+  if (tg) return new TelegramNotifier(tg);
+
   const wa = whatsAppConfigFromEnv();
   if (wa) return new WhatsAppNotifier(wa);
 

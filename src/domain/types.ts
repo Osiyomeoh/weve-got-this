@@ -123,6 +123,7 @@ export type EventSource =
   | 'email'     // parsed from an email's calendar invite (seam)
   | 'pharmacy'  // a pharmacy system produced it (seam)
   | 'whatsapp'  // a member answered over WhatsApp
+  | 'telegram'  // a member answered over Telegram
   | 'system';   // CareCircle itself derived it
 
 /**
