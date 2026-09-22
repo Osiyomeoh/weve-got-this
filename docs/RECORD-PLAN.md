@@ -4,7 +4,11 @@
 > appointment) are **built, tested, and auto-synced** on a background heartbeat. The
 > **Ring** API client (account link + device list) is built; Ring event intake is the
 > HMAC-verified webhook, live once the portal callback URL is set + a device fires.
-> Remaining doors: **Bee**, **WhatsApp**. All Google/Ring work is on `main`.
+> **Bee** (facts + todos, GET /v1/facts + /v1/todos, Bearer) is **built and tested**
+> (2026-09-22): a todo → PROPOSED obligation, a fact → recorded observation, both
+> "heard, unconfirmed" via the same INFERRED gate; on the connector heartbeat, gated
+> behind `BEE_TOKEN` + `BEE_API_BASE`. Remaining door: **WhatsApp** (needs Meta
+> Business verification — external, not pure code). All Google/Ring/Bee work is on `main`.
 
 
 Goal: connect **real accounts and devices** — your Google Calendar, your Gmail, WhatsApp,
@@ -89,9 +93,17 @@ uses a recorded real payload as a fixture, but the running system uses your live
 - **Proof it works:** a real motion/doorbell/delivery on your Ring → real webhook → INFERRED
   note on the board. No device → we cannot claim this is live; say so.
 
-### 1.3 Bee (real API, needs your captured data)
-- Bee account + Bee API/CLI/MCP. Pull your real facts/todos/conversation summaries →
-  `CareSignal(source:'bee')` → INFERRED note ("heard, unconfirmed").
+### 1.3 Bee (real API, needs your captured data) — ✅ BUILT (2026-09-22)
+- **Built:** `src/connectors/bee.ts` + `src/domain/bee.ts`. Pulls the account's real
+  `GET /v1/facts` and `GET /v1/todos` (Bearer `BEE_TOKEN`, base `BEE_API_BASE`), and
+  folds each through the trust gate: an open **todo → PROPOSED obligation** (INFERRED,
+  `bee:todo`, always `logistical` — a microphone never gets to assert a medical stake),
+  a **fact → recorded observation** (`source:'bee'`, `confidence:'observed'`, "heard,
+  unconfirmed"). Idempotent by Bee row id; completed todos are skipped. On the connector
+  heartbeat alongside Calendar/Gmail. Tests: `domain/bee.test.ts`, `connectors/bee.test.ts`.
+- **To go live:** set `BEE_TOKEN` + `BEE_API_BASE` (Bee's direct API may sit behind a
+  private-CA proxy — see docs.bee.computer). No code left; needs your Bee account + a
+  wearable actively capturing data.
 - **Proof it works:** a real thing you said, captured by Bee, surfaces as a *suggestion*.
 
 ### 1.4 WhatsApp (Business Cloud API — real messages, business sender)

@@ -3,6 +3,7 @@ import {
   googleCalendarConfigFromEnv, runGoogleCalendarSync, runCalendarWriteback,
 } from './google-calendar.js';
 import { gmailConfigFromEnv, runGmailSync } from './gmail.js';
+import { beeConfigFromEnv, runBeeSync } from './bee.js';
 
 /**
  * The connector sync loop: keep the care record and the family's calendar in step,
@@ -38,6 +39,7 @@ export interface ConnectorSyncDeps {
   calendarSync?: typeof runGoogleCalendarSync;
   calendarWriteback?: typeof runCalendarWriteback;
   gmailSync?: typeof runGmailSync;
+  beeSync?: typeof runBeeSync;
 }
 
 /**
@@ -48,6 +50,7 @@ export async function runConnectorsOnce(deps: ConnectorSyncDeps): Promise<void> 
   const now = (deps.now ?? (() => new Date()))();
   const calCfg = googleCalendarConfigFromEnv();
   const mailCfg = gmailConfigFromEnv();
+  const beeCfg = beeConfigFromEnv();
 
   if (calCfg) {
     try {
@@ -78,20 +81,33 @@ export async function runConnectorsOnce(deps: ConnectorSyncDeps): Promise<void> 
       deps.log.error('gmail sync failed', { reason: (err as Error).message });
     }
   }
+
+  if (beeCfg) {
+    try {
+      const r = await (deps.beeSync ?? runBeeSync)(
+        deps.store, deps.householdId, beeCfg, now,
+      );
+      if (r.proposed.length || r.observed.length) {
+        deps.log.info('bee sync applied', { proposed: r.proposed.length, observed: r.observed.length });
+      }
+    } catch (err) {
+      deps.log.error('bee sync failed', { reason: (err as Error).message });
+    }
+  }
 }
 
 /** Schedule {@link runConnectorsOnce} on an interval. Returns a stop function. */
 export function startConnectorSync(deps: Omit<ConnectorSyncDeps, 'householdId'> & { householdId?: string }): () => void {
   const ms = Number(process.env['CARECIRCLE_CONNECTOR_INTERVAL_MS'] ?? 0);
   const householdId = deps.householdId ?? process.env['CARECIRCLE_HOUSEHOLD']?.trim();
-  const configured = googleCalendarConfigFromEnv() || gmailConfigFromEnv();
+  const configured = googleCalendarConfigFromEnv() || gmailConfigFromEnv() || beeConfigFromEnv();
 
   if (!Number.isFinite(ms) || ms <= 0) {
     deps.log.info('connector sync disabled', { reason: 'CARECIRCLE_CONNECTOR_INTERVAL_MS not set' });
     return () => {};
   }
   if (!configured) {
-    deps.log.info('connector sync disabled', { reason: 'no Google account configured' });
+    deps.log.info('connector sync disabled', { reason: 'no Google or Bee account configured' });
     return () => {};
   }
   if (!householdId) {
