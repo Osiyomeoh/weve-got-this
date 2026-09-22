@@ -13,6 +13,7 @@ import { offerFor, offerSpoken, formatPrice, type OfferKind, type PurchaseOffer 
 import { can, canActOn, capabilitiesOf, NotPermittedError, require as requireCap } from '../domain/auth.js';
 import { attributionOf, isReported, sayWhoSaysSo } from '../domain/attribution.js';
 import { explainProvenance } from '../domain/provenance.js';
+import { describeConnections } from '../domain/connections.js';
 import { bootstrapSubject } from '../http/identity.js';
 import { CareStore, HouseholdScopeError, NotFoundError } from '../store/store.js';
 import { CARE_BOARD_HTML } from './app/care-board.js';
@@ -75,6 +76,7 @@ const OUT = {
   respond_to_request: { status: z.string().optional(), ownerId: z.string().nullable().optional() },
   get_my_requests: { requests: arr.optional() },
   get_provenance: { obligationId: z.string().optional(), what: z.string().optional(), owner: z.string().nullable().optional(), chain: arr.optional() },
+  get_connections: { connections: arr.optional() },
   confirm_proposal: { obligationId: z.string().optional() },
   resolve_obligation: { obligationId: z.string().optional() },
   run_care_agent: { would: arr.optional(), heldBack: arr.optional(), asked: arr.optional(), dryRun: z.boolean().optional() },
@@ -727,6 +729,28 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
         owner: explanation.owner,
         chain: explanation.chain,
       });
+    } catch (err) { return guidance(describeError(err)); }
+  });
+
+  // --- "What are you connected to?" -------------------------------------
+  server.registerTool('get_connections', {
+    title: 'List the data connections and whether each is live',
+    description:
+      'Reports what CareCircle is connected to - Google Calendar, Gmail, Ring, Bee, WhatsApp, '
+      + 'Telegram - and for each whether it is LIVE (connected and receiving events), CONFIGURED '
+      + '(connected but nothing has arrived yet), or NOT CONNECTED. Use for "what are you '
+      + 'connected to?", "is Telegram working?", "which of my accounts are linked?". Read-only, '
+      + 'and honest: it never reports a connection that is not actually configured, and a door '
+      + 'that has never carried an event is not called live. Speak the result as written.',
+    inputSchema: {},
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
+    outputSchema: OUT.get_connections,
+  }, async () => {
+    try {
+      const me = actor();
+      requireCap(me, 'read_shift');
+      const report = describeConnections(process.env, state().events);
+      return reply(report.spoken, { connections: report.connections });
     } catch (err) { return guidance(describeError(err)); }
   });
 
