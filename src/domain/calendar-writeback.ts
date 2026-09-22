@@ -62,8 +62,8 @@ export function obligationToCalendarEvent(
   return {
     summary: `${obligation.what}${suffix}`,
     description: 'Tracked by CareCircle. This entry reflects the current owner and status.',
-    start: { dateTime: start },
-    end: { dateTime: end },
+    start: { dateTime: start, timeZone: 'UTC' },
+    end: { dateTime: end, timeZone: 'UTC' },
     extendedProperties: {
       private: {
         carecircleSource: CARECIRCLE_SOURCE,

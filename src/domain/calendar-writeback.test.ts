@@ -27,6 +27,9 @@ test('an owned, dated obligation writes an event naming the owner', () => {
   assert.ok(ev);
   assert.equal(ev!.summary, 'Drive Margaret to cardiology — David');
   assert.equal(ev!.start?.dateTime, '2026-10-16T18:00:00Z');
+  // Google's insert API rejects a dateTime with no zone; the UTC ISO stamp is declared UTC.
+  assert.equal(ev!.start?.timeZone, 'UTC');
+  assert.equal(ev!.end?.timeZone, 'UTC');
   assert.equal(ev!.extendedProperties?.private?.['carecircleObligationId'], 'obl_ride');
   // The loop-guard tag - inbound must skip anything carrying this.
   assert.equal(ev!.extendedProperties?.private?.['carecircleSource'], 'carecircle');
