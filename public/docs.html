@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>CareCircle Developer Docs</title>
+<style>
+  :root{
+    --bg:#07100d; --panel:#0c1815; --panel-2:#0f1f1b; --line:#1c3a32;
+    --ink:#e7f3ef; --muted:#8fb3aa; --faint:#5f8379;
+    --core:#38e0b0; --blue:#57c6ff; --amber:#ffb020; --violet:#b58cff; --danger:#ff6b6b;
+    --mono:"SFMono-Regular",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+    --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --sidebar:260px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--core);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:var(--mono);font-size:.86em;background:var(--panel-2);border:1px solid var(--line);border-radius:5px;padding:.08em .4em;color:#bff3e2}
+  pre{font-family:var(--mono);font-size:12.5px;line-height:1.55;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;color:#cfeee3}
+  pre code{background:none;border:0;padding:0;color:inherit}
+  h1,h2,h3{text-wrap:balance;line-height:1.2;margin:0}
+  .layout{display:grid;grid-template-columns:var(--sidebar) 1fr;min-height:100vh}
+  /* Sidebar */
+  aside{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;border-right:1px solid var(--line);background:linear-gradient(180deg,#081512,#07100d);padding:22px 16px 40px}
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+  .brand .dot{width:11px;height:11px;border-radius:50%;background:var(--core);box-shadow:0 0 12px var(--core)}
+  .brand b{font-size:15px;letter-spacing:.2px}
+  .brand small{display:block;color:var(--faint);font-size:11px;letter-spacing:.16em;text-transform:uppercase;margin-top:2px}
+  nav{margin-top:22px;display:flex;flex-direction:column;gap:2px}
+  nav .grp{color:var(--faint);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;margin:16px 8px 6px}
+  nav a{color:var(--muted);padding:5px 10px;border-radius:7px;font-size:13.5px;border-left:2px solid transparent}
+  nav a:hover{color:var(--ink);background:var(--panel-2);text-decoration:none}
+  /* Main */
+  main{min-width:0;padding:40px clamp(16px,5vw,64px) 96px;max-width:920px}
+  section{padding-top:28px;margin-top:28px;border-top:1px solid var(--line)}
+  section:first-of-type{border-top:0;margin-top:0}
+  .eyebrow{color:var(--core);font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:600}
+  h1{font-size:clamp(28px,5vw,40px);margin:.15em 0 .1em;letter-spacing:-.02em}
+  h2{font-size:23px;letter-spacing:-.01em;margin-bottom:.2em}
+  h3{font-size:15px;color:var(--blue);margin:22px 0 6px;letter-spacing:.01em}
+  p{color:#cfe4dd;margin:.5em 0}
+  .lead{font-size:17px;color:var(--muted);max-width:65ch}
+  .muted{color:var(--muted)}
+  ul{margin:.5em 0;padding-left:1.2em}
+  li{margin:.28em 0;color:#cfe4dd}
+  .pill{display:inline-block;font-family:var(--mono);font-size:11px;padding:.15em .5em;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+  .flow{font-family:var(--mono);font-size:12.5px;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;white-space:pre;line-height:1.5}
+  .grid{display:grid;gap:12px}
+  .cards{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 15px}
+  .card h4{margin:0 0 4px;font-family:var(--mono);font-size:13px;color:#bff3e2;letter-spacing:.01em}
+  .card p{margin:0;font-size:13px;color:var(--muted);line-height:1.45}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin:.6em 0}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--faint);font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;background:var(--panel-2)}
+  tr:last-child td{border-bottom:0}
+  td code{white-space:nowrap}
+  .chip{display:inline-block;font-size:11px;font-family:var(--mono);padding:.12em .5em;border-radius:6px;border:1px solid}
+  .c-confirmed{color:var(--core);border-color:#1e5f4c;background:rgba(56,224,176,.09)}
+  .c-inferred{color:var(--violet);border-color:#4a3a6b;background:rgba(181,140,255,.1)}
+  .c-norec{color:var(--amber);border-color:#6b5320;background:rgba(255,176,32,.09)}
+  .method{font-family:var(--mono);font-size:11px;font-weight:700;padding:.1em .45em;border-radius:5px;color:#04120d}
+  .post{background:var(--core)} .get{background:var(--blue)}
+  .callout{background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--line);border-left:3px solid var(--amber);border-radius:10px;padding:12px 15px;margin:14px 0}
+  .callout.core{border-left-color:var(--core)}
+  .callout p{margin:.2em 0;font-size:13.5px}
+  .callout b{color:var(--ink)}
+  .topbar{display:none}
+  footer{color:var(--faint);font-size:12px;margin-top:40px;padding-top:20px;border-top:1px solid var(--line)}
+  @media (max-width:820px){
+    .layout{grid-template-columns:1fr}
+    aside{display:none}
+    .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5;background:rgba(7,16,13,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 16px}
+    .topbar .dot{width:10px;height:10px;border-radius:50%;background:var(--core)}
+    main{padding:24px 16px 80px}
+  }
+</style>
+</head>
+<body>
+<div class="topbar"><span class="dot"></span><b>CareCircle</b> <span class="muted" style="font-size:12px">Developer Docs</span></div>
+<div class="layout">
+  <aside>
+    <div class="brand">
+      <span class="dot"></span>
+      <div><b>CareCircle</b><small>Developer Docs</small></div>
+    </div>
+    <p class="muted" style="font-size:12px;margin:.4em 0 0">An MCP server for shared caregiving. Alexa+ ready.</p>
+    <nav>
+      <div class="grp">Start</div>
+      <a href="#overview">Overview</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#trust">The trust model</a>
+      <div class="grp">Reference</div>
+      <a href="#tools">MCP tools (25)</a>
+      <a href="#resources">Resources</a>
+      <a href="#endpoints">HTTP endpoints</a>
+      <a href="#doors">Data doors</a>
+      <a href="#identity">Identity &amp; permissions</a>
+      <div class="grp">Operate</div>
+      <a href="#deploy">Deployment</a>
+      <a href="#env">Environment</a>
+      <a href="#testing">Testing</a>
+      <a href="#ui">Using the UI</a>
+    </nav>
+  </aside>
+
+  <main>
+    <section id="overview">
+      <div class="eyebrow">CareCircle · MCP spec 2025-11-25</div>
+      <h1>The care layer, as an MCP server</h1>
+      <p class="lead">CareCircle tracks what needs to happen for someone being cared for, and who is responsible for it — and exposes that as <b>25 MCP tools</b> an AI assistant (Alexa+, or any MCP client) calls. Real events flow in from real accounts and devices; every one enters as a guess a human confirms, never a fact written by a machine.</p>
+      <div class="grid cards" style="margin-top:18px">
+        <div class="card"><h4>Self-hosted MCP</h4><p>Streamable HTTP, spec 2025-11-25, live on AWS App Runner. The compliant Alexa+ surface.</p></div>
+        <div class="card"><h4>Real connections</h4><p>Calendar, Gmail, Ring, Bee, WhatsApp, Telegram — network at the edges, a pure core.</p></div>
+        <div class="card"><h4>Provenance-first</h4><p>Known ≠ assumed. Every claim carries where it came from; a guess stays a guess until confirmed.</p></div>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <h2>Architecture</h2>
+      <p>One spine runs the whole system: <b>events</b> are the only source of truth, <b>obligations</b> are what folds out of them, and <b>ownership</b> is the stage where care actually succeeds or slips.</p>
+      <div class="flow">EVENTS  ──►  OBLIGATIONS  ──►  OWNERSHIP
+(append-only)   (folded from events)   (who is responsible)
+
+A Care Gap = a failure at the ownership stage: real work with no owner,
+an expected record that is missing, or something now past its time.</div>
+      <h3>Network at the edges, pure core</h3>
+      <p>Every connector follows the same shape, so the store-touching logic is always testable without a socket:</p>
+      <div class="flow">&lt;x&gt;ConfigFromEnv   →   fetch&lt;X&gt;   →   sync&lt;X&gt;   →   run&lt;X&gt;Sync
+ (reads env)        (only network)   (pure, idempotent)  (wires them)</div>
+      <p class="muted">Inbound webhooks (Ring, WhatsApp, Telegram) and pollers (Calendar, Gmail, Bee) all land in the same store the MCP tools read and write — a reply over Telegram travels the exact path a spoken one does.</p>
+    </section>
+
+    <section id="trust">
+      <h2>The trust model</h2>
+      <p>The thesis of the whole system: <b>a machine never writes a fact.</b> A real event from any source enters as a signal → an <b>INFERRED</b> item → a human confirms → a fact. Evidence is not a verdict.</p>
+      <h3>Provenance — how sure we are of an obligation</h3>
+      <p>
+        <span class="chip c-confirmed">CONFIRMED</span> a person stated it &nbsp;
+        <span class="chip c-inferred">INFERRED</span> the system guessed it — never counted until confirmed &nbsp;
+        <span class="chip c-norec">NOT_LOGGED</span> nothing was recorded — <i>not</i> "it didn't happen"
+      </p>
+      <h3>Confidence — how sure we are of an event</h3>
+      <p class="muted">Deliberately separate from provenance. An event can be <code>observed</code> (a sensor saw it) while the obligation it feeds is still only INFERRED.</p>
+      <ul>
+        <li><code>observed</code> — a sensor saw it happen</li>
+        <li><code>reported</code> — a person said it happened</li>
+        <li><code>inferred</code> — the system derived it from other events</li>
+        <li><code>confirmed</code> — a person definitively decided or acted</li>
+      </ul>
+      <div class="callout"><p><b>The rule that never bends:</b> the system only knows what was recorded. An absent record is never evidence that something didn't happen — no tool ever says a person failed to do something.</p></div>
+    </section>
+
+    <section id="tools">
+      <h2>MCP tools <span class="muted" style="font-size:16px">— 25</span></h2>
+      <p>You don't call these by hand — you speak, and the planner picks the tool. Grouped by what they do.</p>
+
+      <h3>See the state · read-only</h3>
+      <div class="grid cards">
+        <div class="card"><h4>get_care_gaps</h4><p>The core tool: everything unowned, missing, or overdue — ranked, phrased for speech.</p></div>
+        <div class="card"><h4>get_care_summary</h4><p>The day: what's logged, notes, what's coming up.</p></div>
+        <div class="card"><h4>get_shift_brief</h4><p>What this shift needs to know — meds due, what's assigned to you.</p></div>
+        <div class="card"><h4>get_my_requests</h4><p>What the speaker has been asked to take on and not yet answered.</p></div>
+        <div class="card"><h4>get_provenance</h4><p>Walks the whole chain behind one item — "how do you know that?"</p></div>
+        <div class="card"><h4>get_connections</h4><p>Each data door: live / configured / not connected. Honest, env-checked.</p></div>
+        <div class="card"><h4>get_started</h4><p>Set up, or pick up where onboarding left off.</p></div>
+      </div>
+
+      <h3>Ownership · the delegation loop</h3>
+      <div class="grid cards">
+        <div class="card"><h4>request_owner</h4><p>Ask someone to take work on — and message them (Telegram/WhatsApp). Asks, never assigns.</p></div>
+        <div class="card"><h4>respond_to_request</h4><p>Answer a request made of you: accept (assign) or decline (reopen).</p></div>
+        <div class="card"><h4>claim_obligation</h4><p>The speaker takes something on themselves.</p></div>
+        <div class="card"><h4>assign_obligation</h4><p>The primary caregiver puts work on a name outright.</p></div>
+        <div class="card"><h4>confirm_proposal</h4><p>Confirm or dismiss something the system guessed (an INFERRED item).</p></div>
+        <div class="card"><h4>resolve_obligation</h4><p>Mark something done.</p></div>
+      </div>
+
+      <h3>Record reality</h3>
+      <div class="grid cards">
+        <div class="card"><h4>log_care_event</h4><p>Log something that happened — a dose, a meal — as reported.</p></div>
+        <div class="card"><h4>record_appointment</h4><p>A dated commitment; proposes the ride/companion a medical one needs, for a human to confirm.</p></div>
+        <div class="card"><h4>add_note</h4><p>Add a note to the care record.</p></div>
+        <div class="card"><h4>ingest_signal</h4><p>The single source-agnostic front door: record something a device observed.</p></div>
+      </div>
+
+      <h3>Act outward &nbsp;·&nbsp; The agent</h3>
+      <div class="grid cards">
+        <div class="card"><h4>notify_member</h4><p>Let someone know something — recorded always, pushed if a channel is configured.</p></div>
+        <div class="card"><h4>reorder_prescription</h4><p>Offer to reorder a prescription.</p></div>
+        <div class="card"><h4>confirm_purchase</h4><p>Place or decline a prepared purchase.</p></div>
+        <div class="card"><h4>run_care_agent</h4><p>CareCircle reviews everything unowned and asks the fairest person — it only ever asks.</p></div>
+      </div>
+
+      <h3>Setup &amp; admin</h3>
+      <div class="grid cards">
+        <div class="card"><h4>create_household</h4><p>Create a new care circle.</p></div>
+        <div class="card"><h4>add_member</h4><p>Add someone to the circle.</p></div>
+        <div class="card"><h4>add_medication</h4><p>Add a medication schedule.</p></div>
+        <div class="card"><h4>remove_member</h4><p>Remove someone; releases their obligations.</p></div>
+      </div>
+    </section>
+
+    <section id="resources">
+      <h2>Resources</h2>
+      <p>Read-only MCP resources the client can subscribe to.</p>
+      <div class="tablewrap"><table>
+        <tr><th>Resource</th><th>What it exposes</th></tr>
+        <tr><td><code>me</code></td><td>Who the caller is, and what they're allowed to do (their capabilities).</td></tr>
+        <tr><td><code>care-state</code></td><td>The whole folded care state for the household — members, obligations, gaps, events.</td></tr>
+        <tr><td><code>care-board</code></td><td>The Care Board as an interactive MCP-UI view (the shared display).</td></tr>
+      </table></div>
+    </section>
+
+    <section id="endpoints">
+      <h2>HTTP endpoints</h2>
+      <p>The MCP server (<code>carecircle-mcp</code>) serves the protocol plus the inbound webhooks. Webhooks that verify a signature are mounted <i>before</i> the JSON parser so the HMAC is computed over the raw bytes.</p>
+      <div class="tablewrap"><table>
+        <tr><th>Method</th><th>Path</th><th>Purpose</th></tr>
+        <tr><td><span class="method post">POST</span></td><td><code>/mcp</code></td><td>The MCP endpoint (Streamable HTTP, spec 2025-11-25).</td></tr>
+        <tr><td><span class="method get">GET</span></td><td><code>/health</code></td><td>Health check (App Runner probes this).</td></tr>
+        <tr><td><span class="method post">POST</span></td><td><code>/ring/webhook</code></td><td>Ring events, HMAC-verified → INFERRED note.</td></tr>
+        <tr><td><span class="method get">GET</span> <span class="method post">POST</span></td><td><code>/whatsapp/webhook</code></td><td>GET verifies the subscription; POST takes signed inbound replies (X-Hub-Signature-256).</td></tr>
+        <tr><td><span class="method post">POST</span></td><td><code>/telegram/webhook</code></td><td>Inbound replies, gated by the secret-token header. Works in a family group.</td></tr>
+        <tr><td><span class="method get">GET</span> <span class="method post">POST</span></td><td><code>/oauth/*</code></td><td>OAuth 2.1 + PKCE (authorize/token/register) — present only when a signing secret is set.</td></tr>
+      </table></div>
+    </section>
+
+    <section id="doors">
+      <h2>Data doors</h2>
+      <p>Real accounts and devices. Each is either an inbound webhook or a polled connector; the outbound reply channel sits behind one <code>Notifier</code> seam. Ask <code>get_connections</code> for live status.</p>
+      <div class="tablewrap"><table>
+        <tr><th>Door</th><th>Direction</th><th>How it connects</th></tr>
+        <tr><td><b>Google Calendar</b></td><td>poll · in + write-back</td><td>Google OAuth; real events → INFERRED appointments; write back to the shared calendar.</td></tr>
+        <tr><td><b>Gmail</b></td><td>poll · inbound</td><td>Google OAuth; a matching appointment/refill email → INFERRED item.</td></tr>
+        <tr><td><b>Ring</b></td><td>webhook · inbound</td><td>HMAC-verified webhook → INFERRED note. Needs a real Ring device to emit events.</td></tr>
+        <tr><td><b>Bee</b></td><td>poll · inbound</td><td>GET /v1/facts + /v1/todos (Bearer); a todo → PROPOSED obligation, a fact → observation. Always logistical.</td></tr>
+        <tr><td><b>WhatsApp</b></td><td>webhook · in + out</td><td>Business Cloud API; outbound asks, signed inbound replies. Sender is a Business line (Meta's rule).</td></tr>
+        <tr><td><b>Telegram</b></td><td>webhook · in + out <span class="pill">live</span></td><td>Bot API; outbound asks (DM or family group), secret-token-gated inbound replies. No verification wall.</td></tr>
+      </table></div>
+      <div class="callout core"><p><b>Why doors aren't tools.</b> A webhook is an inbound push — the agent can't "call Telegram to check for replies." So the transport lives at the edge, but the <i>result</i> is fully visible and actionable through MCP tools, and the connection <i>status</i> is exposed via <code>get_connections</code>.</p></div>
+    </section>
+
+    <section id="identity">
+      <h2>Identity &amp; permissions</h2>
+      <p>Who is speaking is established by the session credential — <b>never by the conversation</b>. The production resolver is <code>firstOf(oauthTokens, staticTokens)</code>: an OAuth token resolves first, else a mapped static token. With self-signup on, an authenticated-but-unmapped caller becomes a bootstrap principal who can create their own circle.</p>
+      <h3>Roles &amp; capabilities</h3>
+      <div class="tablewrap"><table>
+        <tr><th>Role</th><th>Can do</th></tr>
+        <tr><td><code>primary_caregiver</code></td><td>The full circle: assign, manage members and meds, everything below.</td></tr>
+        <tr><td><code>caregiver</code></td><td>Log, claim, respond, ask, read — the day-to-day of care.</td></tr>
+        <tr><td><code>helper</code></td><td>A paid aide: scoped to the work in front of them (their own obligations).</td></tr>
+        <tr><td><code>care_recipient</code></td><td>Log things about themselves; read their own circle.</td></tr>
+      </table></div>
+      <p class="muted">Every tool checks the caller's capability first; households are isolated (an adversarial suite guards the boundary).</p>
+    </section>
+
+    <section id="deploy">
+      <h2>Deployment</h2>
+      <p>Two AWS App Runner services share one ECR <code>:latest</code> image, built in the cloud by CodeBuild from <code>git archive HEAD</code> — so <b>commit before deploying</b>.</p>
+      <div class="tablewrap"><table>
+        <tr><th>Service</th><th>Host</th><th>Role</th></tr>
+        <tr><td><code>carecircle-mcp</code></td><td>ypq2dfq2p7…</td><td>The MCP server + webhooks + the agent heartbeat.</td></tr>
+        <tr><td><code>carecircle-sim</code></td><td>krqi2tpsif…</td><td>The Alexa+ console UI; proxies to the MCP server.</td></tr>
+      </table></div>
+      <pre><code>AWS_PROFILE=conductor  source .env
+bash infra/deploy-mcp.sh          # build image + update-service (env)
+aws apprunner start-deployment …  # force the new image to pull</code></pre>
+      <div class="callout"><p><b>Two gotchas that have bitten before.</b></p>
+        <p>· An <b>env change</b> is an <code>update-service</code>; a <b>new image</b> needs an explicit <code>start-deployment</code> — do both, or the routes 404 on a stale image.</p>
+        <p>· <code>update-service</code> <b>replaces</b> the whole env map and requires <code>AuthenticationConfiguration.AccessRoleArn</code> — derive from the live config so secrets and the ECR access role survive.</p>
+      </div>
+    </section>
+
+    <section id="env">
+      <h2>Environment variables</h2>
+      <p>All secrets live only in a gitignored <code>.env</code>. Absent config means a feature is simply off (not present-and-insecure).</p>
+      <div class="tablewrap"><table>
+        <tr><th>Area</th><th>Variables</th></tr>
+        <tr><td>Core</td><td><code>CARECIRCLE_TABLE</code>, <code>AWS_REGION</code>, <code>CARECIRCLE_AGENT_INTERVAL_MS</code>, <code>CARECIRCLE_ALLOW_SELF_SIGNUP</code></td></tr>
+        <tr><td>Auth</td><td><code>CARECIRCLE_OAUTH_SECRET</code>, <code>CARECIRCLE_PUBLIC_URL</code>, <code>CARECIRCLE_OAUTH_REDIRECTS</code></td></tr>
+        <tr><td>Ring</td><td><code>RING_HMAC_KEY</code>, <code>RING_HOUSEHOLD_ID</code>, <code>RING_CLIENT_ID/SECRET</code></td></tr>
+        <tr><td>Google</td><td><code>GOOGLE_CLIENT_ID</code>, <code>GOOGLE_CLIENT_SECRET</code>, <code>GOOGLE_REFRESH_TOKEN</code>, <code>GOOGLE_CALENDAR_ID</code>, <code>GMAIL_QUERY</code></td></tr>
+        <tr><td>Bee</td><td><code>BEE_TOKEN</code>, <code>BEE_API_BASE</code></td></tr>
+        <tr><td>WhatsApp</td><td><code>WHATSAPP_TOKEN</code>, <code>WHATSAPP_PHONE_NUMBER_ID</code>, <code>WHATSAPP_APP_SECRET</code>, <code>WHATSAPP_VERIFY_TOKEN</code>, <code>WHATSAPP_RECIPIENTS</code></td></tr>
+        <tr><td>Telegram</td><td><code>TELEGRAM_BOT_TOKEN</code>, <code>TELEGRAM_RECIPIENTS</code>, <code>TELEGRAM_WEBHOOK_SECRET</code>, <code>TELEGRAM_GROUP_CHAT_ID</code>, <code>TELEGRAM_HOUSEHOLD_ID</code></td></tr>
+      </table></div>
+    </section>
+
+    <section id="testing">
+      <h2>Testing</h2>
+      <p>The suite runs on the Node test runner (not vitest):</p>
+      <pre><code>npx tsx --test "src/**/*.test.ts"     # 405 tests
+npx tsc --noEmit                       # typecheck</code></pre>
+      <p class="muted">Domain logic is pure and network-free, so most tests need no mocks; connectors are tested against recorded real payloads as fixtures.</p>
+    </section>
+
+    <section id="ui">
+      <h2>Using the UI</h2>
+      <p>The console is an MCP <i>client</i>: pick who you are, talk or type, and watch the board react with provenance chips. Live surfaces:</p>
+      <div class="tablewrap"><table>
+        <tr><th>Path</th><th>Surface</th></tr>
+        <tr><td><a href="/console">/console</a></td><td>The Alexa+ console — drive the MCP by voice or text.</td></tr>
+        <tr><td><a href="/setup">/setup</a></td><td>First-run onboarding (drives the real setup tools).</td></tr>
+        <tr><td><a href="/tv">/tv</a></td><td>The ambient Fire TV care board.</td></tr>
+        <tr><td><a href="/board">/board</a></td><td>The full dashboard.</td></tr>
+      </table></div>
+      <p>Two endpoints back the console: <code>POST /api/say</code> (natural language → planner) and <code>POST /api/act</code> (call one tool directly with exact args, for scripted demos).</p>
+      <footer>
+        CareCircle — an Alexa+ MCP server for shared caregiving.
+        <a href="https://github.com/Osiyomeoh/carecircle">Source on GitHub</a>.
+        Self-hosted MCP, spec 2025-11-25.
+      </footer>
+    </section>
+  </main>
+</div>
+</body>
+</html>

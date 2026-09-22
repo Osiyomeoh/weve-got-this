@@ -525,6 +525,10 @@ git clone https://github.com/Osiyomeoh/carecircle{'\n'}npm ci &amp;&amp; npm run
             <Link to="/tv" className="glass inline-flex items-center gap-2 rounded-xl px-5 py-3 text-[0.9375rem] font-medium text-ink transition hover:-translate-y-0.5">
               The ambient screen
             </Link>
+            <a href="/docs.html"
+              className="glass inline-flex items-center gap-2 rounded-xl px-5 py-3 text-[0.9375rem] font-medium text-ink transition hover:-translate-y-0.5">
+              Developer docs
+            </a>
             <a href="https://github.com/Osiyomeoh/carecircle" target="_blank" rel="noreferrer"
               className="glass inline-flex items-center gap-2 rounded-xl px-5 py-3 text-[0.9375rem] font-medium text-ink transition hover:-translate-y-0.5">
               Read the source
