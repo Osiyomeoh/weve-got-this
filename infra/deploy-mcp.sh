@@ -151,8 +151,9 @@ env.update({
     "CARECIRCLE_ALLOW_SELF_SIGNUP": os.environ.get("CARECIRCLE_ALLOW_SELF_SIGNUP", "true"),
 })
 for key in ("CARECIRCLE_OAUTH_SECRET", "CARECIRCLE_PUBLIC_URL", "CARECIRCLE_OAUTH_REDIRECTS", "RING_HMAC_KEY", "RING_HOUSEHOLD_ID",
-            # The connector heartbeat: how often Google/Bee are polled (off when unset).
-            "CARECIRCLE_CONNECTOR_INTERVAL_MS",
+            # The connector heartbeat: how often Google/Bee are polled (off when unset),
+            # and which household their events sync into (required, or the loop is disabled).
+            "CARECIRCLE_CONNECTOR_INTERVAL_MS", "CARECIRCLE_HOUSEHOLD",
             # Google doors (Calendar + Gmail) share one OAuth refresh grant.
             "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_REFRESH_TOKEN",
             "GOOGLE_CALENDAR_ID", "GOOGLE_WRITE_CALENDAR_ID", "GOOGLE_CALENDAR_HORIZON_DAYS", "GMAIL_QUERY",
