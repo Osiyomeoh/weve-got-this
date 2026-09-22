@@ -73,3 +73,33 @@ secret (the self-signup rollback trap; see `docs/HANDOFF.md`).
 3. Reply from an un-mapped chat → acknowledged, acts on nothing (trust gate holds).
 
 No platform verification, no lead time — this is the one to demo live.
+
+---
+
+## Family-group mode (the demo scene) — LIVE
+
+Instead of private DMs, CareCircle can run in a **Telegram group** so the whole circle sees
+the loop. Verified live in the group **"Magaret's CareCircle"** (`-5450402543`).
+
+**Setup:**
+1. Create a Telegram group, add the bot and the family members.
+2. **@BotFather → `/setprivacy` → your bot → Disable** — so the bot can read plain
+   "yes"/"can't" in the group (not just replies/@mentions). Confirm with
+   `getMe` → `can_read_all_group_messages: true`.
+3. Get the group chat id: `deleteWebhook`, have someone post in the group, `getUpdates`
+   (read `message.chat.id`, a negative number), then **re-`setWebhook`** to restore inbound.
+   Read each member's `message.from.id` the same way and map them in `TELEGRAM_RECIPIENTS`
+   (member id → Telegram **user** id; in a DM the user id equals the chat id, so the same map
+   works both ways).
+4. Set `TELEGRAM_GROUP_CHAT_ID` and redeploy (env-only).
+
+**Behaviour:**
+- **Outbound:** with `TELEGRAM_GROUP_CHAT_ID` set, an ask posts to the group, prefixed with
+  the person's name ("Renee, David asked if you can take this on: …"), so everyone sees who
+  was asked.
+- **Inbound:** a reply is attributed to the **sender's own user id** (`message.from.id`), so
+  in a group one member's "yes" is told apart from another's, and still only answers *that
+  member's own* outstanding request.
+- **The bot answers back** in the same chat (`applyRequestResponse`'s spoken line), so a "yes"
+  in the group gets "that's yours now" in the group — the acknowledgement the earlier
+  DM-only version was missing.
