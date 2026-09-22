@@ -9,7 +9,7 @@ import { deliberate, AGENT_ID } from '../domain/agent.js';
 import { onboardingProgress } from '../domain/onboarding.js';
 import { applyAppointment } from '../domain/appointments.js';
 import { interpretSignal, type CareSignal } from '../domain/signals.js';
-import { offerFor, offerSpoken, formatPrice, type OfferKind, type PurchaseOffer } from '../domain/commerce.js';
+import { offerFor, offerSpoken, formatPrice, type PurchaseOffer } from '../domain/commerce.js';
 import { can, canActOn, capabilitiesOf, NotPermittedError, require as requireCap } from '../domain/auth.js';
 import { attributionOf, isReported, sayWhoSaysSo } from '../domain/attribution.js';
 import { explainProvenance } from '../domain/provenance.js';
@@ -854,7 +854,6 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
       if (dryRun) {
         const d = deliberate(s, { now: now(), timezone: s.household.timezone });
         const lines = d.actions.map((a) => a.because);
-        const held = d.restraint.map((r) => r.because);
         const spoken = d.actions.length
           ? `I would reach out about ${d.actions.length === 1 ? 'one thing' : `${d.actions.length} things`}. ${lines.join(' ')}`
           : "I looked, and there's nothing I'd interrupt anyone about right now.";

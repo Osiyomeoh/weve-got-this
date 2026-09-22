@@ -1,0 +1,9 @@
+dist
+node_modules
+firetv
+packages
+sim-ui
+public
+*.db.json
+evals-results*.json
+package-lock.json

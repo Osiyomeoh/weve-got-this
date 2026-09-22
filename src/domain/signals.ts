@@ -1,4 +1,4 @@
-import type { CareEvent, CareGap, ConsequenceClass, Obligation } from './types.js';
+import type { CareEvent, ConsequenceClass } from './types.js';
 
 /**
  * Physical-world signals as a care-event source.
@@ -59,8 +59,6 @@ export interface SignalOutcome {
   /** One line, ready to be spoken. */
   spoken: string;
 }
-
-const HOUR = 3_600_000;
 
 /**
  * Interpret a signal into care semantics.
