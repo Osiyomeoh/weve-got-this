@@ -222,9 +222,14 @@ export default function Hero() {
 
         <div className="relative z-10 flex min-h-[100svh] flex-col justify-between gap-10 p-6 md:p-14">
           <div className="flex items-start justify-between gap-6">
-            <div className="flex items-center gap-3">
-              <span className="h-3 w-3 rounded-full bg-core shadow-[0_0_18px_#7cf0c8]" />
-              <b className="text-lg tracking-wide">CareCircle</b>
+            <div className="flex items-center gap-5">
+              <div className="flex items-center gap-3">
+                <span className="h-3 w-3 rounded-full bg-core shadow-[0_0_18px_#7cf0c8]" />
+                <b className="text-lg tracking-wide">CareCircle</b>
+              </div>
+              <a href="/docs.html" className="hidden text-[0.8125rem] font-medium text-muted transition hover:text-ink sm:inline">
+                Developer docs
+              </a>
             </div>
             <div className="glass flex items-center gap-2.5 rounded-full px-3.5 py-2 text-[0.8125rem] text-muted">
               <span className={`h-2 w-2 rounded-full ${online ? 'bg-confirmed' : 'bg-sevHigh'} animate-beat`} />

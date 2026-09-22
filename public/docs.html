@@ -137,15 +137,15 @@ const PAGES = [
     body:`
     <div class="tag">CareCircle · MCP spec 2025-11-25</div>
     <h1>The care layer, as an MCP server</h1>
-    <p class="lead">CareCircle tracks what needs to happen for someone being cared for, and who is responsible for it — and exposes that as <b>25 MCP tools</b> an AI assistant (Alexa+, or any MCP client) calls. Real events flow in from real accounts and devices; every one enters as a guess a human confirms, never a fact written by a machine.</p>
+    <p class="lead">CareCircle tracks what needs to happen for someone being cared for, and who is responsible for it - and exposes that as <b>25 MCP tools</b> an AI assistant (Alexa+, or any MCP client) calls. Real events flow in from real accounts and devices; every one enters as a guess a human confirms, never a fact written by a machine.</p>
     <h2 id="what">What it is</h2>
     <div class="cards">
-      <div class="card"><h4>Self-hosted MCP</h4><p>Streamable HTTP, spec 2025-11-25, live on AWS App Runner — the compliant Alexa+ surface.</p></div>
+      <div class="card"><h4>Self-hosted MCP</h4><p>Streamable HTTP, spec 2025-11-25, live on AWS App Runner - the compliant Alexa+ surface.</p></div>
       <div class="card"><h4>Real connections</h4><p>Calendar, Gmail, Ring, Bee, WhatsApp, Telegram. Network at the edges, a pure core.</p></div>
       <div class="card"><h4>Provenance-first</h4><p>Known ≠ assumed. Every claim carries where it came from; a guess stays a guess until confirmed.</p></div>
     </div>
     <h2 id="why">Why MCP</h2>
-    <p>The Model Context Protocol lets an assistant call typed tools over a standard transport. CareCircle is a self-hosted MCP server on <a href="https://modelcontextprotocol.io/specification/2025-11-25/basic/transports#streamable-http" target="_blank" rel="noreferrer">Streamable HTTP</a>, so the whole care layer is one clean surface an Alexa+ agent drives — the messy platform APIs never leak into it.</p>` },
+    <p>The Model Context Protocol lets an assistant call typed tools over a standard transport. CareCircle is a self-hosted MCP server on <a href="https://modelcontextprotocol.io/specification/2025-11-25/basic/transports#streamable-http" target="_blank" rel="noreferrer">Streamable HTTP</a>, so the whole care layer is one clean surface an Alexa+ agent drives - the messy platform APIs never leak into it.</p>` },
 
   { id:'architecture', group:'Get started', title:'Architecture',
     toc:[['spine','The spine'],['edges','Network at the edges']],
@@ -163,7 +163,7 @@ an expected record that is missing, or something now past its time.</div>
     <p>Every connector follows one shape, so the store-touching logic is testable without a socket:</p>
     <div class="flow">&lt;x&gt;ConfigFromEnv  →  fetch&lt;X&gt;  →  sync&lt;X&gt;  →  run&lt;X&gt;Sync
  (reads env)       (only network)  (pure, idempotent) (wires them)</div>
-    <p>Inbound webhooks (Ring, WhatsApp, Telegram) and pollers (Calendar, Gmail, Bee) all land in the same store the MCP tools read and write — a reply over Telegram travels the exact path a spoken one does.</p>` },
+    <p>Inbound webhooks (Ring, WhatsApp, Telegram) and pollers (Calendar, Gmail, Bee) all land in the same store the MCP tools read and write - a reply over Telegram travels the exact path a spoken one does.</p>` },
 
   { id:'trust', group:'Get started', title:'The trust model',
     toc:[['prov','Provenance'],['conf','Confidence'],['rule','The rule']],
@@ -171,38 +171,38 @@ an expected record that is missing, or something now past its time.</div>
     <div class="crumb">Get started <b>› The trust model</b></div>
     <h1>The trust model</h1>
     <p class="lead">The thesis of the whole system: a machine never writes a fact. A real event enters as a signal → an INFERRED item → a human confirms → a fact. Evidence is not a verdict.</p>
-    <h2 id="prov">Provenance — how sure we are of an obligation</h2>
-    <p><span class="chip c-conf">CONFIRMED</span> a person stated it &nbsp; <span class="chip c-inf">INFERRED</span> the system guessed it — never counted until confirmed &nbsp; <span class="chip c-nr">NOT_LOGGED</span> nothing was recorded — <i>not</i> "it didn't happen"</p>
-    <h2 id="conf">Confidence — how sure we are of an event</h2>
+    <h2 id="prov">Provenance - how sure we are of an obligation</h2>
+    <p><span class="chip c-conf">CONFIRMED</span> a person stated it &nbsp; <span class="chip c-inf">INFERRED</span> the system guessed it - never counted until confirmed &nbsp; <span class="chip c-nr">NOT_LOGGED</span> nothing was recorded - <i>not</i> "it didn't happen"</p>
+    <h2 id="conf">Confidence - how sure we are of an event</h2>
     <p>Deliberately separate from provenance. An event can be <code>observed</code> while the obligation it feeds is still only INFERRED.</p>
     <ul>
-      <li><code>observed</code> — a sensor saw it happen</li>
-      <li><code>reported</code> — a person said it happened</li>
-      <li><code>inferred</code> — the system derived it from other events</li>
-      <li><code>confirmed</code> — a person definitively decided or acted</li>
+      <li><code>observed</code> - a sensor saw it happen</li>
+      <li><code>reported</code> - a person said it happened</li>
+      <li><code>inferred</code> - the system derived it from other events</li>
+      <li><code>confirmed</code> - a person definitively decided or acted</li>
     </ul>
     <h2 id="rule">The rule that never bends</h2>
-    <div class="note"><p>The system only knows what was recorded. An absent record is never evidence that something didn't happen — no tool ever says a person failed to do something.</p></div>` },
+    <div class="note"><p>The system only knows what was recorded. An absent record is never evidence that something didn't happen - no tool ever says a person failed to do something.</p></div>` },
 
   { id:'tools', group:'Reference', title:'MCP tools',
     toc:[['read','See the state'],['own','Ownership'],['record','Record reality'],['act','Act outward'],['admin','Setup & admin']],
     body:`
     <div class="crumb">Reference <b>› MCP tools</b></div>
     <h1>MCP tools <span class="tag" style="vertical-align:middle">25</span></h1>
-    <p class="lead">You don't call these by hand — you speak, and the planner picks the tool. Grouped by what they do.</p>
+    <p class="lead">You don't call these by hand - you speak, and the planner picks the tool. Grouped by what they do.</p>
     <h2 id="read">See the state · read-only</h2>
     <div class="cards">
-      <div class="card"><h4>get_care_gaps</h4><p>The core tool: everything unowned, missing, or overdue — ranked, phrased for speech.</p></div>
+      <div class="card"><h4>get_care_gaps</h4><p>The core tool: everything unowned, missing, or overdue - ranked, phrased for speech.</p></div>
       <div class="card"><h4>get_care_summary</h4><p>The day: what's logged, notes, what's coming up.</p></div>
-      <div class="card"><h4>get_shift_brief</h4><p>What this shift needs to know — meds due, what's on you.</p></div>
+      <div class="card"><h4>get_shift_brief</h4><p>What this shift needs to know - meds due, what's on you.</p></div>
       <div class="card"><h4>get_my_requests</h4><p>What you've been asked to take on and not yet answered.</p></div>
-      <div class="card"><h4>get_provenance</h4><p>Walks the whole chain behind one item — "how do you know that?"</p></div>
+      <div class="card"><h4>get_provenance</h4><p>Walks the whole chain behind one item - "how do you know that?"</p></div>
       <div class="card"><h4>get_connections</h4><p>Each data door: live / configured / not connected. Honest, env-checked.</p></div>
       <div class="card"><h4>get_started</h4><p>Set up, or pick up where onboarding left off.</p></div>
     </div>
     <h2 id="own">Ownership · the delegation loop</h2>
     <div class="cards">
-      <div class="card"><h4>request_owner</h4><p>Ask someone to take work on — and message them (Telegram/WhatsApp). Asks, never assigns.</p></div>
+      <div class="card"><h4>request_owner</h4><p>Ask someone to take work on - and message them (Telegram/WhatsApp). Asks, never assigns.</p></div>
       <div class="card"><h4>respond_to_request</h4><p>Answer a request made of you: accept (assign) or decline (reopen).</p></div>
       <div class="card"><h4>claim_obligation</h4><p>The speaker takes something on themselves.</p></div>
       <div class="card"><h4>assign_obligation</h4><p>The primary caregiver puts work on a name outright.</p></div>
@@ -211,17 +211,17 @@ an expected record that is missing, or something now past its time.</div>
     </div>
     <h2 id="record">Record reality</h2>
     <div class="cards">
-      <div class="card"><h4>log_care_event</h4><p>Log something that happened — a dose, a meal — as reported.</p></div>
+      <div class="card"><h4>log_care_event</h4><p>Log something that happened - a dose, a meal - as reported.</p></div>
       <div class="card"><h4>record_appointment</h4><p>A dated commitment; proposes the ride/companion a medical one needs.</p></div>
       <div class="card"><h4>add_note</h4><p>Add a note to the care record.</p></div>
       <div class="card"><h4>ingest_signal</h4><p>The single source-agnostic front door: record something a device observed.</p></div>
     </div>
     <h2 id="act">Act outward &nbsp;·&nbsp; the agent</h2>
     <div class="cards">
-      <div class="card"><h4>notify_member</h4><p>Let someone know — recorded always, pushed if a channel is configured.</p></div>
+      <div class="card"><h4>notify_member</h4><p>Let someone know - recorded always, pushed if a channel is configured.</p></div>
       <div class="card"><h4>reorder_prescription</h4><p>Offer to reorder a prescription.</p></div>
       <div class="card"><h4>confirm_purchase</h4><p>Place or decline a prepared purchase.</p></div>
-      <div class="card"><h4>run_care_agent</h4><p>Reviews everything unowned and asks the fairest person — it only ever asks.</p></div>
+      <div class="card"><h4>run_care_agent</h4><p>Reviews everything unowned and asks the fairest person - it only ever asks.</p></div>
     </div>
     <h2 id="admin">Setup &amp; admin</h2>
     <div class="cards">
@@ -240,7 +240,7 @@ an expected record that is missing, or something now past its time.</div>
     <div class="tablewrap"><table id="list">
       <tr><th>Resource</th><th>What it exposes</th></tr>
       <tr><td><code>me</code></td><td>Who the caller is, and what they're allowed to do.</td></tr>
-      <tr><td><code>care-state</code></td><td>The whole folded care state — members, obligations, gaps, events.</td></tr>
+      <tr><td><code>care-state</code></td><td>The whole folded care state - members, obligations, gaps, events.</td></tr>
       <tr><td><code>care-board</code></td><td>The Care Board as an interactive MCP-UI view (the shared display).</td></tr>
     </table></div>` },
 
@@ -257,7 +257,7 @@ an expected record that is missing, or something now past its time.</div>
       <tr><td><span class="method post">POST</span></td><td><code>/ring/webhook</code></td><td>Ring events, HMAC-verified → INFERRED note.</td></tr>
       <tr><td><span class="method get">GET</span> <span class="method post">POST</span></td><td><code>/whatsapp/webhook</code></td><td>GET verifies the subscription; POST takes signed replies.</td></tr>
       <tr><td><span class="method post">POST</span></td><td><code>/telegram/webhook</code></td><td>Inbound replies, secret-token gated. Works in a family group.</td></tr>
-      <tr><td><span class="method get">GET</span> <span class="method post">POST</span></td><td><code>/oauth/*</code></td><td>OAuth 2.1 + PKCE — present only when a signing secret is set.</td></tr>
+      <tr><td><span class="method get">GET</span> <span class="method post">POST</span></td><td><code>/oauth/*</code></td><td>OAuth 2.1 + PKCE - present only when a signing secret is set.</td></tr>
     </table></div>` },
 
   { id:'doors', group:'Reference', title:'Data doors',
@@ -276,21 +276,21 @@ an expected record that is missing, or something now past its time.</div>
       <tr><td><b>Telegram</b></td><td>webhook · in + out <span class="tag">live</span></td><td>Bot API; outbound asks (DM or family group), secret-token-gated replies. No verification wall.</td></tr>
     </table></div>
     <h2 id="why">Why doors aren't tools</h2>
-    <div class="note"><p>A webhook is an inbound push — the agent can't "call Telegram to check for replies." So the transport lives at the edge, but the <i>result</i> is fully actionable through MCP tools, and the connection <i>status</i> is exposed via <code>get_connections</code>.</p></div>` },
+    <div class="note"><p>A webhook is an inbound push - the agent can't "call Telegram to check for replies." So the transport lives at the edge, but the <i>result</i> is fully actionable through MCP tools, and the connection <i>status</i> is exposed via <code>get_connections</code>.</p></div>` },
 
   { id:'identity', group:'Reference', title:'Identity & permissions',
     toc:[['resolve','Who is speaking'],['roles','Roles & capabilities']],
     body:`
     <div class="crumb">Reference <b>› Identity &amp; permissions</b></div>
     <h1>Identity &amp; permissions</h1>
-    <p class="lead">Who is speaking is established by the session credential — never by the conversation.</p>
+    <p class="lead">Who is speaking is established by the session credential - never by the conversation.</p>
     <h2 id="resolve">Who is speaking</h2>
     <p>The production resolver is <code>firstOf(oauthTokens, staticTokens)</code>: an OAuth token resolves first, else a mapped static token. With self-signup on, an authenticated-but-unmapped caller becomes a bootstrap principal who can create their own circle.</p>
     <h2 id="roles">Roles &amp; capabilities</h2>
     <div class="tablewrap"><table>
       <tr><th>Role</th><th>Can do</th></tr>
       <tr><td><code>primary_caregiver</code></td><td>The full circle: assign, manage members and meds, everything below.</td></tr>
-      <tr><td><code>caregiver</code></td><td>Log, claim, respond, ask, read — the day-to-day of care.</td></tr>
+      <tr><td><code>caregiver</code></td><td>Log, claim, respond, ask, read - the day-to-day of care.</td></tr>
       <tr><td><code>helper</code></td><td>A paid aide: scoped to the work in front of them.</td></tr>
       <tr><td><code>care_recipient</code></td><td>Log things about themselves; read their own circle.</td></tr>
     </table></div>
@@ -301,7 +301,7 @@ an expected record that is missing, or something now past its time.</div>
     body:`
     <div class="crumb">Operate <b>› Deployment</b></div>
     <h1>Deployment</h1>
-    <p class="lead">Two AWS App Runner services share one ECR image, built in the cloud from <code>git archive HEAD</code> — so commit before deploying.</p>
+    <p class="lead">Two AWS App Runner services share one ECR image, built in the cloud from <code>git archive HEAD</code> - so commit before deploying.</p>
     <h2 id="services">Services</h2>
     <div class="tablewrap"><table>
       <tr><th>Service</th><th>Host</th><th>Role</th></tr>
@@ -313,14 +313,14 @@ an expected record that is missing, or something now past its time.</div>
 bash infra/deploy-mcp.sh          # build image + update-service (env)
 aws apprunner start-deployment …  # force the new image to pull</code></pre>
     <h2 id="gotchas">Gotchas</h2>
-    <div class="note warn"><p>An <b>env change</b> is an <code>update-service</code>; a <b>new image</b> needs an explicit <code>start-deployment</code> — do both, or routes 404 on a stale image.</p><p><code>update-service</code> <b>replaces</b> the whole env map and requires <code>AuthenticationConfiguration.AccessRoleArn</code> — derive from live config so secrets and the ECR access role survive.</p></div>` },
+    <div class="note warn"><p>An <b>env change</b> is an <code>update-service</code>; a <b>new image</b> needs an explicit <code>start-deployment</code> - do both, or routes 404 on a stale image.</p><p><code>update-service</code> <b>replaces</b> the whole env map and requires <code>AuthenticationConfiguration.AccessRoleArn</code> - derive from live config so secrets and the ECR access role survive.</p></div>` },
 
   { id:'env', group:'Operate', title:'Environment',
     toc:[['vars','Variables']],
     body:`
     <div class="crumb">Operate <b>› Environment</b></div>
     <h1>Environment variables</h1>
-    <p class="lead">All secrets live only in a gitignored <code>.env</code>. Absent config means a feature is simply off — not present-and-insecure.</p>
+    <p class="lead">All secrets live only in a gitignored <code>.env</code>. Absent config means a feature is simply off - not present-and-insecure.</p>
     <div class="tablewrap"><table id="vars">
       <tr><th>Area</th><th>Variables</th></tr>
       <tr><td>Core</td><td><code>CARECIRCLE_TABLE</code>, <code>AWS_REGION</code>, <code>CARECIRCLE_AGENT_INTERVAL_MS</code>, <code>CARECIRCLE_ALLOW_SELF_SIGNUP</code></td></tr>
@@ -352,13 +352,13 @@ npx tsc --noEmit                       # typecheck</code></pre>
     <h2 id="surfaces">Surfaces</h2>
     <div class="tablewrap"><table>
       <tr><th>Path</th><th>Surface</th></tr>
-      <tr><td><a href="/console">/console</a></td><td>The Alexa+ console — drive the MCP by voice or text.</td></tr>
+      <tr><td><a href="/console">/console</a></td><td>The Alexa+ console - drive the MCP by voice or text.</td></tr>
       <tr><td><a href="/setup">/setup</a></td><td>First-run onboarding (drives the real setup tools).</td></tr>
       <tr><td><a href="/tv">/tv</a></td><td>The ambient Fire TV care board.</td></tr>
       <tr><td><a href="/board">/board</a></td><td>The full dashboard.</td></tr>
     </table></div>
     <h2 id="api">The two endpoints</h2>
-    <p><code>POST /api/say</code> — natural language through the planner (what the mic/box do).<br/><code>POST /api/act</code> — call one tool directly with exact args, for scripted demos.</p>` },
+    <p><code>POST /api/say</code> - natural language through the planner (what the mic/box do).<br/><code>POST /api/act</code> - call one tool directly with exact args, for scripted demos.</p>` },
 ];
 
 function App(){
