@@ -4,6 +4,64 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![MCP spec 2025-11-25](https://img.shields.io/badge/MCP-2025--11--25-6f42c1)
 
+**An Alexa+ add-on that hears the care work nobody mentioned, and asks the right person to
+take it on.**
+
+> **Daddy:** "I have my eye check-up tomorrow at ten."
+>
+> **CareCircle:** "Noted - eye check-up for Daddy. Will Daddy need a ride to the eye
+> check-up? *I'm guessing from the appointment type, not from anything anyone told me.*"
+>
+> **Tolu, his son:** "Yes, he'll need one."
+>
+> **CareCircle:** "Right - Drive Daddy to the eye check-up. Nobody's taken it yet. Do you want
+> it?"
+>
+> **Tolu:** "Ask whoever's free."
+>
+> **CareCircle:** "I've asked Funmi whether they can drive Daddy to the eye check-up tomorrow
+> at 10 AM. I picked Funmi because they're the one who has nothing else on the care board
+> right now. It stays unowned until they say yes."
+>
+> **Funmi, on her phone:** "Yes, I can take him."
+>
+> **CareCircle:** "Thanks - Drive Daddy to the eye check-up is yours now."
+
+Nobody typed a task. Care tools start from one: a to-do someone wrote, a
+reminder someone set, a change someone reported. CareCircle starts from the sentence
+before that. In a family where everyone helps and nobody is in charge, the thing that
+fails is not the thing someone forgot. It's the thing **nobody knew was theirs.**
+
+```
+EVENTS            ->   OBLIGATIONS       ->   OWNERSHIP
+what happened          what must happen        who has it
+"eye check-up          someone has to          ...nobody
+ Thursday at 10"       take him                has claimed it
+```
+
+### What only CareCircle does
+
+- **It notices work nobody said out loud.** A medical appointment implies a ride, and someone
+  to go along and take notes. Each inference says it is a guess, and counts only once a person
+  confirms it.
+- **It asks; it never assigns.** It picks who has room (whoever has least on the care board),
+  asks them, and the work stays unowned until they say yes. Left alone, it only interrupts
+  someone when arithmetic you can read says it's worth it: the harm a slipped task would do,
+  against the cost of the interruption. If they can't, it names who to ask next, and it asks the
+  same person less often the more it has already asked them.
+- **It never turns silence into blame.** A missing record is "there's no record", never "he
+  missed it": **0%** false accusations, where the raw model it plans with makes them **50%** of
+  the time on the same cases.
+- **It works across borders.** The Echo sits with whoever coordinates; the rest of the family
+  answers on Telegram or WhatsApp, in any country, and a brother abroad gets an evening update
+  instead of being asked to drive.
+- **It holds up under an assistant it did not write.** Tool choice is measured on three models,
+  and under the system prompt of an Alexa Skill bridge instead of our own (Kay Lerch's
+  open-source [alexa-skill-mcp-bridge](https://github.com/KayLerch/alexa-skill-mcp-bridge),
+  which we use to test on Alexa before add-ons open): **93.1%** on Amazon
+  Nova Pro, against 94.4% under ours. The tool descriptions do the work, so it should carry to
+  Alexa+.
+
 ### Why I built this
 
 > I'm from Lagos, Nigeria. We're a family of five, and our dad. Our mum has passed. In
@@ -14,9 +72,11 @@
 > nobody is in charge - so the thing that fails isn't the thing someone forgot. It's the
 > thing **nobody knew was theirs.**
 
-And a brother in the UK wants updates on Dad's health too. So family far away get a short
+A brother in the UK wants updates on Dad's health too. So family far away get a short
 evening update on the day, and CareCircle never asks them to drive anyone to a clinic in
-Lagos.
+Lagos. And the person being cared for is a **participant, not a patient on a dashboard**: he
+doesn't want to be watched, he wants to know what's going on, so he logs his own care by
+talking.
 
 **Built in Lagos, for every family that shares care across a few people and a few places,
 including millions of American ones.** 53% of US family caregivers say someone else also
@@ -26,26 +86,11 @@ care, and it launched in the US. Everyone else joins over Telegram or WhatsApp, 
 in any country. A daughter in Houston asks her Echo what nobody has taken on; her dad and
 sister in Lagos and her brother in London answer in the family group.
 
-Every family-care tool assumes someone already **noticed** the work and typed a task.
-That is exactly the step that fails.
-
-**CareCircle is an Alexa+ MCP server that starts one step earlier - and it does two
-things no other assistant does.** The person being cared for is a **participant, not a
-patient on a dashboard**: he doesn't want to be watched, he wants to know what's going
-on, so he logs his own care by *talking*. And it **refuses to lie** - a missing record
-is surfaced as *"there's no record,"* never *"he missed it."*
-
-Ordinary spoken sentences become structured events, events imply obligations, and the
-obligations nobody owns are **Care Gaps** - surfaced before they fail, closed by voice,
-or fixed by **buying the thing in place** (reorder the refill, right in the
-conversation).
-
-```
-EVENTS            ->   OBLIGATIONS       ->   OWNERSHIP
-what happened          what must happen        who has it
-"eye check-up          someone has to          ...nobody
- Thursday at 10"       take him                has claimed it
-```
+**Next: a real family, for a week.** Demos prove the mechanism; they don't prove a family
+will use it. So a real circle runs it before submission, and `npm run pilot:report` turns
+their record into numbers: doses logged and by whom, asks answered and how fast, and every
+"no record" that someone filled in later. Those numbers go here, including whatever didn't
+work.
 
 The demo family (Daddy, his children Tolu and Funmi, Kunle in London, and Musa the
 driver) is fictional and modelled on mine. No real names or medical details are used.
@@ -53,9 +98,7 @@ driver) is fictional and modelled on mine. No real names or medical details are 
 **And it is real - not a mockup.** Live MCP server you can hit right now, **487 tests**
 (including property-based proofs of the risk model), **95.8%** measured tool-selection
 accuracy on Amazon Bedrock (138/144; 92.5% on held-out phrasings never tuned against),
-**94.4% on Amazon Nova Pro**, and 93.1% on Nova Pro under an Alexa Skill bridge's own
-prompt, one we didn't write. And a trust model **measured at 0% false accusations where a
-raw LLM hits 50%**.
+**94.4% on Amazon Nova Pro**, and an append-only care record that keeps who said what.
 
 ### Try it live in your browser - no clone, no keys
 
@@ -125,36 +168,6 @@ these lines deliberately and held to them:
   device; what is exercised is the integration.
 - **No number we cannot reproduce.** Every figure in this README is regenerated by a command
   in it, and quoted as the range it actually occupies, not a flattering point estimate.
-
----
-
-## The interaction
-
-**Daddy, going on 70, by voice** - he talks; he never has to learn an app. On an Echo that
-is Alexa+. Where there is no Echo, as in Lagos today, the same sentence goes through the
-CareCircle console in a phone browser, which listens and speaks back:
-
-> "Alexa, I have my eye check-up Thursday at ten."
-
-CareCircle records the appointment, then notices something and says so:
-
-> "Will Daddy need a ride to the eye check-up? **I'm guessing from the appointment type,
-> not from anything anyone told me.**"
-
-**Tolu, his son, driving home from work two days later:**
-
-> "Alexa, what's going to fall through the cracks this week?"
-
-> "There are three things that need attention. Pick up Daddy's eye drops refill today at
-> 10 AM - nobody has taken this yet. Take Daddy to his eye check-up tomorrow at 10 AM -
-> nobody has taken this yet. **There's no record of** Daddy's eye drops from 8 PM."
-
-> "I'll take him Thursday."
-
-> "Done - Take Daddy to his eye check-up is yours."
-
-Nobody created a task. Nobody opened an app. Daddy is a participant rather than a
-monitored subject.
 
 ---
 
