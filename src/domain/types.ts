@@ -91,6 +91,22 @@ export interface IdentityMapping {
 }
 
 /**
+ * A member's Telegram account, linked by the person themselves tapping their own invite.
+ *
+ * Deliberately NOT an IdentityMapping. Identity subjects are credentials: a bearer token
+ * that equals a subject authenticates as that member. A Telegram user id is visible to
+ * everyone in a group, so it must never be something you can present as a token. It is
+ * only ever matched against the sender id Telegram vouches for on a verified webhook call.
+ */
+export interface TelegramLink {
+  /** The person's Telegram user id (numeric, carried as a string). */
+  telegramId: string;
+  memberId: string;
+  householdId: string;
+  linkedAt: string;
+}
+
+/**
  * How we came to believe something. This is the spine of the trust model:
  * the system must never let an inference or a silence masquerade as a fact.
  */

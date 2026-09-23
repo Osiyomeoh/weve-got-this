@@ -15,6 +15,8 @@ import type { Notifier, DeliveryResult } from './notifier.js';
  * take in deliberately for exactly the people who started a chat with the bot, and a
  * member with no mapping simply is not messaged (`delivered: false`), never guessed at.
  * (A person must message the bot first; Telegram will not let a bot open a chat.)
+ * Members can also link themselves by tapping their personal invite (see
+ * domain/telegram-invite); `linked` looks those up in the care record.
  */
 
 export interface TelegramConfig {
@@ -25,22 +27,38 @@ export interface TelegramConfig {
   /** Optional family group chat id: when set, asks post to the group (naming the
    *  person) so the whole circle sees the loop, instead of a private message. */
   groupChatId?: string;
+  /** The household the group belongs to. Only its members' asks are posted there. */
+  groupHouseholdId?: string;
+  /** A member's self-linked Telegram account, from the care record. */
+  linked?: (memberId: string) => { telegramId: string; householdId: string } | undefined;
   /** Injectable for tests; defaults to global fetch. */
   fetchImpl?: typeof fetch;
 }
 
-export function telegramConfigFromEnv(env: NodeJS.ProcessEnv = process.env): TelegramConfig | null {
+export function telegramConfigFromEnv(
+  env: NodeJS.ProcessEnv = process.env,
+  linked?: TelegramConfig['linked'],
+): TelegramConfig | null {
   const token = env['TELEGRAM_BOT_TOKEN']?.trim();
   const rawMap = env['TELEGRAM_RECIPIENTS']?.trim();
-  if (!token || !rawMap) return null;
-  let recipients: Map<string, string>;
-  try {
-    recipients = new Map(Object.entries(JSON.parse(rawMap) as Record<string, string>));
-  } catch {
-    return null; // a malformed map is a misconfiguration, not a reason to send blind
+  // With invites, a circle can be reachable before anyone is in the deploy-time map.
+  if (!token || (!rawMap && !linked)) return null;
+  let recipients = new Map<string, string>();
+  if (rawMap) {
+    try {
+      recipients = new Map(Object.entries(JSON.parse(rawMap) as Record<string, string>));
+    } catch {
+      return null; // a malformed map is a misconfiguration, not a reason to send blind
+    }
   }
   const groupChatId = env['TELEGRAM_GROUP_CHAT_ID']?.trim();
-  return { token, recipients, ...(groupChatId ? { groupChatId } : {}) };
+  const groupHouseholdId = env['TELEGRAM_HOUSEHOLD_ID']?.trim();
+  return {
+    token, recipients,
+    ...(groupChatId ? { groupChatId } : {}),
+    ...(groupHouseholdId ? { groupHouseholdId } : {}),
+    ...(linked ? { linked } : {}),
+  };
 }
 
 /**
@@ -88,12 +106,19 @@ export class TelegramNotifier implements Notifier {
     // one real family's chat: an unmapped member belongs to someone else's circle, and
     // posting their care into this group would leak it. A member must be mapped anyway
     // for their reply to be recognised, so requiring it costs the family nothing.
-    const chatId = this.#cfg.recipients.get(input.to);
+    //
+    // A member who linked themselves by invite is posted to the group only when they
+    // belong to the group's household; anyone else linked is messaged privately.
+    const mapped = this.#cfg.recipients.get(input.to);
+    const linked = mapped ? undefined : this.#cfg.linked?.(input.to);
+    const chatId = mapped ?? linked?.telegramId;
     if (!chatId) {
       // Honest: we did not message someone we have no chat with.
       return { delivered: false, channel: 'telegram', detail: 'no Telegram chat for this member' };
     }
-    if (this.#cfg.groupChatId) {
+    const groupIsTheirs = mapped !== undefined
+      || (!!linked && !!this.#cfg.groupHouseholdId && linked.householdId === this.#cfg.groupHouseholdId);
+    if (this.#cfg.groupChatId && groupIsTheirs) {
       const text = `${input.toName}, ${input.message}`;
       const r = await sendTelegramMessage(this.#cfg.token, this.#cfg.groupChatId, text, this.#fetch);
       return r.ok

@@ -156,6 +156,8 @@ app.post(
     memberByChat: tgMemberByChat, householdId: tgHousehold, ...(now ? { now } : {}),
     ...(tgChat ? { chat: tgChat } : {}),
     log: (line) => console.info(line),
+    botUsername: process.env['TELEGRAM_BOT_USERNAME']?.trim() || 'carecircle0111_bot',
+    ...(process.env['TELEGRAM_GROUP_CHAT_ID']?.trim() ? { groupChatId: process.env['TELEGRAM_GROUP_CHAT_ID'].trim() } : {}),
   }),
 );
 

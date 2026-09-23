@@ -1,11 +1,13 @@
 import { timingSafeEqual } from 'node:crypto';
 import type { Request, Response } from 'express';
 import type { CareStore } from '../store/store.js';
-import { parseTelegramUpdate, interpretReply } from '../domain/telegram.js';
+import { parseTelegramUpdate, interpretReply, type TelegramInbound } from '../domain/telegram.js';
 import { sendTelegramMessage } from '../notify/telegram.js';
 import { applyRequestResponse } from '../domain/request-response.js';
 import { SeenEvents } from './ring-webhook.js';
 import type { ChatReply } from './telegram-chat.js';
+import { memberFromInvite, startPayload, welcome } from '../domain/telegram-invite.js';
+import { NotFoundError } from '../store/store.js';
 
 /**
  * The Telegram webhook - the inbound half of the delegation loop's reply channel.
@@ -58,6 +60,13 @@ export interface TelegramWebhookOptions {
   chat?: ChatReply;
   /** Where operator notes go (unmapped senders). Defaults to nothing. */
   log?: (line: string) => void;
+  /** Signs personal invite links (see domain/telegram-invite). Defaults to the secret token. */
+  inviteSecret?: string;
+  /** The bot's @username, for the welcome message. */
+  botUsername?: string;
+  /** The family group this door serves: joins are announced there, and a new face there is
+   *  pointed to their invite. Other groups never hear from the bot unprompted. */
+  groupChatId?: string;
 }
 
 export function createTelegramWebhook(opts: TelegramWebhookOptions) {
@@ -70,6 +79,72 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
   // person if it was a DM - so the acknowledgement lands where the family can see it.
   const answer = async (chatId: string, text: string): Promise<void> => {
     if (opts.botToken) await sendTelegramMessage(opts.botToken, chatId, text, fetchImpl);
+  };
+
+  const inviteSecret = opts.inviteSecret ?? opts.secretToken;
+  const botUsername = opts.botUsername ?? 'the bot';
+  const nudged = new Set<string>();
+
+  // Who sent this. A link the person made themselves, by tapping their own invite, wins
+  // over the deploy-time map, so a person the demo map once named can still join their
+  // real family's circle.
+  const whoIs = (fromId: string): { memberId: string; householdId: string } | null => {
+    const link = opts.store.telegramLinkFor(fromId);
+    if (link) return { memberId: link.memberId, householdId: link.householdId };
+    const mapped = byUser.get(fromId);
+    return mapped ? { memberId: mapped, householdId: opts.householdId } : null;
+  };
+  const linkedElsewhere = (memberId: string, fromId: string): boolean => {
+    for (const [userId, m] of byUser) if (m === memberId && userId !== fromId) return true;
+    const link = opts.store.telegramLinkOf(memberId);
+    return !!link && link.telegramId !== fromId;
+  };
+
+  // `/start`, with or without an invite. Only ever acted on in a private chat: an invite
+  // link always opens one, and an invite pasted into a group would be seen by everyone.
+  const onStart = async (msg: TelegramInbound, payload: string): Promise<string> => {
+    if (!msg.isPrivate) return 'start-in-group';
+    const sender = whoIs(msg.fromId);
+    const greet = async (memberId: string): Promise<void> => {
+      const member = opts.store.getMember(memberId);
+      await answer(msg.chatId, welcome(member, opts.store.getCareState(member.householdId), botUsername));
+    };
+    if (!payload) {
+      if (sender) { await greet(sender.memberId); return 'welcome-again'; }
+      await answer(msg.chatId, "Hi, I'm CareCircle. I help a family share the care of someone they love. To join your family's circle, tap the personal link they sent you.");
+      return 'start-without-invite';
+    }
+    const memberId = memberFromInvite(inviteSecret, payload);
+    let member;
+    try {
+      member = memberId ? opts.store.getMember(memberId) : null;
+    } catch (err) {
+      if (!(err instanceof NotFoundError)) throw err;
+      member = null;
+    }
+    if (!member) {
+      await answer(msg.chatId, "That link doesn't work any more. Ask whoever set up your family's circle for a new one.");
+      return 'invite-invalid';
+    }
+    if (sender && sender.memberId === member.id) { await greet(member.id); return 'welcome-again'; }
+    // Only a link the person made stops them becoming someone else. The deploy-time map
+    // doesn't: that is how a person the demo named joins their own family.
+    const own = opts.store.telegramLinkFor(msg.fromId);
+    if (own) {
+      const me = opts.store.getMember(own.memberId);
+      await answer(msg.chatId, `This Telegram account is already connected as ${me.name}, so it can't also be ${member.name}.`);
+      return 'invite-for-someone-else';
+    }
+    if (linkedElsewhere(member.id, msg.fromId)) {
+      await answer(msg.chatId, `${member.name} is already connected from another Telegram account. If that's not right, ask whoever set up your family's circle.`);
+      return 'invite-already-used';
+    }
+    await opts.store.linkTelegram({ telegramId: msg.fromId, memberId: member.id, householdId: member.householdId, linkedAt: now().toISOString() });
+    await greet(member.id);
+    if (opts.groupChatId && member.householdId === opts.householdId) {
+      await answer(opts.groupChatId, `${member.name} has joined ${opts.store.getCareState(member.householdId).household.name} on Telegram.`);
+    }
+    return 'linked';
   };
 
   return async function handle(req: Request, res: Response): Promise<void> {
@@ -88,23 +163,33 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
         results.push({ updateId: msg.updateId, status: 'duplicate' });
         continue;
       }
-      const memberId = byUser.get(msg.fromId);
-      if (!memberId) {
+      const start = startPayload(msg.text);
+      if (start !== null) {
+        results.push({ updateId: msg.updateId, status: await onStart(msg, start) });
+        continue;
+      }
+      const sender = whoIs(msg.fromId);
+      if (!sender) {
         // A stranger, or a group member we do not know: acknowledge to Telegram
-        // (so it stops retrying) but stay silent in the chat and touch nothing. The ids go
-        // to the server log - never the text - so the operator can map a family member
-        // who says hello at any time, instead of holding a listening window open.
+        // (so it stops retrying) and touch nothing. The ids go to the server log - never
+        // the text - so the operator can see who still needs an invite. In the family's
+        // own group, a new face is pointed to their invite once; anywhere else, silence.
         opts.log?.(`telegram: unmapped sender ${msg.fromId} (${msg.fromName ?? 'no name'}) in ${msg.isPrivate ? 'a private chat' : `group ${msg.chatId}`}`);
+        if (opts.groupChatId && msg.chatId === opts.groupChatId && !nudged.has(msg.fromId)) {
+          nudged.add(msg.fromId);
+          await answer(msg.chatId, `Hi${msg.fromName ? ` ${msg.fromName}` : ''}, I don't know who you are in this circle yet. Tap the personal link your family sent you, and I will.`);
+        }
         results.push({ updateId: msg.updateId, status: 'unknown-sender' });
         continue;
       }
+      const { memberId, householdId } = sender;
       const talk = opts.chat && msg.addressedToBot ? opts.chat : null;
       try {
         const intent = interpretReply(msg.text);
         if (intent) {
           const r = await applyRequestResponse(
             opts.store,
-            { householdId: opts.householdId, memberId, accepted: intent === 'accepted', note: msg.text, channel: 'telegram' },
+            { householdId, memberId, accepted: intent === 'accepted', note: msg.text, channel: 'telegram' },
             now(),
           );
           // A yes or no that answers an ask is exactly that, and nothing else. One that

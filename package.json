@@ -36,6 +36,7 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\"",
     "telegram:ids": "tsx --env-file-if-exists=.env scripts/telegram-ids.ts",
+    "telegram:invites": "tsx --env-file-if-exists=.env scripts/telegram-invites.ts",
     "demo:reset:prod": "tsx scripts/demo-reset-prod.ts",
     "pilot:report": "tsx --env-file-if-exists=.env scripts/pilot-report.ts"
   },

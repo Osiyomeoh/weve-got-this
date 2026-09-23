@@ -80,3 +80,28 @@ test('attack: group mode never posts a member from another household into the fa
   assert.equal(r.delivered, false);
   assert.equal(calls.length, 0, 'nothing may be posted to the family group');
 });
+
+test('a member who joined by invite is reached: in the group if it is their family\'s, privately otherwise', async () => {
+  const calls: Array<{ chat_id: string; text: string }> = [];
+  const fetchImpl = (async (_url: string, init: { body: string }) => {
+    calls.push(JSON.parse(init.body));
+    return new Response(JSON.stringify({ ok: true, result: { message_id: 1 } }));
+  }) as unknown as typeof fetch;
+  const links: Record<string, { telegramId: string; householdId: string }> = {
+    m_sis: { telegramId: '555', householdId: 'h_family' },
+    m_other: { telegramId: '777', householdId: 'h_someone_else' },
+  };
+  const n = new TelegramNotifier({
+    token: 't', recipients: new Map(), groupChatId: '-100', groupHouseholdId: 'h_family',
+    linked: (m) => links[m], fetchImpl,
+  });
+  assert.equal((await n.deliver({ to: 'm_sis', toName: 'Ada', from: 'CareCircle', message: 'can you?' })).delivered, true);
+  assert.deepEqual(calls.at(-1), { chat_id: '-100', text: 'Ada, can you?' });
+  assert.equal((await n.deliver({ to: 'm_other', toName: 'Bo', from: 'CareCircle', message: 'can you?' })).delivered, true);
+  assert.deepEqual(calls.at(-1), { chat_id: '777', text: 'can you?' }, 'another family never lands in this group');
+});
+
+test('with invites, a bot token alone is enough to configure Telegram', () => {
+  const c = telegramConfigFromEnv({ TELEGRAM_BOT_TOKEN: 't' } as NodeJS.ProcessEnv, () => undefined);
+  assert.equal(c!.recipients.size, 0);
+});

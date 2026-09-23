@@ -1,6 +1,6 @@
 import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
 import { WhatsAppNotifier, whatsAppConfigFromEnv } from './whatsapp.js';
-import { TelegramNotifier, telegramConfigFromEnv } from './telegram.js';
+import { TelegramNotifier, telegramConfigFromEnv, type TelegramConfig } from './telegram.js';
 
 /**
  * Delivering a message to a member of the care circle.
@@ -79,8 +79,8 @@ export class SnsNotifier implements Notifier {
  * member who can answer "yes" in a chat they already have is the loop closing where the
  * family already lives.
  */
-export function notifierFromEnv(): Notifier {
-  const tg = telegramConfigFromEnv();
+export function notifierFromEnv(opts: { telegramLinked?: TelegramConfig['linked'] } = {}): Notifier {
+  const tg = telegramConfigFromEnv(process.env, opts.telegramLinked);
   if (tg) return new TelegramNotifier(tg);
 
   const wa = whatsAppConfigFromEnv();

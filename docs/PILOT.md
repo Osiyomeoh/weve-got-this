@@ -37,52 +37,61 @@ This is a real person's care, so:
 4. Tell the operator (you) it's done. The operator pulls the new household id and member
    ids (they are random `h_...` / `m_...` ids returned by setup).
 
-## 2. Put the bot in their family group (10 min)
+## 2. Connect everyone with a personal link (5 min)
 
 1. Create a Telegram group (or use their existing care group) and add
    `@carecircle0111_bot`.
-2. Everyone in the group, the person being cared for included, posts one message there
-   and opens `@carecircle0111_bot` and taps **Start** (a bot may not message anyone first).
-   No one has to be on time: the bot writes each unmapped sender's Telegram id and first
-   name (never the message) to the server log. The operator reads them with
+2. Operator prints one link per person, and a short message to send with it:
 
    ```bash
-   AWS_PROFILE=conductor aws logs filter-log-events --region us-east-1 \
-     --log-group-name "$(aws logs describe-log-groups --profile conductor --region us-east-1 \
-       --log-group-name-prefix /aws/apprunner/carecircle-mcp --query 'logGroups[?ends_with(logGroupName, `application`)].logGroupName' --output text)" \
-     --filter-pattern '"unmapped sender"' --query 'events[].message' --output text
+   set -a; . ./.env; set +a; AWS_PROFILE=conductor CARECIRCLE_TABLE=carecircle AWS_REGION=us-east-1 npm run telegram:invites
    ```
 
-   `npm run telegram:ids` still works for a quick live capture: it takes the webhook down
-   while it listens and puts it back afterwards. If it is killed mid-listen, run it again
-   briefly so the webhook is restored.
-3. In `.env`, point the live doors at the pilot household:
+   It picks the one household that isn't the demo (or `-- --household h_...`).
+3. Send each person their own message, then their section of
+   [`docs/pilot/FAMILY-GUIDE.md`](pilot/FAMILY-GUIDE.md). They tap the link and tap
+   **Start**. That starts the bot (Telegram won't let a bot message anyone first) and
+   tells it who they are, in one tap. The bot welcomes them by name, explains their part
+   for their role, and announces them in the family group. Nobody posts ids and nobody
+   edits `.env`.
+
+   How the links are protected: each link is signed with the webhook secret, so only the
+   operator can mint one. The first account to use a link keeps it, so a forwarded link
+   can't take someone's place. One Telegram account can be only one person. A link pasted
+   into a group is ignored. Telegram links are kept apart from sign-in credentials: a
+   Telegram id is visible to the whole group, so it is never something to log in with.
+4. Once, point the family group at the pilot household and redeploy:
 
    ```
    TELEGRAM_GROUP_CHAT_ID=<group id>
-   TELEGRAM_RECIPIENTS={"m_<member>":"<telegram id>", ...}
    TELEGRAM_HOUSEHOLD_ID=h_<their household>
+   TELEGRAM_RECIPIENTS={}
    ```
-
-4. Redeploy env with the vars exported (so every secret is "set from this shell"):
 
    ```bash
    set -a; . ./.env; set +a; AWS_PROFILE=conductor bash infra/deploy-mcp.sh
    ```
 
-> **One household at a time.** Telegram replies route to a single
-> `TELEGRAM_HOUSEHOLD_ID`, so during the pilot the live Telegram door belongs to the pilot
-> family. The demo household still works in the console. Record any demo-household
-> Telegram scenes before switching, or switch back afterwards.
+   `TELEGRAM_HOUSEHOLD_ID` decides whose asks are posted in the group and whose joins are
+   announced there. Members of other households who join by link are messaged
+   privately, never in this group. Emptying `TELEGRAM_RECIPIENTS` retires the old
+   demo mapping, although a person's own link wins over it anyway.
+
+   A person who posts in the family group before connecting gets one reply pointing them
+   to their link. Their Telegram id and first name (never the message) go to the server
+   log, which is useful when someone says "it didn't work".
+
+> **One family group at a time.** The group belongs to one `TELEGRAM_HOUSEHOLD_ID`, so
+> during the pilot the group door is the pilot family's. The demo household still works in
+> the console.
 
 ## 3. What the family does day to day
 
 Nothing special, which is the point. Everything happens in Telegram, which the family
 already uses:
 
-- **Talk to it in a private chat with the bot.** Each person opens `@carecircle0111_bot`
-  once and taps **Start** (Telegram won't let a bot message anyone first). After that,
-  anything they send it goes to CareCircle as them: *"I used my eye drops"*, *"He has the
+- **Talk to it in a private chat with the bot.** After tapping their link, anything they
+  send it goes to CareCircle as them: *"I used my eye drops"*, *"He has the
   clinic Thursday at 10"*, *"How was Daddy's day?"*, *"What's still open?"*. The person
   being cared for logs his own care this way, with no Echo and no app to learn.
 - **In the family group, mention the bot or reply to it** to talk to CareCircle there

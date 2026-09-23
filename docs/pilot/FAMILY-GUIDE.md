@@ -1,0 +1,75 @@
+# CareCircle: a guide for the family
+
+Each section below is written to be pasted into a chat and sent to one person. Swap in
+the names. `npm run telegram:invites` prints each person's own link, and a short message
+to go with it. Send the link first, then this guide.
+
+---
+
+## For everyone: getting connected (2 minutes)
+
+1. Tap the personal link you were sent. Telegram opens a chat with **CareCircle**.
+2. Tap **Start**. CareCircle says hello by name and tells you your part.
+3. You're in. Keep the link to yourself: it only works once, and only for you.
+
+Talk to CareCircle in its own chat any time, in your own words. In the family group it
+only answers when you **@mention it** or **reply to one of its messages**. The rest of
+the group is for the family, as always.
+
+---
+
+## For Dad (the person the circle is for)
+
+This is here to help all of us keep track of your care, and you are part of it. Nobody
+is watching you. You tell it things, the same way you would tell one of us.
+
+- **When you take a medicine:** "I've taken my eye drops." It writes it down with the time.
+- **When you have an appointment:** "I have the clinic on Thursday at 10." It adds it, so
+  we can sort out who takes you.
+- **To check your day:** "What's on today?"
+
+We all see what you record. If something isn't written down, CareCircle only ever says
+there's **no record** of it. It never says you missed it.
+
+---
+
+## For the coordinator (the person who set it up)
+
+You keep the overall picture. Things to say to CareCircle:
+
+- "What might fall through the cracks?" shows work nobody has taken on yet.
+- "Ask whoever's free to take Dad to the check-up." CareCircle asks someone and tells you
+  who and why. Nothing becomes theirs until they say yes.
+- "How was Dad's day?" gives what's been recorded today.
+- "That's done" closes something you've handled.
+
+---
+
+## For a brother or sister who helps
+
+CareCircle may ask you, in the family group, to take something on, like a pickup or a
+ride to a check-up.
+
+- Reply **"yes"** to take it on, or **"can't"** and it asks someone else. Nothing is
+  yours unless you say yes.
+- Say **"That's done"** when you've handled something, so it stops showing as open.
+- Ask **"What needs doing?"** to see what's open.
+
+---
+
+## For family abroad
+
+The same as above, with two differences:
+
+- CareCircle **won't ask you on its own** for things that need someone there, like rides
+  and pickups. The family can still ask you by name.
+- If the evening update is on, you get **a short summary of Dad's day every evening**.
+
+---
+
+## Privacy, in one paragraph
+
+What you tell CareCircle is stored for this family only, and only the family sees it.
+Your link connects your own Telegram account and nobody else's. The bot reads the family
+group so it can hear a "yes" or a "can't", but it only replies when someone @mentions it
+or replies to it, and it keeps nothing else that's said there. If you want your data deleted at the end, say so and it will be.

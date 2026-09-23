@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type {
-  CareEvent, CareState, Entity, Household, IdentityMapping, Member, MedicationSchedule, Obligation,
+  CareEvent, CareState, Entity, Household, IdentityMapping, Member, MedicationSchedule, Obligation, TelegramLink,
 } from '../domain/types.js';
 
 /**
@@ -37,12 +37,14 @@ export interface StoreSnapshot {
   identities: IdentityMapping[];
   /** Non-person nodes. Optional in older persisted snapshots; defaulted on load. */
   entities?: Entity[];
+  /** Members' Telegram accounts. Optional in older persisted snapshots. */
+  telegramLinks?: TelegramLink[];
 }
 
 function emptySnapshot(): StoreSnapshot {
   return {
     households: [], members: [], events: [],
-    obligations: [], medications: [], transitions: [], identities: [], entities: [],
+    obligations: [], medications: [], transitions: [], identities: [], entities: [], telegramLinks: [],
   };
 }
 
@@ -276,6 +278,29 @@ export class CareStore {
   }
 
   /**
+   * Link a Telegram account to a member. One account per member and one member per
+   * account: linking either side again replaces the old link, never adds a second.
+   */
+  linkTelegram(link: TelegramLink): Promise<TelegramLink> {
+    return this.#write(() => {
+      this.#snapshot.telegramLinks = (this.#snapshot.telegramLinks ?? [])
+        .filter((l) => l.telegramId !== link.telegramId && l.memberId !== link.memberId);
+      this.#snapshot.telegramLinks.push(link);
+      return link;
+    });
+  }
+
+  /** Who a Telegram account belongs to, if anyone. */
+  telegramLinkFor(telegramId: string): TelegramLink | undefined {
+    return (this.#snapshot.telegramLinks ?? []).find((l) => l.telegramId === telegramId);
+  }
+
+  /** A member's linked Telegram account, if they have one. */
+  telegramLinkOf(memberId: string): TelegramLink | undefined {
+    return (this.#snapshot.telegramLinks ?? []).find((l) => l.memberId === memberId);
+  }
+
+  /**
    * Remove a member and their credential mapping. Their open obligations are not
    * deleted - they are released back to the circle (owner cleared) so the work
    * resurfaces as a Care Gap rather than vanishing with the person. Exactly the
@@ -296,6 +321,9 @@ export class CareStore {
       }
       this.#snapshot.members = this.#snapshot.members.filter((m) => m.id !== memberId);
       this.#snapshot.identities = this.#snapshot.identities.filter((i) => i.memberId !== memberId);
+      if (this.#snapshot.telegramLinks) {
+        this.#snapshot.telegramLinks = this.#snapshot.telegramLinks.filter((l) => l.memberId !== memberId);
+      }
       return { released };
     });
   }
@@ -317,7 +345,7 @@ export class CareStore {
       const obligationIds = new Set(snap.obligations.filter((o) => o.householdId === householdId).map((o) => o.id));
       const before = snap.households.length + snap.members.length + snap.events.length
         + snap.obligations.length + snap.medications.length + snap.transitions.length
-        + snap.identities.length + (snap.entities ?? []).length;
+        + snap.identities.length + (snap.entities ?? []).length + (snap.telegramLinks ?? []).length;
 
       snap.households = snap.households.filter((h) => h.id !== householdId);
       snap.members = snap.members.filter((m) => m.householdId !== householdId);
@@ -327,10 +355,11 @@ export class CareStore {
       snap.transitions = snap.transitions.filter((t) => !obligationIds.has(t.obligationId));
       snap.identities = snap.identities.filter((i) => i.householdId !== householdId && !memberIds.has(i.memberId));
       if (snap.entities) snap.entities = snap.entities.filter((e) => e.householdId !== householdId);
+      if (snap.telegramLinks) snap.telegramLinks = snap.telegramLinks.filter((l) => l.householdId !== householdId);
 
       const after = snap.households.length + snap.members.length + snap.events.length
         + snap.obligations.length + snap.medications.length + snap.transitions.length
-        + snap.identities.length + (snap.entities ?? []).length;
+        + snap.identities.length + (snap.entities ?? []).length + (snap.telegramLinks ?? []).length;
       return { removed: before - after };
     });
   }
