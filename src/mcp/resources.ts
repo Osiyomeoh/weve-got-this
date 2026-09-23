@@ -5,6 +5,7 @@
 import { attributionOf } from '../domain/attribution.js';
 import { capabilitiesOf } from '../domain/auth.js';
 import { detectCareGaps } from '../domain/gaps.js';
+import { isLocalToday } from '../domain/local-time.js';
 import { CARE_BOARD_HTML } from './app/care-board.js';
 import { APP_MIME_TYPE } from './app/protocol.js';
 import { CARE_BOARD_URI, type ToolContext } from './toolkit.js';
@@ -83,9 +84,10 @@ export function registerCareStateResource({ server, now, state, nameOf }: ToolCo
           // this must not flatten a proxy record into the subject's own word.
           doses: s.events
             .filter((e) => e.kind === 'medication_taken'
-              && e.occurredAt.slice(0, 10) === now().toISOString().slice(0, 10))
+              && isLocalToday(e.occurredAt, now(), s.household.timezone))
             .map((e) => ({
               medicationId: e.data['medicationId'] ?? null,
+              name: s.medications.find((m) => m.id === e.data['medicationId'])?.name ?? null,
               at: e.occurredAt,
               attribution: attributionOf(e),
               saidBy: nameOf(e.reportedBy) ?? null,

@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { attributionOf } from '../../domain/attribution.js';
 import { canActOn, require as requireCap } from '../../domain/auth.js';
 import { detectCareGaps } from '../../domain/gaps.js';
+import { clockTime, isLocalToday } from '../../domain/local-time.js';
 import { appToolMeta } from '../app/protocol.js';
 import { OUT } from '../output-schemas.js';
 import { joinSpoken, speakGaps } from '../text.js';
@@ -62,12 +63,13 @@ export function registerGetCareGaps({ server, now, actor, state, nameOf }: ToolC
       // happen live, to a dose the aide had just logged. Absence is only half the
       // record and a tool that hands over half a record invites the other half to
       // be invented.
-      const today = now().toISOString().slice(0, 10);
+      const tz = state().household.timezone;
       const recordedToday = state().events
-        .filter((e) => e.kind === 'medication_taken' && e.occurredAt.slice(0, 10) === today)
+        .filter((e) => e.kind === 'medication_taken' && isLocalToday(e.occurredAt, now(), tz))
         .map((e) => ({
           what: e.data['medicationName'] ?? 'medication',
           at: e.occurredAt,
+          time: clockTime(e.occurredAt, tz),
           attribution: attributionOf(e),
           saidBy: nameOf(e.reportedBy) ?? null,
         }));

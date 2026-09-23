@@ -56,7 +56,7 @@ person, and never accuses anyone of what it didn't see.*
       him on camera. Also check your siblings are happy for the family to be described.
 - [ ] Burn in captions. The video makes an accessibility argument; it has to be captioned.
 - [ ] Say numbers only if they match the repo on record day: tools (`get_started` lists
-      them, 25 today), tests (`npm test`, 482 today), trust benchmark
+      them, 26 today), tests (`npm test`, 486 today), trust benchmark
       (`npm run trust-benchmark`).
 
 ---
@@ -102,7 +102,7 @@ my dad.` Daddy, the person being cared for, speaks:
 ## 0:35-0:50 - The refusal (Idea, the most important beat)
 
 > **Tolu:** "Did Daddy use his evening eye drops?"
-> **CareCircle:** "There's no record of Daddy's eye drops from 20:00."
+> **CareCircle:** "There's no record of Daddy's eye drops from 8 PM."
 
 Freeze. Two cards, held a full three seconds:
 
@@ -189,8 +189,8 @@ evening update arriving in the family group at 21:00 Lagos time:
 ```
 Kunle, Daddy's evening update - Wednesday 23 September.
 Medication
-- eye drops, 08:00: Daddy logged it themselves
-- eye drops, 20:00: no record yet
+- eye drops, 8 AM: Daddy logged it themselves
+- eye drops, 8 PM: no record yet
 Coming up
 - Take Daddy to his eye check-up (tomorrow): Musa has it
 ```

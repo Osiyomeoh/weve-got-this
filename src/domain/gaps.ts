@@ -87,6 +87,20 @@ export function localParts(at: Date, timezone: string): { date: string; minutes:
   };
 }
 
+/**
+ * "20:00" as a listener says it: "8 PM", "8:30 AM". Schedules are stored on a 24-hour
+ * clock; a family in Lagos reads either, but a family in Houston hears "twenty hundred"
+ * as a train timetable, not their dad's evening dose.
+ */
+export function spokenClock(hhmm: string): string {
+  const minutes = parseHHMM(hhmm);
+  if (minutes === null) return hhmm;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  return `${hour12}${m ? `:${String(m).padStart(2, '0')}` : ''} ${h < 12 ? 'AM' : 'PM'}`;
+}
+
 export function parseHHMM(hhmm: string): number | null {
   const m = /^(\d{2}):(\d{2})$/.exec(hhmm);
   if (!m) return null;
@@ -151,7 +165,7 @@ function ordinal(day: number): string {
  * tomorrow are unambiguous enough to say on their own; everything else carries the
  * date, because "Thursday the 24th" cannot be misheard as the wrong Thursday.
  */
-function spokenDue(dueAt: string | undefined, timezone: string, now: Date): string {
+export function spokenDue(dueAt: string | undefined, timezone: string, now: Date): string {
   if (!dueAt) return '';
   const due = new Date(dueAt);
   if (Number.isNaN(due.getTime())) return '';
@@ -334,8 +348,8 @@ function unconfirmedMedicationGaps(state: CareState, now: Date): CareGap[] {
         kind: 'UNCONFIRMED',
         severity: severityFor(score),
         // Deliberate phrasing: no record != did not happen.
-        spoken: `There's no record of ${name}'s ${med.name} from ${time}.`,
-        because: `A dose was expected at ${time} and nothing has been logged. `
+        spoken: `There's no record of ${name}'s ${med.name} from ${spokenClock(time)}.`,
+        because: `A dose was expected at ${spokenClock(time)} and nothing has been logged. `
           + `This means no one has confirmed it - not that it was missed.`,
         score,
         factors: { cost: HARM_COST.medical, pDrop: pMissed, confidence },

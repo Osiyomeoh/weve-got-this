@@ -33,9 +33,9 @@ class FakeNotifier implements Notifier {
 test('the evening update says what the record says, and never "missed"', async () => {
   const text = composeDailyUpdate((await family()).getCareState(H), EVENING);
   assert.match(text, /^Daddy's evening update - Wednesday 23 September\./);
-  assert.match(text, /- eye drops, 08:00: Daddy logged it themselves/);
-  assert.match(text, /- eye drops, 20:00: no record yet/);
-  assert.match(text, /- supplement, 08:00: Daddy logged it themselves/);
+  assert.match(text, /- eye drops, 8 AM: Daddy logged it themselves/);
+  assert.match(text, /- eye drops, 8 PM: no record yet/);
+  assert.match(text, /- supplement, 8 AM: Daddy logged it themselves/);
   assert.match(text, /Pick up Daddy's eye drops refill \(today\): nobody has taken this on yet/);
   assert.match(text, /Take Daddy to his eye check-up \(tomorrow\): nobody has taken this on yet/);
   assert.match(text, /Funmi: Daddy asked who is taking him on Thursday\./);
@@ -50,12 +50,12 @@ test('a dose someone else logged says who logged it', async () => {
     occurredAt: '2026-09-23T19:05:00Z', source: 'voice', confidence: 'reported',
     data: { medicationId: 'med_heart', aboutMemberId: 'm_margaret' },
   });
-  assert.match(composeDailyUpdate(store.getCareState(H), EVENING), /- eye drops, 20:00: Musa logged it for Daddy/);
+  assert.match(composeDailyUpdate(store.getCareState(H), EVENING), /- eye drops, 8 PM: Musa logged it for Daddy/);
 });
 
 test('a dose whose time has not come says so, rather than "no record"', async () => {
   const text = composeDailyUpdate((await family(AFTERNOON)).getCareState(H), AFTERNOON);
-  assert.match(text, /- eye drops, 20:00: not due yet/);
+  assert.match(text, /- eye drops, 8 PM: not due yet/);
 });
 
 test('the update is due in the evening, only to people who asked for it', async () => {

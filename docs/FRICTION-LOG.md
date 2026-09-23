@@ -700,3 +700,30 @@ Template:
   or `END_OF_LIFE` status, or leave retired models out. Have the error name the
   replacement model, as the console's model-lifecycle page does.
 - **Date:** 2026-09-23
+
+### MCP / Alexa+ planning - a model reads a UTC timestamp as the family's local time
+- **Task attempted:** Put the server in front of a real Alexa Skill before Alexa+ add-ons
+  open, using an Alexa Skill bridge (a Strands agent on Bedrock AgentCore, with Amazon
+  Nova Pro choosing tools, which is how an add-on would be orchestrated), and replay the
+  demo family's three scenes.
+- **Steps taken:** Tolu asked Funmi to take Daddy to his eye check-up (10 AM, Lagos). As
+  Funmi: "what have I been asked to do?"
+- **Expected:** "…tomorrow at 10 AM".
+- **Actual:** "…tomorrow at nine in the morning". `get_my_requests` returned
+  `dueAt: 2026-09-24T09:00:00.000Z` and no local time, and the model read the UTC hour as
+  local. The same happened with dose times in `recordedToday` (7:10 spoken for 8:10). And
+  a latent bug sat behind it: "today" was the UTC date in three places, so for a New York
+  family, from 8 PM local time "how was Dad's day?" dropped the whole morning. All 482
+  tests passed, because every fixture lived in one timezone and asserted on UTC.
+- **Severity:** major - a wrong appointment time is spoken with full confidence, to the
+  person who has to be there.
+- **Workaround:** Every result that says *when* now carries it in the household's own
+  time (`due: "tomorrow at 10 AM"`, `time: "8:05 AM"`) next to the ISO instant, "today"
+  is the household's local date everywhere, and dose times are said on a 12-hour clock.
+  Real-client tests pin a New York evening and a Lagos midnight.
+- **Suggestion:** The Alexa+ MCP design guide should say that hosts compose replies from
+  `structuredContent`, and that any instant there must also be given in the user's local
+  time, or else offer a standard `x-timezone` annotation hosts will honour. A second bug
+  of the same kind: given only `medicationId: "med_heart"`, the model called the eye
+  drops "his heart pill". Put names next to ids in results; models read ids as words.
+- **Date:** 2026-09-23

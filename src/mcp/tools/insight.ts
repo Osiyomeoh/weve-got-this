@@ -7,6 +7,7 @@ import { attributionOf, isReported, sayWhoSaysSo } from '../../domain/attributio
 import { require as requireCap } from '../../domain/auth.js';
 import { describeConnections } from '../../domain/connections.js';
 import { detectCareGaps, pendingProposals } from '../../domain/gaps.js';
+import { clockTime, isLocalToday } from '../../domain/local-time.js';
 import { explainProvenance } from '../../domain/provenance.js';
 import { OUT } from '../output-schemas.js';
 import { countPhrase, joinSpoken, sentence, speakGaps } from '../text.js';
@@ -94,8 +95,8 @@ export function registerGetCareSummary({ server, now, actor, state, nameOf }: To
       const me = actor();
       requireCap(me, 'read_full_state');
       const s = state();
-      const today = now().toISOString().slice(0, 10);
-      const todays = s.events.filter((e) => e.occurredAt.slice(0, 10) === today);
+      const tz = s.household.timezone;
+      const todays = s.events.filter((e) => isLocalToday(e.occurredAt, now(), tz));
       const meds = todays.filter((e) => e.kind === 'medication_taken');
       const notes = todays.filter((e) => e.kind === 'note_added');
       const gaps = detectCareGaps(s, { now: now() });
@@ -124,7 +125,12 @@ export function registerGetCareSummary({ server, now, actor, state, nameOf }: To
         medications: meds.map((e) => ({
           eventId: e.id,
           medicationId: e.data['medicationId'] ?? null,
+          // The name, always. Given only an id, a model will read one: we heard
+          // "his heart pill" for eye drops whose id is a leftover `med_heart`.
+          name: s.medications.find((m) => m.id === e.data['medicationId'])?.name
+            ?? e.data['medicationName'] ?? 'medication',
           at: e.occurredAt,
+          time: clockTime(e.occurredAt, tz),
           attribution: attributionOf(e),
         })),
         notes: notes.map((n) => ({ by: nameOf(n.reportedBy), text: n.detail })),

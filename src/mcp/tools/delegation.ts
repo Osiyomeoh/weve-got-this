@@ -7,6 +7,7 @@ import { runAgentOnce } from '../../domain/agent-runner.js';
 import { deliberate } from '../../domain/agent.js';
 import { require as requireCap } from '../../domain/auth.js';
 import { candidatesFor } from '../../domain/delegation.js';
+import { asTask, dueSpoken } from '../../domain/local-time.js';
 import { OUT } from '../output-schemas.js';
 import { joinSpoken } from '../text.js';
 import { describeError, guidance, reply, type ToolContext, obligationFrom } from '../toolkit.js';
@@ -91,6 +92,7 @@ export function registerRequestOwner({ server, store, now, notifier, actor, stat
         );
       }
 
+      const due = dueSpoken(o.dueAt, state().household.timezone, now());
       const updated = await store.transition(
         obligationId, me.householdId, 'REQUESTED', me.id,
         { ownerId: null, request: { askedOfId: target.memberId, askedById: me.id, askedAt: now().toISOString() } },
@@ -98,7 +100,8 @@ export function registerRequestOwner({ server, store, now, notifier, actor, stat
       );
       const delivery = await notifier.deliver({
         to: target.memberId, toName: target.name, from: me.spokenAs ?? me.name,
-        message: `${me.spokenAs ?? me.name} asked if you can take this on:\n\n${o.what}\n\nReply "yes" or "can't".`,
+        message: `${me.spokenAs ?? me.name} asked if you can take this on:\n\n${o.what}`
+          + `${due ? `, ${due}` : ''}\n\nReply "yes" or "can't".`,
       });
       await store.appendEvent({
         householdId: me.householdId,
@@ -115,7 +118,7 @@ export function registerRequestOwner({ server, store, now, notifier, actor, stat
       const suggested = !assigneeName && target.because
         ? ` I picked ${target.name} because they're the one who ${target.because}.` : '';
       return reply(
-        `I've asked ${target.name} whether they can take ${o.what}.${suggested} `
+        `I've asked ${target.name} whether they can ${asTask(o.what)}${due ? ` ${due}` : ''}.${suggested} `
         + "It stays unowned until they say yes.",
         { obligationId: updated.id, askedOfId: target.memberId, status: 'REQUESTED' },
       );
@@ -206,7 +209,7 @@ export function registerRespondToRequest({ server, store, now, actor, state, nam
 /**
  * "What have I been asked to do?"
  */
-export function registerGetMyRequests({ server, actor, state, nameOf }: ToolContext): void {
+export function registerGetMyRequests({ server, actor, state, nameOf, now }: ToolContext): void {
   server.registerTool('get_my_requests', {
     title: 'What the speaker has been asked to take on',
     description:
@@ -227,9 +230,11 @@ export function registerGetMyRequests({ server, actor, state, nameOf }: ToolCont
       if (mine.length === 0) {
         return reply('Nobody is waiting on an answer from you right now.', { requests: [] });
       }
+      const tz = state().household.timezone;
       const lines = mine.map((o) => {
         const who = nameOf(o.request!.askedById) ?? 'Someone';
-        return `${who} asked you to take ${o.what}`;
+        const due = dueSpoken(o.dueAt, tz, now());
+        return `${who} asked if you can ${asTask(o.what)}${due ? ` ${due}` : ''}`;
       });
       return reply(
         `${joinSpoken(lines)}. You haven't answered yet.`,
@@ -239,6 +244,7 @@ export function registerGetMyRequests({ server, actor, state, nameOf }: ToolCont
             askedBy: nameOf(o.request!.askedById) ?? null,
             askedAt: o.request!.askedAt,
             dueAt: o.dueAt ?? null,
+            due: dueSpoken(o.dueAt, tz, now()),
           })),
         },
       );

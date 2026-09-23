@@ -50,7 +50,7 @@ what happened          what must happen        who has it
 The demo family (Daddy, his children Tolu and Funmi, Kunle in London, and Musa the
 driver) is fictional and modelled on mine. No real names or medical details are used.
 
-**And it is real - not a mockup.** Live MCP server you can hit right now, **482 tests**
+**And it is real - not a mockup.** Live MCP server you can hit right now, **486 tests**
 (including property-based proofs of the risk model), **96.5%** measured tool-selection
 accuracy on Amazon Bedrock (139/144; 92.6% on held-out phrasings never tuned against, and
 the same 92.6% on Amazon Nova Pro), and a trust model **measured at 0% false accusations where a
@@ -146,7 +146,7 @@ CareCircle records the appointment, then notices something and says so:
 
 > "There are three things that need attention. Pick up Daddy's eye drops refill today at
 > 10 AM - nobody has taken this yet. Take Daddy to his eye check-up tomorrow at 10 AM -
-> nobody has taken this yet. **There's no record of** Daddy's eye drops from 20:00."
+> nobody has taken this yet. **There's no record of** Daddy's eye drops from 8 PM."
 
 > "I'll take him Thursday."
 

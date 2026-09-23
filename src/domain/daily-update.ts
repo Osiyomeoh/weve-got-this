@@ -1,7 +1,7 @@
 import type { CareState, Member } from './types.js';
 import type { CareStore } from '../store/store.js';
 import type { Notifier } from '../notify/notifier.js';
-import { doseRecord, localParts, parseHHMM } from './gaps.js';
+import { doseRecord, localParts, parseHHMM, spokenClock } from './gaps.js';
 import { attributionOf, sayWhoSaysSo } from './attribution.js';
 import { AGENT_ID } from './agent.js';
 
@@ -63,7 +63,7 @@ export function composeDailyUpdate(state: CareState, now: Date): string {
       const status = record
         ? sayWhoSaysSo(attributionOf(record), (id) => nameOf(state, id))
         : today.minutes < due ? 'not due yet' : 'no record yet';
-      lines.push(`- ${med.name}, ${time}: ${status}`);
+      lines.push(`- ${med.name}, ${spokenClock(time)}: ${status}`);
     }
   }
 
