@@ -9,7 +9,7 @@ import type { CareStore } from '../store/store.js';
  * narrator says Thursday is the kind of detail a judge notices and nobody forgives.
  */
 
-const NY = 'America/New_York';
+const TZ = 'Africa/Lagos';
 
 /** The UTC instant corresponding to a local wall-clock time in a timezone. */
 function localTimeToUtc(date: Date, hour: number, minute: number, timezone: string): Date {
@@ -85,23 +85,23 @@ export async function seedScenario(
 ): Promise<{ cardiologyAt: Date; rideObligationId: string }> {
   const now = options.now ?? new Date();
   const sid = (id: string): string => `${id}${options.suffix ?? ''}`;
-  const cardiologyAt = nextWeekdayAt(4, 10, 0, now, NY); // 4 = Thursday
+  const cardiologyAt = nextWeekdayAt(4, 10, 0, now, TZ); // 4 = Thursday
 
   // Morning medications, confirmed by Margaret herself. The heart pill is optionally
   // left for the live walkthrough to log on camera (see skipMorningHeartPill).
   if (!options.skipMorningHeartPill) {
     await store.appendEvent({
       householdId, kind: 'medication_taken', reportedBy: sid('m_margaret'),
-      occurredAt: todayAt(8, 10, now, NY).toISOString(),
+      occurredAt: todayAt(8, 10, now, TZ).toISOString(),
       source: 'voice', confidence: 'reported',
-      data: { medicationId: sid('med_heart'), medicationName: 'heart pill', aboutMemberId: sid('m_margaret') },
+      data: { medicationId: sid('med_heart'), medicationName: 'eye drops', aboutMemberId: sid('m_margaret') },
     });
   }
   await store.appendEvent({
     householdId, kind: 'medication_taken', reportedBy: sid('m_margaret'),
-    occurredAt: todayAt(8, 12, now, NY).toISOString(),
+    occurredAt: todayAt(8, 12, now, TZ).toISOString(),
     source: 'voice', confidence: 'reported',
-    data: { medicationId: sid('med_thyroid'), medicationName: 'thyroid tablet', aboutMemberId: sid('m_margaret') },
+    data: { medicationId: sid('med_thyroid'), medicationName: 'supplement', aboutMemberId: sid('m_margaret') },
   });
   // The evening dose is deliberately absent. Not "missed" - unrecorded.
 
@@ -109,17 +109,17 @@ export async function seedScenario(
     householdId, kind: 'appointment_scheduled', reportedBy: sid('m_renee'),
     occurredAt: cardiologyAt.toISOString(),
     source: 'voice', confidence: 'reported',
-    detail: 'Cardiology, Thursday at 10',
-    data: { appointmentKind: 'cardiology', forMemberId: sid('m_margaret') },
+    detail: 'Eye check-up, Thursday at 10',
+    data: { appointmentKind: 'eye check-up', forMemberId: sid('m_margaret') },
   });
 
   const ride = await store.createObligation({
     householdId,
-    what: 'Drive Mom to cardiology',
+    what: 'Take Daddy to his eye check-up',
     status: 'OPEN',
     consequence: 'medical',
     // Inferred originally, then confirmed by a human - which is why it counts.
-    provenance: { kind: 'INFERRED', rule: 'medical-appointment-transport', from: 'cardiology appointment' },
+    provenance: { kind: 'INFERRED', rule: 'medical-appointment-transport', from: 'eye check-up appointment' },
     ownerId: options.rideClaimedByRenee ? sid('m_renee') : null,
     dueAt: cardiologyAt.toISOString(),
     sourceEventId: appointment.id,
@@ -132,7 +132,7 @@ export async function seedScenario(
 
   await store.createObligation({
     householdId,
-    what: "Pick up Mom's prescription",
+    what: "Pick up Daddy's eye drops refill",
     status: 'OPEN',
     consequence: 'medical',
     provenance: { kind: 'CONFIRMED', byMemberId: sid('m_renee'), at: now.toISOString() },
@@ -142,9 +142,9 @@ export async function seedScenario(
 
   await store.appendEvent({
     householdId, kind: 'note_added', reportedBy: sid('m_renee'),
-    occurredAt: todayAt(14, 20, now, NY).toISOString(),
+    occurredAt: todayAt(14, 20, now, TZ).toISOString(),
     source: 'voice', confidence: 'reported',
-    detail: 'Mom sounded tired on the phone.',
+    detail: 'Daddy asked who is taking him on Thursday.',
     data: { aboutMemberId: sid('m_margaret') },
   });
 

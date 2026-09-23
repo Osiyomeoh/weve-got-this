@@ -89,7 +89,7 @@ const structured = (b: any): any => b?.result?.structuredContent ?? {};
 /** The unowned cardiology ride the scenario seeds. */
 async function theRide(token: string, session: string): Promise<string> {
   const gaps = structured(await call(token, session, 'get_care_gaps')).gaps ?? [];
-  const ride = gaps.find((g: any) => /cardiology/i.test(g.spoken) && g.obligationId);
+  const ride = gaps.find((g: any) => /eye check-up/i.test(g.spoken) && g.obligationId);
   assert.ok(ride, 'expected an unowned cardiology ride in the seeded scenario');
   return ride.obligationId;
 }
@@ -99,10 +99,10 @@ test('the whole loop: ask, decline, ask the next person, accept', async () => {
   const david = await openSession('david-token');
   const id = await theRide('renee-token', renee);
 
-  // ASK. Renee asks David.
+  // ASK. Funmi asks Tolu.
   const asked = await call('renee-token', renee, 'request_owner',
-    { obligationId: id, assigneeName: 'David' });
-  assert.match(spoken(asked), /asked David/i);
+    { obligationId: id, assigneeName: 'Tolu' });
+  assert.match(spoken(asked), /asked Tolu/i);
   assert.match(spoken(asked), /stays unowned/i);
   assert.equal(structured(asked).status, 'REQUESTED');
 
@@ -112,7 +112,7 @@ test('the whole loop: ask, decline, ask the next person, accept', async () => {
   assert.ok(still, 'a pending request must remain a care gap');
   assert.match(still.spoken, /hasn't answered yet/i);
 
-  // David sees it as his to answer.
+  // Tolu sees it as his to answer.
   const mine = await call('david-token', david, 'get_my_requests');
   assert.equal(structured(mine).requests.length, 1);
   assert.equal(structured(mine).requests[0].obligationId, id);
@@ -124,13 +124,13 @@ test('the whole loop: ask, decline, ask the next person, accept', async () => {
   assert.match(spoken(declined), /no owner/i);
   assert.ok(structured(declined).nextCandidate, 'a decline should offer somebody next');
 
-  // David is not asked again.
+  // Tolu is not asked again.
   const reAsk = await call('renee-token', renee, 'request_owner',
-    { obligationId: id, assigneeName: 'David' });
+    { obligationId: id, assigneeName: 'Tolu' });
   assert.match(spoken(reAsk), /already said no/i);
 
-  // ACCEPT. Renee asks herself? No - she claims. Ask Tasha, who accepts.
-  await call('renee-token', renee, 'request_owner', { obligationId: id, assigneeName: 'Tasha' });
+  // ACCEPT. Funmi asks herself? No - she claims. Ask Musa, who accepts.
+  await call('renee-token', renee, 'request_owner', { obligationId: id, assigneeName: 'Musa' });
   const aide = await openSession('aide-token');
   const accepted = await call('aide-token', aide, 'respond_to_request',
     { obligationId: id, accepted: true });
@@ -148,8 +148,8 @@ test('only the person asked can answer for themselves', async () => {
   const david = await openSession('david-token');
   const id = await theRide('renee-token', renee);
 
-  await call('renee-token', renee, 'request_owner', { obligationId: id, assigneeName: 'Tasha' });
-  // David tries to accept on Tasha's behalf. The system must not invent an
+  await call('renee-token', renee, 'request_owner', { obligationId: id, assigneeName: 'Musa' });
+  // Tolu tries to accept on Musa's behalf. The system must not invent an
   // agreement that was never given.
   const stolen = await call('david-token', david, 'respond_to_request',
     { obligationId: id, accepted: true });
@@ -167,12 +167,12 @@ test('the person being cared for can ask for help herself', async () => {
   const margaret = await openSession('margaret-token');
 
   const asked = await call('margaret-token', margaret, 'request_owner',
-    { obligationId: id, assigneeName: 'David' });
-  assert.match(spoken(asked), /asked David/i);
+    { obligationId: id, assigneeName: 'Tolu' });
+  assert.match(spoken(asked), /asked Tolu/i);
 
   // But assigning is still beyond her.
   const assign = await call('margaret-token', margaret, 'assign_obligation',
-    { obligationId: id, assigneeName: 'David' });
+    { obligationId: id, assigneeName: 'Tolu' });
   assert.match(spoken(assign), /primary caregiver/i);
 });
 

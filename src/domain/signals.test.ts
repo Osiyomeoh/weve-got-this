@@ -11,7 +11,11 @@ test('a delivery is evidence toward the prescription, and asks - never auto-reso
   // The beat: "Was Mom's prescription picked up?" answered by the doorbell.
   const out = interpretSignal(sig({ kind: 'delivery_arrived' }), ctx);
   assert.ok(out.resolvesObligationLike);
-  assert.equal(out.resolvesObligationLike.match, 'prescription');
+  // However the family named the errand, a delivery is evidence toward it.
+  for (const what of ["Pick up Mom's prescription", "Pick up Daddy's eye drops refill", 'Pharmacy run']) {
+    assert.match(what, out.resolvesObligationLike.match);
+  }
+  assert.doesNotMatch('Take Daddy to his eye check-up', out.resolvesObligationLike.match);
   assert.match(out.resolvesObligationLike.ask, /should I mark it picked up/i);
   // Evidence, not a verdict: nothing here resolves anything on its own.
   assert.ok(!('proposeObligation' in out) || out.proposeObligation === undefined);

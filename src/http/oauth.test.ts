@@ -449,7 +449,7 @@ test('attack: the demo sign-in never offers a member of another household', asyn
   const { challenge } = makePkce();
   const page = await (await fetch(authorizeUrl({ code_challenge: challenge }))).text();
   assert.doesNotMatch(page, /Aunty Real/);
-  assert.match(page, /Renee/);
+  assert.match(page, /Funmi/);
 
   const res = await fetch(authorizeUrl({ code_challenge: challenge, member: 'm_real_aunt' }), { redirect: 'manual' });
   assert.equal(res.status, 400, 'consenting as another household\'s member must be refused');

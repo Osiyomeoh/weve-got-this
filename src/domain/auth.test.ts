@@ -48,7 +48,7 @@ test('a helper can only act on work they own', () => {
 });
 
 test('an appointment proposes transport, and says it is guessing', () => {
-  const seeds = proposeFromAppointment('cardiology', 'Mom', '2026-10-16T14:00:00Z');
+  const seeds = proposeFromAppointment('cardiology', 'Daddy', '2026-10-16T14:00:00Z');
   const transport = seeds.find((s) => s.provenance.rule === 'medical-appointment-transport');
   assert.ok(transport);
   assert.equal(transport.provenance.kind, 'INFERRED');
@@ -57,13 +57,13 @@ test('an appointment proposes transport, and says it is guessing', () => {
 });
 
 test('a non-medical event proposes nothing', () => {
-  assert.deepEqual(proposeFromAppointment('book club', 'Mom', '2026-10-16T14:00:00Z'), []);
+  assert.deepEqual(proposeFromAppointment('book club', 'Daddy', '2026-10-16T14:00:00Z'), []);
 });
 
 test('an unavailability orphans work that person was covering', () => {
   const thursday = '2026-10-15T14:00:00Z';
   const obligations = [
-    { id:'o1', ownerId:'m_renee', status:'ASSIGNED', dueAt:thursday, what:'Drive Mom to cardiology' },
+    { id:'o1', ownerId:'m_renee', status:'ASSIGNED', dueAt:thursday, what:'Take Daddy to his eye check-up' },
     { id:'o2', ownerId:'m_david', status:'ASSIGNED', dueAt:thursday, what:'Pick up prescription' },
     { id:'o3', ownerId:'m_renee', status:'RESOLVED', dueAt:thursday, what:'Already done' },
   ] as unknown as Obligation[];
@@ -71,21 +71,21 @@ test('an unavailability orphans work that person was covering', () => {
   const orphaned = orphanedBy(
     { memberId:'m_renee', from:'2026-10-15T00:00:00Z', to:'2026-10-15T23:59:00Z' },
     obligations,
-    () => 'Renee',
+    () => 'Funmi',
   );
 
-  // Only Renee's still-open work in that window. Nobody else's, nothing already done.
+  // Only Funmi's still-open work in that window. Nobody else's, nothing already done.
   assert.deepEqual(orphaned.map((o) => o.obligationId), ['o1']);
   assert.match(orphaned[0]!.ask, /Does someone else need to pick it up/);
 });
 
 test('an unavailability outside the window orphans nothing', () => {
   const obligations = [
-    { id:'o1', ownerId:'m_renee', status:'ASSIGNED', dueAt:'2026-11-20T14:00:00Z', what:'Drive Mom' },
+    { id:'o1', ownerId:'m_renee', status:'ASSIGNED', dueAt:'2026-11-20T14:00:00Z', what:'Drive Daddy' },
   ] as unknown as Obligation[];
   assert.deepEqual(
     orphanedBy({ memberId:'m_renee', from:'2026-10-15T00:00:00Z', to:'2026-10-15T23:59:00Z' },
-      obligations, () => 'Renee'),
+      obligations, () => 'Funmi'),
     [],
   );
 });
@@ -99,7 +99,7 @@ test('the scenario puts cardiology on a real Thursday at 10:00 New York', async 
   const { cardiologyAt } = await seedScenario(store, 'h_margaret');
 
   const fmt = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/New_York', weekday: 'long', hour: 'numeric', minute: '2-digit', hour12: false,
+    timeZone: 'Africa/Lagos', weekday: 'long', hour: 'numeric', minute: '2-digit', hour12: false,
   });
   const parts = Object.fromEntries(fmt.formatToParts(cardiologyAt).map((p) => [p.type, p.value]));
   assert.equal(parts['weekday'], 'Thursday');
@@ -115,7 +115,7 @@ test('the scenario opens with the ride unowned and the evening dose unrecorded',
   await seedScenario(store, 'h_margaret');
   const state = store.getCareState('h_margaret');
 
-  const ride = state.obligations.find((o) => o.what.includes('Drive Mom'));
+  const ride = state.obligations.find((o) => o.what.includes('Take Daddy'));
   assert.equal(ride?.status, 'OPEN');
   assert.equal(ride?.ownerId, null);
 

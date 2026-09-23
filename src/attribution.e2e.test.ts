@@ -90,11 +90,11 @@ test('when the aide logs a dose for Margaret, the summary says the aide did', as
   const david = await openSession('david-token');
 
   await call('aide-token', aide, 'log_care_event', {
-    kind: 'medication_taken', medicationName: 'heart pill', aboutMemberId: 'm_margaret',
+    kind: 'medication_taken', medicationName: 'eye drops', aboutMemberId: 'm_margaret',
   });
 
   const said = spoken(await call('david-token', david, 'get_care_summary'));
-  assert.match(said, /Tasha/,
+  assert.match(said, /Musa/,
     `the summary turned the aide's account into Margaret's own word: ${said}`);
 });
 
@@ -103,14 +103,14 @@ test('when Margaret logs her own dose, nobody else is put in the sentence', asyn
   const david = await openSession('david-token');
 
   await call('margaret-token', margaret, 'log_care_event', {
-    kind: 'medication_taken', medicationName: 'heart pill',
+    kind: 'medication_taken', medicationName: 'eye drops',
   });
 
   const said = spoken(await call('david-token', david, 'get_care_summary'));
-  // Renee appears in the seeded notes, so match the attribution phrasing itself
+  // Funmi appears in the seeded notes, so match the attribution phrasing itself
   // rather than any mention of another member.
   assert.equal(/logged it for/.test(said), false, `invented a reporter: ${said}`);
-  assert.equal(/Tasha/.test(said), false, `invented a reporter: ${said}`);
+  assert.equal(/Musa/.test(said), false, `invented a reporter: ${said}`);
 });
 
 test('the same dose reads differently depending on who logged it', async () => {
@@ -119,7 +119,7 @@ test('the same dose reads differently depending on who logged it', async () => {
 
   const margaret = await openSession('margaret-token');
   await call('margaret-token', margaret, 'log_care_event', {
-    kind: 'medication_taken', medicationName: 'heart pill',
+    kind: 'medication_taken', medicationName: 'eye drops',
   });
   const firstHand = spoken(await call('david-token', david, 'get_care_summary'));
 
@@ -129,7 +129,7 @@ test('the same dose reads differently depending on who logged it', async () => {
 
   const aide = await openSession('aide-token');
   await call('aide-token', aide, 'log_care_event', {
-    kind: 'medication_taken', medicationName: 'heart pill', aboutMemberId: 'm_margaret',
+    kind: 'medication_taken', medicationName: 'eye drops', aboutMemberId: 'm_margaret',
   });
   const byProxy = spoken(await call('david-token', david, 'get_care_summary'));
 
@@ -144,11 +144,11 @@ test('the structured record carries the attribution, not just the prose', async 
   const david = await openSession('david-token');
 
   await call('aide-token', aide, 'log_care_event', {
-    kind: 'medication_taken', medicationName: 'heart pill', aboutMemberId: 'm_margaret',
+    kind: 'medication_taken', medicationName: 'eye drops', aboutMemberId: 'm_margaret',
   });
 
   const { eventId } = structured(await call('aide-token', aide, 'log_care_event', {
-    kind: 'medication_taken', medicationName: 'thyroid tablet', aboutMemberId: 'm_margaret',
+    kind: 'medication_taken', medicationName: 'supplement', aboutMemberId: 'm_margaret',
   }));
 
   const data = structured(await call('david-token', david, 'get_care_summary'));
@@ -167,12 +167,13 @@ test('a dose logged by the aide never becomes a care gap', async () => {
   const david = await openSession('david-token');
 
   await call('aide-token', aide, 'log_care_event', {
-    kind: 'medication_taken', medicationName: 'heart pill', aboutMemberId: 'm_margaret',
+    kind: 'medication_taken', medicationName: 'eye drops', aboutMemberId: 'm_margaret',
   });
 
   const gaps = structured(await call('david-token', david, 'get_care_gaps')).gaps ?? [];
   assert.equal(
-    gaps.some((g: any) => /heart pill/i.test(g.spoken)),
+    // Only dose gaps count here: the refill errand also names the drops, and is real work.
+    gaps.some((g: any) => g.kind !== 'UNCLAIMED' && /eye drops/i.test(g.spoken)),
     false,
     'the aide made a record and the system quietly disbelieved it',
   );
@@ -183,7 +184,7 @@ test('naming the reporter never becomes an accusation of anybody', async () => {
   const david = await openSession('david-token');
 
   await call('aide-token', aide, 'log_care_event', {
-    kind: 'medication_taken', medicationName: 'heart pill', aboutMemberId: 'm_margaret',
+    kind: 'medication_taken', medicationName: 'eye drops', aboutMemberId: 'm_margaret',
   });
 
   const said = spoken(await call('david-token', david, 'get_care_summary'));

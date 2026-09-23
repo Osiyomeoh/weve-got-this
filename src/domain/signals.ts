@@ -52,8 +52,8 @@ export interface SignalOutcome {
    * Never resolved automatically - the caller asks a human.
    */
   resolvesObligationLike?: {
-    /** Substring to match against open obligations, e.g. "prescription". */
-    match: string;
+    /** Matched against open obligations' descriptions, e.g. a medicine pickup. */
+    match: RegExp;
     ask: string;
   };
   /** One line, ready to be spoken. */
@@ -90,8 +90,9 @@ export function interpretSignal(
       return {
         event: baseEvent,
         resolvesObligationLike: {
-          match: 'prescription',
-          ask: `A delivery arrived at ${context.recipientName}'s door. Was that the prescription - should I mark it picked up?`,
+          // However the family phrased the errand: a prescription, a refill, the pharmacy.
+          match: /prescription|refill|pharmacy|medicine|medication/i,
+          ask: `A delivery arrived at ${context.recipientName}'s door. Was that the medicine - should I mark it picked up?`,
         },
         spoken: `A delivery just arrived at ${context.recipientName}'s door.`,
       };

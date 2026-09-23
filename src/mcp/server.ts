@@ -1059,9 +1059,9 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
       // ask about the specific item - it does not resolve anything itself.
       let candidate: string | null = null;
       if (outcome.resolvesObligationLike) {
-        const needle = outcome.resolvesObligationLike.match.toLowerCase();
+        const pattern = outcome.resolvesObligationLike.match;
         const open = s.obligations.find(
-          (o) => o.what.toLowerCase().includes(needle) && o.status !== 'RESOLVED' && o.status !== 'DISMISSED',
+          (o) => pattern.test(o.what) && o.status !== 'RESOLVED' && o.status !== 'DISMISSED',
         );
         candidate = open?.id ?? null;
       }

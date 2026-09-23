@@ -45,9 +45,9 @@ export async function applySignal(
   // a medical obligation.
   let resolvesCandidate: string | null = null;
   if (outcome.resolvesObligationLike) {
-    const needle = outcome.resolvesObligationLike.match.toLowerCase();
+    const pattern = outcome.resolvesObligationLike.match;
     const open = state.obligations.find(
-      (o) => o.what.toLowerCase().includes(needle)
+      (o) => pattern.test(o.what)
         && o.status !== 'RESOLVED' && o.status !== 'DISMISSED',
     );
     resolvesCandidate = open?.id ?? null;

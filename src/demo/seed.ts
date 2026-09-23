@@ -1,11 +1,17 @@
 import type { CareStore } from '../store/store.js';
 
 /**
- * The demo household: Margaret, her two adult children, and a paid aide.
+ * The demo household: Daddy, going on 70 in Lagos, two of his grown children, and the
+ * family's paid driver.
  *
- * This is the family in the demo video. It is seeded rather than invented at
- * runtime so the story is identical every time it is shown, and so anyone who
- * clones the repo sees the same thing the video shows.
+ * A fictional family modelled on the builder's own: a father recovering from surgery,
+ * with drops and supplements to take, check-ups to get to, and getting around no longer
+ * easy, cared for by children who also have to work. No real names or medical detail.
+ * Seeded rather than invented at runtime so the story is identical every time it is
+ * shown, and anyone who clones the repo sees what the video shows.
+ *
+ * Ids (`m_margaret`, `m_david`, ...) are internal keys kept from the first version of the
+ * demo; nothing a person sees or hears uses them.
  */
 
 export const DEMO_TOKENS: Record<string, string> = {
@@ -30,44 +36,44 @@ export async function seedDemoHousehold(
 
   await store.addHousehold({
     id: HOUSEHOLD_ID,
-    name: "Margaret's care circle",
-    timezone: 'America/New_York',
+    name: "Daddy's care circle",
+    timezone: 'Africa/Lagos',
   });
 
   await store.addMember({
-    id: sid('m_margaret'), householdId: HOUSEHOLD_ID, name: 'Margaret',
-    role: 'care_recipient', spokenAs: 'Mom',
-    // Margaret uses a wheelchair; getting to cardiology needs an accessible vehicle. This
-    // is a logistics fact the graph carries so a dropped ride ranks with the weight it
-    // deserves - never a label the system is allowed to editorialise about.
+    id: sid('m_margaret'), householdId: HOUSEHOLD_ID, name: 'Joseph',
+    role: 'care_recipient', spokenAs: 'Daddy',
+    // Getting around is no longer easy for him, so a ride to a check-up needs care and
+    // an accessible vehicle. A logistics fact the graph carries so a dropped ride ranks
+    // with the weight it deserves - never a label the system may editorialise about.
     attributes: { needsAccessibleTransport: true },
   });
   await store.addMember({
-    id: sid('m_david'), householdId: HOUSEHOLD_ID, name: 'David',
+    id: sid('m_david'), householdId: HOUSEHOLD_ID, name: 'Tolu',
     role: 'primary_caregiver',
   });
   await store.addMember({
-    id: sid('m_renee'), householdId: HOUSEHOLD_ID, name: 'Renee',
+    id: sid('m_renee'), householdId: HOUSEHOLD_ID, name: 'Funmi',
     role: 'caregiver',
   });
   await store.addMember({
-    id: sid('m_aide'), householdId: HOUSEHOLD_ID, name: 'Tasha',
-    role: 'helper',
+    id: sid('m_aide'), householdId: HOUSEHOLD_ID, name: 'Musa',
+    role: 'helper', spokenAs: 'Musa, the driver',
   });
 
   await store.addMedication({
-    id: sid('med_heart'), householdId: HOUSEHOLD_ID, name: 'heart pill',
+    id: sid('med_heart'), householdId: HOUSEHOLD_ID, name: 'eye drops',
     times: ['08:00', '20:00'], forMemberId: sid('m_margaret'),
   });
   await store.addMedication({
-    id: sid('med_thyroid'), householdId: HOUSEHOLD_ID, name: 'thyroid tablet',
+    id: sid('med_thyroid'), householdId: HOUSEHOLD_ID, name: 'supplement',
     times: ['08:00'], forMemberId: sid('m_margaret'),
   });
 
-  // The cardiology practice as a first-class non-person node. The ride obligation points
-  // its subject at Margaret (whose accessibility need drives risk); this entity is here so
-  // the graph names the destination the ride is *to*, the first step of the widening.
+  // The eye clinic as a first-class non-person node. The ride obligation points its
+  // subject at Daddy (whose mobility need drives risk); this entity is here so the graph
+  // names the destination the ride is *to*.
   await store.addEntity({
-    id: sid('e_cardiology'), householdId: HOUSEHOLD_ID, type: 'service', name: 'Cardiology',
+    id: sid('e_cardiology'), householdId: HOUSEHOLD_ID, type: 'service', name: 'Eye clinic',
   });
 }

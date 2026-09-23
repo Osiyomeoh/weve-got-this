@@ -86,7 +86,7 @@ test('a sandbox is a fresh copy of the demo story, reachable with its own tokens
   assert.deepEqual(Object.keys(json.tokens).sort(), ['m_aide', 'm_david', 'm_margaret', 'm_renee']);
 
   const gaps = await callTool(json.tokens.m_david, 'get_care_gaps');
-  assert.match(gaps.content[0].text, /Drive Mom to cardiology/);
+  assert.match(gaps.content[0].text, /Take Daddy to his eye check-up/);
   assert.ok(gaps.structuredContent.gaps.every((g: { obligationId?: string }) =>
     !g.obligationId || store.getObligation(g.obligationId, json.householdId)));
 });
@@ -96,10 +96,10 @@ test('one judge taking the ride does not take it for the next judge, or the real
   const b = (await create()).json;
 
   const gapsA = await callTool(a.tokens.m_renee, 'get_care_gaps');
-  const ride = gapsA.structuredContent.gaps.find((g: { spoken: string }) => /cardiology/.test(g.spoken));
+  const ride = gapsA.structuredContent.gaps.find((g: { spoken: string }) => /eye check-up/.test(g.spoken));
   await callTool(a.tokens.m_renee, 'claim_obligation', { obligationId: ride.obligationId });
 
-  const rideIn = (hh: string) => store.getCareState(hh).obligations.find((o) => /cardiology/.test(o.what))!;
+  const rideIn = (hh: string) => store.getCareState(hh).obligations.find((o) => /eye check-up/.test(o.what))!;
   assert.equal(rideIn(a.householdId).ownerId, `m_renee${a.suffix}`);
   assert.equal(rideIn(b.householdId).ownerId, null, 'the next judge still sees it unowned');
   assert.equal(rideIn('h_margaret').ownerId, null, 'the real demo household is untouched');
@@ -107,7 +107,7 @@ test('one judge taking the ride does not take it for the next judge, or the real
 
 test('attack: a sandbox token cannot act on another household\'s obligation', async () => {
   const a = (await create()).json;
-  const real = store.getCareState('h_margaret').obligations.find((o) => /cardiology/.test(o.what))!;
+  const real = store.getCareState('h_margaret').obligations.find((o) => /eye check-up/.test(o.what))!;
   await callTool(a.tokens.m_renee, 'claim_obligation', { obligationId: real.id });
   assert.equal(store.getObligation(real.id, 'h_margaret').ownerId, null);
 });
