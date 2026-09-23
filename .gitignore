@@ -17,3 +17,4 @@ firetv/app/release/
 # Vite React sim UI
 sim-ui/node_modules/
 sim-ui/dist/
+.DS_Store

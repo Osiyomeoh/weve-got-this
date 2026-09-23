@@ -19,6 +19,11 @@ RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/sim-ui/dist ./sim-ui/dist
 COPY public ./public
+# Run as the image's unprivileged user. The code stays root-owned and read-only to it;
+# it owns only the working directory, where the file store (used when there is no
+# DynamoDB table) writes its snapshot.
+RUN chown node:node /app
+USER node
 # AgentCore expects 0.0.0.0:8000/mcp; App Runner health-checks the same port.
 ENV PORT=8000
 EXPOSE 8000
