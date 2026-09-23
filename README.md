@@ -50,10 +50,11 @@ what happened          what must happen        who has it
 The demo family (Daddy, his children Tolu and Funmi, Kunle in London, and Musa the
 driver) is fictional and modelled on mine. No real names or medical details are used.
 
-**And it is real - not a mockup.** Live MCP server you can hit right now, **486 tests**
-(including property-based proofs of the risk model), **96.5%** measured tool-selection
-accuracy on Amazon Bedrock (139/144; 92.6% on held-out phrasings never tuned against, and
-the same 92.6% on Amazon Nova Pro), and a trust model **measured at 0% false accusations where a
+**And it is real - not a mockup.** Live MCP server you can hit right now, **487 tests**
+(including property-based proofs of the risk model), **95.8%** measured tool-selection
+accuracy on Amazon Bedrock (138/144; 92.5% on held-out phrasings never tuned against),
+**94.4% on Amazon Nova Pro**, and 93.1% on Nova Pro under an Alexa Skill bridge's own
+prompt, one we didn't write. And a trust model **measured at 0% false accusations where a
 raw LLM hits 50%**.
 
 ### Try it live in your browser - no clone, no keys
@@ -520,8 +521,10 @@ npm run demo:reset && npm run dev   # in one shell
 npm run evals                       # in another
 ```
 
-**Result: 96.5% first-tool accuracy (139 / 144, 0 errored) - Claude Sonnet 4.5 on Amazon
-Bedrock, 2026-09-23.** That is one run. The planner runs at temperature 0, yet a borderline
+**Result: 95.8% first-tool accuracy (138 / 144, 0 errored) - Claude Sonnet 4.5 on Amazon
+Bedrock, 2026-09-23.** That is one run, and every case of it is in
+[`evals/results/`](evals/results/).  Before the last description change the same corpus scored
+139. The planner runs at temperature 0, yet a borderline
 case or two still flips run-to-run: the previous corpus measured 124-126 / 135 across
 repeated runs (~92-93%) and the same 135 now score 130. A live model is not perfectly
 reproducible and we don't pretend it is.
@@ -529,16 +532,17 @@ reproducible and we don't pretend it is.
 The corpus is deliberately split so the number cannot be gamed, and `npm run evals`
 prints each part on its own:
 
-- **68 authored cases**, used while tuning the tool descriptions - **68/68**.
-- **68 held-out cases never tuned against** (harder phrasings, multi-intent, wrong-role
-  attempts, and out-of-scope lines that name care words on purpose) - **63/68, 92.6%**.
+- **68 authored cases**, used while tuning the tool descriptions - **67/68**.
+- **67 held-out cases never tuned against** (harder phrasings, multi-intent, wrong-role
+  attempts, and out-of-scope lines that name care words on purpose) - **62/67, 92.5%**.
   This is the honest number.
-- **8 held-out purchase cases we later used to fix the server** - **8/8**, reported
-  apart. They failed because the planner asked "which medication?" instead of letting
-  the server work it out, so we fixed the purchase tools (see the friction log). That
-  made them no longer unseen, so we marked them `seen` and wrote **9 fresh purchase
-  phrasings** before running again, including a decline and a helper who may not buy.
-  Those scored **9/9** and count in the held-out figure above.
+- **9 held-out cases we later looked at while fixing the server** - **9/9**, reported
+  apart. Eight are purchases: they failed because the planner asked "which medication?"
+  instead of letting the server work it out, so we fixed the purchase tools (see the
+  friction log), marked them `seen`, and wrote **9 fresh purchase phrasings** before
+  running again, including a decline and a helper who may not buy. Those count in the
+  held-out figure above. The ninth, "Dropped him at the clinic and he's home now", we
+  read while fixing "that's done" (below), so it moved out of the held-out set too.
 
 The model receives the real tool definitions and one utterance, using the exact
 planner prompt the simulator ships (imported, not a friendlier copy written to
@@ -549,28 +553,35 @@ counted as wrong, because a number that can lie is worse than no number.
 **Honest limitations** (the 5 held-out misses, unfixed on purpose): a reschedule
 ("move his eye check-up to Friday" checks the record first), vague-time scheduling ("a
 flu shot next week sometime" gets asked which day, which our own never-guess-a-date rule
-requires), a date with no month said by Daddy logged as a note, "he had everything that
-was due before noon" checking what was due before logging it, and a helper's "anything
-to do today?" reaching for his requests rather than his shift brief. Several are
+requires), "he had everything that was due before noon" checking what was due before
+logging it, "something's come up, I can't do Thursday" checking the board before noting
+it, and a helper's "anything to do today?" reaching for his requests rather than his
+shift brief. Several are
 defensible behaviour the strict grader still counts as wrong. These are the edges a
 larger corpus would harden next.
 
-**On Amazon Nova too.** Same 144 cases, same planner prompt, and the same tool
-descriptions, which were tuned on Claude and not touched for Nova (2026-09-23):
+**On Amazon Nova, and under a prompt we didn't write.** Same 144 cases and the same tool
+descriptions (2026-09-23). The last row swaps our planner prompt for the system prompt of
+an Alexa Skill bridge (a Strands agent that stands in for the Alexa+ orchestrator), because
+real Alexa+ will not use our prompt either:
 
-| Planner, on Amazon Bedrock | All 144 | Held-out, never tuned against (68) |
+| Planner, on Amazon Bedrock | All 144 | Held-out, never tuned against (67) |
 |---|---|---|
-| Claude Sonnet 4.5 | 96.5% (139) | 92.6% (63) |
-| **Amazon Nova Pro** | 91.7% (132) | **92.6% (63)** |
-| Amazon Nova 2 Lite | 81.3% (117) | 73.5% (50) |
+| Claude Sonnet 4.5 | 95.8% (138) | 92.5% (62) |
+| **Amazon Nova Pro** | **94.4% (136)** | 91.0% (61) |
+| Amazon Nova 2 Lite | 83.3% (120) | 77.6% (52) |
+| Amazon Nova Pro, the bridge's prompt | 93.1% (134) | 91.0% (61) |
 
-On the phrasings nobody tuned against, Nova Pro scores exactly what Claude does. Its
-lower overall figure comes from the authored set, the one tuned on Claude (61/68). So the
-descriptions carry across models rather than fitting one. Nova Pro's misses are mostly
-"that's done" logged as an event instead of closing the task (4 of 12). Nova 2 Lite, the
-small model, checks the board before acting in 20 of its 27 misses: right instinct, wrong
-first tool. We did not tune on either, because that would turn held-out cases into seen
-ones. Run it with `BEDROCK_MODEL_ID=us.amazon.nova-pro-v1:0 npm run evals`. Nova Premier
+Under someone else's prompt Nova Pro loses two cases and none of the held-out ones, so the
+tool descriptions, not our prompt, are doing the work. That run also found the one weak
+spot shared by both prompts: "picked up the prescription" or "took him to the clinic, all
+done" logged as an event instead of closing the task. We sharpened those two descriptions
+and re-ran all four. Nova Pro went from 132 to 136, the bridge run from 131 to 134, Nova 2
+Lite from 117 to 120, and Claude from 139 to 138, a case that flips from run to run and
+isn't one of the two tools we changed.
+Nova 2 Lite, the small model, mostly checks the board before acting: right instinct,
+wrong first tool. Run it with `BEDROCK_MODEL_ID=us.amazon.nova-pro-v1:0 npm run evals`, and
+see [`evals/results/`](evals/results/) for the bridge prompt. Nova Premier
 is still listed in the account's inference profiles but Bedrock refuses it as retired, so
 it isn't measured.
 

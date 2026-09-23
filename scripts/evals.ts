@@ -5,9 +5,12 @@
  *   npm run evals -- gap          only cases whose id starts with "gap"
  *   npm run evals -- --json       machine-readable, for CI
  *
+ * EVALS_SYSTEM_PROMPT_FILE=<file> measures under another host's system prompt instead of
+ * the console's (for example an Alexa Skill bridge's), with the same tools and cases.
+ *
  * Requires the MCP server running and AWS credentials with Bedrock access.
  */
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { runEvals, summarise, MEMBER_LABEL } from '../src/evals/run.ts';
 import { providerFromEnv } from '../src/sim/providers.ts';
 
@@ -24,8 +27,10 @@ const modelId = provider.modelId;
 const paceMs = Number(process.env.EVALS_PACE_MS ?? (provider.name === 'gemini' ? 6_000 : 0));
 
 process.stdout.write(`Running ${filter ? `"${filter}" ` : ''}cases on ${provider.name}...`);
+const promptFile = process.env.EVALS_SYSTEM_PROMPT_FILE;
 const results = await runEvals({
   endpoint, provider, paceMs,
+  ...(promptFile ? { systemPrompt: readFileSync(promptFile, 'utf8') } : {}),
   ...(filter ? { filter } : {}),
   onProgress: (done, total) => {
     process.stdout.write(`\rRunning on ${provider.name}: ${done}/${total}   `);
@@ -77,7 +82,8 @@ if (asJson) {
 }
 
 writeFileSync('evals-results.json', JSON.stringify({
-  provider: provider.name, modelId, at: new Date().toISOString(), ...s,
+  provider: provider.name, modelId, at: new Date().toISOString(),
+  systemPrompt: promptFile ?? 'console', ...s,
   results: results.map((r) => ({
     id: r.case.id, utterance: r.case.utterance, member: r.case.member,
     chosen: r.chosen, pass: r.pass, reason: r.reason,

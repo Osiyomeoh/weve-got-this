@@ -36,6 +36,7 @@ export interface EvalCase {
 }
 
 const PURCHASE_FIX = '2026-09-23: used to fix the purchase tools';
+const RESOLVE_FIX = '2026-09-23: looked at while fixing resolve vs log, from the Alexa bridge run';
 
 const contains = (needle: string) => (v: unknown) =>
   typeof v === 'string' && v.toLowerCase().includes(needle);
@@ -204,7 +205,7 @@ export const CORPUS: EvalCase[] = [
   { id: 'h-resolve-01', member: 'm_david', utterance: 'Done and dusted.', expect: ['resolve_obligation', 'get_care_gaps'] },
   { id: 'h-resolve-02', member: 'm_renee', utterance: 'Handled it.', expect: ['resolve_obligation', 'get_care_gaps'] },
   { id: 'h-resolve-03', member: 'm_aide', utterance: 'Took care of that already.', expect: ['resolve_obligation', 'get_care_gaps', 'get_shift_brief'] },
-  { id: 'h-resolve-04', member: 'm_david', utterance: "Dropped him at the clinic and he's home now.", expect: ['resolve_obligation', 'get_care_gaps'] },
+  { id: 'h-resolve-04', seen: RESOLVE_FIX, member: 'm_david', utterance: "Dropped him at the clinic and he's home now.", expect: ['resolve_obligation', 'get_care_gaps'] },
 
   // --- summary, harder ---------------------------------------------------
   { id: 'h-sum-01', member: 'm_renee', utterance: 'Give me the rundown on Daddy.', expect: ['get_care_summary'] },

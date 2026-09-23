@@ -102,6 +102,12 @@ export async function runEvals(options: {
   /** Retries for rate-limited cases. */
   maxRetries?: number;
   onProgress?: (done: number, total: number) => void;
+  /**
+   * The host's system prompt, when measuring under a host other than our console - an
+   * Alexa Skill bridge, say. Real Alexa+ will not use our prompt, so the number that
+   * matters most is what the tool descriptions do under somebody else's.
+   */
+  systemPrompt?: string;
 }): Promise<CaseResult[]> {
   const cases = options.filter
     ? CORPUS.filter((c) => c.id.startsWith(options.filter!))
@@ -123,7 +129,7 @@ export async function runEvals(options: {
     for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
       try {
         // A fresh conversation per case: nothing carries over between utterances.
-        const output = await options.provider.start(SYSTEM, tools).say(c.utterance);
+        const output = await options.provider.start(options.systemPrompt ?? SYSTEM, tools).say(c.utterance);
         const use = output.toolUses[0];
         chosen = use?.name ?? null;
         args = use?.input ?? {};

@@ -1,4 +1,5 @@
 import { localParts, spokenDue } from './gaps.js';
+import { toInstant } from './time.js';
 
 /**
  * Times as the family lives them, not as the server stores them.
@@ -48,4 +49,25 @@ export function asTask(what: string): string {
   return TASK_VERBS.has(first.toLowerCase())
     ? first.toLowerCase() + what.trim().slice(first.length)
     : `take on ${what.trim()}`;
+}
+
+/** How far past "now" a report of something that already happened may sit (clock skew). */
+const FUTURE_SLACK_MS = 10 * 60_000;
+
+/**
+ * When something already happened, as an instant. A time with no offset ("14:00", the
+ * way a planner writes "at two") is the family's wall clock, not UTC; left alone, a
+ * server running in UTC would file it an hour late in Lagos and four hours early in
+ * New York. Returns a spoken reason instead when the time cannot be used.
+ */
+export function happenedAt(
+  iso: string | undefined, timezone: string, now: Date,
+): { at: string } | { problem: string } {
+  if (!iso?.trim()) return { at: now.toISOString() };
+  const at = toInstant(iso, timezone);
+  if (!at) return { problem: `I couldn't read "${iso}" as a time. Ask when it happened, or leave the time out to mean now.` };
+  if (new Date(at).getTime() - now.getTime() > FUTURE_SLACK_MS) {
+    return { problem: `That time is later than now, so it can't have happened yet. Ask when it happened, or leave the time out to mean now.` };
+  }
+  return { at };
 }

@@ -213,8 +213,10 @@ export function registerResolveObligation({ server, store, now, actor }: ToolCon
   server.registerTool('resolve_obligation', {
     title: 'Mark something as done',
     description:
-      'Record that a piece of work has been completed. Use this when someone says a task '
-      + 'is handled - "that\'s sorted now", "taken care of", "I dropped it off", "done". If '
+      'Mark a task or errand as done, so it stops showing as open. Use this when someone '
+      + 'says a piece of work is handled - "that\'s sorted now", "taken care of", "I dropped '
+      + 'it off", "done" - including errands and rides reported in the past tense, which are '
+      + 'work being closed, not events to log. If '
       + 'they do not name which task, call get_care_gaps first to find which one they mean, '
       + 'then resolve it.',
     inputSchema: {

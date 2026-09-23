@@ -4,6 +4,7 @@
 
 import { z } from 'zod';
 import { require as requireCap } from '../../domain/auth.js';
+import { happenedAt } from '../../domain/local-time.js';
 import { type CareSignal, interpretSignal } from '../../domain/signals.js';
 import { OUT } from '../output-schemas.js';
 import { describeError, guidance, reply, type ToolContext } from '../toolkit.js';
@@ -38,8 +39,10 @@ export function registerIngestSignal({ server, store, now, actor, state }: ToolC
       const recipient = s.members.find((m) => m.role === 'care_recipient');
       if (!recipient) return guidance("I don't know who this home belongs to.");
 
+      const when = happenedAt(occurredAt, s.household.timezone, now());
+      if ('problem' in when) return guidance(when.problem);
       const signal: CareSignal = {
-        source, kind, at: occurredAt ?? now().toISOString(),
+        source, kind, at: when.at,
         ...(detail ? { detail } : {}),
       };
       const outcome = interpretSignal(signal, {

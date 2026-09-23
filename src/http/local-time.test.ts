@@ -112,6 +112,26 @@ test('a request says when, in the family\'s time, and reads as a sentence', asyn
   assert.equal(req.due, 'tomorrow at 10 AM');
 });
 
+test('"at two" is two o\'clock where the family is, not in UTC', async () => {
+  const store = await family('America/New_York');
+  const base = await start(store, new Date('2026-09-23T22:00:00.000Z')); // 6 PM in New York
+
+  const r = await call(base, 'ann-token', 'log_care_event', {
+    kind: 'medication_taken', medicationName: 'blood pressure pill',
+    occurredAt: '2026-09-23T14:00:00', aboutMemberId: 'm_dad',
+  });
+  assert.equal(r.isError, false, r.text);
+  const logged = store.getCareState('h_t').events.at(-1)!;
+  assert.equal(logged.occurredAt, '2026-09-23T18:00:00.000Z'); // 2 PM EDT
+
+  const later = await call(base, 'ann-token', 'log_care_event', {
+    kind: 'medication_taken', medicationName: 'blood pressure pill',
+    occurredAt: '2026-09-23T21:00:00', aboutMemberId: 'm_dad', // 9 PM, three hours from now
+  });
+  assert.equal(later.isError, true);
+  assert.match(later.text, /later than now/);
+});
+
 test('local-time helpers', () => {
   assert.equal(isLocalToday('2026-09-23T12:05:00.000Z', new Date('2026-09-24T01:30:00.000Z'), 'America/New_York'), true);
   assert.equal(isLocalToday('2026-09-23T12:05:00.000Z', new Date('2026-09-24T01:30:00.000Z'), 'UTC'), false);

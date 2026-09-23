@@ -78,10 +78,11 @@ must own that work. A Care Gap is the failure state of the third stage.
 The judges' own advice is to beware glossy vapor. CareCircle is the opposite:
 
 - A **live MCP server** a judge can hit now (Streamable HTTP, spec 2025-11-25).
-- **486 automated tests**, strict TypeScript, an adversarial suite, CI.
-- Tool selection **measured at 96.5%** (139/144; 92.6% on the held-out cases never tuned
-  against) on Amazon Bedrock - `npm run evals`, and it reproduces. On **Amazon Nova Pro**,
-  with descriptions never tuned for it, the held-out figure is the same 92.6%.
+- **487 automated tests**, strict TypeScript, an adversarial suite, CI.
+- Tool selection **measured at 95.8%** (138/144; 92.5% on the held-out cases never tuned
+  against) on Amazon Bedrock - `npm run evals`, and it reproduces. **Amazon Nova Pro: 94.4%**,
+  and 93.1% under an Alexa Skill bridge's own system prompt, which we didn't write: the tool
+  descriptions do the work, not our prompt.
 - The trust model **measured on two axes**: a raw Sonnet 4.5 turns a missing dose into
   "she missed it" in **~50-58%** of absence cases, and reports a support worker's
   account as the disabled person's own act in **25%** of proxy cases. CareCircle:
@@ -249,15 +250,19 @@ graceful shutdown, DynamoDB persistence, App Runner deployment), runtime onboard
 
 - MCP spec **2025-11-25** over **Streamable HTTP**; 25 tools, session-bound identity
   (a member's credential, never the conversation, decides who they are).
-- **Measured tool selection: 96.5% first-tool accuracy (139/144)** on Claude Sonnet 4.5
-  via Bedrock: 68/68 authored, **63/68 (92.6%) on held-out cases never tuned against**, and
-  8/8 on held-out cases later used to fix the server, reported apart rather than counted
-  as unseen. Reproducible: `npm run evals` (temperature 0, but a borderline case or two
+- **Measured tool selection: 95.8% first-tool accuracy (138/144)** on Claude Sonnet 4.5
+  via Bedrock: 67/68 authored, **62/67 (92.5%) on held-out cases never tuned against**, and
+  9/9 on held-out cases we later looked at while fixing the server, reported apart rather
+  than counted as unseen. Every case of every run is in `evals/results/`. Reproducible: `npm run evals` (temperature 0, but a borderline case or two
   flips run-to-run; the earlier 135-case corpus measured 124-126 across runs).
-- **The same corpus on Amazon's own models**, descriptions untouched: Nova Pro 91.7% overall
-  and **92.6% held-out, identical to Claude**; Nova 2 Lite 81.3% (73.5% held-out), mostly
-  checking the board before acting. The descriptions carry across planners rather than
-  fitting one model.
+- **The same corpus on Amazon's own models**: **Nova Pro 94.4%** (91.0% held-out); Nova 2
+  Lite 83.3% (77.6% held-out), mostly checking the board before acting.
+- **Under a prompt we didn't write.** Real Alexa+ won't use our planner prompt, so we also
+  ran the corpus under the system prompt of an Alexa Skill bridge (a Strands agent on
+  AgentCore that stands in for the Alexa+ orchestrator): Nova Pro **93.1%**, 91.0% held-out,
+  the same held-out score as under our own prompt. That run found the one weak spot shared by
+  both prompts ("took him to the clinic, all done" logged as an event instead of closing the
+  task); sharpening two descriptions lifted every Nova run by 3-4 cases.
 
   **On re-running it.** The headline reproduces exactly; the split between the two
   halves does not, because the model is sampled rather than deterministic. Our
@@ -280,7 +285,7 @@ graceful shutdown, DynamoDB persistence, App Runner deployment), runtime onboard
   turns up in benefits reviews and care-plan audits, and it is exactly where the model
   asserted compliance in Alex's name on somebody else's word. Reproducible, with the
   erasing questions printed by id: `npm run trust-benchmark`.
-- **486 automated tests** incl. an adversarial suite (credential swap mid-session,
+- **487 automated tests** incl. an adversarial suite (credential swap mid-session,
   cross-household access, prompt-injection through note text), strict TypeScript, CI.
 - Deterministic end-to-end demo over real MCP: `npm run story`.
 
@@ -296,7 +301,7 @@ cast; "Server not initialized" errors are opaque. *Onboarding:* fast to hello-wo
 
 **Amazon Bedrock (Claude Sonnet 4.5)** - *used for* the Alexa+ planner (NL → tool
 selection) and as the AWS Builder integration. *Worked:* `Converse` is simple; Sonnet
-4.5 tool selection is strong (96.5%; 92.6% on unseen phrasings). *Needs work:* a model-access grant does not imply
+4.5 tool selection is strong (95.8%; 92.5% on unseen phrasings). *Needs work:* a model-access grant does not imply
 the caller has `bedrock:InvokeModel` (two independent gates, identical-looking errors);
 the newer models must be called by inference-profile id, not model id; you can't
 self-diagnose quota headroom without a separate Service Quotas permission. *Onboarding:*
@@ -363,7 +368,7 @@ saved us hours - each one hit while building CareCircle this period.
 ## AWS Builder mini - which services, how, why
 
 - **Bedrock (Sonnet 4.5)** is the planner that turns a spoken sentence into a tool call
-  - the reasoning core, measured at 96.5% (92.6% on unseen phrasings).
+  - the reasoning core, measured at 95.8% (92.5% on unseen phrasings).
 - **DynamoDB** is the durable care record (single-table, diff-based writes).
 - **App Runner + CodeBuild + ECR** build and serve the MCP server at a public URL.
 - **SNS** delivers `notify_member` messages for real (record-only fallback otherwise).

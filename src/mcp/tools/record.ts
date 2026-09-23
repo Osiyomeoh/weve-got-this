@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { applyAppointment } from '../../domain/appointments.js';
 import { require as requireCap } from '../../domain/auth.js';
 import { orphanedBy } from '../../domain/inference.js';
+import { happenedAt } from '../../domain/local-time.js';
 import { OUT } from '../output-schemas.js';
 import { joinSpoken } from '../text.js';
 import { describeError, guidance, reply, type ToolContext } from '../toolkit.js';
@@ -13,14 +14,16 @@ import { describeError, guidance, reply, type ToolContext } from '../toolkit.js'
 /**
  * "I used my eye drops."
  */
-export function registerLogCareEvent({ server, store, now, actor }: ToolContext): void {
+export function registerLogCareEvent({ server, store, now, actor, state }: ToolContext): void {
   server.registerTool('log_care_event', {
     title: 'Log something that happened',
     description:
       'Record that something happened - a medication taken, a meal eaten, a check-in, '
       + 'how someone is feeling. Use this for things that ALREADY happened. For something '
       + 'scheduled in the future use record_appointment instead; for an observation or '
-      + 'concern with no action attached use add_note.',
+      + 'concern with no action attached use add_note. When what happened is that a task '
+      + 'or errand got done - a ride given, a pickup made, a job finished - that closes '
+      + 'the task: use resolve_obligation.',
     inputSchema: {
       kind: z.enum(['medication_taken', 'check_in'])
         .describe('What sort of event this is.'),
@@ -57,11 +60,14 @@ export function registerLogCareEvent({ server, store, now, actor }: ToolContext)
         medicationId = matches[0]?.id;
       }
 
+      const when = happenedAt(occurredAt, state().household.timezone, now());
+      if ('problem' in when) return guidance(when.problem);
+
       const event = await store.appendEvent({
         householdId: me.householdId,
         kind,
         reportedBy: me.id,
-        occurredAt: occurredAt ?? now().toISOString(),
+        occurredAt: when.at,
         source: 'voice',
         confidence: 'reported',
         ...(detail ? { detail } : {}),

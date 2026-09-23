@@ -56,7 +56,7 @@ person, and never accuses anyone of what it didn't see.*
       him on camera. Also check your siblings are happy for the family to be described.
 - [ ] Burn in captions. The video makes an accessibility argument; it has to be captioned.
 - [ ] Say numbers only if they match the repo on record day: tools (`get_started` lists
-      them, 26 today), tests (`npm test`, 486 today), trust benchmark
+      them, 26 today), tests (`npm test`, 487 today), trust benchmark
       (`npm run trust-benchmark`).
 
 ---
@@ -241,8 +241,8 @@ Repo:  npm ci && npm run story     (no AWS, no keys)
 - **The Fire TV APK install.** The `/tv` surface makes the shared-display point faster.
 - **The D-pad "who is taking this on?" beat.** Real multimodal work, but 12 seconds the
   Telegram loop needs more. Keep it for the Fire TV track writeup.
-- **The eval number (96.5%).** A tool-selection metric that invites "what about the
-  other 3.5%?" mid-video. It's in the writeup with the miss analysis.
+- **The eval number (95.8%).** A tool-selection metric that invites "what about the
+  other 4.2%?" mid-video. It's in the writeup with the miss analysis.
 - **A tour of every connection (Gmail, Calendar sync, Bee).** One story beats a feature
   list. The calendar appears only as the 3-second payoff of the loop.
 - **Voice-accuracy tooling (Transcribe, repair).** Infrastructure for the demo, not the
