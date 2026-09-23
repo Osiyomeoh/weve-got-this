@@ -9,7 +9,7 @@
 > I'm from Lagos, Nigeria. We're a family of five, and our dad. Our mum has passed. In
 > Nigeria we take care of our parents, and we still have to work to make a living. My dad
 > is going on seventy. He just had surgery and had to time his own medication, and he
-> wanted to know what was going on. He has drugs, supplements, check-ups and the rest his
+> wanted to know what was going on. He has medications, supplements, check-ups and the rest his
 > doctors prescribe, and getting around isn't easy anymore. We all want to help. But
 > nobody is in charge - so the thing that fails isn't the thing someone forgot. It's the
 > thing **nobody knew was theirs.**
@@ -17,6 +17,14 @@
 And a brother in the UK wants updates on Dad's health too. So family far away get a short
 evening update on the day, and CareCircle never asks them to drive anyone to a clinic in
 Lagos.
+
+**Built in Lagos, for every family that shares care across a few people and a few places,
+including millions of American ones.** 53% of US family caregivers say someone else also
+helps the same person, and 58% do medical or nursing tasks such as managing medications
+([AARP & NAC, 2020](docs/EVIDENCE.md)). Alexa+ runs in the home of whoever coordinates the
+care, and it launched in the US. Everyone else joins over Telegram or WhatsApp, which work
+in any country. A daughter in Houston asks her Echo what nobody has taken on; her dad and
+sister in Lagos and her brother in London answer in the family group.
 
 Every family-care tool assumes someone already **noticed** the work and typed a task.
 That is exactly the step that fails.
@@ -121,8 +129,9 @@ these lines deliberately and held to them:
 
 ## The interaction
 
-**Daddy, going on 70, to the Echo at home** - he talks to it; he never has to open an
-app:
+**Daddy, going on 70, by voice** - he talks; he never has to learn an app. On an Echo that
+is Alexa+. Where there is no Echo, as in Lagos today, the same sentence goes through the
+CareCircle console in a phone browser, which listens and speaks back:
 
 > "Alexa, I have my eye check-up Thursday at ten."
 

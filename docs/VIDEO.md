@@ -71,7 +71,7 @@ don't add any. Read it slowly and plainly: it lands because it's true.
 > living. My dad is going on seventy. He just had surgery, and he had to time his own
 > medication. He wanted to know what's going on.
 >
-> He has drugs, supplements, check-ups, the rest his doctors tell him to take, and
+> He has medications, supplements, check-ups, the rest his doctors tell him to take, and
 > getting around isn't easy anymore. We all want to help. But nobody is in charge. So what
 > fails isn't the thing someone forgot. It's the thing **nobody knew was theirs.**"
 
@@ -203,7 +203,11 @@ to be mentioned.)
 > **VO:** "Where I'm from, this isn't a convenience. Nigeria has the largest older
 > population in Africa, heading to twenty-five million by 2050, and almost no formal care
 > system. The family **is** the care system: one child in Lagos, one abroad, a parent in
-> the village. Coordination isn't part of eldercare there. It's all of it."
+> the village. Coordination isn't part of eldercare there. It's all of it.
+>
+> And it isn't only us. In America, about half of family caregivers share the job with someone
+> else. The Echo sits with whoever coordinates, and everyone else answers from their
+> phone, wherever they are."
 
 **Tail, 5 seconds, over the TV surface:** "The spoken answer works without the screen,
 and the screen works without the voice. A test fails the build if either breaks."

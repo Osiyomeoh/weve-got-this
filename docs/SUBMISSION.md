@@ -38,7 +38,7 @@ It's the builder's own. In their words:
 > I'm from Lagos, Nigeria. We're a family of five, and our dad. Our mum has passed. In
 > Nigeria we take care of our parents, and we still have to work to make a living. My dad
 > is going on seventy. He just had surgery and had to time his own medication, and he
-> wanted to know what was going on. He has drugs, supplements, check-ups and the rest his
+> wanted to know what was going on. He has medications, supplements, check-ups and the rest his
 > doctors prescribe, and getting around isn't easy anymore.
 
 And a brother in the UK wants updates on Dad's health too.
@@ -143,14 +143,21 @@ Every figure here is sourced and marked PRIMARY / SECONDARY / CONTESTED in
 would be incoherent to build a system that refuses to state an inference as a fact and
 then argue for it with unsourced numbers.
 
-**The population.** 1.4 billion people will be 60+ by 2030, 2.1 billion by 2050 (WHO).
+**The families Alexa+ serves today.** Alexa+ launched in the US, and the problem is
+there too: **53%** of US family caregivers say someone else also provides unpaid help to
+the same person, and **58%** do medical or nursing tasks such as managing medications
+(AARP/NAC 2020). Shared responsibility with no owner is exactly the failure state
+CareCircle detects. Some of those American families are transnational too: Nigerian
+immigrants in the US caring for parents back home is a studied pattern (PMC, see
+EVIDENCE.md), and it is the shape of this product: the Echo in the coordinator's home,
+Telegram or WhatsApp for everyone else, in any country.
 
 **The mechanism.** Around **50% of patients do not take long-term medication as
 prescribed** (WHO, 2003), and **1 in 5** older adults has skipped needed care for lack
-of transport. **53%** of US family caregivers say someone else also provides unpaid
-help to the same person (AARP/NAC 2020) - shared responsibility with no owner is
-exactly the failure state CareCircle detects. An eye check-up nobody drives
-the patient to is not a scheduling problem; it is a missed appointment.
+of transport. An eye check-up nobody drives the patient to is not a scheduling
+problem; it is a missed appointment.
+
+**The population.** 1.4 billion people will be 60+ by 2030, 2.1 billion by 2050 (WHO).
 
 **The economy.** **16.4 billion hours** of unpaid care work are performed daily
 worldwide - the equivalent of 2 billion people working full-time, unpaid - valued at
@@ -158,7 +165,7 @@ up to **9% of global GDP, about US$11 trillion** (ILO, 2018). Women perform 76.2
 it. The world's largest care workforce is unpaid, uncoordinated, and has **no shared
 system of record**. An $11 trillion economy runs on memory and text messages.
 
-**Where the case is strongest.** In the West this is a convenience layer over an
+**Where the case is strongest.** In the US, CareCircle coordinates a family around an
 existing care system. In Nigeria - where I am from - and across Sub-Saharan Africa
 **there is no such system to sit on top of**. Formal long-term care is largely
 undeveloped (World Bank); **Cameroon has fewer than 50 nursing-home places nationally
@@ -174,8 +181,10 @@ institution is paying for it. Neither assumption holds. **Voice on a shared devi
 with a screen anyone in the room can glance at, assumes only that a family talks to
 each other.**
 
-The distribution path is concrete and needs no new hardware: an Alexa+ add-on on
-devices already in the home.
+The distribution path is concrete and needs no new hardware: an Alexa+ add-on on the
+Echo devices already in US homes, with Telegram and WhatsApp reaching the rest of the
+family in any country. Where there is no Echo, as in Lagos today, the same console runs
+in a phone browser and listens and speaks back.
 
 ## How it works - Build / Ship / Shape
 
