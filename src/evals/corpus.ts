@@ -47,7 +47,7 @@ export const CORPUS: EvalCase[] = [
 
   // --- Appointments ------------------------------------------------------
   { id: 'appt-01', member: 'm_renee', utterance: 'Daddy has his eye check-up on Thursday at ten.', expect: ['record_appointment'],
-    args: { kind: contains('cardio') } },
+    args: { kind: contains('eye') } },
   { id: 'appt-02', member: 'm_margaret', utterance: 'I have a dentist appointment next Tuesday at 2pm.', expect: ['record_appointment'] },
   { id: 'appt-03', member: 'm_david', utterance: 'Put Daddy down for physical therapy Friday morning at nine.', expect: ['record_appointment'] },
   { id: 'appt-04', member: 'm_renee', utterance: 'The clinic moved his bloodwork to Monday at eight.', expect: ['record_appointment'] },
