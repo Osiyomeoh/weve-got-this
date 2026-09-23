@@ -237,22 +237,6 @@ Denials are written to be spoken, and say what the person *can* do instead:
 
 ---
 
-## About Alexa Together
-
-Amazon has explored this space before. [Alexa Together](https://www.aboutamazon.com/news/devices/alexa-together-launches-to-help-customers-remotely-care-for-loved-ones)
-launched in 2021 and was discontinued in May 2025. We deliberately did not rebuild it.
-
-Alexa Together was a **monitoring** product: one caregiver watching one parent, sold
-as a subscription Amazon had to operate, with the support and liability that implies.
-CareCircle is a **coordination** product: several people sharing one record, with the
-care recipient as a participant. It is an add-on, not a service Amazon runs.
-
-That a company builds something twice - Care Hub in 2020, Alexa Together in 2021 -
-says the customer need is real. What did not work was the shape. Add-ons are a shape
-where the platform does not have to own the vertical in order to serve the customer.
-
----
-
 ## Architecture
 
 The one model everything else serves is the **responsibility graph** -

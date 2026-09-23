@@ -52,8 +52,6 @@ nine failures, and fixed them."*
 - [ ] Sized market stated once, with a source
 - [ ] A deployed URL a judge can use themselves - **required by the rules** to remain
       free and unrestricted until judging ends 20 November
-- [ ] The Alexa Together answer ✅ **done** - turns the obvious objection into evidence
-      of ecosystem understanding
 
 ### Quality of the Idea - 10 = "I have not seen this before"
 
@@ -175,7 +173,6 @@ project with a better film.
 1:10-1:35  One record, four people. Renee refused the assign. The aide scoped out.
 1:35-2:00  Architecture: MCP 2025-11-25, AgentCore, Strands. Tool-selection accuracy.
 2:00-2:20  The real caregiver.
-2:20-2:30  Alexa Together: we did not rebuild it. Here is what we built instead.
 ```
 
 **Exit:** final cut uploaded, unlisted, watched by someone who has never seen it.
