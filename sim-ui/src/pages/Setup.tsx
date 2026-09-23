@@ -41,18 +41,20 @@ export default function Setup() {
   // Start clean each visit, so a demo always begins at "create your circle".
   useEffect(() => { void api.resetSetup().then(refresh).catch(() => void refresh()); }, []);
 
-  const run = async (tool: string, args: Record<string, unknown>) => {
+  const run = async (tool: string, args: Record<string, unknown>): Promise<boolean> => {
     setBusy(true);
     setError(null);
     try {
       const call = await api.act(FOUNDER_ID, tool, args);
-      if (call.isError) { setError(call.result); return; }
+      if (call.isError) { setError(call.result); return false; }
       // Creating the circle maps the founder's token to a real member; the open
       // session is still the bootstrap principal, so refresh it before continuing.
       if (tool === 'create_household') await api.rebindSetup().catch(() => undefined);
       await refresh();
+      return true;
     } catch (e) {
       setError((e as Error).message);
+      return false;
     } finally {
       setBusy(false);
     }
@@ -96,14 +98,17 @@ export default function Setup() {
       {step === 'create_circle' && <CreateCircle busy={busy} onSubmit={run} />}
       {step === 'add_recipient' && <AddRecipient busy={busy} onSubmit={run} />}
       {step === 'add_care_detail' && <AddCareDetail busy={busy} onSubmit={run} />}
-      {step === 'ready' && <Ready progress={progress!} onReset={() => void api.resetSetup().then(refresh)} />}
+      {step === 'ready' && (
+        <Ready progress={progress!} busy={busy} onSubmit={run} onReset={() => void api.resetSetup().then(refresh)} />
+      )}
     </div>
   );
 }
 
 interface StepProps {
   busy: boolean;
-  onSubmit: (tool: string, args: Record<string, unknown>) => void;
+  /** Resolves to whether the tool call succeeded. */
+  onSubmit: (tool: string, args: Record<string, unknown>) => Promise<boolean>;
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -189,7 +194,7 @@ function AddCareDetail({ busy, onSubmit }: StepProps) {
   );
 }
 
-function Ready({ progress, onReset }: { progress: OnboardingProgress; onReset: () => void }) {
+function Ready({ progress, busy, onSubmit, onReset }: StepProps & { progress: OnboardingProgress; onReset: () => void }) {
   return (
     <div className="space-y-5">
       {progress.firstGap ? (
@@ -204,10 +209,82 @@ function Ready({ progress, onReset }: { progress: OnboardingProgress; onReset: (
           moment something does.
         </div>
       )}
+      <AddFamily busy={busy} onSubmit={onSubmit} />
       <div className="flex gap-3">
         <Link to="/console" className={btnCls}>Open the care board</Link>
         <button onClick={onReset} className="rounded-lg border border-white/15 px-5 py-2.5 text-ink/80">Set up another</button>
       </div>
     </div>
+  );
+}
+
+/**
+ * The rest of the family, optional and one at a time. "Lives far away" is for the
+ * sibling abroad: CareCircle never picks them on its own for something that needs
+ * someone there, and they can have a short update on the day every evening instead.
+ */
+function AddFamily({ busy, onSubmit }: StepProps) {
+  const [name, setName] = useState('');
+  const [role, setRole] = useState<'caregiver' | 'helper'>('caregiver');
+  const [away, setAway] = useState(false);
+  const [city, setCity] = useState('');
+  const [evening, setEvening] = useState(true);
+  const [added, setAdded] = useState<string[]>([]);
+  const ok = name.trim() && (!away || city.trim());
+  return (
+    <form
+      className="space-y-4 rounded-2xl border border-white/12 p-5"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!ok) return;
+        const who = name.trim();
+        void onSubmit('add_member', {
+          name: who, role,
+          ...(away ? { livesAway: city.trim(), dailyUpdate: evening } : {}),
+        }).then((saved) => {
+          if (!saved) return;
+          setAdded((a) => [...a, who]);
+          setName(''); setAway(false); setCity('');
+        });
+      }}
+    >
+      <div>
+        <div className="font-medium">Add family (optional)</div>
+        <div className="text-sm text-muted">
+          {added.length ? `Added ${added.join(', ')}. Anyone else?` : 'Brothers, sisters, a paid helper: whoever shares the care.'}
+        </div>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Name">
+          <input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Kunle" />
+        </Field>
+        <Field label="They are">
+          <select className={inputCls} value={role} onChange={(e) => setRole(e.target.value as 'caregiver' | 'helper')}>
+            <option value="caregiver">Family</option>
+            <option value="helper">Paid help</option>
+          </select>
+        </Field>
+      </div>
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" checked={away} onChange={(e) => setAway(e.target.checked)} />
+        Lives far away
+      </label>
+      {away && (
+        <div className="space-y-3 border-l-2 border-white/10 pl-4">
+          <Field label="Where?">
+            <input className={inputCls} value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. London" />
+          </Field>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={evening} onChange={(e) => setEvening(e.target.checked)} />
+            Send them an update on the day, every evening
+          </label>
+          <p className="text-xs text-muted">
+            CareCircle won't ask them to do things that need someone there, like a ride.
+            You can still ask them by name.
+          </p>
+        </div>
+      )}
+      <button className={btnCls} disabled={!ok || busy}>{busy ? 'Adding…' : 'Add to the circle'}</button>
+    </form>
   );
 }

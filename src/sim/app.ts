@@ -82,10 +82,14 @@ async function contextFor(req: express.Request): Promise<Ctx> {
 
 const MAX_HOSTS = 2_000;
 
+const hostKeyOf = (ctx: Ctx, memberId: string): string => `${ctx.key}|${memberId}`;
+/** The founder's session. Onboarding always runs in the live context, never a sandbox. */
+const FOUNDER_HOST = hostKeyOf(LIVE, FOUNDER_ID);
+
 async function hostFor(ctx: Ctx, memberId: string): Promise<SimulatedAlexa> {
   // Onboarding is not part of the demo story; it always runs as the founder.
   if (memberId === FOUNDER_ID) ctx = LIVE;
-  const hostKey = `${ctx.key}|${memberId}`;
+  const hostKey = hostKeyOf(ctx, memberId);
   const existing = hosts.get(hostKey);
   if (existing) return existing;
   const token = ctx.token(memberId);
@@ -290,7 +294,7 @@ app.post('/api/say', async (req, res) => {
 // Start onboarding over with a brand-new family: a fresh bootstrap token, and no
 // cached session, so the next call begins at "create your circle".
 app.post('/api/setup/reset', async (_req, res) => {
-  hosts.delete(FOUNDER_ID);
+  hosts.delete(FOUNDER_HOST);
   tokenFor.set(FOUNDER_ID, newFounderToken());
   res.json({ ok: true });
 });
@@ -300,7 +304,7 @@ app.post('/api/setup/reset', async (_req, res) => {
 // a mid-session identity change (its credential-swap guard). So drop the session,
 // keeping the now-mapped token, and the next call reconnects as that member.
 app.post('/api/setup/rebind', async (_req, res) => {
-  hosts.delete(FOUNDER_ID);
+  hosts.delete(FOUNDER_HOST);
   res.json({ ok: true });
 });
 
