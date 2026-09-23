@@ -56,6 +56,8 @@ export interface TelegramWebhookOptions {
    * or from a group message addressed to the bot. Without it, only yes/no is understood.
    */
   chat?: ChatReply;
+  /** Where operator notes go (unmapped senders). Defaults to nothing. */
+  log?: (line: string) => void;
 }
 
 export function createTelegramWebhook(opts: TelegramWebhookOptions) {
@@ -89,7 +91,10 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
       const memberId = byUser.get(msg.fromId);
       if (!memberId) {
         // A stranger, or a group member we do not know: acknowledge to Telegram
-        // (so it stops retrying) but stay silent in the chat and touch nothing.
+        // (so it stops retrying) but stay silent in the chat and touch nothing. The ids go
+        // to the server log - never the text - so the operator can map a family member
+        // who says hello at any time, instead of holding a listening window open.
+        opts.log?.(`telegram: unmapped sender ${msg.fromId} (${msg.fromName ?? 'no name'}) in ${msg.isPrivate ? 'a private chat' : `group ${msg.chatId}`}`);
         results.push({ updateId: msg.updateId, status: 'unknown-sender' });
         continue;
       }

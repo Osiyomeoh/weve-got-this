@@ -77,6 +77,20 @@ test('a reply from an unknown chat is acknowledged but acts on nothing', async (
   assert.equal(store.getCareState(HH).obligations[0]!.status, 'REQUESTED');
 });
 
+test('a new face in the group is noted for the operator by id and first name, never what they said', async () => {
+  const lines: string[] = [];
+  const h = createTelegramWebhook({
+    store, secretToken: SECRET, memberByChat: new Map([['987654', 'm_renee']]), householdId: HH,
+    now: () => NOW, log: (l) => lines.push(l),
+  });
+  const res = mockRes();
+  await h(postReq({
+    update_id: 7,
+    message: { message_id: 3, chat: { id: -500, type: 'group' }, from: { id: 4242, first_name: 'Ada' }, text: 'hello everyone, my PIN is 1234' },
+  }, SECRET), res);
+  assert.deepEqual(lines, ['telegram: unmapped sender 4242 (Ada) in group -500']);
+});
+
 test('the bot answers in the chat the reply came from', async () => {
   const calls: Array<{ url: string; body: unknown }> = [];
   const h = createTelegramWebhook({

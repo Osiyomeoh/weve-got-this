@@ -18,3 +18,4 @@ firetv/app/release/
 sim-ui/node_modules/
 sim-ui/dist/
 .DS_Store
+evals-massive-*

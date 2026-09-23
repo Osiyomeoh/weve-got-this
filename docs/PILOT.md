@@ -41,14 +41,21 @@ This is a real person's care, so:
 
 1. Create a Telegram group (or use their existing care group) and add
    `@carecircle0111_bot`.
-2. Operator runs, from the repo root:
+2. Everyone in the group, the person being cared for included, posts one message there
+   and opens `@carecircle0111_bot` and taps **Start** (a bot may not message anyone first).
+   No one has to be on time: the bot writes each unmapped sender's Telegram id and first
+   name (never the message) to the server log. The operator reads them with
 
    ```bash
-   npm run telegram:ids
+   AWS_PROFILE=conductor aws logs filter-log-events --region us-east-1 \
+     --log-group-name "$(aws logs describe-log-groups --profile conductor --region us-east-1 \
+       --log-group-name-prefix /aws/apprunner/carecircle-mcp --query 'logGroups[?ends_with(logGroupName, `application`)].logGroupName' --output text)" \
+     --filter-pattern '"unmapped sender"' --query 'events[].message' --output text
    ```
 
-   then asks everyone to post "hello" in the group within 2 minutes. It prints the group
-   id and each person's Telegram id, then puts the webhook back automatically.
+   `npm run telegram:ids` still works for a quick live capture: it takes the webhook down
+   while it listens and puts it back afterwards. If it is killed mid-listen, run it again
+   briefly so the webhook is restored.
 3. In `.env`, point the live doors at the pilot household:
 
    ```

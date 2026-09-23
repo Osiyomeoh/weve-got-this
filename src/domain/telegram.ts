@@ -30,6 +30,8 @@ export interface TelegramInbound {
   /** Who sent it - the person's own Telegram user id. In a DM this equals chatId;
    *  in a group it is how we tell one family member's reply from another's. */
   fromId: string;
+  /** The sender's Telegram first name, for the operator mapping a new family member. */
+  fromName?: string;
   /** The message text. */
   text: string;
   /** Telegram's update id, for idempotency. */
@@ -46,7 +48,7 @@ interface TgUpdate {
   message?: {
     message_id?: number;
     text?: string;
-    from?: { id?: number | string };
+    from?: { id?: number | string; first_name?: string };
     chat?: { id?: number | string; type?: string };
     reply_to_message?: { from?: { is_bot?: boolean } };
   };
@@ -75,5 +77,6 @@ export function parseTelegramUpdate(payload: unknown): TelegramInbound[] {
   if (!updateId || !chatId || !text) return [];
   const isPrivate = u.message?.chat?.type === 'private';
   const addressedToBot = isPrivate || mention.test(raw) || u.message?.reply_to_message?.from?.is_bot === true;
-  return [{ chatId, fromId, text, updateId, isPrivate, addressedToBot }];
+  const fromName = u.message?.from?.first_name;
+  return [{ chatId, fromId, text, updateId, isPrivate, addressedToBot, ...(fromName ? { fromName } : {}) }];
 }

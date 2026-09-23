@@ -155,6 +155,7 @@ app.post(
     store, secretToken: tgSecret, botToken: tgBotToken,
     memberByChat: tgMemberByChat, householdId: tgHousehold, ...(now ? { now } : {}),
     ...(tgChat ? { chat: tgChat } : {}),
+    log: (line) => console.info(line),
   }),
 );
 

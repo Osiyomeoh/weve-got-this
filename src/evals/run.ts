@@ -103,6 +103,8 @@ export async function runEvals(options: {
   /** Retries for rate-limited cases. */
   maxRetries?: number;
   onProgress?: (done: number, total: number) => void;
+  /** Each result as it lands, so a long run can be saved as it goes and resumed. */
+  onResult?: (result: CaseResult) => void;
   /**
    * The host's system prompt, when measuring under a host other than our console - an
    * Alexa Skill bridge, say. Real Alexa+ will not use our prompt, so the number that
@@ -161,6 +163,7 @@ export async function runEvals(options: {
       if (!c) return;
       if (index > 0 && pace > 0) await sleep(pace);
       results[index] = await runCase(c);
+      options.onResult?.(results[index]!);
       done += 1;
       options.onProgress?.(done, cases.length);
     }
