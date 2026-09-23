@@ -42,6 +42,8 @@ person, and never accuses anyone of what it didn't see.*
       in frame. Never alt-tab on camera.
 - [ ] Claude Desktop (or MCPJam) connected to the live `/mcp` endpoint via OAuth, tested
       once before the take.
+- [ ] **Your dad's consent** to include his story, and separately to show anything of
+      him on camera. Fill in every `[fill in]` in the opening with what's actually true.
 - [ ] Burn in captions. The video makes an accessibility argument; it has to be captioned.
 - [ ] Say numbers only if they match the repo on record day: tools (`get_started` lists
       them, 25 today), tests (`npm test`, 416 today), trust benchmark
@@ -49,29 +51,43 @@ person, and never accuses anyone of what it didn't see.*
 
 ---
 
-## 0:00-0:15 - The failure (Impact)
+## 0:00-0:20 - Why I built this (Impact, the human story)
 
-> **VO:** "Margaret is 78 and lives alone. Her son, her daughter and a paid aide all help.
-> Nobody is in charge. So what fails isn't the task someone forgot. It's the task
-> **nobody knew was theirs.**"
+**Your own voice, not a narrator.** The judges said three times that a real problem
+from the builder's own life is what cuts through. This is yours; say it plainly.
 
-**On screen:** three phones, three half-conversations, one unanswered question:
-*"wait, is someone driving her Thursday?"* Cut hard on "theirs".
+> **VO (you):** "My dad just had eye surgery. For [fill in: how long, e.g. the next few
+> weeks] he has to take [fill in: e.g. eye drops several times a day], and he can't
+> easily read a label or a phone screen right now.
+>
+> [fill in: who helps, e.g. my siblings and I] all want to help. But nobody is in
+> charge. So what fails isn't the task someone forgot. It's the task **nobody knew was
+> theirs.**"
 
-## 0:15-0:32 - What it is, and Margaret speaks for herself (Idea, Design)
+**On screen (only with your dad's consent, and no face needed):** close shots that are
+true to his recovery: [fill in: e.g. the medication on a table, his hands, a paper
+schedule]. Then the family group chat with one real unanswered question, e.g. *"did
+anyone take him to the follow-up?"* Blur names and numbers. Cut hard on "theirs".
+
+> Keep every detail true. If a line above isn't how it really is, change it. A judge
+> can feel an invented story, and this beat only works because it's real.
+
+## 0:20-0:35 - What it is, and why it has no screen (Idea, Design)
 
 **Title card, 2 seconds:** `CareCircle - an Alexa+ add-on, built as an MCP server`
 
-**Live console.** Margaret, the person being cared for, speaks:
+> **VO (you):** "So I built CareCircle for families like mine. You don't read it. You
+> talk to it. For my dad right now, that isn't a feature. It's the only way in."
+
+**Live console, the demo family.** Card for 1 second: `Demo family: Margaret, modelled
+on caring for my dad.` Margaret, the person being cared for, speaks:
 
 > **Margaret:** "I took my heart pill this morning."
 > **CareCircle:** *(Polly, gentle)* "Got it. Logged for this morning."
 
 **Caption:** `CONFIRMED - she said it herself`
 
-> **VO:** "She's never used a smartphone. She doesn't need to. She talks."
-
-## 0:32-0:50 - The refusal (Idea, the most important beat)
+## 0:35-0:50 - The refusal (Idea, the most important beat)
 
 > **David:** "Did Mom take her evening pill?"
 > **CareCircle:** "There's no record of the evening dose."
