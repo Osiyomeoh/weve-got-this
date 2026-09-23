@@ -9,7 +9,9 @@ import { deliberate, AGENT_ID } from '../domain/agent.js';
 import { onboardingProgress } from '../domain/onboarding.js';
 import { applyAppointment } from '../domain/appointments.js';
 import { interpretSignal, type CareSignal } from '../domain/signals.js';
-import { offerFor, offerSpoken, formatPrice, type PurchaseOffer } from '../domain/commerce.js';
+import {
+  chooseRefill, offerFor, offerSpoken, formatPrice, waitingOffers, type PurchaseOffer,
+} from '../domain/commerce.js';
 import { can, canActOn, capabilitiesOf, NotPermittedError, require as requireCap } from '../domain/auth.js';
 import { attributionOf, isReported, sayWhoSaysSo } from '../domain/attribution.js';
 import { explainProvenance } from '../domain/provenance.js';
@@ -65,27 +67,35 @@ function guidance(text: string) {
  * them, so guidance() paths are unaffected.
  */
 const arr = z.array(z.unknown());
+type Handler = (...args: unknown[]) => unknown;
 const OUT = {
   log_care_event: { eventId: z.string().optional(), matchedMedication: z.string().nullable().optional() },
   record_appointment: { eventId: z.string().optional(), proposals: arr.optional() },
-  add_note: { eventId: z.string().optional() },
+  add_note: { eventId: z.string().optional(), orphaned: arr.optional() },
   get_care_gaps: { recordedToday: arr.optional(), gaps: arr.optional() },
   claim_obligation: { obligationId: z.string().optional(), ownerId: z.string().nullable().optional() },
   assign_obligation: { obligationId: z.string().optional(), ownerId: z.string().nullable().optional() },
   request_owner: { obligationId: z.string().optional(), askedOfId: z.string().optional(), status: z.string().optional() },
-  respond_to_request: { status: z.string().optional(), ownerId: z.string().nullable().optional() },
+  respond_to_request: { obligationId: z.string().optional(), status: z.string().optional(), ownerId: z.string().nullable().optional(), declined: z.boolean().optional(), nextCandidate: z.string().nullable().optional() },
   get_my_requests: { requests: arr.optional() },
   get_provenance: { obligationId: z.string().optional(), what: z.string().optional(), owner: z.string().nullable().optional(), chain: arr.optional() },
   get_connections: { connections: arr.optional() },
-  confirm_proposal: { obligationId: z.string().optional() },
+  confirm_proposal: { obligationId: z.string().optional(), status: z.string().optional() },
   resolve_obligation: { obligationId: z.string().optional() },
   run_care_agent: { would: arr.optional(), heldBack: arr.optional(), asked: arr.optional(), dryRun: z.boolean().optional() },
   get_care_summary: { medicationsLogged: z.number().optional(), medications: arr.optional(), notes: arr.optional(), gaps: arr.optional(), pendingProposals: arr.optional() },
   get_shift_brief: { medications: arr.optional(), assignedToMe: arr.optional() },
   notify_member: { eventId: z.string().optional(), recipientId: z.string().optional(), channel: z.string().optional(), delivered: z.boolean().optional() },
   ingest_signal: { eventId: z.string().optional(), resolvesCandidate: z.unknown().optional(), proposalId: z.string().nullable().optional() },
-  reorder_prescription: { eventId: z.string().optional() },
-  confirm_purchase: { placed: z.boolean().optional(), amountCents: z.number().optional(), closedObligation: z.string().nullable().optional() },
+  reorder_prescription: {
+    eventId: z.string().optional(),
+    offer: z.object({
+      offerId: z.string(), kind: z.string(), item: z.string(), merchant: z.string(),
+      amountCents: z.number(), currency: z.string(), etaText: z.string(),
+      obligationId: z.string().optional(), simulated: z.boolean(),
+    }).optional(),
+  },
+  confirm_purchase: { offerId: z.string().optional(), placed: z.boolean().optional(), amountCents: z.number().optional(), closedObligation: z.string().nullable().optional() },
   get_started: { step: z.string().optional(), done: arr.optional(), complete: z.boolean().optional(), firstGap: z.unknown().optional() },
   create_household: { householdId: z.string().optional(), memberId: z.string().optional() },
   add_member: { memberId: z.string().optional() },
@@ -140,6 +150,24 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
         + 'is not evidence. When a tool returns an error, follow the instruction in it.',
     },
   );
+
+  // Hosts check a tool's structured result against its declared output schema and
+  // reject any field it does not declare. A field added to a result but not to OUT
+  // therefore breaks that tool for every real client while handler-level tests still
+  // pass - it happened to ingest_signal and to the purchase tools. So every result is
+  // checked here, on every call, and the first test that touches the tool fails.
+  const registerTool = server.registerTool.bind(server);
+  server.registerTool = ((name: string, config: { outputSchema?: z.ZodRawShape }, handler: Handler) =>
+    registerTool(name, config as never, (async (...args: unknown[]) => {
+      const result = await handler(...args) as { structuredContent?: unknown };
+      if (config.outputSchema && result.structuredContent !== undefined) {
+        const check = z.object(config.outputSchema).strict().safeParse(result.structuredContent);
+        if (!check.success) {
+          throw new Error(`${name} returned a result its output schema does not declare: ${check.error.message}`);
+        }
+      }
+      return result;
+    }) as never)) as typeof server.registerTool;
 
   const actor = (): Member => store.getMember(actorId);
   const household = () => actor().householdId;
@@ -1101,10 +1129,14 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
       + 'prepares a priced OFFER from a pharmacy and presents it. It does NOT buy '
       + 'anything: like every inference here, a purchase is a proposal until a person '
       + 'confirms it with confirm_purchase. Tell them the item, the price and the ETA, '
-      + 'and that nothing is charged yet.',
+      + 'and that nothing is charged yet. Call it straight away for "refill his '
+      + 'prescription", "order more of her supplement" or "reorder my meds" - do not ask '
+      + 'which medication first. This knows what is on record and asks back itself if '
+      + 'it cannot tell.',
     inputSchema: {
       medicationName: z.string().optional()
-        .describe('Which medication to refill, as said (e.g. "heart pill").'),
+        .describe('What they said to refill, in their words (e.g. "eye drops", "his '
+          + 'supplement"). Leave it out if they did not name one.'),
       obligationId: z.string().optional()
         .describe('The pickup/refill Care Gap this would close, if known.'),
     },
@@ -1114,10 +1146,20 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
     try {
       const me = actor();
       requireCap(me, 'make_purchase');
+      const s = state();
+      const open = s.obligations.filter((o) => o.status !== 'RESOLVED' && o.status !== 'DISMISSED');
+      const choice = chooseRefill(medicationName, s.medications, open);
+      if (!choice.ok) {
+        return guidance(
+          `More than one medication could be meant: ${joinSpoken(choice.choices)}. `
+          + 'Ask which one to reorder, then call this again with medicationName.',
+        );
+      }
+      const closes = obligationId ?? choice.obligationId;
       const offer = offerFor('prescription_refill', {
         offerId: `off_${randomUUID()}`,
-        ...(medicationName ? { itemName: medicationName } : {}),
-        ...(obligationId ? { obligationId } : {}),
+        ...(choice.itemName ? { itemName: choice.itemName } : {}),
+        ...(closes ? { obligationId: closes } : {}),
       });
       const event = await store.appendEvent({
         householdId: me.householdId, kind: 'purchase_offered', reportedBy: me.id,
@@ -1136,9 +1178,14 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
       'Confirm a purchase that was offered, or decline it. This is the only step that '
       + 'commits money. On confirmation the order is placed and, if the purchase closes '
       + 'a Care Gap (a prescription pickup), that work is marked done. Only call this '
-      + 'when a person has said yes to a specific offer - never on your own judgement.',
+      + 'when a person has said yes to a specific offer - never on your own judgement. '
+      + '"Yes, place the order" or "go ahead and buy it" is this tool even when you do '
+      + 'not have the offer id: leave offerId out and it finds the order that is waiting.',
     inputSchema: {
-      offerId: z.string().describe('The offer being answered, from reorder_prescription.'),
+      offerId: z.string().optional().describe(
+        'The offer being answered, from reorder_prescription. Leave it out when you do '
+          + 'not have it; the waiting order is found for you.',
+      ),
       confirmed: z.boolean().describe('True to place the order, false to decline it.'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
@@ -1148,6 +1195,33 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
       const me = actor();
       requireCap(me, 'make_purchase');
       const s = state();
+      if (!offerId) {
+        const waiting = waitingOffers(s.events, now());
+        if (waiting.length === 0) {
+          return guidance(
+            "There's no order waiting for a yes. Ask what they'd like reordered, and price "
+            + 'it with reorder_prescription first.',
+          );
+        }
+        if (waiting.length > 1) {
+          return guidance(
+            `${waiting.length} orders are waiting: `
+            + `${joinSpoken(waiting.map((w) => `${w.offer.item} (offerId ${w.offer.offerId})`))}. `
+            + 'Ask which one they mean, then call this again with its offerId.',
+          );
+        }
+        const [{ offer: only, offeredBy }] = waiting as [typeof waiting[number]];
+        // Money is committed only against a price the person has heard. If somebody
+        // else was quoted it, read it back first rather than placing it on their yes.
+        if (offeredBy !== me.id) {
+          return guidance(
+            `${nameOf(offeredBy) ?? 'Someone'} was quoted ${only.item} for `
+            + `${formatPrice(only.amountCents, only.currency)}. Read that back and ask whether `
+            + `to place it; only if they say yes, call this again with offerId "${only.offerId}".`,
+          );
+        }
+        offerId = only.offerId;
+      }
       const offered = s.events.find(
         (e) => e.kind === 'purchase_offered'
           && (e.data['offer'] as PurchaseOffer | undefined)?.offerId === offerId,
