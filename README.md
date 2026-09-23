@@ -1,5 +1,9 @@
 # CareCircle
 
+[![CI](https://github.com/Osiyomeoh/carecircle/actions/workflows/ci.yml/badge.svg)](https://github.com/Osiyomeoh/carecircle/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![MCP spec 2025-11-25](https://img.shields.io/badge/MCP-2025--11--25-6f42c1)
+
 ### Why I built this
 
 > I'm from Lagos, Nigeria. We're a family of five, and our dad. Our mum has passed. In
@@ -35,10 +39,10 @@ what happened          what must happen        who has it
  Thursday at 10"       take him                has claimed it
 ```
 
-The demo family (Daddy, his children Tolu and Funmi, and Musa the driver) is fictional
-and modelled on mine. No real names or medical details are used.
+The demo family (Daddy, his children Tolu and Funmi, Kunle in London, and Musa the
+driver) is fictional and modelled on mine. No real names or medical details are used.
 
-**And it is real - not a mockup.** Live MCP server you can hit right now, **455 tests**
+**And it is real - not a mockup.** Live MCP server you can hit right now, **465 tests**
 (including property-based proofs of the risk model), **96.5%** measured tool-selection
 accuracy on Amazon Bedrock (139/144; 92.6% on held-out phrasings never tuned against), and a trust model **measured at 0% false accusations where a
 raw LLM hits 50%**.
@@ -81,6 +85,10 @@ role/capability matrix, and how to run your own instance.
 
 ## What this is *not* (scope, on purpose)
 
+Not a medication tracker, a family calendar, elder monitoring or reminders: those exist
+and are well served. CareCircle does one thing: it finds responsibilities hidden inside
+everyday conversation, surfaces the ones nobody owns, and gets a person to own them.
+
 A submission is judged as much by what it refuses to claim as by what it builds. We drew
 these lines deliberately and held to them:
 
@@ -104,8 +112,8 @@ these lines deliberately and held to them:
 
 ## The interaction
 
-**Daddy, going on 70, to the Echo at home** - after his surgery he can't easily read a
-label or a screen:
+**Daddy, going on 70, to the Echo at home** - he talks to it; he never has to open an
+app:
 
 > "Alexa, I have my eye check-up Thursday at ten."
 
@@ -126,8 +134,9 @@ CareCircle records the appointment, then notices something and says so:
 
 > "Done - Take Daddy to his eye check-up is yours."
 
-Nobody created a task. Nobody opened an app. Daddy, who can't easily use one right now,
-is a participant rather than a monitored subject.
+Nobody created a task. Nobody opened an app. Daddy is a participant rather than a
+monitored subject.
+
 ---
 
 ## Known is not Assumed
@@ -211,30 +220,6 @@ where the platform does not have to own the vertical in order to serve the custo
 
 ---
 
-## What this is not
-
-Not a medication tracker. Not a family calendar. Not elder monitoring. Not reminders.
-Those exist and are well served.
-
-CareCircle does one thing: it finds responsibilities hidden inside everyday
-conversation, surfaces the ones nobody owns, and lets a family resolve them by voice.
-
-And it is deliberately **not** several things it could have been. These are scope
-choices, held on purpose:
-
-- **No multi-agent swarms.** One deterministic engine and one agent that asks, never a
-  cast of autonomous actors.
-- **No computer vision or robotics.** Evidence is declared, sensed, or overheard — never
-  inferred from a camera frame.
-- **No silent physical actuation.** The system proposes; a human disposes. Nothing in the
-  world changes without someone owning it.
-- **No phone-first App Store app as the main story.** The primary surface is voice; the
-  screen is a fallback and a shared display, not the product.
-- **No overclaiming.** Live integrations are marked LIVE; everything else is a named,
-  tested *seam*, and we say which is which.
-
----
-
 ## Architecture
 
 The one model everything else serves is the **responsibility graph** -
@@ -259,9 +244,9 @@ and a human always confirms an inferred obligation - the dashed feedback loop.
                             |
        +-------------+------+------+--------------+
        v             v             v              v
-   Resources       Tools        Prompts      Elicitation
-   care state    25 tools    daily check    confirm a
-   timeline                  weekly review  proposal
+   Resources       Tools        Prompts      MCP App
+   who I am,     25 tools    daily check    the Care Board,
+   care state                weekly review  drawn in the host
        |             |
        +------+------+
               v
@@ -276,6 +261,31 @@ and a human always confirms an inferred obligation - the dashed feedback loop.
 reasoned, structured gaps and speaks them. That keeps the reasoning auditable, makes
 the ordering inspectable (every gap carries its `score` and a plain-language
 `because`), and means the server is useful to any client - not only an LLM.
+
+### Code map
+
+```
+src/
+  domain/        the product: pure, deterministic, no I/O
+    gaps.ts            Care Gap detection and expected-harm ranking
+    delegation.ts      who to ask next (family first, never someone far away)
+    agent.ts           the autonomous policy: value = harm avoided - interruption cost
+    attribution.ts     "Musa logged it for Daddy" is never shortened to "Daddy did"
+    commerce.ts        priced offers; what "refill his prescription" means
+    daily-update.ts    the evening update for family far away
+  mcp/
+    server.ts          assembles one server per session (tools listed in order)
+    tools/             the 25 tools, grouped: record, ownership, delegation,
+                       insight, signals, commerce, onboarding
+    output-schemas.ts  every tool's output contract, strictly enforced
+  http/          Streamable HTTP, OAuth 2.1 + PKCE, Ring and Telegram webhooks
+  store/         append-only event log; DynamoDB or a local file
+  notify/        Telegram, WhatsApp, SNS - or record-only, honestly labelled
+  connectors/    Google Calendar, Gmail, Ring (and a Bee seam, unclaimed: no device)
+  sim/           the Alexa+ console: a real MCP host driving Bedrock
+  evals/         the 144-case tool-selection harness
+packages/care-events/   the device-adapter seam, published separately
+```
 
 ### Severity is expected harm, not tuned points
 

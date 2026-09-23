@@ -127,7 +127,11 @@ different surfaces feed one shared responsibility system.
 - **Bee** (wearable context) → `ingest_signal`. Same seam; **deliberately gated** - Bee
   requires real data recorded through a Bee device or an Apple Watch running Bee
   software. We have neither, so we never claim it as an integration.
-- **Fire TV** → the web board is the presentation surface; there is no Fire-TV-specific app.
+- **Fire TV** is a surface rather than an adapter, and it's real: a React Native TV app
+  (`firetv/`) with the Care Board at 10-foot scale and D-pad focus. The Fire OS APK is
+  built and verified as a TV app; the Vega OS target is wired to the same screen, with
+  on-device rendering not yet checked on the Vega emulator. Both read the same live
+  record as the web board at `/tv`.
 
 Everything a device contributes crosses the same contract: `CareEvent → engine → Obligation → Care Gap`. `Evidence ≠ Obligation ≠ Ownership` - a Ring event never auto-becomes "Daddy got his eye drops," and an absent record never becomes "Daddy didn't take them."
 
