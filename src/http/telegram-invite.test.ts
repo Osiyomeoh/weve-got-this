@@ -11,7 +11,7 @@ import { staticTokens } from './identity.ts';
  * /setup; these are test names.
  */
 
-const SECRET = 'tg-secret';
+const SECRET = 'test-only-not-a-secret';
 const HH = 'h_fam';
 const GROUP = '-500';
 let store: CareStore;
@@ -149,9 +149,9 @@ test('removing a member, or the household, removes their Telegram link', async (
 });
 
 test('invite helpers', () => {
-  const inv = inviteFor(SECRET, 'm_0c9a5f7e-3a51-4c43-9d7e-2b1f4b6f0e11');
+  const inv = inviteFor(SECRET, 'm_00000000-0000-4000-8000-000000000000');
   assert.ok(inv.length <= 64 && /^[A-Za-z0-9_-]+$/.test(inv), 'fits a Telegram start payload');
-  assert.equal(memberFromInvite(SECRET, inv), 'm_0c9a5f7e-3a51-4c43-9d7e-2b1f4b6f0e11');
+  assert.equal(memberFromInvite(SECRET, inv), 'm_00000000-0000-4000-8000-000000000000');
   assert.equal(memberFromInvite('', inv), null);
   assert.equal(startPayload('/start abc'), 'abc');
   assert.equal(startPayload('/start'), '');
