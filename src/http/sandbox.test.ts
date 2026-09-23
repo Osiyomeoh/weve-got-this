@@ -83,7 +83,7 @@ test('a sandbox is a fresh copy of the demo story, reachable with its own tokens
   const { status, json } = await create();
   assert.equal(status, 201);
   assert.match(json.householdId, /^h_margaret~/);
-  assert.deepEqual(Object.keys(json.tokens).sort(), ['m_aide', 'm_david', 'm_margaret', 'm_renee']);
+  assert.deepEqual(Object.keys(json.tokens).sort(), ['m_aide', 'm_david', 'm_kunle', 'm_margaret', 'm_renee']);
 
   const gaps = await callTool(json.tokens.m_david, 'get_care_gaps');
   assert.match(gaps.content[0].text, /Take Daddy to his eye check-up/);

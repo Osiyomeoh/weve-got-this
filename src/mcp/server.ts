@@ -1361,10 +1361,15 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
         .describe('Getting them places needs an accessible vehicle. Raises the risk of a dropped ride.'),
       requiresAssistance: z.boolean().optional()
         .describe('Their care needs someone who can give hands-on help, not just anyone free.'),
+      livesAway: z.string().optional()
+        .describe('Where they live, if far away (e.g. "London"). They will never be picked '
+          + 'automatically for work that needs someone there.'),
+      dailyUpdate: z.boolean().optional()
+        .describe('Send them a short update on the day every evening.'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
     outputSchema: OUT.add_member,
-  }, async ({ name, role, spokenAs, subject, needsAccessibleTransport, requiresAssistance }) => {
+  }, async ({ name, role, spokenAs, subject, needsAccessibleTransport, requiresAssistance, livesAway, dailyUpdate }) => {
     try {
       const me = actor();
       requireCap(me, 'manage_circle');
@@ -1379,9 +1384,19 @@ export function createCareCircleServer(ctx: ServerContext): McpServer {
         id: memberId, householdId: me.householdId, name, role,
         ...(spokenAs ? { spokenAs } : {}),
         ...(Object.keys(attributes).length > 0 ? { attributes } : {}),
+        ...(livesAway?.trim() ? { livesAway: livesAway.trim() } : {}),
+        ...(dailyUpdate ? { dailyUpdate } : {}),
       });
       if (subject) await store.mapIdentity({ subject, memberId, householdId: me.householdId });
-      return reply(`Added ${name} to the circle as ${role.replace('_', ' ')}.`, { memberId });
+      const extras = [
+        ...(livesAway?.trim() ? [`I won't pick ${name} for things that need someone there`] : []),
+        ...(dailyUpdate ? [`${name} will get an update every evening`] : []),
+      ];
+      return reply(
+        `Added ${name} to the circle as ${role.replace('_', ' ')}.`
+        + (extras.length > 0 ? ` ${sentence(joinSpoken(extras))}.` : ''),
+        { memberId },
+      );
     } catch (err) { return guidance(describeError(err)); }
   });
 

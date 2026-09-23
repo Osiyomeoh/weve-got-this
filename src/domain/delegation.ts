@@ -93,7 +93,11 @@ export function loadOf(memberId: string, state: CareState): number {
  *  - whoever is doing the asking, because if they wanted it they would claim it;
  *  - anyone who has already declined this specific piece of work - the agent must
  *    not badger, and a decline is information we keep;
- *  - anyone who has *said* they cannot cover the time it is due.
+ *  - anyone who has *said* they cannot cover the time it is due;
+ *  - anyone who lives far away. A son in London cannot drive his father to a clinic
+ *    in Lagos, and asking him only adds a "can't" to the family's evening. The work
+ *    here needs someone present, so they are never picked automatically. A person can
+ *    still ask them by name, and they can still take anything on themselves.
  *
  * Ordering is family before paid help, then existing load, then role, then name.
  * Load ahead of role within a tier is what stops the system quietly dumping
@@ -111,7 +115,8 @@ export function candidatesFor(
     .filter((m) => m.id !== opts.askerId)
     .filter((m) => m.id !== obligation.ownerId)
     .filter((m) => !declined.has(m.id))
-    .filter((m) => !statedUnavailable(m, state, obligation.dueAt));
+    .filter((m) => !statedUnavailable(m, state, obligation.dueAt))
+    .filter((m) => !m.livesAway);
 
   return eligible
     .map((m) => ({ member: m, load: loadOf(m.id, state) }))

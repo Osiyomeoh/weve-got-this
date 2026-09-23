@@ -1,6 +1,7 @@
 import type { CareStore } from './store/store.js';
 import type { Notifier } from './notify/notifier.js';
 import { runAgentAll } from './domain/agent-runner.js';
+import { sendDailyUpdates } from './domain/daily-update.js';
 
 interface Log {
   info(msg: string, data?: Record<string, unknown>): void;
@@ -47,6 +48,13 @@ export function startAgentLoop(deps: AgentLoopDeps): () => void {
     } catch (err) {
       // An agent that crashes the process is worse than an agent that misses a tick.
       deps.log.error('agent tick failed', { reason: (err as Error).message });
+    }
+    // The evening update rides the same tick, apart, so neither can stop the other.
+    try {
+      const updates = await sendDailyUpdates(deps);
+      if (updates > 0) deps.log.info('daily updates sent', { updates });
+    } catch (err) {
+      deps.log.error('daily updates failed', { reason: (err as Error).message });
     } finally {
       running = false;
     }

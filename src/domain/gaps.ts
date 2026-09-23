@@ -1,5 +1,5 @@
 import type {
-  CareGap, CareState, ConsequenceClass, EntityAttributes, Obligation, Severity,
+  CareEvent, CareGap, CareState, ConsequenceClass, EntityAttributes, Obligation, Severity,
 } from './types.js';
 import { accessibilityUplift, dignityNote, resolveSubjectAttributes } from './accessibility.js';
 
@@ -72,7 +72,7 @@ function toScore(risk: number): number {
 }
 
 /** Local wall-clock parts for an instant, in the household's timezone. */
-function localParts(at: Date, timezone: string): { date: string; minutes: number } {
+export function localParts(at: Date, timezone: string): { date: string; minutes: number } {
   const fmt = new Intl.DateTimeFormat('en-CA', {
     timeZone: timezone,
     year: 'numeric', month: '2-digit', day: '2-digit',
@@ -87,7 +87,7 @@ function localParts(at: Date, timezone: string): { date: string; minutes: number
   };
 }
 
-function parseHHMM(hhmm: string): number | null {
+export function parseHHMM(hhmm: string): number | null {
   const m = /^(\d{2}):(\d{2})$/.exec(hhmm);
   if (!m) return null;
   const h = Number(m[1]);
@@ -273,6 +273,27 @@ function followUpGap(o: Obligation, timezone: string, now: Date, attrs?: EntityA
 }
 
 /**
+ * The record of one scheduled dose today, if there is one: a `medication_taken` for
+ * that medication, on the household's local date, within three hours of the time.
+ * Shared by gap detection and the daily update, so they can never disagree about
+ * whether a dose was logged.
+ */
+export function doseRecord(
+  state: CareState, medicationId: string, time: string, now: Date,
+): CareEvent | undefined {
+  const expected = parseHHMM(time);
+  if (expected === null) return undefined;
+  const { timezone } = state.household;
+  const today = localParts(now, timezone).date;
+  return state.events.find((e) => {
+    if (e.kind !== 'medication_taken' || e.data['medicationId'] !== medicationId) return false;
+    const ev = localParts(new Date(e.occurredAt), timezone);
+    // Attribute a dose to the nearest expected time, within three hours.
+    return ev.date === today && Math.abs(ev.minutes - expected) <= 180;
+  });
+}
+
+/**
  * Medication doses that were expected earlier today and have no matching record.
  *
  * The hard rule of this project lives here: a missing record is reported as
@@ -296,15 +317,7 @@ function unconfirmedMedicationGaps(state: CareState, now: Date): CareGap[] {
       const GRACE_MINUTES = 60;
       if (nowLocal.minutes < expectedMinutes + GRACE_MINUTES) continue;
 
-      const logged = state.events.some((e) => {
-        if (e.kind !== 'medication_taken') return false;
-        if (e.data['medicationId'] !== med.id) return false;
-        const ev = localParts(new Date(e.occurredAt), timezone);
-        if (ev.date !== nowLocal.date) return false;
-        // Attribute a dose to the nearest expected time, within three hours.
-        return Math.abs(ev.minutes - expectedMinutes) <= 180;
-      });
-      if (logged) continue;
+      if (doseRecord(state, med.id, time, now)) continue;
 
       const minutesLate = nowLocal.minutes - expectedMinutes;
       // The longer a due dose goes unlogged, the likelier it truly slipped:

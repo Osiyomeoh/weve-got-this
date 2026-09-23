@@ -151,4 +151,5 @@ export const MEMBERS: Member[] = [
   { id: 'm_david', label: 'Tolu', sub: 'primary caregiver · phone' },
   { id: 'm_renee', label: 'Funmi', sub: 'caregiver · sister' },
   { id: 'm_aide', label: 'Musa', sub: 'driver · paid help' },
+  { id: 'm_kunle', label: 'Kunle', sub: 'brother · London' },
 ];

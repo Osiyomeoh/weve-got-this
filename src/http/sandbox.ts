@@ -25,7 +25,7 @@ import { signToken } from './oauth.js';
  */
 
 /** The demo members a sandbox copy contains, by their logical (unsuffixed) ids. */
-export const SANDBOX_MEMBERS = ['m_margaret', 'm_david', 'm_renee', 'm_aide'] as const;
+export const SANDBOX_MEMBERS = ['m_margaret', 'm_david', 'm_renee', 'm_aide', 'm_kunle'] as const;
 
 const SUFFIX = /~([0-9a-z]+)-[0-9a-f]{8}$/;
 

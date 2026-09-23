@@ -73,3 +73,19 @@ test('request_owner, then respond_to_request declining it', async () => {
   const out = await call('renee-token', 'respond_to_request', { obligationId: open.id, accepted: false });
   assert.equal(out['declined'], true);
 });
+
+test('add_member for someone abroad who wants the evening update', async () => {
+  const out = await call('david-token', 'add_member', {
+    name: 'Bisi', role: 'caregiver', livesAway: 'Toronto', dailyUpdate: true,
+  });
+  const added = store.getMember(out['memberId'] as string);
+  assert.equal(added.livesAway, 'Toronto');
+  assert.equal(added.dailyUpdate, true);
+});
+
+test('someone abroad can still be asked by name - a person chose them', async () => {
+  const open = store.getCareState('h_margaret').obligations.find((o) => o.status === 'OPEN' && !o.ownerId);
+  assert.ok(open);
+  const out = await call('david-token', 'request_owner', { obligationId: open.id, assigneeName: 'Kunle' });
+  assert.equal(out['askedOfId'], 'm_kunle');
+});

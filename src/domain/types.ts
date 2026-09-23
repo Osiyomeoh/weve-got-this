@@ -42,6 +42,16 @@ export interface Member {
    * not a duplicate `Entity`, so their needs live here rather than in a parallel record.
    */
   attributes?: EntityAttributes;
+  /**
+   * Where they live, when it is far from the person being cared for (e.g. "London").
+   * Common in families with a child abroad: they want to know what is going on, and
+   * cannot drive anyone to a check-up. So CareCircle never picks them on its own for
+   * work that needs someone there. The family can still ask them by name, and they
+   * can take anything on themselves.
+   */
+  livesAway?: string;
+  /** Send them a short written update on the day, every evening. */
+  dailyUpdate?: boolean;
 }
 
 /** What an entity is. People are modelled as `Member`; this widens the graph to the rest. */

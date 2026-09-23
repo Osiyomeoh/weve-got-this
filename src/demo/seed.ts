@@ -19,6 +19,7 @@ export const DEMO_TOKENS: Record<string, string> = {
   'david-token': 'm_david',
   'renee-token': 'm_renee',
   'aide-token': 'm_aide',
+  'kunle-token': 'm_kunle',
 };
 
 export const DEMO_HOUSEHOLD_ID = 'h_margaret';
@@ -59,6 +60,12 @@ export async function seedDemoHousehold(
   await store.addMember({
     id: sid('m_aide'), householdId: HOUSEHOLD_ID, name: 'Musa',
     role: 'helper',
+  });
+  // A brother in London: wants to know how the day went, and can't drive anyone to a
+  // clinic in Lagos. He gets the evening update and is never picked for in-person work.
+  await store.addMember({
+    id: sid('m_kunle'), householdId: HOUSEHOLD_ID, name: 'Kunle',
+    role: 'caregiver', livesAway: 'London', dailyUpdate: true,
   });
 
   await store.addMedication({
