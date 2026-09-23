@@ -9,7 +9,7 @@ import { require as requireCap } from '../../domain/auth.js';
 import { candidatesFor } from '../../domain/delegation.js';
 import { OUT } from '../output-schemas.js';
 import { joinSpoken } from '../text.js';
-import { describeError, guidance, reply, type ToolContext } from '../toolkit.js';
+import { describeError, guidance, reply, type ToolContext, obligationFrom } from '../toolkit.js';
 
 /**
  * "Ask Funmi if she can take him."
@@ -37,12 +37,13 @@ export function registerRequestOwner({ server, store, now, notifier, actor, stat
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
     outputSchema: OUT.request_owner,
-  }, async ({ obligationId, assigneeName }) => {
+  }, async ({ obligationId: ref, assigneeName }) => {
     try {
       const me = actor();
       requireCap(me, 'request_owner');
       const s = state();
-      const o = store.getObligation(obligationId, me.householdId);
+      const o = obligationFrom(store, ref, me.householdId);
+      const obligationId = o.id;
       if (o.status === 'PROPOSED') {
         return guidance(
           `"${o.what}" hasn't been confirmed as actually needed yet. Confirm it first with `
@@ -140,10 +141,11 @@ export function registerRespondToRequest({ server, store, now, actor, state, nam
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
     outputSchema: OUT.respond_to_request,
-  }, async ({ obligationId, accepted, note }) => {
+  }, async ({ obligationId: ref, accepted, note }) => {
     try {
       const me = actor();
-      const o = store.getObligation(obligationId, me.householdId);
+      const o = obligationFrom(store, ref, me.householdId);
+      const obligationId = o.id;
       if (o.status !== 'REQUESTED' || !o.request) {
         return guidance(
           `Nobody has an outstanding request for "${o.what}". `

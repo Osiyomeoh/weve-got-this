@@ -10,7 +10,7 @@ import { detectCareGaps, pendingProposals } from '../../domain/gaps.js';
 import { explainProvenance } from '../../domain/provenance.js';
 import { OUT } from '../output-schemas.js';
 import { countPhrase, joinSpoken, sentence, speakGaps } from '../text.js';
-import { describeError, guidance, reply, type ToolContext } from '../toolkit.js';
+import { describeError, guidance, reply, type ToolContext, obligationFrom } from '../toolkit.js';
 
 /**
  * "How do we know that?"
@@ -31,11 +31,12 @@ export function registerGetProvenance({ server, store, actor, state, nameOf }: T
     },
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
     outputSchema: OUT.get_provenance,
-  }, async ({ obligationId }) => {
+  }, async ({ obligationId: ref }) => {
     try {
       const me = actor();
       requireCap(me, 'read_shift');
-      const o = store.getObligation(obligationId, me.householdId);
+      const o = obligationFrom(store, ref, me.householdId);
+      const obligationId = o.id;
       const explanation = explainProvenance(
         o, store.getTransitions(obligationId), state().events, nameOf,
       );

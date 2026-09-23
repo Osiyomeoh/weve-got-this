@@ -9,7 +9,14 @@ import { detectCareGaps } from '../../domain/gaps.js';
 import { appToolMeta } from '../app/protocol.js';
 import { OUT } from '../output-schemas.js';
 import { joinSpoken, speakGaps } from '../text.js';
-import { CARE_BOARD_URI, describeError, guidance, reply, type ToolContext } from '../toolkit.js';
+import {
+  CARE_BOARD_URI,
+  describeError,
+  guidance,
+  obligationFrom,
+  reply,
+  type ToolContext,
+} from '../toolkit.js';
 
 /**
  * "What's going to fall through the cracks this week?"
@@ -94,11 +101,12 @@ export function registerClaimObligation({ server, store, actor, nameOf }: ToolCo
     inputSchema: { obligationId: z.string().describe('Which piece of work. From get_care_gaps.') },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
     outputSchema: OUT.claim_obligation,
-  }, async ({ obligationId }) => {
+  }, async ({ obligationId: ref }) => {
     try {
       const me = actor();
       requireCap(me, 'claim_obligation');
-      const o = store.getObligation(obligationId, me.householdId);
+      const o = obligationFrom(store, ref, me.householdId);
+      const obligationId = o.id;
       if (o.status === 'PROPOSED') {
         return guidance(
           `"${o.what}" hasn't been confirmed as actually needed yet. Ask them to confirm it `
@@ -131,11 +139,12 @@ export function registerAssignObligation({ server, store, actor, state }: ToolCo
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
     outputSchema: OUT.assign_obligation,
-  }, async ({ obligationId, assigneeName }) => {
+  }, async ({ obligationId: ref, assigneeName }) => {
     try {
       const me = actor();
       requireCap(me, 'assign_obligation');
-      const o = store.getObligation(obligationId, me.householdId);
+      const o = obligationFrom(store, ref, me.householdId);
+      const obligationId = o.id;
       const assignee = store.findMemberByName(me.householdId, assigneeName);
       if (!assignee) {
         const others = state().members.filter((m) => m.id !== me.id).map((m) => m.spokenAs ?? m.name);
@@ -175,11 +184,12 @@ export function registerConfirmProposal({ server, store, actor }: ToolContext): 
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
     outputSchema: OUT.confirm_proposal,
-  }, async ({ obligationId, confirmed }) => {
+  }, async ({ obligationId: ref, confirmed }) => {
     try {
       const me = actor();
       requireCap(me, 'confirm_proposal');
-      const o = store.getObligation(obligationId, me.householdId);
+      const o = obligationFrom(store, ref, me.householdId);
+      const obligationId = o.id;
       if (o.status !== 'PROPOSED') {
         return guidance(`"${o.what}" has already been settled - it's ${o.status.toLowerCase()}.`);
       }
@@ -211,11 +221,12 @@ export function registerResolveObligation({ server, store, now, actor }: ToolCon
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
     outputSchema: OUT.resolve_obligation,
-  }, async ({ obligationId, note }) => {
+  }, async ({ obligationId: ref, note }) => {
     try {
       const me = actor();
       requireCap(me, 'resolve_obligation');
-      const o = store.getObligation(obligationId, me.householdId);
+      const o = obligationFrom(store, ref, me.householdId);
+      const obligationId = o.id;
       if (!canActOn(me, o)) {
         return guidance(`That one isn't assigned to you, so you can't close it out.`);
       }

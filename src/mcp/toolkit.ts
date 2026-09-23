@@ -1,8 +1,9 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { NotPermittedError } from '../domain/auth.js';
-import type { CareState, Member } from '../domain/types.js';
+import type { CareState, Member, Obligation } from '../domain/types.js';
 import type { Notifier } from '../notify/notifier.js';
 import { HouseholdScopeError, NotFoundError, type CareStore } from '../store/store.js';
+import { matchObligation } from '../domain/obligation-ref.js';
 
 /**
  * What every tool, resource and prompt is built from.
@@ -55,8 +56,37 @@ export function guidance(text: string) {
 }
 
 /** Turn a thrown error into guidance the model can act on. */
+/** A reference to a piece of work that needs the person to say which one. Its message is guidance. */
+export class ObligationRefError extends Error {}
+
+/**
+ * The piece of work a tool call names: by id, or by the words for it when the planner
+ * passed those instead (see domain/obligation-ref.ts). Never guesses between two.
+ */
+export function obligationFrom(store: CareStore, ref: string, householdId: string): Obligation {
+  try {
+    return store.getObligation(ref, householdId);
+  } catch (err) {
+    if (!(err instanceof NotFoundError)) throw err;
+  }
+  const match = matchObligation(ref, store.getCareState(householdId).obligations);
+  if (match.kind === 'found') return match.obligation;
+  const list = (os: Obligation[]) => os.map((o) => `"${o.what}" (obligationId ${o.id})`).join('; ');
+  if (match.kind === 'ambiguous') {
+    throw new ObligationRefError(
+      `That could be ${match.options.length} things: ${list(match.options)}. `
+      + 'Ask the person which one they mean, then use its obligationId.',
+    );
+  }
+  throw new ObligationRefError(match.live.length === 0
+    ? 'Nothing is open right now, so there is nothing to act on. Tell the person that.'
+    : `Nothing open matches that. What is open: ${list(match.live)}. `
+      + 'Use the obligationId of the one the person means, or ask them which.');
+}
+
 export function describeError(err: unknown): string {
   if (err instanceof NotPermittedError) return err.message;
+  if (err instanceof ObligationRefError) return err.message;
   if (err instanceof HouseholdScopeError) return err.message;
   if (err instanceof NotFoundError) {
     return `I couldn't find that ${err.what}. Ask the person which one they mean, or list what's open first.`;
