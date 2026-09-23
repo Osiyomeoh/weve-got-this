@@ -78,9 +78,10 @@ must own that work. A Care Gap is the failure state of the third stage.
 The judges' own advice is to beware glossy vapor. CareCircle is the opposite:
 
 - A **live MCP server** a judge can hit now (Streamable HTTP, spec 2025-11-25).
-- **455 automated tests**, strict TypeScript, an adversarial suite, CI.
+- **482 automated tests**, strict TypeScript, an adversarial suite, CI.
 - Tool selection **measured at 96.5%** (139/144; 92.6% on the held-out cases never tuned
-  against) on Amazon Bedrock - `npm run evals`, and it reproduces.
+  against) on Amazon Bedrock - `npm run evals`, and it reproduces. On **Amazon Nova Pro**,
+  with descriptions never tuned for it, the held-out figure is the same 92.6%.
 - The trust model **measured on two axes**: a raw Sonnet 4.5 turns a missing dose into
   "she missed it" in **~50-58%** of absence cases, and reports a support worker's
   account as the disabled person's own act in **25%** of proxy cases. CareCircle:
@@ -244,6 +245,10 @@ graceful shutdown, DynamoDB persistence, App Runner deployment), runtime onboard
   8/8 on held-out cases later used to fix the server, reported apart rather than counted
   as unseen. Reproducible: `npm run evals` (temperature 0, but a borderline case or two
   flips run-to-run; the earlier 135-case corpus measured 124-126 across runs).
+- **The same corpus on Amazon's own models**, descriptions untouched: Nova Pro 91.7% overall
+  and **92.6% held-out, identical to Claude**; Nova 2 Lite 81.3% (73.5% held-out), mostly
+  checking the board before acting. The descriptions carry across planners rather than
+  fitting one model.
 
   **On re-running it.** The headline reproduces exactly; the split between the two
   halves does not, because the model is sampled rather than deterministic. Our
@@ -266,7 +271,7 @@ graceful shutdown, DynamoDB persistence, App Runner deployment), runtime onboard
   turns up in benefits reviews and care-plan audits, and it is exactly where the model
   asserted compliance in Alex's name on somebody else's word. Reproducible, with the
   erasing questions printed by id: `npm run trust-benchmark`.
-- **455 automated tests** incl. an adversarial suite (credential swap mid-session,
+- **482 automated tests** incl. an adversarial suite (credential swap mid-session,
   cross-household access, prompt-injection through note text), strict TypeScript, CI.
 - Deterministic end-to-end demo over real MCP: `npm run story`.
 

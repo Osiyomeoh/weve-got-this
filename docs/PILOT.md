@@ -27,9 +27,10 @@ This is a real person's care, so:
 2. Create the circle (name + timezone, e.g. `Africa/Lagos`), then add each member: the
    person being cared for, the family members, any paid helper.
 3. Add medications and any known appointments.
-   - **Family abroad** (e.g. a brother in the UK): add them by voice or text in the
-     console, e.g. *"Add my brother Kunle as a caregiver. He lives in London and wants an
-     update every evening."* That sets `livesAway` and `dailyUpdate`. From then on he
+   - **Family abroad** (e.g. a brother in the UK): on setup's last screen, under **Add
+     family**, tick **Lives far away**, say where, and leave **evening update** on. Or by
+     voice: *"Add my brother Kunle as a caregiver. He lives in London and wants an update
+     every evening."* Either way it sets `livesAway` and `dailyUpdate`. From then on he
      gets a short update on the day after 21:00 household time, and CareCircle never
      picks him on its own for rides or pickups. Map his Telegram in step 2 so the update
      reaches him; unmapped, it is only written to the care log.
@@ -84,7 +85,20 @@ Keep a log in `docs/pilot/LOG.md` (template below). Aim for:
 - [ ] At least 5 real asks answered in the Telegram group (screenshots, names blurred
       unless consented)
 - [ ] One "save": something that would have been missed or double-handled without it
-- [ ] Counts at the end: asks sent, answered, time to answer, gaps closed
+- [ ] Counts at the end: asks sent, answered, time to answer, gaps closed. Don't tally
+      these by hand; the record already has them:
+
+      ```bash
+      AWS_PROFILE=conductor CARECIRCLE_TABLE=carecircle AWS_REGION=us-east-1 npm run pilot:report
+      ```
+
+      It picks the one real household on its own (or pass `--household h_...`), and
+      `--since YYYY-MM-DD` starts it from day one of the pilot. It prints who kept the
+      record, doses with and without a record, asks with their yes/no and median time
+      to answer, work done and still unowned, and evening updates sent. Every number is
+      counted from the log, and `--json` gives the same for the write-up. It also counts
+      doses logged *after* the board had shown "no record": each one is a time that
+      calling the silence "missed" would have been wrong.
 - [ ] One 10-20 second quote on camera (consented): what changed for them
 - [ ] Anything that confused them (also great friction-log material)
 
@@ -101,6 +115,7 @@ Keep a log in `docs/pilot/LOG.md` (template below). Aim for:
 
 ## 5. Close out
 
-- Tally the numbers into the README Impact section and the video.
+- Run `npm run pilot:report` and put its numbers into the README Impact section and the
+  video.
 - Ask whether they want to keep using it, and record the answer honestly.
 - Delete their household if they ask, and point the live doors back at the demo household.

@@ -32,7 +32,7 @@ A bot **cannot** open a chat — the person must message it first.
 
 ## 3. Pick a webhook secret
 
-Any string you choose (e.g. `carecircle-tg-2026`) → `TELEGRAM_WEBHOOK_SECRET`. Telegram
+A long random string you generate and keep private (`openssl rand -hex 24`) → `TELEGRAM_WEBHOOK_SECRET`. Telegram
 echoes it back in the `X-Telegram-Bot-Api-Secret-Token` header on every call; our webhook
 compares it constant-time and rejects anything else. This is the gate (Telegram does not sign
 the body the way Meta does).
@@ -42,7 +42,7 @@ the body the way Meta does).
 ```
 TELEGRAM_BOT_TOKEN=123456:ABC-...
 TELEGRAM_RECIPIENTS={"m_renee":"987654321"}
-TELEGRAM_WEBHOOK_SECRET=carecircle-tg-2026
+TELEGRAM_WEBHOOK_SECRET=<your-random-secret>
 TELEGRAM_HOUSEHOLD_ID=...        # which household inbound replies land in (defaults to the Ring household)
 ```
 
@@ -54,7 +54,7 @@ ask goes out over Telegram automatically.
 ```bash
 curl -s "https://api.telegram.org/bot<TOKEN>/setWebhook" \
   -d "url=https://ypq2dfq2p7.us-east-1.awsapprunner.com/telegram/webhook" \
-  -d "secret_token=carecircle-tg-2026"
+  -d "secret_token=<your-random-secret>"
 ```
 Expect `{"ok":true,"result":true,...}`. Check anytime with `.../getWebhookInfo`.
 

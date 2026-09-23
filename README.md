@@ -42,19 +42,28 @@ what happened          what must happen        who has it
 The demo family (Daddy, his children Tolu and Funmi, Kunle in London, and Musa the
 driver) is fictional and modelled on mine. No real names or medical details are used.
 
-**And it is real - not a mockup.** Live MCP server you can hit right now, **465 tests**
+**And it is real - not a mockup.** Live MCP server you can hit right now, **482 tests**
 (including property-based proofs of the risk model), **96.5%** measured tool-selection
-accuracy on Amazon Bedrock (139/144; 92.6% on held-out phrasings never tuned against), and a trust model **measured at 0% false accusations where a
+accuracy on Amazon Bedrock (139/144; 92.6% on held-out phrasings never tuned against, and
+the same 92.6% on Amazon Nova Pro), and a trust model **measured at 0% false accusations where a
 raw LLM hits 50%**.
 
 ### Try it live in your browser - no clone, no keys
 
 **[https://krqi2tpsif.us-east-1.awsapprunner.com](https://krqi2tpsif.us-east-1.awsapprunner.com)** - the Alexa+ console, running on Amazon
 Bedrock. Click **"Open the live demo"**, pick a household member (top-left), and type or
-speak. The one thing to try: ask **"Did Daddy use his evening eye drops?"** - it tells you
-there's no record of that dose, and **never** *"he missed it."* That refusal is the whole
-product. Every visitor gets their own private copy of the demo family, so nothing you do
-reaches anyone else; **Start over** gives you a fresh one.
+speak. Every visitor gets their own private copy of the demo family, so nothing you do
+reaches anyone else; **Start over** gives you a fresh one. Three things to try, a minute
+in all:
+
+1. **As Tolu:** *"Did Daddy use his evening eye drops?"* It tells you there's no record of
+   that dose, and **never** *"he missed it."* That refusal is the whole product.
+2. **As Tolu:** *"Ask Funmi if she can take Daddy to his check-up."* It **asks**, it doesn't
+   assign: the board shows Funmi was asked, and the check-up stays unowned. Now switch to
+   **Funmi** and say *"Yes, I can take him"*. It's hers, and the board says so.
+3. **As Kunle, the brother in London:** *"How was Daddy's day?"* He gets the whole picture,
+   with who logged what. CareCircle never picks him for a ride; he gets an evening update
+   instead.
 
 The console drives the same append-only care record the voice surface and the Fire TV board
 read, so a claim you make in the browser shows up everywhere at once.
@@ -536,6 +545,25 @@ was due before noon" checking what was due before logging it, and a helper's "an
 to do today?" reaching for his requests rather than his shift brief. Several are
 defensible behaviour the strict grader still counts as wrong. These are the edges a
 larger corpus would harden next.
+
+**On Amazon Nova too.** Same 144 cases, same planner prompt, and the same tool
+descriptions, which were tuned on Claude and not touched for Nova (2026-09-23):
+
+| Planner, on Amazon Bedrock | All 144 | Held-out, never tuned against (68) |
+|---|---|---|
+| Claude Sonnet 4.5 | 96.5% (139) | 92.6% (63) |
+| **Amazon Nova Pro** | 91.7% (132) | **92.6% (63)** |
+| Amazon Nova 2 Lite | 81.3% (117) | 73.5% (50) |
+
+On the phrasings nobody tuned against, Nova Pro scores exactly what Claude does. Its
+lower overall figure comes from the authored set, the one tuned on Claude (61/68). So the
+descriptions carry across models rather than fitting one. Nova Pro's misses are mostly
+"that's done" logged as an event instead of closing the task (4 of 12). Nova 2 Lite, the
+small model, checks the board before acting in 20 of its 27 misses: right instinct, wrong
+first tool. We did not tune on either, because that would turn held-out cases into seen
+ones. Run it with `BEDROCK_MODEL_ID=us.amazon.nova-pro-v1:0 npm run evals`. Nova Premier
+is still listed in the account's inference profiles but Bedrock refuses it as retired, so
+it isn't measured.
 
 We went from an early 85.3% to 100% on the authored set by finding the exact failures
 the harness named and rewriting the ambiguous descriptions - then re-measured on the

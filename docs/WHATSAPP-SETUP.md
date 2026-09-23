@@ -4,7 +4,7 @@ The WhatsApp door is **built and tested** (see `docs/RECORD-PLAN.md` §1.4). Thi
 purely-operational checklist to make it *live*: collect five values from Meta, set six env
 vars, register one webhook. No code changes.
 
-- **Business display number:** `+2347053259853` (already inside a Meta developer app)
+- **Business display number:** `+234XXXXXXXXXX` (already inside a Meta developer app)
 - **Webhook URL:** `https://ypq2dfq2p7.us-east-1.awsapprunner.com/whatsapp/webhook`
 - **Secrets rule:** every value below lives in the gitignored `.env` and, for production, in
   App Runner env vars. Never commit or paste a token anywhere.
@@ -15,11 +15,11 @@ vars, register one webhook. No code changes.
 
 | Env var | What it is | Where |
 |---|---|---|
-| `WHATSAPP_PHONE_NUMBER_ID` | the numeric **Phone number ID** shown *under* `+2347053259853` (NOT the number) | API Setup |
+| `WHATSAPP_PHONE_NUMBER_ID` | the numeric **Phone number ID** shown *under* `+234XXXXXXXXXX` (NOT the number) | API Setup |
 | `WHATSAPP_TOKEN` | access token — "Temporary access token" (24h) is fine for the demo; a System User token is permanent | API Setup |
 | `WHATSAPP_APP_SECRET` | signs inbound webhooks; **App Settings → Basic → App Secret → Show** | Settings → Basic |
 | `WHATSAPP_VERIFY_TOKEN` | a string **you invent** (e.g. `carecircle-verify-2026`); you paste the *same* string into Meta's webhook config in step 3 | you choose |
-| `WHATSAPP_RECIPIENTS` | JSON member→phone map, e.g. `{"m_renee":"+2347053259853"}` — maps a CareCircle member id to the phone that gets the ask | you |
+| `WHATSAPP_RECIPIENTS` | JSON member→phone map, e.g. `{"m_renee":"+234XXXXXXXXXX"}` — maps a CareCircle member id to the phone that gets the ask | you |
 | `WHATSAPP_HOUSEHOLD_ID` | household that inbound replies land in (defaults to the Ring household if unset) | you |
 
 > **Test-number limit:** an unverified number only delivers to **whitelisted recipients**.
@@ -35,7 +35,7 @@ WHATSAPP_PHONE_NUMBER_ID=...
 WHATSAPP_TOKEN=...
 WHATSAPP_APP_SECRET=...
 WHATSAPP_VERIFY_TOKEN=carecircle-verify-2026
-WHATSAPP_RECIPIENTS={"m_renee":"+2347053259853"}
+WHATSAPP_RECIPIENTS={"m_renee":"+234XXXXXXXXXX"}
 WHATSAPP_HOUSEHOLD_ID=...
 ```
 
@@ -62,7 +62,7 @@ update itself redeploys.
 ## 5. Prove it end-to-end
 
 1. From the CareCircle sim, have the agent ask the mapped member to take an obligation → the
-   ask arrives as a real WhatsApp on `+2347053259853`.
+   ask arrives as a real WhatsApp on `+234XXXXXXXXXX`.
 2. Reply **"yes"** (or 👍) from that phone → the signed webhook fires →
    `respond_to_request`-equivalent assigns the obligation → the board updates.
 3. Reply from an un-mapped number → acknowledged, acts on nothing (trust gate holds).

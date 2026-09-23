@@ -56,7 +56,7 @@ person, and never accuses anyone of what it didn't see.*
       him on camera. Also check your siblings are happy for the family to be described.
 - [ ] Burn in captions. The video makes an accessibility argument; it has to be captioned.
 - [ ] Say numbers only if they match the repo on record day: tools (`get_started` lists
-      them, 25 today), tests (`npm test`, 464 today), trust benchmark
+      them, 25 today), tests (`npm test`, 482 today), trust benchmark
       (`npm run trust-benchmark`).
 
 ---

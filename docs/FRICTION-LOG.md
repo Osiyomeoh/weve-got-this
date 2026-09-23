@@ -648,3 +648,55 @@ Template:
   warning that it did not. Mutable tags like `:latest` are how most small teams start,
   and "success, but the old code" is the worst possible response for them.
 - **Date:** 2026-09-17
+
+### MCP / Alexa+ planning - the planner passes an item's words where its id belongs
+- **Task attempted:** "Ask Funmi if she can take Daddy to his check-up", typed into the
+  live console, where the planner is Claude Sonnet 4.5 on Bedrock.
+- **Steps taken:** Watched the console's real MCP tool log. The planner called
+  `get_care_gaps`, whose result carries each item's `obligationId`, then called
+  `request_owner`.
+- **Expected:** `request_owner` gets the `obligationId` from the result it just read.
+- **Actual:** It passed the item's wording instead: first `"Take Daddy to his eye
+  check-up tomorrow at 10 AM"`, then the whole spoken line with "- nobody has taken this
+  yet." on the end. Both were refused as unknown ids. Alexa then said *"I'm having a
+  technical issue identifying the exact obligation ID"*, to a family member asking for
+  help. The id was in the previous tool result the whole time, and the input schema says
+  "From get_care_gaps".
+- **Severity:** major - it breaks the core delegation moment, and the words the person
+  hears are about our internals.
+- **Workaround:** The server now resolves what was meant. Every tool that takes an
+  `obligationId` accepts the id, the task's own words, the spoken gap line or part of it
+  ("the refill"), and acts when exactly one live item fits. When two fit, it changes
+  nothing and returns both with their ids, so the planner asks the person which one.
+  When nothing fits, the error lists what is open with ids, so the next call can
+  succeed. The tool descriptions didn't change, so the measured contract stayed
+  byte-identical, and both the live phrasing and the ambiguous case are regression
+  tests through the real SDK client.
+- **Suggestion:** Give tool schemas a way to say where an argument comes from ("an
+  `obligationId` from `get_care_gaps`") that hosts can act on: check the value against
+  ids seen in earlier results, and re-plan before calling when it isn't one. Until
+  then, the Alexa+ MCP design guide should tell server authors to accept a human
+  description wherever they take an id, because planners will send one.
+- **Date:** 2026-09-23
+
+### Amazon Bedrock - a retired model is still listed as an ACTIVE inference profile
+- **Task attempted:** Measure our tool-selection evals on Amazon's own models, to show
+  the MCP server works for more planners than the one it was tuned on.
+- **Steps taken:** Listed the account's inference profiles for Nova. That returned
+  `us.amazon.nova-premier-v1:0` alongside Nova Pro, Lite, Micro and Nova 2 Lite, with
+  `status: ACTIVE`. Ran the full 144-case corpus on Premier, Pro and 2 Lite in
+  parallel.
+- **Expected:** A profile listed as `ACTIVE` can be invoked, or the listing says it
+  can't.
+- **Actual:** Every Premier call failed with *"This model version has reached the end
+  of its life"*, and `get-foundation-model` says the same. Nothing in the profile listing
+  marks it as retired. We found out only after all 144 cases had errored.
+- **Severity:** minor - it cost one run, and our harness excludes failed calls from the
+  figure instead of scoring them as wrong. But a builder choosing a model from the list
+  would pick a dead one.
+- **Workaround:** Make one call to a model before starting a run. Report Nova Pro and
+  Nova 2 Lite, and say Premier wasn't measured and why.
+- **Suggestion:** Reflect the model lifecycle in `list-inference-profiles`: a `LEGACY`
+  or `END_OF_LIFE` status, or leave retired models out. Have the error name the
+  replacement model, as the console's model-lifecycle page does.
+- **Date:** 2026-09-23

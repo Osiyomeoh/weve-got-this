@@ -191,6 +191,12 @@ no tool here that mirrors a database table for its own sake.
 
 ### Finding and moving responsibility
 
+Every `obligationId` below should be the id from `get_care_gaps`. When a planner passes
+the task's words instead ("the refill", or the whole spoken gap line), the server works
+out which one was meant and acts, but only if exactly one open item fits. If two fit,
+nothing changes and the error lists both with their ids, so the planner can ask the
+person which one.
+
 | Tool | Arguments | Notes |
 |---|---|---|
 | **`get_care_gaps`** | `withinDays?` | **The core tool.** Everything needing attention with no owner, ranked. Read-only, idempotent. Renders the [Care Board](#the-care-board-mcp-apps). Also the way to resolve "that one" / "yes" / "I've got it" to a specific id. |
