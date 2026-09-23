@@ -32,12 +32,17 @@ export interface TelegramChatOptions {
   idleMs?: number;
 }
 
-interface Thread { host: Promise<SimulatedAlexa>; lastUsed: number; queue: Promise<unknown> }
+interface Thread { host: Promise<SimulatedAlexa>; opened: number; lastUsed: number; queue: Promise<unknown> }
+
+// The planner is told the date when a thread opens, so no thread outlives a few hours:
+// a conversation that ran past midnight would resolve "tomorrow" against yesterday.
+const MAX_AGE_MS = 4 * 60 * 60_000;
 
 const SORRY = "Sorry, I couldn't do that just now. Please try again in a minute.";
 
 export function createTelegramChat(opts: TelegramChatOptions): ChatReply {
-  const idleMs = opts.idleMs ?? 30 * 60_000;
+  // Long enough that a morning conversation is still remembered at lunchtime.
+  const idleMs = opts.idleMs ?? 3 * 60 * 60_000;
   const threads = new Map<string, Thread>();
 
   const open = async (memberId: string): Promise<SimulatedAlexa> => {
@@ -50,15 +55,15 @@ export function createTelegramChat(opts: TelegramChatOptions): ChatReply {
     await server.connect(serverSide);
     const client = new Client({ name: 'carecircle-telegram', version: '0.1.0' });
     await client.connect(clientSide);
-    return SimulatedAlexa.over(client, opts.provider);
+    return SimulatedAlexa.over(client, opts.provider, 'chat');
   };
 
   return async (memberId, text) => {
     const at = Date.now();
-    for (const [id, t] of threads) if (at - t.lastUsed > idleMs) threads.delete(id);
+    for (const [id, t] of threads) if (at - t.lastUsed > idleMs || at - t.opened > MAX_AGE_MS) threads.delete(id);
     let thread = threads.get(memberId);
     if (!thread) {
-      thread = { host: open(memberId), lastUsed: at, queue: Promise.resolve() };
+      thread = { host: open(memberId), opened: at, lastUsed: at, queue: Promise.resolve() };
       threads.set(memberId, thread);
     }
     thread.lastUsed = at;

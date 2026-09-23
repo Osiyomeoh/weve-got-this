@@ -247,6 +247,27 @@ export class CareStore {
     return this.#write(() => { this.#snapshot.medications.push(m); return m; });
   }
 
+  /** Change a medication's times, course end, or stop it. It is never deleted: the record keeps it. */
+  updateMedication(
+    id: string, householdId: string, changes: Partial<Pick<MedicationSchedule, 'times' | 'until' | 'stoppedAt'>>,
+  ): Promise<MedicationSchedule> {
+    return this.#write(() => {
+      const m = this.#snapshot.medications.find((x) => x.id === id && x.householdId === householdId);
+      if (!m) throw new NotFoundError('medication', id);
+      Object.assign(m, changes);
+      return m;
+    });
+  }
+
+  /** Move a piece of work's due time - when the appointment it serves moves. */
+  redateObligation(id: string, householdId: string, dueAt: string): Promise<Obligation> {
+    return this.#write(() => {
+      const o = this.getObligation(id, householdId);
+      o.dueAt = dueAt;
+      return o;
+    });
+  }
+
   /** Register a non-person node (place, service, device). */
   addEntity(e: Entity): Promise<Entity> {
     return this.#write(() => {

@@ -6,7 +6,8 @@ the model chose, and whether that passed.
 
 | File | Planner | Host prompt |
 |---|---|---|
-| `2026-09-23-claude-sonnet-4-5.json` | Claude Sonnet 4.5 on Bedrock | the console's (`src/sim/host.ts`) |
+| `2026-09-23-claude-sonnet-4-5-care-changes.json` | Claude Sonnet 4.5 on Bedrock, 28 tools, 155 cases | the console's |
+| `2026-09-23-claude-sonnet-4-5.json` | Claude Sonnet 4.5 on Bedrock, 25 tools, 144 cases | the console's (`src/sim/host.ts`) |
 | `2026-09-23-nova-pro.json` | Amazon Nova Pro | the console's |
 | `2026-09-23-nova-2-lite.json` | Amazon Nova 2 Lite | the console's |
 | `2026-09-23-nova-pro-alexa-bridge-prompt.json` | Amazon Nova Pro | an Alexa Skill bridge's, not ours |

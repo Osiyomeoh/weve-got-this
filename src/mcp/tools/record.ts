@@ -2,11 +2,15 @@
  * Recording what happened: a dose, an appointment, a note.
  */
 
+import { activeMedications } from '../../domain/care-changes.js';
+import { careRecipients, subjectOf } from '../../domain/who.js';
 import { z } from 'zod';
 import { applyAppointment } from '../../domain/appointments.js';
 import { require as requireCap } from '../../domain/auth.js';
 import { orphanedBy } from '../../domain/inference.js';
-import { happenedAt } from '../../domain/local-time.js';
+import { clockTime, happenedAt } from '../../domain/local-time.js';
+import { doseRecord, localParts, parseHHMM, spokenClock } from '../../domain/gaps.js';
+import type { CareEvent, CareState } from '../../domain/types.js';
 import { OUT } from '../output-schemas.js';
 import { joinSpoken } from '../text.js';
 import { describeError, guidance, reply, type ToolContext } from '../toolkit.js';
@@ -14,7 +18,7 @@ import { describeError, guidance, reply, type ToolContext } from '../toolkit.js'
 /**
  * "I used my eye drops."
  */
-export function registerLogCareEvent({ server, store, now, actor, state }: ToolContext): void {
+export function registerLogCareEvent({ server, store, now, actor, state, nameOf }: ToolContext): void {
   server.registerTool('log_care_event', {
     title: 'Log something that happened',
     description:
@@ -34,22 +38,30 @@ export function registerLogCareEvent({ server, store, now, actor, state }: ToolC
       occurredAt: z.string().optional()
         .describe('ISO timestamp if they said when. Defaults to now if they did not.'),
       aboutMemberId: z.string().optional()
-        .describe('Only when logging on behalf of someone else. Defaults to the speaker.'),
+        .describe('Only when logging on behalf of someone else: their name as the family says it (e.g. "Dad"), or their id. Defaults to the speaker.'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
     outputSchema: OUT.log_care_event,
   }, async ({ kind, medicationName, detail, occurredAt, aboutMemberId }) => {
     try {
       const me = actor();
-      const subject = aboutMemberId ?? me.id;
+      let subject = me.id;
+      if (aboutMemberId) {
+        const who = subjectOf(state(), aboutMemberId);
+        if ('problem' in who) return guidance(who.problem);
+        subject = who.member.id;
+      }
       requireCap(me, subject === me.id ? 'log_own_event' : 'log_others_event');
 
-      const meds = store.getMedications(me.householdId);
+      const meds = activeMedications(state(), now());
       let medicationId: string | undefined;
       if (kind === 'medication_taken' && medicationName) {
         const needle = medicationName.toLowerCase();
-        const matches = meds.filter((m) => m.name.toLowerCase().includes(needle)
+        const named = meds.filter((m) => m.name.toLowerCase().includes(needle)
           || needle.includes(m.name.toLowerCase()));
+        // Two people on eye drops: the one this is about decides whose dose it was.
+        const theirs = named.filter((m) => m.forMemberId === subject);
+        const matches = named.length > 1 && theirs.length > 0 ? theirs : named;
         if (matches.length > 1) {
           // Ambiguity is resolved by asking, never by picking the first match.
           return guidance(
@@ -62,6 +74,11 @@ export function registerLogCareEvent({ server, store, now, actor, state }: ToolC
 
       const when = happenedAt(occurredAt, state().household.timezone, now());
       if ('problem' in when) return guidance(when.problem);
+
+      // Already a record of this dose? Say so. Someone whose eyes are recovering may not
+      // remember, and a relative may log what he already did: a second dose is a real risk.
+      // It is still recorded - it is what they told us - but nobody is left unaware.
+      const before = medicationId ? sameDose(state(), medicationId, when.at) : undefined;
 
       const event = await store.appendEvent({
         householdId: me.householdId,
@@ -86,6 +103,15 @@ export function registerLogCareEvent({ server, store, now, actor, state }: ToolC
           ? `Got it, I've noted the ${medicationName}. That one isn't on the schedule I have, so I can't match it to a dose.`
           : `Got it, I've logged the ${medicationName}.`)
         : "Thanks, I've noted that.";
+      if (before) {
+        const tz = state().household.timezone;
+        const who = before.record.reportedBy === me.id ? 'you' : (nameOf(before.record.reportedBy) ?? 'someone');
+        return reply(
+          `${spoken} Just so you know, there was already a record of the ${spokenClock(before.slot)} dose, `
+          + `at ${clockTime(before.record.occurredAt, tz)}, from ${who}. If that was the same dose, say so and I'll note it.`,
+          { eventId: event.id, matchedMedication: medicationId ?? null, alreadyRecorded: { at: before.record.occurredAt, by: before.record.reportedBy } },
+        );
+      }
       return reply(spoken, { eventId: event.id, matchedMedication: medicationId ?? null });
     } catch (err) { return guidance(describeError(err)); }
   });
@@ -112,7 +138,7 @@ export function registerRecordAppointment({ server, store, now, actor }: ToolCon
         + '(e.g. "2026-09-24T10:00:00"). Resolve "Thursday" against today\'s date - '
         + 'never guess a date, and ask which day they meant if it is not clear.',
       ),
-      forMemberId: z.string().optional().describe('Who it is for. Defaults to the care recipient.'),
+      forMemberId: z.string().optional().describe('Who it is for: their name as the family says it (e.g. "Mum"), or their id. Leave it out when only one person is being cared for.'),
       detail: z.string().optional().describe('Anything else said about it.'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
@@ -161,7 +187,7 @@ export function registerAddNote({ server, store, now, actor, state, nameOf }: To
       + 'exactly what this system exists to catch.',
     inputSchema: {
       note: z.string().describe('The observation, in the words it was said.'),
-      aboutMemberId: z.string().optional().describe('Who it concerns. Defaults to the care recipient.'),
+      aboutMemberId: z.string().optional().describe('Who it concerns: their name as the family says it (e.g. "Mum"), or their id.'),
       unavailable: z.object({
         memberName: z.string().describe('Who is unavailable, as the speaker named them.'),
         from: z.string().describe('ISO start of the window they cannot cover.'),
@@ -174,7 +200,17 @@ export function registerAddNote({ server, store, now, actor, state, nameOf }: To
     try {
       const me = actor();
       const s = state();
-      const about = aboutMemberId ?? s.members.find((m) => m.role === 'care_recipient')?.id;
+      // A note names who it is about, or it is about the one person cared for. With two
+      // and nobody named, it stays a note about the family, rather than guessing.
+      let about: string | undefined;
+      if (aboutMemberId) {
+        const who = subjectOf(s, aboutMemberId);
+        if ('problem' in who) return guidance(who.problem);
+        about = who.member.id;
+      } else {
+        const cared = careRecipients(s);
+        about = cared.length === 1 ? cared[0]!.id : undefined;
+      }
       const event = await store.appendEvent({
         householdId: me.householdId,
         kind: 'note_added',
@@ -217,4 +253,17 @@ export function registerAddNote({ server, store, now, actor, state, nameOf }: To
       });
     } catch (err) { return guidance(describeError(err)); }
   });
+}
+
+/** A dose of this medication already on the record for the slot this one falls in, if any. */
+function sameDose(state: CareState, medicationId: string, at: string): { slot: string; record: CareEvent } | undefined {
+  const med = state.medications.find((m) => m.id === medicationId);
+  if (!med) return undefined;
+  const mins = localParts(new Date(at), state.household.timezone).minutes;
+  const slot = med.times
+    .filter((t) => parseHHMM(t) !== null && Math.abs(parseHHMM(t)! - mins) <= 180)
+    .sort((a, b) => Math.abs(parseHHMM(a)! - mins) - Math.abs(parseHHMM(b)! - mins))[0];
+  if (!slot) return undefined;
+  const record = doseRecord(state, medicationId, slot, new Date(at));
+  return record ? { slot, record } : undefined;
 }

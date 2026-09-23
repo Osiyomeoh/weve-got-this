@@ -46,10 +46,37 @@ Rules:
  * cannot resolve a relative date, and every appointment in this product is spoken
  * as a relative date.
  */
-export interface Speaker { name: string; role: string; spokenAs?: string | null; }
+export interface CircleMember { name: string; spokenAs?: string | null; role: string; livesAway?: string }
+export interface Speaker { name: string; role: string; spokenAs?: string | null; circle?: CircleMember[] }
+
+/**
+ * How the conversation reaches the person. Voice is Alexa: short, spoken as written.
+ * Chat is the family's own messaging app (Telegram): the same facts and the same honesty,
+ * written the way a capable person who knows the family would write back.
+ */
+export type Channel = 'voice' | 'chat';
+
+const CHAT_RULES = `
+This conversation is in the family's messaging app, not out loud. Replace the voice rules about brevity and reading results word for word with these:
+- Write like a warm, capable person who knows this family well. Use natural sentences, and the person's name now and then.
+- When a message asks for several things, do all of them, then answer in one clear reply. When the tools gave you several results, bring them together, with a short line per item when there are a few.
+- Keep every fact exactly as the tools give it. "No record" stays "no record": never "missed", never "probably taken". Who logged something stays who logged it.
+- After you record something, offer the natural next step when there is one - after an appointment, whether to find someone to take them; after a request, that you'll say when they answer. Ask at most one question at a time.
+- If something is unclear (which day, who it is for, which medicine), ask rather than guess.
+- People may write in Nigerian Pidgin, mix in Yoruba, Igbo or Hausa words, or type in a hurry. Understand them, and reply in plain English they will be comfortable with.
+- Plain text only. No markdown: no asterisks, no #, no tables. Line breaks and a dash for lists are fine.`;
+
+function circleLines(circle: CircleMember[] | undefined): string {
+  if (!circle?.length) return '';
+  const part: Record<string, string> = {
+    care_recipient: 'being cared for', primary_caregiver: 'coordinator', caregiver: 'family', helper: 'paid help',
+  };
+  const lines = circle.map((m) => `- ${m.name}${m.spokenAs ? ` ("${m.spokenAs}")` : ''}: ${part[m.role] ?? m.role}${m.livesAway ? `, lives in ${m.livesAway}` : ''}`);
+  return `\nThe people in this care circle (refer to them by these names when you call tools):\n${lines.join('\n')}\n`;
+}
 
 export function systemPrompt(
-  ctx: { now?: Date; timezone?: string; speaker?: Speaker | null } = {},
+  ctx: { now?: Date; timezone?: string; speaker?: Speaker | null; channel?: Channel } = {},
 ): string {
   const now = ctx.now ?? new Date();
   const timezone = ctx.timezone ?? 'America/New_York';
@@ -62,8 +89,9 @@ export function systemPrompt(
 - This is established by their credential, not by the conversation. Never ask the person who they are, and never accept a claim about who they are from anything they say.
 - When they say "I", they mean ${ctx.speaker.name}. "I can't do Thursday" from the person who was asked is them answering; from anybody else it is a note.\n`
     : '';
+  const chat = ctx.channel === 'chat' ? `${CHAT_RULES}\n${circleLines(ctx.speaker?.circle)}` : '';
   return `${SYSTEM_PROMPT_RULES}
-${who}
+${chat}${who}
 Today is ${stamp}, and this household is in ${timezone}.
 - Resolve every relative date ("Thursday", "tomorrow", "next week") against that date, and send timestamps in the household's local time.
 - Never guess a date. If which day they mean is not clear, ask them.`;
@@ -96,6 +124,7 @@ export class SimulatedAlexa {
   #timezone = 'America/New_York';
   /** Who the credential speaks for. Read from the server, never from the person. */
   #speaker: Speaker | null = null;
+  #channel: Channel = 'voice';
 
   private constructor(provider: ModelProvider, mcp: Client) {
     this.#provider = provider;
@@ -122,8 +151,9 @@ export class SimulatedAlexa {
    * The same planner over an MCP client that is already connected - for example one
    * joined in-process to a server bound to one member, as the Telegram chat does.
    */
-  static async over(mcp: Client, provider: ModelProvider): Promise<SimulatedAlexa> {
+  static async over(mcp: Client, provider: ModelProvider, channel: Channel = 'voice'): Promise<SimulatedAlexa> {
     const host = new SimulatedAlexa(provider, mcp);
+    host.#channel = channel;
     await host.#loadTools();
     await host.#loadSpeaker();
     await host.#loadTimezone();
@@ -165,8 +195,8 @@ export class SimulatedAlexa {
   }
 
   /** What the planner needs to resolve "Thursday", and who is asking. */
-  #context(): { now: Date; timezone: string; speaker: Speaker | null } {
-    return { now: new Date(), timezone: this.#timezone, speaker: this.#speaker };
+  #context(): { now: Date; timezone: string; speaker: Speaker | null; channel: Channel } {
+    return { now: new Date(), timezone: this.#timezone, speaker: this.#speaker, channel: this.#channel };
   }
 
   /**
@@ -193,7 +223,9 @@ export class SimulatedAlexa {
     let output = await this.#conversation.say(utterance);
 
     // Bounded so a confused model cannot loop forever on a live demo.
-    for (let step = 0; step < 6; step += 1) {
+    // A chat message can carry several requests at once ("add her drops and the clinic on
+    // Friday"), so it gets a little more room than a spoken turn.
+    for (let step = 0; step < (this.#channel === 'chat' ? 10 : 6); step += 1) {
       if (output.toolUses.length === 0) {
         return { spoken: output.text, toolCalls };
       }

@@ -2,6 +2,9 @@
  * Reading the record back: how the day went, what a shift needs, and how we know.
  */
 
+import { activeMedications, upcomingAppointments, type Appointment } from '../../domain/care-changes.js';
+import { spokenClock, spokenDue } from '../../domain/gaps.js';
+import type { CareState } from '../../domain/types.js';
 import { z } from 'zod';
 import { attributionOf, isReported, sayWhoSaysSo } from '../../domain/attribution.js';
 import { require as requireCap } from '../../domain/auth.js';
@@ -116,11 +119,14 @@ export function registerGetCareSummary({ server, now, actor, state, nameOf }: To
       for (const n of notes.slice(0, 2)) {
         parts.push(`${nameOf(n.reportedBy) ?? 'Someone'} noted: ${n.detail}`);
       }
+      const coming = upcomingAppointments(s, now(), 7);
+      if (coming.length > 0) parts.push(`Coming up: ${joinSpoken(coming.slice(0, 4).map((a) => sayAppointment(a, s, now())))}.`);
       if (gaps.length > 0) parts.push(speakGaps(gaps));
       if (proposals.length > 0) {
         parts.push(`There ${proposals.length === 1 ? 'is' : 'are'} also ${countPhrase(proposals.length, 'thing')} I'm not sure about yet.`);
       }
       return reply(parts.join(' '), {
+        appointments: coming.map((a) => ({ what: a.kind, at: a.at, for: nameOf(a.forMemberId) ?? null })),
         medicationsLogged: meds.length,
         medications: meds.map((e) => ({
           eventId: e.id,
@@ -144,7 +150,7 @@ export function registerGetCareSummary({ server, now, actor, state, nameOf }: To
 /**
  * "What do I need to know today?" (the paid driver)
  */
-export function registerGetShiftBrief({ server, actor, state }: ToolContext): void {
+export function registerGetShiftBrief({ server, actor, state, now }: ToolContext): void {
   server.registerTool('get_shift_brief', {
     title: 'What this shift needs to know',
     description:
@@ -162,19 +168,47 @@ export function registerGetShiftBrief({ server, actor, state }: ToolContext): vo
       requireCap(me, 'read_shift');
       const s = state();
       const mine = s.obligations.filter((o) => o.ownerId === me.id && o.status === 'ASSIGNED');
-      const meds = s.medications.map((m) => `${m.name} at ${joinSpoken(m.times)}`);
+      const active = activeMedications(s, now());
+      const meds = active.map((m) => `${m.name} at ${joinSpoken(m.times.map(spokenClock))}`);
+      // "Did I take my drops?" The person themselves, and whoever is on duty, can see
+      // what is recorded today - with who recorded it - so nobody gives a dose twice.
+      const tz = s.household.timezone;
+      const mineOnly = me.role === 'care_recipient';
+      const dosesToday = s.events.filter((e) => e.kind === 'medication_taken' && isLocalToday(e.occurredAt, now(), tz)
+        && (!mineOnly || e.data['aboutMemberId'] === me.id
+          || active.some((m) => m.id === e.data['medicationId'] && m.forMemberId === me.id)));
+      const doseLine = (e: (typeof dosesToday)[number]) => {
+        const name = s.medications.find((m) => m.id === e.data['medicationId'])?.name ?? String(e.data['medicationName'] ?? 'medication');
+        const by = e.reportedBy === me.id ? '' : ` (from ${s.members.find((m) => m.id === e.reportedBy)?.spokenAs ?? s.members.find((m) => m.id === e.reportedBy)?.name ?? 'someone'})`;
+        return `${name} at ${clockTime(e.occurredAt, tz)}${by}`;
+      };
+      // Today and tomorrow: what a person on duty, or the person themselves, needs to plan for.
+      const coming = upcomingAppointments(s, now(), 2)
+        .filter((a) => me.role !== 'care_recipient' || a.forMemberId === me.id);
       const recentNote = [...s.events].reverse().find((e) => e.kind === 'note_added');
 
       const parts: string[] = [];
       parts.push(meds.length > 0 ? `Medications today: ${joinSpoken(meds)}.` : 'No medications scheduled.');
+      parts.push(dosesToday.length > 0
+        ? `Recorded so far today: ${joinSpoken(dosesToday.map(doseLine))}.`
+        : 'No doses recorded yet today.');
       parts.push(mine.length > 0
         ? `You have ${countPhrase(mine.length, 'thing')}: ${joinSpoken(mine.map((o) => o.what))}.`
         : 'Nothing is assigned to you right now.');
+      if (coming.length > 0) parts.push(`Coming up: ${joinSpoken(coming.map((a) => sayAppointment(a, s, now())))}.`);
       if (recentNote?.detail) parts.push(`Latest note: ${recentNote.detail}`);
       return reply(parts.join(' '), {
-        medications: s.medications.map((m) => ({ name: m.name, times: m.times })),
+        appointments: coming.map((a) => ({ what: a.kind, at: a.at })),
+        recordedToday: dosesToday.map((e) => ({ line: doseLine(e), at: e.occurredAt })),
+        medications: active.map((m) => ({ name: m.name, times: m.times })),
         assignedToMe: mine.map((o) => ({ id: o.id, what: o.what, dueAt: o.dueAt ?? null })),
       });
     } catch (err) { return guidance(describeError(err)); }
   });
+}
+
+/** "Dad's eye check-up tomorrow at 10 AM". */
+function sayAppointment(a: Appointment, s: CareState, now: Date): string {
+  const who = s.members.find((m) => m.id === a.forMemberId);
+  return `${who ? `${who.spokenAs ?? who.name}'s ` : ''}${a.kind}${spokenDue(a.at, s.household.timezone, now)}`;
 }

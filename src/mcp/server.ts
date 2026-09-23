@@ -1,3 +1,4 @@
+import { registerChangeAppointment, registerChangeMedication, registerRaiseUrgent } from './tools/changes.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { AGENT_ID } from '../domain/agent.js';
@@ -150,6 +151,9 @@ export function createCareCircleServer({ store, actorId, ...opts }: ServerContex
   registerAddMember(ctx);
   registerAddMedication(ctx);
   registerRemoveMember(ctx);
+  registerChangeMedication(ctx);
+  registerChangeAppointment(ctx);
+  registerRaiseUrgent(ctx);
 
   registerMeResource(ctx);
   registerCareStateResource(ctx);

@@ -12,7 +12,9 @@ to go with it. Send the link first, then this guide.
 2. Tap **Start**. CareCircle says hello by name and tells you your part.
 3. You're in. Keep the link to yourself: it only works once, and only for you.
 
-Talk to CareCircle in its own chat any time, in your own words. In the family group it
+Talk to CareCircle in its own chat any time, in your own words, in English or Pidgin. You
+can **send a voice note** instead of typing: it shows what it heard, answers in writing,
+and sends a voice note back. In the family group it
 only answers when you **@mention it** or **reply to one of its messages**. The rest of
 the group is for the family, as always.
 
@@ -27,6 +29,10 @@ is watching you. You tell it things, the same way you would tell one of us.
 - **When you have an appointment:** "I have the clinic on Thursday at 10." It adds it, so
   we can sort out who takes you.
 - **To check your day:** "What's on today?"
+- **If you're not sure you took it:** "Did I take my drops this morning?" If you log a dose
+  that was already recorded, it tells you, so nobody gives the same dose twice.
+- **If the doctor changes something:** "The doctor says I can stop the drops after Sunday."
+- **Typing is hard?** Hold the microphone button and just say it.
 
 We all see what you record. If something isn't written down, CareCircle only ever says
 there's **no record** of it. It never says you missed it.
@@ -42,6 +48,14 @@ You keep the overall picture. Things to say to CareCircle:
   who and why. Nothing becomes theirs until they say yes.
 - "How was Dad's day?" gives what's been recorded today.
 - "That's done" closes something you've handled.
+- "Daddy has his eye check-up on October 2nd at 10 AM." It adds it, works out that he
+  needs a ride, and checks with you first.
+- "The check-up has moved to Friday at 2" or "the check-up is cancelled." Whatever was
+  arranged for it, like the ride, moves or is called off, and whoever had it is told.
+- "Add Daddy's vitamins, every morning at 9" for a new medicine, and "his drops are at 9
+  and 9 now" or "stop the drops after Sunday" when the doctor changes one.
+- Caring for more than one person? Add them as someone the circle cares for, and say
+  whose it is ("Grandma's clinic is on Monday"). If it isn't clear, CareCircle asks.
 
 ---
 
@@ -67,9 +81,19 @@ The same as above, with two differences:
 
 ---
 
+## If something is wrong
+
+Tell CareCircle straight away: "Daddy has fallen", "he has chest pains", "he's very
+confused". It messages **everyone at once**, each person privately and the family group,
+so a muted group doesn't hide it. It tells you to **call 112 (or 767 in Lagos)** if it's an
+emergency. CareCircle does not call emergency services itself, so call them if it's an emergency.
+
+---
+
 ## Privacy, in one paragraph
 
 What you tell CareCircle is stored for this family only, and only the family sees it.
 Your link connects your own Telegram account and nobody else's. The bot reads the family
 group so it can hear a "yes" or a "can't", but it only replies when someone @mentions it
-or replies to it, and it keeps nothing else that's said there. If you want your data deleted at the end, say so and it will be.
+or replies to it, and it keeps nothing else that's said there. It only listens to voice
+notes sent to it, never the family's voice notes to each other. If you want your data deleted at the end, say so and it will be.

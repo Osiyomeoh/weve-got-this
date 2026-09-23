@@ -42,6 +42,7 @@ export interface EvalCase {
 }
 
 const PURCHASE_FIX = '2026-09-23: used to fix the purchase tools';
+const CARE_CHANGES = '2026-09-23: answer key widened after the run that added change_appointment';
 const RESOLVE_FIX = '2026-09-23: looked at while fixing resolve vs log, from the Alexa bridge run';
 
 const contains = (needle: string) => (v: unknown) =>
@@ -65,14 +66,31 @@ export const CORPUS: EvalCase[] = [
     args: { kind: contains('eye') } },
   { id: 'appt-02', member: 'm_margaret', utterance: 'I have a dentist appointment next Tuesday at 2pm.', expect: ['record_appointment'] },
   { id: 'appt-03', member: 'm_david', utterance: 'Put Daddy down for physical therapy Friday morning at nine.', expect: ['record_appointment'] },
-  { id: 'appt-04', member: 'm_renee', utterance: 'The clinic moved his bloodwork to Monday at eight.', expect: ['record_appointment'] },
+  { id: 'appt-04', member: 'm_renee', utterance: 'The clinic moved his bloodwork to Monday at eight.', expect: ['record_appointment', 'change_appointment'],
+    note: 'change_appointment was added 2026-09-23 and is the better home when the bloodwork is already on the record; a single turn cannot know whether it is.' },
   { id: 'appt-05', member: 'm_david', utterance: "He's got an eye test on the fourth at 11:30.", expect: ['record_appointment'] },
   { id: 'appt-06', member: 'm_renee', utterance: 'Book club is Wednesday evening at seven.', expect: ['record_appointment'],
     note: 'Non-medical: should record but propose no transport.' },
 
+  // --- When care changes (added 2026-09-23 with the tools) ------------------
+  { id: 'medchange-01', member: 'm_david', utterance: 'The doctor says Daddy can stop the eye drops now.', expect: ['change_medication'] },
+  { id: 'medchange-02', member: 'm_renee', utterance: 'His eye drops are at nine and nine now, not eight.', expect: ['change_medication'] },
+  { id: 'medchange-03', member: 'm_david', utterance: 'He only needs the antibiotic until Sunday.', expect: ['change_medication'] },
+  { id: 'medchange-04', member: 'm_david', utterance: 'Add his new vitamin, every morning at nine.', expect: ['add_medication'],
+    note: 'A new medication is add_medication, not a change.' },
+  { id: 'move-01', member: 'm_renee', utterance: 'The eye check-up has moved to Friday at two.', expect: ['change_appointment'] },
+  { id: 'move-02', member: 'm_david', utterance: "They cancelled Daddy's physio tomorrow.", expect: ['change_appointment'] },
+  { id: 'move-03', member: 'm_renee', utterance: 'The clinic pushed his appointment back an hour.', expect: ['change_appointment'] },
+  { id: 'urgent-01', member: 'm_margaret', utterance: "I've fallen in the bathroom and I can't get up.", expect: ['raise_urgent'] },
+  { id: 'urgent-02', member: 'm_renee', utterance: 'Daddy is having chest pains, tell everyone now.', expect: ['raise_urgent'] },
+  { id: 'urgent-03', member: 'm_aide', utterance: "He's suddenly very confused and doesn't know where he is.", expect: ['raise_urgent'] },
+  { id: 'urgent-04', member: 'm_renee', utterance: 'Daddy fell asleep early tonight.', expect: ['add_note', 'log_care_event'],
+    note: 'Not an emergency: "fell asleep" must not alert the whole family.' },
+
   // --- Notes and observations -------------------------------------------
   { id: 'note-01', member: 'm_renee', utterance: 'Daddy sounded tired on the phone.', expect: ['add_note'] },
-  { id: 'note-02', member: 'm_david', utterance: 'The doctor changed his dose to twice a day.', expect: ['add_note'] },
+  { id: 'note-02', member: 'm_david', utterance: 'The doctor changed his dose to twice a day.', expect: ['add_note', 'change_medication'],
+    note: 'change_medication was added 2026-09-23; without the new times it may still ask or note it.' },
   { id: 'note-03', member: 'm_aide', utterance: "He didn't eat much lunch today.", expect: ['add_note'] },
   { id: 'note-04', member: 'm_renee', utterance: 'Just so everyone knows, the pharmacy called about the refill.', expect: ['add_note'] },
   { id: 'note-05', member: 'm_david', utterance: 'He seemed a bit confused this morning but fine by lunch.', expect: ['add_note'] },
@@ -167,8 +185,10 @@ export const CORPUS: EvalCase[] = [
   { id: 'h-log-07', member: 'm_aide', utterance: 'Gave him the antibiotic at noon.', expect: ['log_care_event'] },
 
   // --- appointments, harder ---------------------------------------------
-  { id: 'h-appt-01', member: 'm_renee', utterance: 'Move his eye check-up to Friday instead.', expect: ['record_appointment', 'add_note'] },
-  { id: 'h-appt-02', member: 'm_david', utterance: 'Her hair appointment got cancelled.', expect: ['add_note', 'record_appointment'] },
+  { id: 'h-appt-01', member: 'm_renee', utterance: 'Move his eye check-up to Friday instead.', expect: ['record_appointment', 'add_note', 'change_appointment'],
+    seen: CARE_CHANGES, note: 'Chose change_appointment in the 2026-09-23 run, which is right; the key predated the tool.' },
+  { id: 'h-appt-02', member: 'm_david', utterance: 'Her hair appointment got cancelled.', expect: ['add_note', 'record_appointment', 'change_appointment'],
+    note: 'Answer key widened 2026-09-23 when change_appointment was added - the product gained the right tool; no description was tuned on this case.' },
   { id: 'h-appt-03', member: 'm_margaret', utterance: "My grandson's graduation is on the 20th.", expect: ['record_appointment'],
     note: 'Non-medical dated commitment.' },
   { id: 'h-appt-04', member: 'm_david', utterance: 'Schedule his flu shot for next week sometime.', expect: ['record_appointment'] },

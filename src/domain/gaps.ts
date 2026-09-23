@@ -1,3 +1,4 @@
+import { activeMedications } from './care-changes.js';
 import type {
   CareEvent, CareGap, CareState, ConsequenceClass, EntityAttributes, Obligation, Severity,
 } from './types.js';
@@ -322,7 +323,7 @@ function unconfirmedMedicationGaps(state: CareState, now: Date): CareGap[] {
   const nowLocal = localParts(now, timezone);
   const gaps: CareGap[] = [];
 
-  for (const med of state.medications) {
+  for (const med of activeMedications(state, now)) {
     const who = state.members.find((m) => m.id === med.forMemberId);
     const name = who?.spokenAs ?? who?.name ?? 'they';
 

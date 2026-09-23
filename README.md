@@ -56,6 +56,13 @@ what happened          what must happen        who has it
   CareCircle in Telegram, in any country. With no Echo in the house, Daddy tells the bot "I used
   my eye drops" himself, and a brother abroad gets an evening update instead of being asked to
   drive.
+- **It keeps up with real life.** The doctor stops the drops after two weeks; the check-up
+  moves to Friday, and the ride moves with it, and whoever was driving is told. A dose logged
+  twice is flagged before it becomes a second dose. "Daddy has fallen" reaches every phone at
+  once, not only a group chat someone has muted, and says to call 112. A family caring for two
+  people is asked "Dad or Grandma?" instead of guessed at. And after eye surgery, when reading
+  a phone is hard, Daddy sends a voice note and gets one back, with what it heard shown so a
+  misheard word is caught.
 - **It holds up under an assistant it did not write.** Tool choice is measured on three models,
   and under the system prompt of an Alexa Skill bridge instead of our own (Kay Lerch's
   open-source [alexa-skill-mcp-bridge](https://github.com/KayLerch/alexa-skill-mcp-bridge),
@@ -96,10 +103,11 @@ work.
 The demo family (Daddy, his children Tolu and Funmi, Kunle in London, and Musa the
 driver) is fictional and modelled on mine. No real names or medical details are used.
 
-**And it is real - not a mockup.** Live MCP server you can hit right now, **495 tests**
-(including property-based proofs of the risk model), **95.8%** measured tool-selection
-accuracy on Amazon Bedrock (138/144; 92.5% on held-out phrasings never tuned against),
-**94.4% on Amazon Nova Pro**, and an append-only care record that keeps who said what.
+**And it is real - not a mockup.** Live MCP server you can hit right now, **530 tests**
+(including property-based proofs of the risk model), **94.8%** measured tool-selection
+accuracy on Amazon Bedrock (147/155; 94.0% on held-out phrasings never tuned against),
+**94.4% on Amazon Nova Pro** (on the earlier 144 cases), and an append-only care record that
+keeps who said what.
 
 ### Try it live in your browser - no clone, no keys
 
@@ -300,7 +308,7 @@ src/
   notify/        Telegram, WhatsApp, SNS - or record-only, honestly labelled
   connectors/    Google Calendar, Gmail, Ring (and a Bee seam, unclaimed: no device)
   sim/           the Alexa+ console: a real MCP host driving Bedrock
-  evals/         the 144-case tool-selection harness
+  evals/         the 155-case tool-selection harness
 packages/care-events/   the device-adapter seam, published separately
 ```
 
@@ -519,10 +527,12 @@ npm run demo:reset && npm run dev   # in one shell
 npm run evals                       # in another
 ```
 
-**Result: 95.8% first-tool accuracy (138 / 144, 0 errored) - Claude Sonnet 4.5 on Amazon
-Bedrock, 2026-09-23.** That is one run, and every case of it is in
-[`evals/results/`](evals/results/).  Before the last description change the same corpus scored
-139. The planner runs at temperature 0, yet a borderline
+**Result: 94.8% first-tool accuracy (147 / 155, 0 errored) - Claude Sonnet 4.5 on Amazon
+Bedrock, 2026-09-23, with 28 tools.** That is one run, and every case of it is in
+[`evals/results/`](evals/results/). It is the run that added three tools for when care changes
+(`change_medication`, `change_appointment`, `raise_urgent`) and 11 cases for them, including
+"Daddy fell asleep early tonight", which must not alert the family (it didn't). On the 25-tool
+set before them the corpus scored 138/144, and 139 before that. The planner runs at temperature 0, yet a borderline
 case or two still flips run-to-run: the previous corpus measured 124-126 / 135 across
 repeated runs (~92-93%) and the same 135 now score 130. A live model is not perfectly
 reproducible and we don't pretend it is.
@@ -530,10 +540,15 @@ reproducible and we don't pretend it is.
 The corpus is deliberately split so the number cannot be gamed, and `npm run evals`
 prints each part on its own:
 
-- **68 authored cases**, used while tuning the tool descriptions - **67/68**.
+- **79 authored cases**, used while tuning the tool descriptions - **75/79**. Two of the four
+  misses are the planner asking a fair question rather than acting ("which medication?",
+  "what's the change?"), which the strict grader counts as wrong.
 - **67 held-out cases never tuned against** (harder phrasings, multi-intent, wrong-role
-  attempts, and out-of-scope lines that name care words on purpose) - **62/67, 92.5%**.
-  This is the honest number.
+  attempts, and out-of-scope lines that name care words on purpose) - **63/67, 94.0%**.
+  This is the honest number. One of the four misses, "move his eye check-up to Friday
+  instead", chose the new `change_appointment`, which is right; its answer key predated the
+  tool. We widened that key after the run and marked the case `seen`, so from the next run it
+  no longer counts as unseen.
 - **9 held-out cases we later looked at while fixing the server** - **9/9**, reported
   apart. Eight are purchases: they failed because the planner asked "which medication?"
   instead of letting the server work it out, so we fixed the purchase tools (see the
@@ -548,18 +563,17 @@ score well); we record its first tool choice and execute nothing. Cases that nev
 reach the model - credentials, throttling - are excluded from the figure rather than
 counted as wrong, because a number that can lie is worse than no number.
 
-**Honest limitations** (the 5 held-out misses, unfixed on purpose): a reschedule
-("move his eye check-up to Friday" checks the record first), vague-time scheduling ("a
-flu shot next week sometime" gets asked which day, which our own never-guess-a-date rule
-requires), "he had everything that was due before noon" checking what was due before
-logging it, "something's come up, I can't do Thursday" checking the board before noting
-it, and a helper's "anything to do today?" reaching for his requests rather than his
-shift brief. Several are
-defensible behaviour the strict grader still counts as wrong. These are the edges a
+**Honest limitations** (the held-out misses, unfixed on purpose): vague-time scheduling
+("a flu shot next week sometime" gets asked which day, which our own never-guess-a-date rule
+requires), "my grandson's graduation is on the 20th" noted rather than scheduled, "count me
+out this weekend" answered with a question, and the reschedule above. Across runs a borderline
+case or two flips: "he had everything that was due before noon" and "something's come up, I
+can't do Thursday" failed last time and passed this time. Several misses are defensible
+behaviour the strict grader still counts as wrong. These are the edges a
 larger corpus would harden next.
 
-**On Amazon Nova, and under a prompt we didn't write.** Same 144 cases and the same tool
-descriptions (2026-09-23). The last row swaps our planner prompt for the system prompt of
+**On Amazon Nova, and under a prompt we didn't write.** These runs are the 144 cases and 25
+tools from before the care-change tools (2026-09-23); Nova has not yet been re-run on the 155. The last row swaps our planner prompt for the system prompt of
 an Alexa Skill bridge (a Strands agent that stands in for the Alexa+ orchestrator), because
 real Alexa+ will not use our prompt either:
 
@@ -615,6 +629,9 @@ Every tool exists because a person says a sentence that needs it.
 | `resolve_obligation` | "Picked up the prescription" |
 | `get_shift_brief` | "What do I need to know today?" |
 | `notify_member` | "Tell Funmi I'm taking Daddy Thursday" - records it, and delivers over SNS when configured |
+| `change_medication` | "The doctor says he can stop the drops after Sunday" |
+| `change_appointment` | "The check-up has moved to Friday at two" - the ride moves with it, and whoever had it is told |
+| `raise_urgent` | "Daddy has fallen" - every phone at once, and "call 112" |
 
 Tool design follows four rules, because the model is the user:
 

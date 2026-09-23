@@ -87,6 +87,35 @@ export async function sendTelegramMessage(
   }
 }
 
+/** Download a file a person sent (a voice note), by Telegram file id. */
+export async function downloadTelegramFile(
+  token: string, fileId: string, fetchImpl: typeof fetch = fetch,
+): Promise<Buffer> {
+  const meta = await fetchImpl(`https://api.telegram.org/bot${token}/getFile`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ file_id: fileId }),
+  });
+  const path = ((await meta.json()) as { result?: { file_path?: string } }).result?.file_path;
+  if (!path) throw new Error('Telegram did not return the file.');
+  const res = await fetchImpl(`https://api.telegram.org/file/bot${token}/${path}`);
+  if (!res.ok) throw new Error(`Telegram file download failed (${res.status}).`);
+  return Buffer.from(await res.arrayBuffer());
+}
+
+/** Send a voice note (MP3 is accepted by sendVoice). Reports, never throws. */
+export async function sendTelegramVoice(
+  token: string, chatId: string, audio: Buffer, fetchImpl: typeof fetch = fetch,
+): Promise<{ ok: boolean; detail?: string }> {
+  try {
+    const form = new FormData();
+    form.set('chat_id', chatId);
+    form.set('voice', new Blob([new Uint8Array(audio)], { type: 'audio/mpeg' }), 'reply.mp3');
+    const res = await fetchImpl(`https://api.telegram.org/bot${token}/sendVoice`, { method: 'POST', body: form });
+    return res.ok ? { ok: true } : { ok: false, detail: `sendVoice failed (${res.status})` };
+  } catch (err) {
+    return { ok: false, detail: `sendVoice failed: ${(err as Error).message}` };
+  }
+}
+
 export class TelegramNotifier implements Notifier {
   readonly channel = 'telegram' as const;
   readonly #cfg: TelegramConfig;
@@ -95,6 +124,20 @@ export class TelegramNotifier implements Notifier {
   constructor(cfg: TelegramConfig) {
     this.#cfg = cfg;
     this.#fetch = cfg.fetchImpl ?? fetch;
+  }
+
+  async broadcast(input: { householdId: string; recipients: { id: string; name: string }[]; message: string }): Promise<{ reached: string[] }> {
+    const reached: string[] = [];
+    for (const r of input.recipients) {
+      const chatId = this.#cfg.recipients.get(r.id) ?? this.#cfg.linked?.(r.id)?.telegramId;
+      if (!chatId) continue;
+      const sent = await sendTelegramMessage(this.#cfg.token, chatId, input.message, this.#fetch);
+      if (sent.ok) reached.push(r.name);
+    }
+    if (this.#cfg.groupChatId && this.#cfg.groupHouseholdId === input.householdId) {
+      await sendTelegramMessage(this.#cfg.token, this.#cfg.groupChatId, input.message, this.#fetch);
+    }
+    return { reached };
   }
 
   async deliver(input: { to: string; toName: string; from: string; message: string }): Promise<DeliveryResult> {

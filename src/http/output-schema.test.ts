@@ -106,6 +106,7 @@ test('tools/list keeps the order the tool-selection evals measured', async () =>
       'resolve_obligation', 'run_care_agent', 'get_care_summary', 'get_shift_brief',
       'notify_member', 'ingest_signal', 'reorder_prescription', 'confirm_purchase',
       'get_started', 'create_household', 'add_member', 'add_medication', 'remove_member',
+      'change_medication', 'change_appointment', 'raise_urgent',
     ]);
   } finally {
     await c.close();

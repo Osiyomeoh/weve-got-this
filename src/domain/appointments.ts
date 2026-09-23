@@ -1,3 +1,4 @@
+import { subjectOf } from './who.js';
 import type { CareStore } from '../store/store.js';
 import type { EventConfidence, EventSource } from './types.js';
 import { proposeFromAppointment } from './inference.js';
@@ -77,17 +78,11 @@ export async function applyAppointment(
 ): Promise<AppointmentResult> {
   const state = store.getCareState(householdId);
 
-  const recipient = input.forMemberId
-    ? state.members.find((m) => m.id === input.forMemberId)
-    : state.members.find((m) => m.role === 'care_recipient');
-  if (!recipient) {
-    return {
-      ok: false,
-      spoken: input.forMemberId
-        ? "I don't recognise who this appointment is for."
-        : "I don't know who this appointment is for. Ask whose appointment it is.",
-    };
-  }
+  // With more than one person being cared for, an appointment nobody placed is asked
+  // about, never filed under whoever happens to be first.
+  const who = subjectOf(state, input.forMemberId, 'this appointment');
+  if ('problem' in who) return { ok: false, spoken: who.problem };
+  const recipient = who.member;
   const subject = recipient.spokenAs ?? recipient.name;
 
   // A timestamp we were handed is a claim, not a fact - a model may have invented

@@ -180,3 +180,29 @@ export async function transcribePcm(pcm: Buffer, vocabularyName?: string): Promi
   }
   return text.trim();
 }
+
+/**
+ * A voice note from a messaging app, as it arrives: Ogg/Opus, which Transcribe takes
+ * directly, so nothing is transcoded. Telegram records at 48 kHz.
+ */
+export async function transcribeOggOpus(audio: Buffer, opts: { languageCode?: string; sampleRate?: number } = {}): Promise<string> {
+  const chunks = frames(audio, 8_000);
+  const stream = (async function* () {
+    for (const chunk of chunks) yield { AudioEvent: { AudioChunk: chunk } };
+  })();
+  const response = await streamingClient().send(new StartStreamTranscriptionCommand({
+    LanguageCode: (opts.languageCode ?? 'en-US') as never,
+    MediaEncoding: 'ogg-opus',
+    MediaSampleRateHertz: opts.sampleRate ?? 48_000,
+    AudioStream: stream,
+  }));
+  let text = '';
+  for await (const event of response.TranscriptResultStream ?? []) {
+    for (const result of event.TranscriptEvent?.Transcript?.Results ?? []) {
+      if (result.IsPartial) continue;
+      const alternative = result.Alternatives?.[0]?.Transcript;
+      if (alternative) text += (text ? ' ' : '') + alternative;
+    }
+  }
+  return text.trim();
+}

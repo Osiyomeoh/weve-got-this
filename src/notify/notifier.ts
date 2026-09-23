@@ -23,6 +23,12 @@ export interface DeliveryResult {
 export interface Notifier {
   readonly channel: DeliveryResult['channel'];
   deliver(input: { to: string; toName: string; from: string; message: string }): Promise<DeliveryResult>;
+  /**
+   * Something urgent, to everyone at once: each person's own phone, and the family group
+   * once. Family groups are often muted; a private message is what makes a phone ring.
+   * Returns who was reached. Optional: without it, callers deliver one by one.
+   */
+  broadcast?(input: { householdId: string; recipients: { id: string; name: string }[]; message: string }): Promise<{ reached: string[] }>;
 }
 
 /**

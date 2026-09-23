@@ -14,7 +14,10 @@ import { z } from 'zod';
  */
 const arr = z.array(z.unknown());
 export const OUT = {
-  log_care_event: { eventId: z.string().optional(), matchedMedication: z.string().nullable().optional() },
+  log_care_event: { eventId: z.string().optional(), matchedMedication: z.string().nullable().optional(), alreadyRecorded: z.object({ at: z.string(), by: z.string() }).optional() },
+  change_medication: { medicationId: z.string().optional(), eventId: z.string().optional() },
+  change_appointment: { eventId: z.string().optional(), appointmentEventId: z.string().optional(), startsAt: z.string().optional(), cancelled: z.boolean().optional() },
+  raise_urgent: { eventId: z.string().optional(), reached: z.array(z.string()).optional() },
   record_appointment: { eventId: z.string().optional(), proposals: arr.optional() },
   add_note: { eventId: z.string().optional(), orphaned: arr.optional() },
   get_care_gaps: { recordedToday: arr.optional(), gaps: arr.optional() },
@@ -28,8 +31,8 @@ export const OUT = {
   confirm_proposal: { obligationId: z.string().optional(), status: z.string().optional() },
   resolve_obligation: { obligationId: z.string().optional() },
   run_care_agent: { would: arr.optional(), heldBack: arr.optional(), asked: arr.optional(), dryRun: z.boolean().optional() },
-  get_care_summary: { medicationsLogged: z.number().optional(), medications: arr.optional(), notes: arr.optional(), gaps: arr.optional(), pendingProposals: arr.optional() },
-  get_shift_brief: { medications: arr.optional(), assignedToMe: arr.optional() },
+  get_care_summary: { appointments: arr.optional(), medicationsLogged: z.number().optional(), medications: arr.optional(), notes: arr.optional(), gaps: arr.optional(), pendingProposals: arr.optional() },
+  get_shift_brief: { medications: arr.optional(), assignedToMe: arr.optional(), appointments: arr.optional(), recordedToday: arr.optional() },
   notify_member: { eventId: z.string().optional(), recipientId: z.string().optional(), channel: z.string().optional(), delivered: z.boolean().optional() },
   ingest_signal: { eventId: z.string().optional(), resolvesCandidate: z.unknown().optional(), proposalId: z.string().nullable().optional() },
   reorder_prescription: {

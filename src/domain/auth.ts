@@ -88,7 +88,8 @@ const DENIAL_BY_ROLE: Partial<Record<Capability, Partial<Record<Role, string>>>>
   read_full_state: {
     care_recipient:
       "I keep the full care record for the people looking after you, but this is your day "
-      + "too - I can tell you what's on it, or ask someone in the family to take something on.",
+      + "too - I can tell you what's on it, or ask someone in the family to take something on. "
+      + '(To tell them about their day - what is on, and which doses are recorded today - call get_shift_brief.)',
   },
   log_others_event: {
     care_recipient: 'You can log things about yourself here.',

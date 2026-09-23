@@ -67,7 +67,14 @@ export interface TelegramWebhookOptions {
   /** The family group this door serves: joins are announced there, and a new face there is
    *  pointed to their invite. Other groups never hear from the bot unprompted. */
   groupChatId?: string;
+  /** Turn a voice note (Telegram file id) into text. Without it, voice notes get a polite "please type". */
+  hear?: (fileId: string) => Promise<string>;
+  /** Say a reply back as a voice note, to someone who spoke to us. */
+  speak?: (chatId: string, text: string) => Promise<void>;
 }
+
+/** Longer than this, and a voice note is asked to come in pieces: cost, and a clearer record. */
+const MAX_VOICE_SECONDS = 120;
 
 export function createTelegramWebhook(opts: TelegramWebhookOptions) {
   const seen = opts.seen ?? new SeenEvents();
@@ -147,6 +154,16 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
     return 'linked';
   };
 
+  const hearVoice = async (msg: TelegramInbound): Promise<{ text: string } | { reply: string; status: string }> => {
+    if (!opts.hear) return { reply: "I can't listen to voice notes yet. Could you type it for me?", status: 'voice-unsupported' };
+    if ((msg.voice?.seconds ?? 0) > MAX_VOICE_SECONDS) {
+      return { reply: 'That voice note is a bit long for me. Could you send it in shorter pieces, under two minutes each?', status: 'voice-too-long' };
+    }
+    let text = '';
+    try { text = (await opts.hear(msg.voice!.fileId)).trim(); } catch { text = ''; }
+    return text ? { text } : { reply: "I couldn't make out that voice note. Could you say it again, or type it?", status: 'voice-unclear' };
+  };
+
   return async function handle(req: Request, res: Response): Promise<void> {
     if (!opts.secretToken) {
       res.status(503).json({ error: 'Telegram integration is not configured.' });
@@ -158,7 +175,7 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
     }
 
     const results: Array<Record<string, unknown>> = [];
-    for (const msg of parseTelegramUpdate(req.body)) {
+    for (let msg of parseTelegramUpdate(req.body)) {
       if (!seen.admit(msg.updateId)) {
         results.push({ updateId: msg.updateId, status: 'duplicate' });
         continue;
@@ -184,6 +201,27 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
       }
       const { memberId, householdId } = sender;
       const talk = opts.chat && msg.addressedToBot ? opts.chat : null;
+
+      // A voice note is heard only when it is for the bot: in a private chat, or a reply to
+      // one of its messages. The family's own voice notes to each other are never listened to.
+      let heard: string | null = null;
+      if (msg.voice) {
+        if (!msg.addressedToBot) { results.push({ updateId: msg.updateId, status: 'unparsed' }); continue; }
+        const said = await hearVoice(msg);
+        if ('reply' in said) {
+          await answer(msg.chatId, said.reply);
+          results.push({ updateId: msg.updateId, status: said.status });
+          continue;
+        }
+        heard = said.text;
+        msg = { ...msg, text: heard };
+      }
+      // What we heard is shown back, so a misheard word is caught before it becomes the record.
+      // Whoever spoke to us gets the answer spoken too.
+      const reply = async (text: string): Promise<void> => {
+        await answer(msg.chatId, heard ? `I heard: "${heard}"\n\n${text}` : text);
+        if (heard && opts.speak) await opts.speak(msg.chatId, text).catch(() => undefined);
+      };
       try {
         const intent = interpretReply(msg.text);
         if (intent) {
@@ -197,7 +235,7 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
           if (r.ok || !talk) {
             // The bot answers where the reply came from, so the loop is visible: a "yes"
             // in the family group gets "that's yours now" in the family group.
-            await answer(msg.chatId, r.spoken);
+            await reply(r.spoken);
             results.push({ updateId: msg.updateId, status: r.ok ? intent : 'no-open-request', ...(r.obligationId ? { obligationId: r.obligationId } : {}) });
             continue;
           }
@@ -207,7 +245,7 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
           results.push({ updateId: msg.updateId, status: 'unparsed' });
           continue;
         }
-        await answer(msg.chatId, await talk(memberId, msg.text));
+        await reply(await talk(memberId, msg.text));
         results.push({ updateId: msg.updateId, status: 'chat' });
       } catch (err) {
         results.push({ updateId: msg.updateId, status: 'error', detail: (err as Error).message });

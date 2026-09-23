@@ -1,3 +1,5 @@
+import { activeMedications } from './care-changes.js';
+import { called, careRecipients } from './who.js';
 import type { CareState, Member } from './types.js';
 import type { CareStore } from '../store/store.js';
 import type { Notifier } from '../notify/notifier.js';
@@ -46,14 +48,21 @@ function whenDue(iso: string, timezone: string, now: Date): string {
 export function composeDailyUpdate(state: CareState, now: Date): string {
   const { timezone } = state.household;
   const today = localParts(now, timezone);
-  const cared = state.members.find((m) => m.role === 'care_recipient');
-  const who = cared ? `${cared.spokenAs ?? cared.name}'s` : 'The';
+  const cared = careRecipients(state);
+  // One person: "Daddy's evening update". More than one: "The evening update", and each
+  // medication says whose it is, so Grandma's drops are never read as Dad's.
+  const who = cared.length === 1 ? `${called(cared[0]!)}'s` : 'The';
+  const whose = (forId: string | undefined): string => {
+    if (cared.length < 2) return '';
+    const m = cared.find((c) => c.id === forId);
+    return m ? ` (${called(m)})` : '';
+  };
   const heading = new Intl.DateTimeFormat('en-GB', {
     timeZone: timezone, weekday: 'long', day: 'numeric', month: 'long',
   }).format(now);
   const lines: string[] = [`${who} evening update - ${heading}.`];
 
-  const doses = state.medications.flatMap((med) => med.times.map((time) => ({ med, time })))
+  const doses = activeMedications(state, now).flatMap((med) => med.times.map((time) => ({ med, time })))
     .sort((a, b) => a.time.localeCompare(b.time) || a.med.name.localeCompare(b.med.name));
   if (doses.length > 0) {
     lines.push('', 'Medication');
@@ -63,7 +72,7 @@ export function composeDailyUpdate(state: CareState, now: Date): string {
       const status = record
         ? sayWhoSaysSo(attributionOf(record), (id) => nameOf(state, id))
         : today.minutes < due ? 'not due yet' : 'no record yet';
-      lines.push(`- ${med.name}, ${spokenClock(time)}: ${status}`);
+      lines.push(`- ${med.name}${whose(med.forMemberId)}, ${spokenClock(time)}: ${status}`);
     }
   }
 

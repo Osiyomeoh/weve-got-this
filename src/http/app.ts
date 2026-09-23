@@ -1,3 +1,6 @@
+import { downloadTelegramFile, sendTelegramVoice } from '../notify/telegram.js';
+import { transcribeOggOpus } from '../sim/transcribe.js';
+import { synthesize } from '../sim/speech.js';
 import express from 'express';
 import { randomUUID } from 'node:crypto';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
@@ -158,6 +161,17 @@ app.post(
     log: (line) => console.info(line),
     botUsername: process.env['TELEGRAM_BOT_USERNAME']?.trim() || 'carecircle0111_bot',
     ...(process.env['TELEGRAM_GROUP_CHAT_ID']?.trim() ? { groupChatId: process.env['TELEGRAM_GROUP_CHAT_ID'].trim() } : {}),
+    // Voice notes in, voice notes out: Amazon Transcribe and Polly. For someone whose eyes
+    // are recovering from surgery, speaking is easier than typing, and listening than reading.
+    ...(tgChat && process.env['TELEGRAM_VOICE'] !== 'off' ? {
+      hear: async (fileId: string) => transcribeOggOpus(await downloadTelegramFile(tgBotToken, fileId), {
+        languageCode: process.env['TELEGRAM_VOICE_LANGUAGE']?.trim() || 'en-US',
+      }),
+      speak: async (chatId: string, text: string) => {
+        const spoken = await synthesize(text, 'gentle');
+        await sendTelegramVoice(tgBotToken, chatId, spoken.audio);
+      },
+    } : {}),
   }),
 );
 

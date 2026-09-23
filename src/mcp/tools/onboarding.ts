@@ -2,6 +2,7 @@
  * Setting a family up, one step at a time, and changing who is in the circle.
  */
 
+import { subjectOf } from '../../domain/who.js';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { require as requireCap } from '../../domain/auth.js';
@@ -174,22 +175,25 @@ export function registerAddMedication({ server, store, actor, state }: ToolConte
     inputSchema: {
       name: z.string().describe('The medication, as the family calls it (e.g. "heart pill").'),
       times: z.array(z.string()).describe('Due times, 24-hour "HH:MM", e.g. ["08:00","20:00"].'),
-      forMemberId: z.string().optional().describe('Who it is for. Defaults to the care recipient.'),
+      until: z.string().optional().describe('The last day, "YYYY-MM-DD" in the household\'s time, when it is for a set course ("for two weeks").'),
+      forMemberId: z.string().optional().describe('Who it is for: their name as the family says it (e.g. "Mum"), or their id. Leave it out when only one person is being cared for.'),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
     outputSchema: OUT.add_medication,
-  }, async ({ name, times, forMemberId }) => {
+  }, async ({ name, times, forMemberId, until }) => {
     try {
       const me = actor();
       requireCap(me, 'manage_circle');
       if (!validMedicationTimes(times)) {
         return guidance('I need the dose times as 24-hour "HH:MM" - for example ["08:00","20:00"]. Say them again that way.');
       }
-      const forId = forMemberId ?? state().members.find((m) => m.role === 'care_recipient')?.id;
-      if (!forId) return guidance('I don\'t know who this medication is for. Tell me which member.');
+      const who = subjectOf(state(), forMemberId, 'this medication');
+      if ('problem' in who) return guidance(who.problem);
+      const forId = who.member.id;
       const id = `med_${randomUUID()}`;
-      await store.addMedication({ id, householdId: me.householdId, name, times, forMemberId: forId });
-      return reply(`Added ${name} at ${joinSpoken(times)}.`, { medicationId: id });
+      if (until && !/^\d{4}-\d{2}-\d{2}$/.test(until)) return guidance('I need the last day as a date, like "2026-10-07". Ask which day they meant.');
+      await store.addMedication({ id, householdId: me.householdId, name, times, forMemberId: forId, ...(until ? { until } : {}) });
+      return reply(`Added ${name} at ${joinSpoken(times)}${until ? `, until ${until}` : ''}.`, { medicationId: id });
     } catch (err) { return guidance(describeError(err)); }
   });
 }

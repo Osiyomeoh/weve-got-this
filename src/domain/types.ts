@@ -131,7 +131,13 @@ export type EventKind =
   | 'external_signal'
   | 'check_in'
   | 'purchase_offered'
-  | 'purchase_completed';
+  | 'purchase_completed'
+  /** A medication's times, course or status changed, and who changed it. */
+  | 'medication_changed'
+  /** An appointment moved or was cancelled. The original stays; this says what changed. */
+  | 'appointment_changed'
+  /** Someone told the whole family something serious is happening. */
+  | 'urgent_raised';
 
 /**
  * Where an observation entered the graph. This is the *channel*, distinct from the
@@ -311,6 +317,10 @@ export interface MedicationSchedule {
   /** Local times of day, "HH:MM", when a dose is expected. */
   times: string[];
   forMemberId: string;
+  /** The last day it is taken (household-local "YYYY-MM-DD"), when the course has an end. */
+  until?: string;
+  /** When it was stopped. A stopped medication stays on the record, and is no longer expected. */
+  stoppedAt?: string;
 }
 
 export interface Household {

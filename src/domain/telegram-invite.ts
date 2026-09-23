@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import type { CareState, Member } from './types.js';
+import { recipientsSpoken } from './who.js';
 
 /**
  * Joining a family's circle on Telegram, one person at a time.
@@ -51,10 +52,9 @@ export function startPayload(text: string): string | null {
   return m[1] ?? '';
 }
 
-/** The person the circle is for, as the family says it ("Daddy"). */
+/** Who the circle is for, as the family says it ("Daddy", or "Daddy and Grandma"). */
 export function recipientName(state: CareState): string {
-  const r = state.members.find((m) => m.role === 'care_recipient');
-  return r?.spokenAs ?? r?.name ?? 'the person you care for';
+  return recipientsSpoken(state);
 }
 
 export const ROLE: Record<Member['role'], string> = {

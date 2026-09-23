@@ -32,8 +32,10 @@ export interface TelegramInbound {
   fromId: string;
   /** The sender's Telegram first name, for the operator mapping a new family member. */
   fromName?: string;
-  /** The message text. */
+  /** The message text. For a voice note, empty until it has been transcribed. */
   text: string;
+  /** A voice note: Telegram's file id, and how long it is. */
+  voice?: { fileId: string; seconds: number };
   /** Telegram's update id, for idempotency. */
   updateId: string;
   /** A one-to-one chat with the bot, as opposed to the family group. */
@@ -48,6 +50,8 @@ interface TgUpdate {
   message?: {
     message_id?: number;
     text?: string;
+    caption?: string;
+    voice?: { file_id?: string; duration?: number };
     from?: { id?: number | string; first_name?: string };
     chat?: { id?: number | string; type?: string };
     reply_to_message?: { from?: { is_bot?: boolean } };
@@ -74,9 +78,14 @@ export function parseTelegramUpdate(payload: unknown): TelegramInbound[] {
   // mention itself is not part of what the person said.
   const mention = /@\w*bot\b/i;
   const text = raw.replace(new RegExp(mention.source, 'gi'), '').replace(/\s{2,}/g, ' ').trim();
-  if (!updateId || !chatId || !text) return [];
+  const v = u.message?.voice;
+  const voice = v?.file_id ? { fileId: v.file_id, seconds: v.duration ?? 0 } : undefined;
+  if (!updateId || !chatId || (!text && !voice)) return [];
   const isPrivate = u.message?.chat?.type === 'private';
   const addressedToBot = isPrivate || mention.test(raw) || u.message?.reply_to_message?.from?.is_bot === true;
   const fromName = u.message?.from?.first_name;
-  return [{ chatId, fromId, text, updateId, isPrivate, addressedToBot, ...(fromName ? { fromName } : {}) }];
+  return [{
+    chatId, fromId, text, updateId, isPrivate, addressedToBot,
+    ...(fromName ? { fromName } : {}), ...(voice ? { voice } : {}),
+  }];
 }

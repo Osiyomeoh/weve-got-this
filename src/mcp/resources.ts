@@ -24,7 +24,7 @@ import { CARE_BOARD_URI, type ToolContext } from './toolkit.js';
  * and what that person may do - nothing about anybody else - so it discloses
  * strictly less than the caller already holds.
  */
-export function registerMeResource({ server, actor }: ToolContext): void {
+export function registerMeResource({ server, actor, state }: ToolContext): void {
   server.registerResource('me', 'carecircle://session/me', {
     title: 'Who this session speaks for',
     description:
@@ -43,6 +43,12 @@ export function registerMeResource({ server, actor }: ToolContext): void {
           spokenAs: me.spokenAs ?? null,
           role: me.role,
           can: capabilitiesOf(me),
+          // Who else is in the circle, by name and part only, so a host knows who "Dad"
+          // and "Sandra" are without asking. No contact details.
+          circle: state().members.map((m) => ({
+            name: m.name, spokenAs: m.spokenAs ?? null, role: m.role,
+            ...(m.livesAway ? { livesAway: m.livesAway } : {}),
+          })),
         }, null, 2),
       }],
     };
