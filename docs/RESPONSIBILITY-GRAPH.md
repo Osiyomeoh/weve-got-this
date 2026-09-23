@@ -18,7 +18,7 @@ says `DELTA`.
 Most care systems track **facts** or **tasks**:
 
 - Facts: *"Medications are X, Y, Z."*
-- Tasks: *"David should pick up the prescription."*
+- Tasks: *"Tolu should pick up the eye drops."*
 
 They fail at the layer in between, which is where real families actually fail:
 
@@ -32,13 +32,13 @@ The responsibility graph exists to make that middle layer explicit, queryable, a
 
 ```
 ENTITY        who or what exists in the care world
-                (Margaret, David, Renee, Pharmacy, Cardiology, a Ring device)
+                (Daddy, Tolu, Funmi, Pharmacy, Eye clinic, a Ring device)
       │
 EVENT         something that occurred, with provenance
-                ("package arrived", "Margaret said she feels dizzy", "appointment created")
+                ("package arrived", "Daddy said he feels dizzy", "appointment created")
       │
 OBLIGATION    something now owed because of one or more events
-                explicit ("David will drive") or implied ("someone must get her there")
+                explicit ("Tolu will drive") or implied ("someone must get him there")
       │
 OWNERSHIP     the binding of an obligation to an entity
                 unowned │ proposed │ requested │ claimed/assigned │ rejected
@@ -96,7 +96,7 @@ move is recorded in the `transitions` log. Its non-obvious, load-bearing choices
 - **Rejection is first-class and logged.** A decline is information: `DISMISSED` for a
   wrong inference, or `declinedBy[]` for "I can't take this" — the agent then asks the next
   person, never the same one twice.
-- **Silence is `unowned`, never "Margaret failed" or "David forgot."** There is no code
+- **Silence is `unowned`, never "Daddy failed" or "Tolu forgot."** There is no code
   path that turns the absence of a record into an accusation. This is asserted by the
   trust suite, not just intended.
 
@@ -143,7 +143,7 @@ Worked example — the graph never collapses these three rows into one "fact":
 { "kind": "check_in", "source": "system", "confidence": "inferred",
   "derivedFrom": ["<the ring event id>"], "status": "proposed" }
 // 3. a human confirmed it
-{ "kind": "obligation_resolved", "source": "David", "confidence": "confirmed" }
+{ "kind": "obligation_resolved", "source": "Tolu", "confidence": "confirmed" }
 ```
 
 A family — or a judge — can always ask *"how do we know?"* and get the chain, not a verdict.

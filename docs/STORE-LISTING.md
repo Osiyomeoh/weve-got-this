@@ -60,7 +60,7 @@ in one house or one country.
 - "Set up a care circle for my mother."
 - "Add my sister to the circle."
 - "I'll take the pharmacy run."
-- "Ask David if he can drive her Thursday."
+- "Ask Funmi if she can drive Daddy Thursday."
 - "Is anything falling through the cracks?"
 - "What do I need to know for my shift?"
 

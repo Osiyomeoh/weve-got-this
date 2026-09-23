@@ -10,6 +10,10 @@
 > nobody is in charge - so the thing that fails isn't the thing someone forgot. It's the
 > thing **nobody knew was theirs.**
 
+And a brother in the UK wants updates on Dad's health too. So family far away get a short
+evening update on the day, and CareCircle never asks them to drive anyone to a clinic in
+Lagos.
+
 Every family-care tool assumes someone already **noticed** the work and typed a task.
 That is exactly the step that fails.
 
@@ -182,6 +186,7 @@ someone's medical care.
 | Tolu | `primary_caregiver` | Everything: claim, assign, confirm, escalate |
 | Funmi | `caregiver` | Claim, add, confirm - but not assign to others |
 | Musa (the driver, paid help) | `helper` | Only today's work, and only work he owns |
+| Kunle, in London | `caregiver` | Same as Funmi; gets the evening update, and is never picked automatically for work that needs someone there |
 
 Denials are written to be spoken, and say what the person *can* do instead:
 
@@ -534,6 +539,7 @@ Demo credentials (one per member - the identity model in miniature):
 | Tolu | `david-token` |
 | Funmi | `renee-token` |
 | Musa | `aide-token` |
+| Kunle | `kunle-token` |
 
 ---
 

@@ -2,8 +2,8 @@
 
 **The responsibility layer for families caring for someone.**
 
-Most assistants answer *"what is Mom's status?"*. CareCircle answers a harder question:
-**"What needs to happen for Mom, and who is responsible for it?"**
+Most assistants answer *"what is Daddy's status?"*. CareCircle answers a harder question:
+**"What needs to happen for Daddy, and who is responsible for it?"**
 
 ---
 
@@ -16,8 +16,8 @@ EVENTS  ->  OBLIGATIONS  ->  OWNERSHIP
 | Stage | Question | Example |
 |---|---|---|
 | Event | What happened? | "I took my heart pill" / "Cardiology is Thursday at 10" |
-| Obligation | What needs to happen? | Someone must drive Margaret to cardiology |
-| Ownership | Who has it? | David claimed it - or **nobody has** |
+| Obligation | What needs to happen? | Someone must drive Daddy to his eye check-up |
+| Ownership | Who has it? | Musa claimed it - or **nobody has** |
 
 A **Care Gap** is the failure state of stage three:
 
@@ -34,12 +34,12 @@ epistemic states and never collapses them:
 
 | State | Meaning | Spoken as |
 |---|---|---|
-| `CONFIRMED` | A human asserted it | "Margaret logged her evening dose at 7:42pm" |
+| `CONFIRMED` | A human asserted it | "Daddy logged his evening eye drops at 8:12pm" |
 | `NOT_LOGGED` | No record exists | "I have no record of the evening dose" |
 | `INFERRED` | The system guessed it | "Cardiology usually needs a ride - is that right?" |
-| `RESOLVED` | An obligation was discharged | "David drove her Thursday" |
+| `RESOLVED` | An obligation was discharged | "Musa drove him Thursday" |
 
-The system will **never** say "Margaret did not take her medication." It only ever
+The system will **never** say "Daddy did not take his medication." It only ever
 reports what it knows and what it is missing. This is a hard constraint in the
 response layer, not a stylistic preference.
 
@@ -65,7 +65,7 @@ Appointment: Cardiology, Thursday 10:00
   +-- rule: appointments of type {medical} imply a TRANSPORT obligation
   |
   v
-Obligation: "Drive Margaret to cardiology"
+Obligation: "Drive Daddy to the eye check-up"
   provenance: INFERRED (rule: medical-appointment-transport)
   status: PROPOSED -> (human confirms) -> OPEN
   owner: NONE
@@ -81,10 +81,10 @@ Gap taxonomy:
 
 | Marker | Kind | Example |
 |---|---|---|
-| UNCLAIMED | Obligation exists, no owner | Drive Mom to cardiology |
+| UNCLAIMED | Obligation exists, no owner | Drive Daddy to the eye check-up |
 | UNCONFIRMED | Expected event with no record | Evening medication not logged |
 | NEEDS_FOLLOW_UP | Resolution is stale or partial | Prescription refill requested, not picked up |
-| RESOLVED | Discharged | Grocery pickup, done by Renee |
+| RESOLVED | Discharged | Grocery pickup, done by Funmi |
 
 **The killer query** - *"What's going to fall through the cracks this week?"* - is a
 single call into this engine returning structured, ranked, reasoned gaps.
@@ -98,9 +98,9 @@ and a different conversational stance.
 
 | Member | Role | Says | Can |
 |---|---|---|---|
-| Margaret, 78 | `care_recipient` | "I took my heart pill" | Log her own events; hear her own day |
-| David | `primary_caregiver` | "What hasn't been assigned?" | Everything: claim, assign, confirm, escalate |
-| Renee | `caregiver` | "What does Mom need this week?" | Claim and add; cannot escalate |
+| Daddy, going on 70 | `care_recipient` | "I used my eye drops" | Log his own events; hear his own day |
+| Tolu | `primary_caregiver` | "What hasn't been assigned?" | Everything: claim, assign, confirm, escalate |
+| Funmi | `caregiver` | "What does Daddy need this week?" | Claim and add; cannot escalate |
 | Aide | `helper` | "What do I need to know today?" | Scoped to the current shift |
 
 Identity is established by the MCP session (per-member credential), not guessed
@@ -169,7 +169,7 @@ Bee (an ambient conversation recorder, usable via app + CLI with no hardware) cl
 that loop:
 
 ```
-Real conversation at the cardiology appointment
+Real conversation at the eye check-up
         |
         v
 Bee transcript / facts  (CLI or MCP)

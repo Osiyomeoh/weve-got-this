@@ -44,6 +44,10 @@ person, and never accuses anyone of what it didn't see.*
       `https://krqi2tpsif.us-east-1.awsapprunner.com/live?key=<SIM_LIVE_KEY from .env>`
       once in the recording browser; the "your own copy" banner disappears. `/live/off`
       to go back.
+- [ ] Optional, for the Impact beat: a third Telegram account as **Kunle** (`m_kunle`),
+      mapped with `npm run telegram:ids`, on a phone set to UK time. His evening update
+      goes out once a day after 21:00 Lagos time, so film it that evening. To shoot it
+      again the same day, run the production reset first: it clears the demo's log.
 - [ ] Console voice pace **gentle** (Polly). Console left, `/tv` right, phones on a stand
       in frame. Never alt-tab on camera.
 - [ ] Claude Desktop (or MCPJam) connected to the live `/mcp` endpoint via OAuth, tested
@@ -52,7 +56,7 @@ person, and never accuses anyone of what it didn't see.*
       him on camera. Also check your siblings are happy for the family to be described.
 - [ ] Burn in captions. The video makes an accessibility argument; it has to be captioned.
 - [ ] Say numbers only if they match the repo on record day: tools (`get_started` lists
-      them, 25 today), tests (`npm test`, 455 today), trust benchmark
+      them, 25 today), tests (`npm test`, 464 today), trust benchmark
       (`npm run trust-benchmark`).
 
 ---
@@ -179,6 +183,23 @@ numbers: `N asks sent - N answered - median answer time - N gaps closed`.
 
 **Otherwise:** a map pulling to West Africa.
 
+**Either way, 4 seconds under "one abroad":** a phone showing a UK clock, and Kunle's
+evening update arriving in the family group at 21:00 Lagos time:
+
+```
+Kunle, Daddy's evening update - Wednesday 23 September.
+Medication
+- eye drops, 08:00: Daddy logged it themselves
+- eye drops, 20:00: no record yet
+Coming up
+- Take Daddy to his eye check-up (tomorrow): Musa has it
+```
+
+It's real, not staged: the agent loop sends it after 21:00, once a day. Kunle is also why
+the loop asked Musa and not him: CareCircle never picks someone who lives far away for a
+ride. (Your real brother in the UK is the reason this exists; say so only if he's happy
+to be mentioned.)
+
 > **VO:** "Where I'm from, this isn't a convenience. Nigeria has the largest older
 > population in Africa, heading to twenty-five million by 2050, and almost no formal care
 > system. The family **is** the care system: one child in Lagos, one abroad, a parent in
@@ -198,7 +219,7 @@ week?"* It calls `get_care_gaps` on the same server and gives the same answer.
 
 ## 2:50-3:00 - End card
 
-> **VO:** "Twenty-five tools. Four hundred and thirty tests. Every number in this video can
+> **VO:** "Twenty-five tools. Four hundred and sixty-four tests. Every number in this video can
 > be reproduced from the repo."
 
 ```

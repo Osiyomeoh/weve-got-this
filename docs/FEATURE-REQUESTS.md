@@ -184,7 +184,7 @@ so - the workaround is usually the tell for what the platform should have handle
 - **What:** A host-rendered confirmation step for consequential tool calls, showing
   what is about to happen and who it affects, before it happens.
 - **Why it matters:** Related to elicitation, but the point is the *display*: before
-  Thursday's hospital run is assigned to Renee, Renee's name should be on screen. See
+  Thursday's eye-clinic run is assigned to Musa, Musa's name should be on screen. See
   also the confirmation request under Alexa+ above.
 
 ### Ambient and glanceable state, not just turn-taking

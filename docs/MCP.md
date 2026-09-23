@@ -42,10 +42,11 @@ allowed to do, so pick the one whose authority you want to exercise.
 
 | Token | Member | Role |
 |---|---|---|
-| `renee-token` | Funmi | `primary_caregiver` - full authority |
-| `david-token` | Tolu | `caregiver` |
+| `david-token` | Tolu | `primary_caregiver` - full authority |
+| `renee-token` | Funmi | `caregiver` |
 | `margaret-token` | Daddy | `care_recipient` - the person being cared for |
 | `aide-token` | Musa | `helper` - the paid driver, scoped to his own work |
+| `kunle-token` | Kunle | `caregiver` - lives in London, gets the evening update, never picked automatically for in-person work |
 
 ---
 

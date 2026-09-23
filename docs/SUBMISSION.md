@@ -18,7 +18,7 @@ they are 78 with mild cognitive decline, 34 with a mobility disability, or 19 wi
 communication disability - and refuses two conflations that every other system makes:**
 
 1. **An absent record is not non-compliance.** The system only knows what has been
-   recorded. It says *"there's no record"*; it never says *"she missed it"*.
+   recorded. It says *"there's no record"*; it never says *"he missed it"*.
 2. **Somebody else's account of you is not your own.** When a support worker logs a
    dose on your behalf, the system says *who* logged it. It never quietly reports
    their word as your act.
@@ -33,11 +33,24 @@ is not a nicety - it is the thing the record was supposed to give you.
 
 ## The problem, in one family
 
-Margaret is 78 and lives alone. Her son **David**, her daughter **Renee**, and a paid
-aide, **Tasha**, share her care. Nobody is in charge - so the work that falls through
-the cracks is the work **nobody realised was anyone's job**. *"Nobody knew a ride to
-cardiology was needed until Thursday morning."* Every family-care tool assumes someone
-already noticed the work and typed a task. CareCircle starts one step earlier.
+It's the builder's own. In their words:
+
+> I'm from Lagos, Nigeria. We're a family of five, and our dad. Our mum has passed. In
+> Nigeria we take care of our parents, and we still have to work to make a living. My dad
+> is going on seventy. He just had surgery and had to time his own medication, and he
+> wanted to know what was going on. He has drugs, supplements, check-ups and the rest his
+> doctors prescribe, and getting around isn't easy anymore.
+
+And a brother in the UK wants updates on Dad's health too.
+
+The demo family mirrors it: **Daddy** in Lagos, with eye drops, a supplement and an eye
+check-up; **Tolu** and **Funmi**, who share his care and still have to work; **Musa**, a
+paid driver; and **Kunle**, a brother in London who wants to know how the day went and
+can't drive anyone to a clinic in Lagos. Nobody is in charge - so the work that falls
+through the cracks is the work **nobody realised was anyone's job**, like a ride to the
+eye check-up that nobody knew was needed until Thursday morning. Every family-care tool
+assumes someone already noticed the work and typed a task. CareCircle starts one step
+earlier.
 
 ## What it does
 
@@ -45,10 +58,10 @@ CareCircle is an Alexa+ MCP server that turns ordinary spoken care signals into 
 **obligations**, and surfaces the **Care Gaps** - the ones nobody owns - before they
 fail. It does two things no other assistant does:
 
-- **The cared-for person is a participant, not a patient on a dashboard.** Margaret,
-  who has never used a smartphone, **logs her own care by talking.**
+- **The cared-for person is a participant, not a patient on a dashboard.** Daddy
+  **logs his own care by talking.**
 - **It refuses to lie.** A missing record is surfaced as *"there's no record,"* never
-  *"she missed it"* - a rule enforced in the type system and the tests.
+  *"he missed it"* - a rule enforced in the type system and the tests.
 
 And a Care Gap can be closed by voice, or **fixed by buying the thing in place** -
 reorder the prescription right in the conversation.
@@ -93,7 +106,7 @@ different surfaces feed one shared responsibility system.
   `REQUESTED` is its own status and **carries no owner**: being asked is not having
   agreed, and collapsing those is the same class of error as reading a missing
   medication record as a missed dose. A pending ask earns a *discount*, not an
-  exemption - relief decays as `0.55 · e^(-hours/12)`, so "I asked David" quietly
+  exemption - relief decays as `0.55 · e^(-hours/12)`, so "I asked Funmi" quietly
   becoming "nobody is doing this" is visible in the arithmetic.
 - **Ring, on a real verified webhook** - `POST /ring/webhook`, implementing Ring's
   published Partner API contract: HMAC-SHA256 over the **raw** body in `X-Signature`
@@ -116,7 +129,7 @@ different surfaces feed one shared responsibility system.
   software. We have neither, so we never claim it as an integration.
 - **Fire TV** → the web board is the presentation surface; there is no Fire-TV-specific app.
 
-Everything a device contributes crosses the same contract: `CareEvent → engine → Obligation → Care Gap`. `Evidence ≠ Obligation ≠ Ownership` - a Ring event never auto-becomes "Mom got her prescription," and an absent record never becomes "Mom didn't take it."
+Everything a device contributes crosses the same contract: `CareEvent → engine → Obligation → Care Gap`. `Evidence ≠ Obligation ≠ Ownership` - a Ring event never auto-becomes "Daddy got his eye drops," and an absent record never becomes "Daddy didn't take them."
 
 ## Who it's for, and how many
 
@@ -131,7 +144,7 @@ then argue for it with unsourced numbers.
 prescribed** (WHO, 2003), and **1 in 5** older adults has skipped needed care for lack
 of transport. **53%** of US family caregivers say someone else also provides unpaid
 help to the same person (AARP/NAC 2020) - shared responsibility with no owner is
-exactly the failure state CareCircle detects. A cardiology appointment nobody drives
+exactly the failure state CareCircle detects. An eye check-up nobody drives
 the patient to is not a scheduling problem; it is a missed appointment.
 
 **The economy.** **16.4 billion hours** of unpaid care work are performed daily
@@ -161,7 +174,7 @@ devices already in the home.
 
 ## How it works - Build / Ship / Shape
 
-- **Build** - the record builds itself. A spoken sentence ("I took my heart pill"), a
+- **Build** - the record builds itself. A spoken sentence ("I used my eye drops"), a
   constraint ("I can't drive Thursday" - which silently orphans the ride), and a
   physical-world delivery event (a Ring package, ingested through the `ingest_signal`
   tool) all become one shared record. Nobody types a task. Crucially, a delivery enters
@@ -172,7 +185,7 @@ devices already in the home.
   prescription with a **rich purchase card confirmed in place** - the Care Gap closes
   the instant the order is placed.
 - **Shape** - the system shapes the family by refusing to lie. A missing evening dose
-  is surfaced as *"there's no record"* - never *"she missed it."* **Known ≠ Assumed**
+  is surfaced as *"there's no record"* - never *"he missed it."* **Known ≠ Assumed**
   is enforced in the type system and the tests, not just the copy.
 
 ## Accessibility is the architecture, not a pass at the end
@@ -352,10 +365,11 @@ with a provenance trust model). Details, what/how/why, and publish steps in
 
 | Member | Bearer token |
 |---|---|
-| Margaret (care recipient) | `margaret-token` |
-| David (primary caregiver) | `david-token` |
-| Renee (caregiver) | `renee-token` |
-| Tasha (paid aide) | `aide-token` |
+| Daddy (care recipient) | `margaret-token` |
+| Tolu (primary caregiver) | `david-token` |
+| Funmi (caregiver) | `renee-token` |
+| Musa (paid driver) | `aide-token` |
+| Kunle (caregiver, lives in London, gets the evening update) | `kunle-token` |
 
 ## Links
 

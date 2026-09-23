@@ -27,6 +27,12 @@ This is a real person's care, so:
 2. Create the circle (name + timezone, e.g. `Africa/Lagos`), then add each member: the
    person being cared for, the family members, any paid helper.
 3. Add medications and any known appointments.
+   - **Family abroad** (e.g. a brother in the UK): add them by voice or text in the
+     console, e.g. *"Add my brother Kunle as a caregiver. He lives in London and wants an
+     update every evening."* That sets `livesAway` and `dailyUpdate`. From then on he
+     gets a short update on the day after 21:00 household time, and CareCircle never
+     picks him on its own for rides or pickups. Map his Telegram in step 2 so the update
+     reaches him; unmapped, it is only written to the care log.
 4. Tell the operator (you) it's done. The operator pulls the new household id and member
    ids (they are random `h_...` / `m_...` ids returned by setup).
 
