@@ -38,6 +38,11 @@ person, and never accuses anyone of what it didn't see.*
       `AWS_PROFILE=conductor bash infra/demo-reset-prod.sh` (dry run first:
       `AWS_PROFILE=conductor CARECIRCLE_TABLE=carecircle AWS_REGION=us-east-1 npm run demo:reset:prod`).
       Telegram shows "configured" rather than "live" until the group's first reply.
+- [ ] **Recording browser in shared mode.** Every console visitor gets a private copy of
+      the demo, but the Telegram scene must act on the real demo household. Open
+      `https://krqi2tpsif.us-east-1.awsapprunner.com/live?key=<SIM_LIVE_KEY from .env>`
+      once in the recording browser; the "your own copy" banner disappears. `/live/off`
+      to go back.
 - [ ] Console voice pace **gentle** (Polly). Console left, `/tv` right, phones on a stand
       in frame. Never alt-tab on camera.
 - [ ] Claude Desktop (or MCPJam) connected to the live `/mcp` endpoint via OAuth, tested
@@ -46,7 +51,7 @@ person, and never accuses anyone of what it didn't see.*
       him on camera. Fill in every `[fill in]` in the opening with what's actually true.
 - [ ] Burn in captions. The video makes an accessibility argument; it has to be captioned.
 - [ ] Say numbers only if they match the repo on record day: tools (`get_started` lists
-      them, 25 today), tests (`npm test`, 416 today), trust benchmark
+      them, 25 today), tests (`npm test`, 430 today), trust benchmark
       (`npm run trust-benchmark`).
 
 ---
@@ -178,7 +183,7 @@ week?"* It calls `get_care_gaps` on the same server and gives the same answer.
 
 ## 2:50-3:00 - End card
 
-> **VO:** "Twenty-five tools. Four hundred and sixteen tests. Every number in this video can
+> **VO:** "Twenty-five tools. Four hundred and thirty tests. Every number in this video can
 > be reproduced from the repo."
 
 ```
