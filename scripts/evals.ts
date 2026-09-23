@@ -50,6 +50,14 @@ if (asJson) {
   }
   console.log('');
 
+  const label = { authored: 'authored (tuned)', 'held-out': 'held-out, unseen', seen: 'held-out, since used' };
+  for (const x of s.splits) {
+    if (x.total === 0) continue;
+    console.log(`  ${label[x.split].padEnd(22)} ${String(x.passed).padStart(3)}/${x.total}`
+      + ` · ${((x.passed / x.total) * 100).toFixed(1)}%`);
+  }
+  console.log('');
+
   console.log('  By category');
   for (const c of [...s.byCategory].sort((a, b) => a.passed / a.total - b.passed / b.total)) {
     const bar = '█'.repeat(Math.round((c.passed / c.total) * 20)).padEnd(20, '·');

@@ -27,7 +27,15 @@ export interface EvalCase {
   args?: Record<string, (value: unknown) => boolean>;
   /** Why this case exists, when it is not obvious. */
   note?: string;
+  /**
+   * Set when a held-out case was later used to fix the server. It still runs, but it
+   * no longer measures phrasing the tools were never tuned against, so it is reported
+   * apart from the unseen held-out cases.
+   */
+  seen?: string;
 }
+
+const PURCHASE_FIX = '2026-09-23: used to fix the purchase tools';
 
 const contains = (needle: string) => (v: unknown) =>
   typeof v === 'string' && v.toLowerCase().includes(needle);
@@ -223,20 +231,20 @@ export const CORPUS: EvalCase[] = [
     args: { unavailable: (v) => typeof v === 'object' && v !== null } },
 
   // --- purchase: reorder + confirm (the new commerce surface) ------------
-  { id: 'h-buy-01', member: 'm_david', utterance: "Reorder Daddy's eye drops.", expect: ['reorder_prescription'] },
-  { id: 'h-buy-02', member: 'm_renee', utterance: 'Can you refill his prescription?', expect: ['reorder_prescription'] },
-  { id: 'h-buy-03', member: 'm_david', utterance: 'Order more of his supplement.', expect: ['reorder_prescription'] },
-  { id: 'h-buy-04', member: 'm_david', utterance: 'Set up a refill for his supplement.', expect: ['reorder_prescription'] },
-  { id: 'h-buy-05', member: 'm_david', utterance: 'He’s nearly out of his eye drops.', expect: ['reorder_prescription', 'add_note', 'get_care_gaps'],
+  { id: 'h-buy-01', seen: PURCHASE_FIX, member: 'm_david', utterance: "Reorder Daddy's eye drops.", expect: ['reorder_prescription'] },
+  { id: 'h-buy-02', seen: PURCHASE_FIX, member: 'm_renee', utterance: 'Can you refill his prescription?', expect: ['reorder_prescription'] },
+  { id: 'h-buy-03', seen: PURCHASE_FIX, member: 'm_david', utterance: 'Order more of his supplement.', expect: ['reorder_prescription'] },
+  { id: 'h-buy-04', seen: PURCHASE_FIX, member: 'm_david', utterance: 'Set up a refill for his supplement.', expect: ['reorder_prescription'] },
+  { id: 'h-buy-05', seen: PURCHASE_FIX, member: 'm_david', utterance: 'He’s nearly out of his eye drops.', expect: ['reorder_prescription', 'add_note', 'get_care_gaps'],
     note: 'A statement of need - reorder, note, or check are all reasonable.' },
-  { id: 'h-buy-06', member: 'm_david', utterance: 'Yes, place the order.', expect: ['confirm_purchase'],
+  { id: 'h-buy-06', seen: PURCHASE_FIX, member: 'm_david', utterance: 'Yes, place the order.', expect: ['confirm_purchase'],
     note: 'Cold: confirming a pending offer. Held-out and strict on purpose.' },
-  { id: 'h-buy-07', member: 'm_david', utterance: 'Go ahead and buy it.', expect: ['confirm_purchase'] },
+  { id: 'h-buy-07', seen: PURCHASE_FIX, member: 'm_david', utterance: 'Go ahead and buy it.', expect: ['confirm_purchase'] },
 
   // --- wrong-role: choosing the tool is correct even if it will refuse ---
   { id: 'h-role-01', member: 'm_aide', utterance: 'Assign the pharmacy run to Tolu.', expect: ['assign_obligation', 'get_care_gaps'],
     note: 'Aide lacks the capability; selecting assign_obligation is still correct.' },
-  { id: 'h-role-02', member: 'm_margaret', utterance: 'Reorder my own prescription please.', expect: ['reorder_prescription'] },
+  { id: 'h-role-02', seen: PURCHASE_FIX, member: 'm_margaret', utterance: 'Reorder my own prescription please.', expect: ['reorder_prescription'] },
 
   // --- multi-intent: the first acceptable tool --------------------------
   { id: 'h-multi-01', member: 'm_david', utterance: 'Daddy took his pill and he seemed tired.', expect: ['log_care_event', 'add_note'] },
@@ -250,6 +258,27 @@ export const CORPUS: EvalCase[] = [
   { id: 'h-none-03', member: 'm_renee', utterance: "You're doing a great job, thanks.", expectNone: true },
   { id: 'h-none-04', member: 'm_margaret', utterance: 'Play some music for me.', expectNone: true },
   { id: 'h-none-05', member: 'm_margaret', utterance: 'Good night.', expectNone: true },
+
+  // ======================================================================
+  // HELD-OUT, SECOND SET (2026-09-23). The purchase cases above were used to fix
+  // the purchase tools, so they no longer count as unseen. These were written after
+  // that fix and before any run against it - different verbs, a decline, and a
+  // helper who may not buy - to measure whether the fix generalises or only learned
+  // the eight sentences it was shown.
+  // ======================================================================
+  { id: 'h2-buy-01', member: 'm_renee', utterance: "Can we get more of Daddy's eye drops delivered?", expect: ['reorder_prescription'] },
+  { id: 'h2-buy-02', member: 'm_david', utterance: 'His medicine is running low, please order some.', expect: ['reorder_prescription'] },
+  { id: 'h2-buy-03', member: 'm_david', utterance: 'Buy another bottle of his supplement.', expect: ['reorder_prescription'] },
+  { id: 'h2-buy-04', member: 'm_renee', utterance: 'Get the refill sent to the house.', expect: ['reorder_prescription'] },
+  { id: 'h2-buy-05', member: 'm_david', utterance: 'Okay, order it.', expect: ['confirm_purchase'] },
+  { id: 'h2-buy-06', member: 'm_renee', utterance: 'Sure, go ahead with the purchase.', expect: ['confirm_purchase'] },
+  { id: 'h2-buy-07', member: 'm_david', utterance: "No, don't buy it.", expect: ['confirm_purchase'],
+    args: { confirmed: (v) => v === false },
+    note: 'Declining is an answer too: the waiting offer should be closed, not left hanging.' },
+  { id: 'h2-buy-08', member: 'm_aide', utterance: 'Order his supplement.', expect: ['reorder_prescription'],
+    note: 'Musa may not buy; choosing the tool is still correct, and the server refuses.' },
+  { id: 'h2-buy-09', member: 'm_david', utterance: 'How much would a refill of his eye drops cost?', expect: ['reorder_prescription'],
+    note: 'Asking the price is asking for the offer, which never charges.' },
 
   // --- Nothing to call ----------------------------------------------------
   { id: 'none-01', member: 'm_margaret', utterance: 'Thank you, that\'s all.', expectNone: true },

@@ -152,6 +152,8 @@ export async function runEvals(options: {
 export function summarise(results: CaseResult[]): {
   total: number; passed: number; accuracy: number | null; errored: number;
   byCategory: { category: string; passed: number; total: number }[];
+  /** Authored (tuned against), held-out and unseen, and held-out but since used to fix. */
+  splits: { split: 'authored' | 'held-out' | 'seen'; passed: number; total: number }[];
   failures: CaseResult[]; errors: CaseResult[];
 } {
   const errors = results.filter((r) => r.errored);
@@ -165,6 +167,11 @@ export function summarise(results: CaseResult[]): {
     if (r.pass) entry.passed += 1;
     byCategory.set(category, entry);
   }
+  const splitOf = (c: EvalCase) => (!c.id.startsWith('h') ? 'authored' : c.seen ? 'seen' : 'held-out');
+  const splits = (['authored', 'held-out', 'seen'] as const).map((split) => {
+    const inSplit = scored.filter((r) => splitOf(r.case) === split);
+    return { split, passed: inSplit.filter((r) => r.pass).length, total: inSplit.length };
+  });
   const passed = scored.filter((r) => r.pass).length;
   return {
     total: scored.length,
@@ -173,6 +180,7 @@ export function summarise(results: CaseResult[]): {
     accuracy: scored.length === 0 ? null : passed / scored.length,
     errored: errors.length,
     byCategory: [...byCategory].map(([category, v]) => ({ category, ...v })),
+    splits,
     failures: scored.filter((r) => !r.pass),
     errors,
   };
