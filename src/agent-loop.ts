@@ -2,6 +2,7 @@ import type { CareStore } from './store/store.js';
 import type { Notifier } from './notify/notifier.js';
 import { runAgentAll } from './domain/agent-runner.js';
 import { sendDailyUpdates } from './domain/daily-update.js';
+import { sendDueReminders } from './domain/reminders.js';
 
 interface Log {
   info(msg: string, data?: Record<string, unknown>): void;
@@ -63,5 +64,18 @@ export function startAgentLoop(deps: AgentLoopDeps): () => void {
   deps.log.info('agent loop enabled', { intervalMs: ms });
   const handle = setInterval(() => { void tick(); }, ms);
   handle.unref?.(); // the loop must never hold the process open on its own
-  return () => clearInterval(handle);
+
+  // Reminders keep their own, finer clock: a dose reminder should arrive at 8, not 8:14.
+  const everyMs = Number(process.env['CARECIRCLE_REMINDER_INTERVAL_MS'] ?? 60_000);
+  let reminding = false;
+  const remind = setInterval(() => {
+    if (reminding) return;
+    reminding = true;
+    void sendDueReminders(deps)
+      .then((n) => { if (n > 0) deps.log.info('reminders sent', { reminders: n }); })
+      .catch((err: unknown) => deps.log.error('reminders failed', { reason: (err as Error).message }))
+      .finally(() => { reminding = false; });
+  }, everyMs);
+  remind.unref?.();
+  return () => { clearInterval(handle); clearInterval(remind); };
 }

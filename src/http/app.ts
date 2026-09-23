@@ -1,3 +1,4 @@
+import { createFamilyRoutes } from './family.js';
 import { downloadTelegramFile, sendTelegramVoice } from '../notify/telegram.js';
 import { transcribeOggOpus } from '../sim/transcribe.js';
 import { synthesize } from '../sim/speech.js';
@@ -159,6 +160,7 @@ app.post(
     memberByChat: tgMemberByChat, householdId: tgHousehold, ...(now ? { now } : {}),
     ...(tgChat ? { chat: tgChat } : {}),
     log: (line) => console.info(line),
+    calendarUrl: `${(process.env['CARECIRCLE_PUBLIC_URL'] ?? 'https://ypq2dfq2p7.us-east-1.awsapprunner.com').trim().replace(/\/+$/, '')}/family`,
     botUsername: process.env['TELEGRAM_BOT_USERNAME']?.trim() || 'carecircle0111_bot',
     ...(process.env['TELEGRAM_GROUP_CHAT_ID']?.trim() ? { groupChatId: process.env['TELEGRAM_GROUP_CHAT_ID'].trim() } : {}),
     // Voice notes in, voice notes out: Amazon Transcribe and Polly. For someone whose eyes
@@ -174,6 +176,12 @@ app.post(
     } : {}),
   }),
 );
+
+// The family calendar: the same page in Telegram (a Mini App) and in a browser.
+app.use(createFamilyRoutes({
+  store, botToken: tgBotToken, secret: tgSecret, demoHouseholdId: 'h_margaret', notifier: messenger,
+  ...(now ? { now } : {}),
+}));
 
 // --- OAuth 2.1 + PKCE -----------------------------------------------------
 // Enabled by setting a signing secret. Without one the endpoints are absent

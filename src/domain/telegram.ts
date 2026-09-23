@@ -89,3 +89,27 @@ export function parseTelegramUpdate(payload: unknown): TelegramInbound[] {
     ...(fromName ? { fromName } : {}), ...(voice ? { voice } : {}),
   }];
 }
+
+/** A tap on one of the bot's buttons (a reminder's "Taken", say). */
+export interface TelegramTap {
+  updateId: string;
+  callbackId: string;
+  fromId: string;
+  chatId: string;
+  messageId: string;
+  data: string;
+}
+
+export function parseTelegramTap(payload: unknown): TelegramTap | null {
+  const u = (payload ?? {}) as {
+    update_id?: number;
+    callback_query?: { id?: string; data?: string; from?: { id?: number }; message?: { message_id?: number; chat?: { id?: number } } };
+  };
+  const q = u.callback_query;
+  if (typeof u.update_id !== 'number' || !q?.id || !q.data || q.from?.id === undefined
+    || q.message?.chat?.id === undefined || q.message.message_id === undefined) return null;
+  return {
+    updateId: String(u.update_id), callbackId: q.id, fromId: String(q.from.id),
+    chatId: String(q.message.chat.id), messageId: String(q.message.message_id), data: q.data,
+  };
+}

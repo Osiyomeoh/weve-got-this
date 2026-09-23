@@ -259,6 +259,16 @@ export class CareStore {
     });
   }
 
+  /** A member's own preferences, set by them: reminders on or off. */
+  setMemberPreference(memberId: string, householdId: string, changes: { reminders?: 'off' | undefined }): Promise<Member> {
+    return this.#write(() => {
+      const m = this.#snapshot.members.find((x) => x.id === memberId && x.householdId === householdId);
+      if (!m) throw new NotFoundError('member', memberId);
+      if (changes.reminders === 'off') m.reminders = 'off'; else delete m.reminders;
+      return m;
+    });
+  }
+
   /** Move a piece of work's due time - when the appointment it serves moves. */
   redateObligation(id: string, householdId: string, dueAt: string): Promise<Obligation> {
     return this.#write(() => {

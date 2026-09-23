@@ -68,12 +68,13 @@ export function telegramConfigFromEnv(
  */
 export async function sendTelegramMessage(
   token: string, chatId: string, text: string, fetchImpl: typeof fetch = fetch,
+  replyMarkup?: Record<string, unknown>,
 ): Promise<{ ok: boolean; id?: string; detail?: string }> {
   try {
     const res = await fetchImpl(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text }),
+      body: JSON.stringify({ chat_id: chatId, text, ...(replyMarkup ? { reply_markup: replyMarkup } : {}) }),
     });
     if (!res.ok) {
       const body = await res.text().catch(() => '');
@@ -85,6 +86,18 @@ export async function sendTelegramMessage(
   } catch (err) {
     return { ok: false, detail: `send failed: ${(err as Error).message}` };
   }
+}
+
+/** Call any Bot API method; reports, never throws. */
+export async function telegramCall(
+  token: string, method: string, body: Record<string, unknown>, fetchImpl: typeof fetch = fetch,
+): Promise<boolean> {
+  try {
+    const res = await fetchImpl(`https://api.telegram.org/bot${token}/${method}`, {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),
+    });
+    return res.ok;
+  } catch { return false; }
 }
 
 /** Download a file a person sent (a voice note), by Telegram file id. */
@@ -124,6 +137,16 @@ export class TelegramNotifier implements Notifier {
   constructor(cfg: TelegramConfig) {
     this.#cfg = cfg;
     this.#fetch = cfg.fetchImpl ?? fetch;
+  }
+
+  async direct(input: { to: string; text: string; buttons?: { text: string; data: string }[][] }): Promise<DeliveryResult> {
+    const chatId = this.#cfg.recipients.get(input.to) ?? this.#cfg.linked?.(input.to)?.telegramId;
+    if (!chatId) return { delivered: false, channel: 'telegram', detail: 'no Telegram chat for this member' };
+    const markup = input.buttons
+      ? { inline_keyboard: input.buttons.map((row) => row.map((b) => ({ text: b.text, callback_data: b.data }))) }
+      : undefined;
+    const r = await sendTelegramMessage(this.#cfg.token, chatId, input.text, this.#fetch, markup);
+    return r.ok ? { delivered: true, channel: 'telegram', ...(r.id ? { detail: r.id } : {}) } : { delivered: false, channel: 'telegram', ...(r.detail ? { detail: r.detail } : {}) };
   }
 
   async broadcast(input: { householdId: string; recipients: { id: string; name: string }[]; message: string }): Promise<{ reached: string[] }> {

@@ -28,6 +28,11 @@ export interface Notifier {
    * once. Family groups are often muted; a private message is what makes a phone ring.
    * Returns who was reached. Optional: without it, callers deliver one by one.
    */
+  /**
+   * A private message to one person, never the group, optionally with buttons to tap.
+   * Reminders use it. Optional: a channel without private chats does not remind.
+   */
+  direct?(input: { to: string; text: string; buttons?: { text: string; data: string }[][] }): Promise<DeliveryResult>;
   broadcast?(input: { householdId: string; recipients: { id: string; name: string }[]; message: string }): Promise<{ reached: string[] }>;
 }
 

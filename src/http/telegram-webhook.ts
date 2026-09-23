@@ -1,7 +1,12 @@
 import { timingSafeEqual } from 'node:crypto';
 import type { Request, Response } from 'express';
 import type { CareStore } from '../store/store.js';
-import { parseTelegramUpdate, interpretReply, type TelegramInbound } from '../domain/telegram.js';
+import { parseTelegramUpdate, parseTelegramTap, interpretReply, type TelegramInbound, type TelegramTap } from '../domain/telegram.js';
+import { doseRecord } from '../domain/gaps.js';
+import { clockTime } from '../domain/local-time.js';
+import { can } from '../domain/auth.js';
+import { telegramCall } from '../notify/telegram.js';
+import { calendarToken } from '../domain/family-access.js';
 import { sendTelegramMessage } from '../notify/telegram.js';
 import { applyRequestResponse } from '../domain/request-response.js';
 import { SeenEvents } from './ring-webhook.js';
@@ -71,6 +76,8 @@ export interface TelegramWebhookOptions {
   hear?: (fileId: string) => Promise<string>;
   /** Say a reply back as a voice note, to someone who spoke to us. */
   speak?: (chatId: string, text: string) => Promise<void>;
+  /** The family calendar (a Telegram Mini App); `/calendar` opens it. */
+  calendarUrl?: string;
 }
 
 /** Longer than this, and a voice note is asked to come in pieces: cost, and a clearer record. */
@@ -164,6 +171,92 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
     return text ? { text } : { reply: "I couldn't make out that voice note. Could you say it again, or type it?", status: 'voice-unclear' };
   };
 
+  const tg = (method: string, body: Record<string, unknown>) =>
+    (opts.botToken ? telegramCall(opts.botToken, method, body, fetchImpl) : Promise.resolve(false));
+
+  // A tap on a reminder's button. Recorded as the person who tapped, with the same rules
+  // as saying it: the person themselves, or someone who may log for others.
+  const onTap = async (t: TelegramTap): Promise<string> => {
+    const sender = whoIs(t.fromId);
+    const ack = (text: string) => tg('answerCallbackQuery', { callback_query_id: t.callbackId, text });
+    if (!sender) { await ack("I don't know who you are in this circle yet."); return 'unknown-sender'; }
+    // "dose:<medicationId>:<HH:MM>" - the time has a colon of its own.
+    const [action, medId, ...rest] = t.data.split(':');
+    const slot = rest.join(':');
+    const state = opts.store.getCareState(sender.householdId);
+    const med = state.medications.find((m) => m.id === medId);
+    const me = state.members.find((m) => m.id === sender.memberId);
+    if (!med || !me || !slot) { await ack('That reminder is out of date.'); return 'tap-stale'; }
+    const tz = state.household.timezone;
+    if (action === 'dose') {
+      if (me.id !== med.forMemberId && !can(me, 'log_others_event')) { await ack('Only the person or the family can record this.'); return 'tap-refused'; }
+      const earlier = doseRecord(state, med.id, slot, now());
+      if (earlier) {
+        const by = earlier.reportedBy === me.id ? 'you' : (state.members.find((m) => m.id === earlier.reportedBy)?.spokenAs ?? state.members.find((m) => m.id === earlier.reportedBy)?.name ?? 'someone');
+        await tg('editMessageText', { chat_id: t.chatId, message_id: Number(t.messageId), text: `There's already a record of this ${med.name} dose, at ${clockTime(earlier.occurredAt, tz)}, from ${by}. I haven't added another.` });
+        await ack('Already recorded');
+        return 'tap-already';
+      }
+      const at = now().toISOString();
+      await opts.store.appendEvent({
+        householdId: sender.householdId, kind: 'medication_taken', reportedBy: me.id, occurredAt: at,
+        source: 'telegram', confidence: 'reported', detail: `Tapped "Taken" on the ${med.name} reminder`,
+        data: { medicationId: med.id, medicationName: med.name, aboutMemberId: med.forMemberId },
+      });
+      await tg('editMessageText', { chat_id: t.chatId, message_id: Number(t.messageId), text: `✅ Recorded: ${med.name} at ${clockTime(at, tz)}.` });
+      await ack('Recorded');
+      return 'tap-taken';
+    }
+    if (action === 'snooze') {
+      const again = new Date(now().getTime() + 15 * 60_000);
+      await tg('editMessageText', { chat_id: t.chatId, message_id: Number(t.messageId), text: `⏰ I'll remind you about the ${med.name} again at ${clockTime(again.toISOString(), tz)}.` });
+      await ack('In 15 minutes');
+      // Held in memory: a restart in the next 15 minutes loses this one repeat, not the record.
+      setTimeout(() => {
+        const later = opts.store.getCareState(sender.householdId);
+        if (doseRecord(later, med.id, slot, new Date())) return;
+        void tg('sendMessage', {
+          chat_id: t.chatId, text: `Reminder: your ${med.name}.`,
+          reply_markup: { inline_keyboard: [[{ text: '✅ Taken', callback_data: `dose:${med.id}:${slot}` }, { text: '⏰ In 15 minutes', callback_data: `snooze:${med.id}:${slot}` }]] },
+        });
+      }, 15 * 60_000).unref?.();
+      return 'tap-snoozed';
+    }
+    await ack('');
+    return 'tap-unknown';
+  };
+
+  // A few plain commands, answered without the model.
+  const onCommand = async (msg: TelegramInbound, memberId: string, householdId: string): Promise<string | null> => {
+    const cmd = msg.text.trim().toLowerCase();
+    if (/^\/reminders\s+(off|on)$/.test(cmd)) {
+      const off = cmd.endsWith('off');
+      await opts.store.setMemberPreference(memberId, householdId, { reminders: off ? 'off' : undefined });
+      await answer(msg.chatId, off
+        ? 'Reminders are off for you. Type /reminders on to have them back.'
+        : "Reminders are on: I'll remind you at dose times and before appointments, here in our private chat.");
+      return off ? 'reminders-off' : 'reminders-on';
+    }
+    if (/^\/(calendar|board)$/.test(cmd)) {
+      if (!opts.calendarUrl) { await answer(msg.chatId, "The calendar isn't switched on yet."); return 'calendar-off'; }
+      if (!msg.isPrivate) { await answer(msg.chatId, 'Open our private chat and type /calendar there: the calendar opens inside Telegram, just for you.'); return 'calendar-in-group'; }
+      // In Telegram it opens as a Mini App; the browser link is signed for this person
+      // and lasts a week, so it can be kept as a bookmark on a laptop.
+      const token = calendarToken(inviteSecret, memberId, new Date(now().getTime() + 7 * 86_400_000));
+      await tg('sendMessage', {
+        chat_id: msg.chatId,
+        text: 'Here is the family calendar: everything coming up, who has what, and what nobody has taken yet. '
+          + 'The browser link is just for you and lasts a week, so please don\'t forward it.',
+        reply_markup: { inline_keyboard: [
+          [{ text: '📅 Open the calendar', web_app: { url: opts.calendarUrl } }],
+          [{ text: '🖥 Open in a browser', url: `${opts.calendarUrl}#t=${token}` }],
+        ] },
+      });
+      return 'calendar';
+    }
+    return null;
+  };
+
   return async function handle(req: Request, res: Response): Promise<void> {
     if (!opts.secretToken) {
       res.status(503).json({ error: 'Telegram integration is not configured.' });
@@ -175,6 +268,12 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
     }
 
     const results: Array<Record<string, unknown>> = [];
+    const tap = parseTelegramTap(req.body);
+    if (tap) {
+      const status = seen.admit(tap.updateId) ? await onTap(tap).catch((err: Error) => `error: ${err.message}`) : 'duplicate';
+      res.status(200).json({ status: 'accepted', results: [{ updateId: tap.updateId, status }] });
+      return;
+    }
     for (let msg of parseTelegramUpdate(req.body)) {
       if (!seen.admit(msg.updateId)) {
         results.push({ updateId: msg.updateId, status: 'duplicate' });
@@ -216,6 +315,8 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
         heard = said.text;
         msg = { ...msg, text: heard };
       }
+      const command = msg.voice ? null : await onCommand(msg, memberId, householdId);
+      if (command) { results.push({ updateId: msg.updateId, status: command }); continue; }
       // What we heard is shown back, so a misheard word is caught before it becomes the record.
       // Whoever spoke to us gets the answer spoken too.
       const reply = async (text: string): Promise<void> => {

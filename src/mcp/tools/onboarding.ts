@@ -165,7 +165,7 @@ export function registerAddMember({ server, store, actor }: ToolContext): void {
 /**
  * "He takes his eye drops at 8 and 8."
  */
-export function registerAddMedication({ server, store, actor, state }: ToolContext): void {
+export function registerAddMedication({ server, store, actor, state, now }: ToolContext): void {
   server.registerTool('add_medication', {
     title: 'Add a medication schedule',
     description:
@@ -192,7 +192,7 @@ export function registerAddMedication({ server, store, actor, state }: ToolConte
       const forId = who.member.id;
       const id = `med_${randomUUID()}`;
       if (until && !/^\d{4}-\d{2}-\d{2}$/.test(until)) return guidance('I need the last day as a date, like "2026-10-07". Ask which day they meant.');
-      await store.addMedication({ id, householdId: me.householdId, name, times, forMemberId: forId, ...(until ? { until } : {}) });
+      await store.addMedication({ id, householdId: me.householdId, name, times, forMemberId: forId, since: now().toISOString(), ...(until ? { until } : {}) });
       return reply(`Added ${name} at ${joinSpoken(times)}${until ? `, until ${until}` : ''}.`, { medicationId: id });
     } catch (err) { return guidance(describeError(err)); }
   });

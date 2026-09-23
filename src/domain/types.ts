@@ -52,6 +52,8 @@ export interface Member {
   livesAway?: string;
   /** Send them a short written update on the day, every evening. */
   dailyUpdate?: boolean;
+  /** Reminders (their doses, their appointments) are on unless they turned them off. */
+  reminders?: 'off';
 }
 
 /** What an entity is. People are modelled as `Member`; this widens the graph to the rest. */
@@ -137,7 +139,9 @@ export type EventKind =
   /** An appointment moved or was cancelled. The original stays; this says what changed. */
   | 'appointment_changed'
   /** Someone told the whole family something serious is happening. */
-  | 'urgent_raised';
+  | 'urgent_raised'
+  /** A reminder went out: a dose due, an appointment coming. Kept so it is sent once. */
+  | 'reminder_sent';
 
 /**
  * Where an observation entered the graph. This is the *channel*, distinct from the
@@ -321,6 +325,8 @@ export interface MedicationSchedule {
   until?: string;
   /** When it was stopped. A stopped medication stays on the record, and is no longer expected. */
   stoppedAt?: string;
+  /** When it was added to the schedule. Before this, no dose was expected. */
+  since?: string;
 }
 
 export interface Household {

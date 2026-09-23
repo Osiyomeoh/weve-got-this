@@ -18,6 +18,15 @@ and sends a voice note back. In the family group it
 only answers when you **@mention it** or **reply to one of its messages**. The rest of
 the group is for the family, as always.
 
+**The family calendar.** Type **/calendar** to the bot. It shows the week or month ahead:
+appointments, every medicine time and whether it's recorded, who is taking what, and what
+nobody has taken yet. Tap anything to take it on, mark it done, move or cancel it, or add a
+new appointment. There's also a link to open it on a laptop, just for you. Don't forward it.
+
+**Reminders.** CareCircle reminds you privately (never in the group) at your medicine times,
+with a **✅ Taken** button, and the evening before and two hours before an appointment. Type
+**/reminders off** to stop them, **/reminders on** to have them back.
+
 ---
 
 ## For Dad (the person the circle is for)
