@@ -33,43 +33,43 @@ const aide = await connect('aide-token');
 const tools = await david.listTools();
 console.log(`Server exposes ${tools.tools.length} tools, protocol negotiated OK.`);
 
-say('Margaret (kitchen Echo)', 'I took my heart pill.');
-alexa(await call(margaret, 'log_care_event', { kind: 'medication_taken', medicationName: 'heart pill' }));
+say('Daddy (Echo at home)', 'I used my eye drops.');
+alexa(await call(margaret, 'log_care_event', { kind: 'medication_taken', medicationName: 'eye drops' }));
 
-say('Renee (phone)', 'Mom has cardiology Thursday at 10.');
+say('Funmi (phone)', 'Daddy has his eye check-up Thursday at 10.');
 const appt = alexa(await call(renee, 'record_appointment', {
-  kind: 'cardiology',
+  kind: 'eye check-up',
   startsAt: new Date(Date.now() + 2 * 86400000).toISOString(),
 }));
 const proposalId = appt.structuredContent?.proposals?.[0]?.id;
 
-say('Renee', 'Yes, she will need a ride.');
+say('Funmi', 'Yes, he will need a ride.');
 alexa(await call(renee, 'confirm_proposal', { obligationId: proposalId, confirmed: true }));
 
-say('Renee', 'Mom sounded tired on the phone.');
-alexa(await call(renee, 'add_note', { note: 'Mom sounded tired on the phone.' }));
+say('Funmi', 'Daddy asked who is taking him on Thursday.');
+alexa(await call(renee, 'add_note', { note: 'Daddy asked who is taking him on Thursday.' }));
 
-say('David (driving)', "What's going to fall through the cracks this week?");
+say('Tolu (driving)', "What's going to fall through the cracks this week?");
 const gaps = alexa(await call(david, 'get_care_gaps', { withinDays: 7 }));
 console.log('  [structured]', JSON.stringify(
   gaps.structuredContent.gaps.map((g: any) => ({ severity: g.severity, kind: g.kind })),
 ));
 
-say('David', "I'll take the cardiology one.");
+say('Tolu', "I'll take the check-up one.");
 const first = gaps.structuredContent.gaps.find((g: any) => g.obligationId);
 alexa(await call(david, 'claim_obligation', { obligationId: first.obligationId }));
 
-say('David', "How's Mom doing today?");
+say('Tolu', "How's Daddy doing today?");
 alexa(await call(david, 'get_care_summary'));
 
 console.log('\n--- authority checks ---');
-say('Renee (caregiver)', 'Assign the pharmacy run to David.');
-alexa(await call(renee, 'assign_obligation', { obligationId: first.obligationId, assigneeName: 'David' }));
+say('Funmi (caregiver)', 'Assign the pharmacy run to Tolu.');
+alexa(await call(renee, 'assign_obligation', { obligationId: first.obligationId, assigneeName: 'Tolu' }));
 
-say('Tasha (paid aide)', "What's going on with the family?");
+say('Musa (driver)', "What's going on with the family?");
 alexa(await call(aide, 'get_care_gaps'));
 
-say('Tasha (paid aide)', 'What do I need to know today?');
+say('Musa (driver)', 'What do I need to know today?');
 alexa(await call(aide, 'get_shift_brief'));
 
 await Promise.all([margaret.close(), david.close(), renee.close(), aide.close()]);

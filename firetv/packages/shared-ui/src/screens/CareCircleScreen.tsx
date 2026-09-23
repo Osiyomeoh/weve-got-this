@@ -32,9 +32,9 @@ const ACCENT: Record<string, string> = {
  * fake "live" state.
  */
 const DEMO_GAPS: Gap[] = [
-  { spoken: "There's no record of Mom's evening heart pill from 20:00.", severity: 'HIGH', obligationId: 'demo_heart_pm' },
-  { spoken: "Pick up Mom's prescription - nobody has taken this yet.", severity: 'MEDIUM', obligationId: 'demo_rx' },
-  { spoken: 'Drive Mom to cardiology Thursday at 10 AM', severity: 'LOW', obligationId: 'demo_ride' },
+  { spoken: "There's no record of Daddy's evening eye drops from 20:00.", severity: 'HIGH', obligationId: 'demo_heart_pm' },
+  { spoken: "Pick up Daddy's eye drops refill - nobody has taken this yet.", severity: 'MEDIUM', obligationId: 'demo_rx' },
+  { spoken: 'Take Daddy to his eye check-up Thursday at 10 AM', severity: 'LOW', obligationId: 'demo_ride' },
 ];
 
 /** Drop the "- nobody has taken this yet" tail; the card already says it needs an owner. */

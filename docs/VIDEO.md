@@ -27,9 +27,10 @@ person, and never accuses anyone of what it didn't see.*
 
 - [ ] **Record before the real-family pilot switches the Telegram door** (see
       `docs/PILOT.md`). This cut needs `TELEGRAM_HOUSEHOLD_ID=h_margaret`.
-- [ ] Two phones in the "Magaret's CareCircle" group, mapped in `TELEGRAM_RECIPIENTS`: one
-      as **Renee** (already mapped), one as **Tasha** (needs a second Telegram account; map
-      it with `npm run telegram:ids`).
+- [ ] Two phones in the family Telegram group, mapped in `TELEGRAM_RECIPIENTS`: one as
+      **Funmi** (`m_renee`, already mapped), one as **Musa** (`m_aide`; needs a second
+      Telegram account; map it with `npm run telegram:ids`). Rename the group to fit, e.g.
+      "Daddy's CareCircle".
 - [ ] Fresh demo dates in **production**. `npm run demo:reset` only resets the local
       `carecircle.db.json` file and never touches the live DynamoDB table (and it wipes
       every household, so never point it at production). The live demo household still
@@ -86,26 +87,26 @@ numbers. Cut hard on "theirs".
 > watched. He wants to know what's going on. So he doesn't read it or tap it. He talks
 > to it, and so does everyone who helps him."
 
-**Live console, the demo family.** Card for 1 second: `Demo family: Margaret, modelled
-on caring for my dad.` Margaret, the person being cared for, speaks:
+**Live console, the demo family.** Card for 1 second: `Demo family: modelled on caring for
+my dad.` Daddy, the person being cared for, speaks:
 
-> **Margaret:** "I took my heart pill this morning."
-> **CareCircle:** *(Polly, gentle)* "Got it. Logged for this morning."
+> **Daddy:** "I used my eye drops this morning."
+> **CareCircle:** *(Polly, gentle)* "Got it, I've logged the eye drops."
 
-**Caption:** `CONFIRMED - she said it herself`
+**Caption:** `CONFIRMED - he said it himself`
 
 ## 0:35-0:50 - The refusal (Idea, the most important beat)
 
-> **David:** "Did Mom take her evening pill?"
-> **CareCircle:** "There's no record of the evening dose."
+> **Tolu:** "Did Daddy use his evening eye drops?"
+> **CareCircle:** "There's no record of Daddy's eye drops from 20:00."
 
 Freeze. Two cards, held a full three seconds:
 
 | A normal assistant | CareCircle |
 |---|---|
-| "She missed it." | "There's no record." |
+| "He missed it." | "There's no record." |
 
-> **VO:** "It won't turn missing information into an accusation about someone's mother.
+> **VO:** "It won't turn missing information into an accusation about someone's father.
 > The same model, unguarded, makes that accusation in half of these cases. Ours: zero."
 
 **On screen:** `npm run trust-benchmark - raw model 50% -> CareCircle 0%`
@@ -122,38 +123,38 @@ gets a card, **"a package arrived"**, with an `INFERRED` chip.
 
 ## 1:05-1:55 - The delegation loop, on real phones (the centrepiece)
 
-The board shows cardiology Thursday **and a ride nobody owns**, ranked high. Tap the
+The board shows the eye check-up Thursday **and a ride nobody owns**, ranked high. Tap the
 score: `cost x p(dropped) x confidence`.
 
-> **David:** "Who can take Mom to cardiology Thursday?"
-> **CareCircle:** "I've asked Renee. She has the fewest things on this week."
+> **Tolu:** "Who can take Daddy to his check-up Thursday?"
+> **CareCircle:** "I've asked Funmi. She has the fewest things on this week."
 
 **Cut to the phones.** The group lights up:
 
-> **@carecircle0111_bot:** "Renee, David asked if you can take this on:
-> Drive Mom to cardiology. Reply "yes" or "can't"."
+> **@carecircle0111_bot:** "Funmi, Tolu asked if you can take this on:
+> Take Daddy to his eye check-up. Reply "yes" or "can't"."
 
-Renee types **can't**. The bot answers in the group. The board: `OPEN - Renee declined`.
+Funmi types **can't**. The bot answers in the group. The board: `OPEN - Funmi declined`.
 
 **Caption over a clock jump, real timestamp:** `Next agent pass - nobody asked it to`
 
-> **@carecircle0111_bot:** "Tasha, CareCircle noticed nobody has "Drive Mom to
-> cardiology" yet. Can you take it on? Reply "yes" or "can't"."
+> **@carecircle0111_bot:** "Musa, CareCircle noticed nobody has "Take Daddy to his
+> eye check-up" yet. Can you take it on? Reply "yes" or "can't"."
 
-Tasha types **yes**. On camera, at once: the bot confirms in the group, the console board
-flips to `ASSIGNED - Tasha`, and the TV card clears.
+Musa types **yes**. On camera, at once: the bot confirms in the group, the console board
+flips to `ASSIGNED - Musa`, and the TV card clears.
 
 **3-second insert:** the ride now on the family's Google Calendar, labelled
-`Drive Mom to cardiology - Tasha`.
+`Take Daddy to his eye check-up - Musa`.
 
 > **VO:** "Being asked isn't agreeing, so a pending ask still counts as a gap. When
-> someone says they can't, it asks the next person on its own, family before the paid
-> aide. The answer came back over an ordinary group chat, and it landed on the
+> someone says they can't, it asks the next person on its own, family before paid
+> help. The answer came back over an ordinary group chat, and it landed on the
 > calendar and the TV."
 
 ## 1:55-2:08 - Closing a gap by buying the fix (Idea: purchasing)
 
-The refill gap. One offer card, confirmed in the conversation, and the gap closes.
+The eye-drops refill gap. One offer card, confirmed in the conversation, and the gap closes.
 
 > **VO:** "When the fix is a purchase, it happens right here, and the gap closes when the
 > order is placed."
@@ -176,7 +177,7 @@ and the screen works without the voice. A test fails the build if either breaks.
 
 ## 2:35-2:50 - It's a real MCP server (Tech, Alexa+)
 
-Claude Desktop, connected to the live endpoint. Type: *"What's slipping for Margaret this
+Claude Desktop, connected to the live endpoint. Type: *"What's slipping for Daddy this
 week?"* It calls `get_care_gaps` on the same server and gives the same answer.
 
 > **VO:** "This isn't a mockup of Alexa. It's a live MCP server on the 2025-11-25 spec,

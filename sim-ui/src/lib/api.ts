@@ -147,8 +147,8 @@ export async function getStarted(memberId: string = FOUNDER_ID): Promise<Onboard
 
 export interface Member { id: string; label: string; sub: string; }
 export const MEMBERS: Member[] = [
-  { id: 'm_margaret', label: 'Margaret', sub: 'kitchen Echo · voice-first' },
-  { id: 'm_david', label: 'David', sub: 'primary caregiver · phone' },
-  { id: 'm_renee', label: 'Renee', sub: 'caregiver · sister' },
-  { id: 'm_aide', label: 'Tasha', sub: 'paid aide · shift only' },
+  { id: 'm_margaret', label: 'Daddy', sub: 'Echo at home · voice-first' },
+  { id: 'm_david', label: 'Tolu', sub: 'primary caregiver · phone' },
+  { id: 'm_renee', label: 'Funmi', sub: 'caregiver · sister' },
+  { id: 'm_aide', label: 'Musa', sub: 'driver · paid help' },
 ];

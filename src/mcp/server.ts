@@ -83,7 +83,7 @@ const OUT = {
   get_care_summary: { medicationsLogged: z.number().optional(), medications: arr.optional(), notes: arr.optional(), gaps: arr.optional(), pendingProposals: arr.optional() },
   get_shift_brief: { medications: arr.optional(), assignedToMe: arr.optional() },
   notify_member: { eventId: z.string().optional(), recipientId: z.string().optional(), channel: z.string().optional(), delivered: z.boolean().optional() },
-  ingest_signal: { eventId: z.string().optional(), resolvesCandidate: z.unknown().optional() },
+  ingest_signal: { eventId: z.string().optional(), resolvesCandidate: z.unknown().optional(), proposalId: z.string().nullable().optional() },
   reorder_prescription: { eventId: z.string().optional() },
   confirm_purchase: { placed: z.boolean().optional(), amountCents: z.number().optional(), closedObligation: z.string().nullable().optional() },
   get_started: { step: z.string().optional(), done: arr.optional(), complete: z.boolean().optional(), firstGap: z.unknown().optional() },

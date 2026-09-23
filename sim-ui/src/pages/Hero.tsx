@@ -245,8 +245,9 @@ export default function Hero() {
               <span className="bg-gradient-to-r from-core to-alexa bg-clip-text text-transparent">Nothing shares it.</span>
             </h1>
             <p className="mt-5 max-w-xl text-[0.9375rem] leading-relaxed text-[#c3cad9] md:text-lg">
-              Two siblings and a paid aide look after Margaret. Each of them knows part of what
-              happened today, and no system holds the whole. CareCircle turns what everyone says
+              In Lagos, two grown children who both work and the family driver look after Daddy,
+              going on 70 and home from surgery. Each of them knows part of what happened today,
+              and no system holds the whole. CareCircle turns what everyone says
               and everything the house notices into shared obligations, finds the ones nobody owns,
               and never turns a missing record into an accusation.
             </p>
@@ -362,8 +363,8 @@ export default function Hero() {
           </div>
 
           <p className="mt-8 max-w-3xl text-[0.875rem] leading-relaxed text-muted">
-            Inference proposes, humans dispose. Work the system infers - a ride to a cardiology
-            appointment, say - enters as <b className="text-ink">PROPOSED</b> and is excluded from
+            Inference proposes, humans dispose. Work the system infers - a ride to an eye
+            check-up, say - enters as <b className="text-ink">PROPOSED</b> and is excluded from
             Care Gaps entirely until a person confirms it. CareCircle is allowed to notice. It is
             not allowed to decide on the family&rsquo;s behalf.
           </p>
@@ -384,7 +385,7 @@ export default function Hero() {
             <Step
               n="01 · EVENTS"
               name="Something is observed"
-              body="Someone says they gave Mom her pill. A doorbell sees a pharmacy delivery. A wearable notices she was up all night. Each carries how we came to know it."
+              body="Daddy says he used his eye drops. A doorbell sees a pharmacy delivery. A wearable notices he was up all night. Each carries how we came to know it."
             />
             <Step
               n="02 · OBLIGATIONS"
@@ -406,7 +407,7 @@ export default function Hero() {
           eyebrow="Four surfaces, one responsibility layer"
           title={<>Not four integrations. Four kinds of evidence about one person.</>}
           lead={<>
-            The devices around Margaret each see something the others cannot, and none of them is
+            The devices around Daddy each see something the others cannot, and none of them is
             the product. MCP is the seam that lets all of it land in one record - which is why a
             Ring signal and a spoken sentence are handled by the same pipeline, with the same
             provenance rules.
@@ -492,7 +493,7 @@ export default function Hero() {
               <p className="mt-3 text-[0.875rem] leading-relaxed text-[#c3cad9]">
                 MCP elicitation expects an answer inside the same call that raised it; an Alexa turn
                 is over in seconds. CareCircle models confirmation as a separate tool call instead,
-                so &ldquo;will Mom need a ride?&rdquo; then &ldquo;yes&rdquo; survives any gap
+                so &ldquo;will Daddy need a ride?&rdquo; then &ldquo;yes&rdquo; survives any gap
                 between turns with nothing parked.
               </p>
             </div>

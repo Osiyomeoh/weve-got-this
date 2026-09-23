@@ -26,22 +26,33 @@ export interface InferenceRule {
 
 const MEDICAL = /cardiolog|doctor|clinic|hospital|dentist|physical therapy|oncolog|dialysis|surgery|specialist|appointment|checkup|check-up|lab|bloodwork|x-ray|scan|mri/i;
 
+/**
+ * How to say where the ride goes. A department reads as-is ("to cardiology"); an event
+ * needs an article ("to the eye check-up"), unless the family already gave one.
+ */
+export function destination(kind: string): string {
+  const k = kind.trim();
+  if (/^(the|a|an|his|her|their|my|our)\s/i.test(k)) return k;
+  return /(check-?up|appointment|test|scan|x-ray|mri|bloodwork|lab|visit|exam|review|follow-?up)$/i.test(k)
+    ? `the ${k}` : k;
+}
+
 export const RULES: InferenceRule[] = [
   {
     id: 'medical-appointment-transport',
     appliesTo: (kind) => MEDICAL.test(kind),
-    what: (subject, kind) => `Drive ${subject} to ${kind}`,
+    what: (subject, kind) => `Drive ${subject} to ${destination(kind)}`,
     consequence: 'medical',
     ask: (subject, kind) =>
-      `Will ${subject} need a ride to ${kind}? I'm guessing from the appointment type, not from anything anyone told me.`,
+      `Will ${subject} need a ride to ${destination(kind)}? I'm guessing from the appointment type, not from anything anyone told me.`,
   },
   {
     id: 'medical-appointment-companion',
     appliesTo: (kind) => /cardiolog|oncolog|surgery|specialist|dialysis/i.test(kind),
-    what: (subject, kind) => `Go with ${subject} to ${kind} and take notes`,
+    what: (subject, kind) => `Go with ${subject} to ${destination(kind)} and take notes`,
     consequence: 'medical',
     ask: (subject, kind) =>
-      `Should someone go in with ${subject} for ${kind}? Appointments like this often carry instructions worth writing down.`,
+      `Should someone go in with ${subject} for ${destination(kind)}? Appointments like this often carry instructions worth writing down.`,
   },
 ];
 

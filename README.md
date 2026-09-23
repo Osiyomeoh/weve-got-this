@@ -1,28 +1,38 @@
 # CareCircle
 
-### Margaret is 78 and lives alone. Her two kids and a paid aide share her care. Nobody is in charge - so the work that falls through the cracks is the work nobody realised was anyone's job.
+### Why I built this
 
-*"Nobody knew a ride to cardiology was needed until Thursday morning."* That sentence
-is the whole problem. Every family-care tool assumes someone already **noticed** the
-work and typed a task. That is exactly the step that fails.
+> I'm from Lagos, Nigeria. We're a family of five, and our dad. Our mum has passed. In
+> Nigeria we take care of our parents, and we still have to work to make a living. My dad
+> is going on seventy. He just had surgery and had to time his own medication, and he
+> wanted to know what was going on. He has drugs, supplements, check-ups and the rest his
+> doctors prescribe, and getting around isn't easy anymore. We all want to help. But
+> nobody is in charge - so the thing that fails isn't the thing someone forgot. It's the
+> thing **nobody knew was theirs.**
+
+Every family-care tool assumes someone already **noticed** the work and typed a task.
+That is exactly the step that fails.
 
 **CareCircle is an Alexa+ MCP server that starts one step earlier - and it does two
 things no other assistant does.** The person being cared for is a **participant, not a
-patient on a dashboard**: Margaret, who has never used a smartphone, logs her own care
-by *talking*. And it **refuses to lie** - a missing record is surfaced as *"there's no
-record,"* never *"she missed it."*
+patient on a dashboard**: he doesn't want to be watched, he wants to know what's going
+on, so he logs his own care by *talking*. And it **refuses to lie** - a missing record
+is surfaced as *"there's no record,"* never *"he missed it."*
 
 Ordinary spoken sentences become structured events, events imply obligations, and the
 obligations nobody owns are **Care Gaps** - surfaced before they fail, closed by voice,
-or fixed by **buying the thing in place** (reorder the prescription, right in the
+or fixed by **buying the thing in place** (reorder the refill, right in the
 conversation).
 
 ```
-EVENTS          ->   OBLIGATIONS       ->   OWNERSHIP
-what happened        what must happen        who has it
-"cardiology          someone has to          ...nobody
- Thursday at 10"     drive her                has claimed it
+EVENTS            ->   OBLIGATIONS       ->   OWNERSHIP
+what happened          what must happen        who has it
+"eye check-up          someone has to          ...nobody
+ Thursday at 10"       take him                has claimed it
 ```
+
+The demo family (Daddy, his children Tolu and Funmi, and Musa the driver) is fictional
+and modelled on mine. No real names or medical details are used.
 
 **And it is real - not a mockup.** Live MCP server you can hit right now, **430 tests**
 (including property-based proofs of the risk model), **~92-93%** measured tool-selection
@@ -33,9 +43,10 @@ raw LLM hits 50%**.
 
 **[https://krqi2tpsif.us-east-1.awsapprunner.com](https://krqi2tpsif.us-east-1.awsapprunner.com)** - the Alexa+ console, running on Amazon
 Bedrock. Click **"Open the live demo"**, pick a household member (top-left), and type or
-speak. The one thing to try: ask **"Did Mom take her heart pill this morning?"** - it answers
-*"I can't say whether she took it; I can only tell you there's no record of it being logged,"*
-**never** *"she missed it."* That refusal is the whole product.
+speak. The one thing to try: ask **"Did Daddy use his evening eye drops?"** - it tells you
+there's no record of that dose, and **never** *"he missed it."* That refusal is the whole
+product. Every visitor gets their own private copy of the demo family, so nothing you do
+reaches anyone else; **Start over** gives you a fresh one.
 
 The console drives the same append-only care record the voice surface and the Fire TV board
 read, so a claim you make in the browser shows up everywhere at once.
@@ -74,7 +85,7 @@ these lines deliberately and held to them:
   can test, not an emergent behaviour we hope for.
 - **No computer vision, robotics, or silent physical actuation.** CareCircle never *does* a
   physical thing on its own. It asks a human, and a human acts.
-- **No phone-first app as the story.** The person being cared for talks; she never touches a
+- **No phone-first app as the story.** The person being cared for talks; he never touches a
   screen. A dashboard exists for the family, but it is a *reader*, not the product.
 - **No Bee integration.** We are submitting **Alexa+**, and the rules require showing *live*
   Bee-device data being used. We have no device, so we do not claim one — Ring is the single
@@ -89,29 +100,30 @@ these lines deliberately and held to them:
 
 ## The interaction
 
-**Margaret, 78, to her kitchen Echo** - she has never used a smartphone:
+**Daddy, going on 70, to the Echo at home** - after his surgery he can't easily read a
+label or a screen:
 
-> "Alexa, I have cardiology Thursday at ten."
+> "Alexa, I have my eye check-up Thursday at ten."
 
 CareCircle records the appointment, then notices something and says so:
 
-> "Will Mom need a ride to cardiology? **I'm guessing from the appointment type, not
-> from anything anyone told me.**"
+> "Will Daddy need a ride to the eye check-up? **I'm guessing from the appointment type,
+> not from anything anyone told me.**"
 
-**David, her son, driving home two days later:**
+**Tolu, his son, driving home from work two days later:**
 
 > "Alexa, what's going to fall through the cracks this week?"
 
-> "There are two things that need attention. Drive Mom to cardiology Thursday at 10 -
-> nobody has taken this yet. And **there's no record of** Mom's evening heart pill."
+> "There are three things that need attention. Pick up Daddy's eye drops refill today at
+> 10 AM - nobody has taken this yet. Take Daddy to his eye check-up tomorrow at 10 AM -
+> nobody has taken this yet. **There's no record of** Daddy's eye drops from 20:00."
 
-> "I'll take the cardiology one."
+> "I'll take him Thursday."
 
-> "Done - Drive Mom to cardiology is yours."
+> "Done - Take Daddy to his eye check-up is yours."
 
-Nobody created a task. Nobody opened an app. Margaret, who cannot use one, is a
-participant rather than a monitored subject.
-
+Nobody created a task. Nobody opened an app. Daddy, who can't easily use one right now,
+is a participant rather than a monitored subject.
 ---
 
 ## Known is not Assumed
@@ -120,8 +132,8 @@ The rule the whole system is built on:
 
 > **The absence of a record is never treated as proof that something did not happen.**
 
-CareCircle will say *"there's no record of her evening dose"*. It will never say
-*"she missed her evening dose"*, because it does not know that. Every fact carries
+CareCircle will say *"there's no record of his evening dose"*. It will never say
+*"he missed his evening dose"*, because it does not know that. Every fact carries
 provenance and the four states are never collapsed:
 
 | State | Meaning |
@@ -166,10 +178,10 @@ someone's medical care.
 
 | Member | Role | Can |
 |---|---|---|
-| Margaret, 78 | `care_recipient` | Log her own events; hear her own day |
-| David | `primary_caregiver` | Everything: claim, assign, confirm, escalate |
-| Renee | `caregiver` | Claim, add, confirm - but not assign to others |
-| Tasha (paid aide) | `helper` | Only her shift, and only work she owns |
+| Daddy, going on 70 | `care_recipient` | Log his own events; hear his own day |
+| Tolu | `primary_caregiver` | Everything: claim, assign, confirm, escalate |
+| Funmi | `caregiver` | Claim, add, confirm - but not assign to others |
+| Musa (the driver, paid help) | `helper` | Only today's work, and only work he owns |
 
 Denials are written to be spoken, and say what the person *can* do instead:
 
@@ -312,7 +324,7 @@ model's opinion, and the view will show you its working. A ranking over someone'
 care that can't be audited shouldn't be trusted.
 
 **Claiming closes the loop.** Voice is the right input for *capture* and the wrong one for
-*disambiguating among similar items* — "I'll take the cardiology one" makes the model
+*disambiguating among similar items* — "I'll take the check-up one" makes the model
 resolve a referring expression to an id, and it will sometimes get that wrong. A tap can't.
 The button makes a real `tools/call` to `claim_obligation` down the same authorisation path
 as speech (no weaker permission model for clicks), then tells the model what changed via
@@ -336,7 +348,7 @@ never says "tap", "click" or "below", so the view can never quietly become load-
 
 ## Sources and surfaces, one responsibility layer
 
-The things around Margaret are not integrations bolted on. They are *kinds of evidence*
+The things around Daddy are not integrations bolted on. They are *kinds of evidence*
 and one *shared display*, feeding and reading **one** responsibility layer - and **MCP is
 the seam** that lets entirely different surfaces participate in the same system. Every
 inbound source lands through the same gate: it becomes an `INFERRED` proposal or an
@@ -494,7 +506,7 @@ reach the model - credentials, throttling - are excluded from the figure rather 
 counted as wrong, because a number that can lie is worse than no number.
 
 **Honest limitations** (the ~9-11 held-out misses, unfixed on purpose): reschedules
-("move her cardiology to Friday"), vague-time scheduling ("a flu shot next week
+("move his eye check-up to Friday"), vague-time scheduling ("a flu shot next week
 sometime"), a couple of elliptical unavailabilities ("count me out this weekend"),
 and cold purchase confirmations with no offer in context. These are the edges a
 larger corpus would harden next.
@@ -507,10 +519,10 @@ Demo credentials (one per member - the identity model in miniature):
 
 | Member | Token |
 |---|---|
-| Margaret | `margaret-token` |
-| David | `david-token` |
-| Renee | `renee-token` |
-| Tasha | `aide-token` |
+| Daddy | `margaret-token` |
+| Tolu | `david-token` |
+| Funmi | `renee-token` |
+| Musa | `aide-token` |
 
 ---
 
@@ -520,22 +532,22 @@ Every tool exists because a person says a sentence that needs it.
 
 | Tool | The sentence |
 |---|---|
-| `log_care_event` | "I took my heart pill" |
+| `log_care_event` | "I used my eye drops" |
 | `record_appointment` | "Cardiology is Thursday at ten" |
-| `add_note` | "Mom sounded tired on the phone" |
+| `add_note` | "Daddy asked who is taking him on Thursday" |
 | **`get_care_gaps`** | **"What's going to fall through the cracks this week?"** |
 | `claim_obligation` | "I'll take it" |
-| `assign_obligation` | "Give the pharmacy run to Renee" |
-| `confirm_proposal` | "Yes, she'll need a ride" |
+| `assign_obligation` | "Give the pharmacy run to Funmi" |
+| `confirm_proposal` | "Yes, he'll need a ride" |
 | `resolve_obligation` | "Picked up the prescription" |
 | `get_shift_brief` | "What do I need to know today?" |
-| `notify_member` | "Tell Renee I'm taking Mom Thursday" - records it, and delivers over SNS when configured |
+| `notify_member` | "Tell Funmi I'm taking Daddy Thursday" - records it, and delivers over SNS when configured |
 
 Tool design follows four rules, because the model is the user:
 
 - **Descriptions disambiguate near-neighbours** - `log_care_event` vs
   `record_appointment` vs `add_note`; `claim` vs `assign`.
-- **Errors instruct rather than report.** Two medications match "heart pill"? The tool
+- **Errors instruct rather than report.** Two medications match "drops"? The tool
   returns *"ask which one they mean, then call this again"* - it never guesses.
 - **Ambiguity is a question, not a default.**
 - **Results are written to be spoken verbatim.** No markdown, no ids read aloud, and
@@ -556,8 +568,8 @@ Product feedback, written while building. Full detail in
 2. **Actionable cards.** Voice is the right input for *capture* and the wrong input
    for *disambiguating among similar items*. A misheard referring expression assigning
    a hospital trip to the wrong person is not an acceptable failure.
-3. **Confirmation as a surface.** Before Thursday's hospital run is assigned to Renee,
-   Renee's name should be on screen.
+3. **Confirmation as a surface.** Before Thursday's check-up run is assigned to Funmi,
+   Funmi's name should be on screen.
 4. **Multi-person identity.** Families are not single users. Speaker identity should be
    available - and explicitly unknown when it is not, rather than assumed.
 5. **Ambient state.** The most valuable moment is not a conversation. It is someone

@@ -33,7 +33,7 @@ import { seedScenario } from '../src/demo/scenario.ts';
 import { createCareCircleApp } from '../src/http/app.ts';
 
 const HOUSEHOLD = 'h_margaret';
-const TZ = 'America/New_York';
+const TZ = 'Africa/Lagos';
 
 /**
  * The UTC instant for a wall-clock time today in a timezone. The story is set in
@@ -111,9 +111,9 @@ async function main(): Promise<void> {
   await seedDemoHousehold(store);
   const { cardiologyAt, rideObligationId } = await seedScenario(store, HOUSEHOLD, {
     now: seedNow,
-    // The ride is Renee's at the open, so the constraint beat can orphan it live.
+    // The ride is Funmi's at the open, so the constraint beat can orphan it live.
     rideClaimedByRenee: true,
-    // Beat one logs the heart pill on camera; don't seed a duplicate dose.
+    // Beat one logs the eye drops on camera; don't seed a duplicate dose.
     skipMorningHeartPill: true,
   });
 
@@ -138,31 +138,31 @@ async function main(): Promise<void> {
   const tools = await david.listTools();
   console.log(bold('\nCareCircle - the one-day story, over real MCP'));
   console.log(dim(`  server: ${url}  ·  spec 2025-11-25  ·  ${tools.tools.length} tools`));
-  console.log(dim(`  cardiology is genuinely ${when} in ${TZ}`));
+  console.log(dim(`  the eye check-up is genuinely ${when} in ${TZ}`));
 
   // ── Beat 1 · 7:42am - she logs her own care by talking ──────────────────
-  beat('7:42am', 'The parent logs her own care by voice');
-  say('Margaret (kitchen Echo)', 'Alexa, I took my heart pill.');
+  beat('7:42am', 'The parent logs his own care by voice');
+  say('Daddy (Echo at home)', 'Alexa, I used my eye drops.');
   alexa(await call(margaret, 'log_care_event', {
-    kind: 'medication_taken', medicationName: 'heart pill',
+    kind: 'medication_taken', medicationName: 'eye drops',
     occurredAt: wallClockToday(7, 42, TZ).toISOString(),
   }));
 
   // ── Beat 2 · the constraint - work comes loose, silently ────────────────
   beat('9:15am', 'A constraint quietly orphans work nobody re-assigned');
-  say('Renee (phone)', "I can't drive Mom to cardiology on Thursday after all.");
+  say('Funmi (phone)', "I can't take Daddy to his eye check-up on Thursday after all.");
   alexa(await call(renee, 'add_note', {
-    note: "I can't drive Mom to cardiology Thursday.",
+    note: "I can't take Daddy to his eye check-up Thursday.",
     unavailable: {
-      memberName: 'Renee',
+      memberName: 'Funmi',
       from: new Date(cardiologyAt.getTime() - 3 * 3600_000).toISOString(),
       to: new Date(cardiologyAt.getTime() + 3 * 3600_000).toISOString(),
     },
   }));
 
   // ── Beat 3 · 2:14pm - a doorbell becomes evidence, never a conclusion ────
-  beat('2:14pm', 'Ring sees a delivery - evidence toward the prescription, not proof');
-  say('Ring doorbell', '(a package is left at Margaret\'s door)');
+  beat('2:14pm', 'Ring sees a delivery - evidence toward the refill, not proof');
+  say('Ring doorbell', '(a package is left at Daddy\'s door)');
   alexa(await call(david, 'ingest_signal', {
     source: 'ring', kind: 'delivery_arrived',
     detail: 'Package left at front door',
@@ -170,18 +170,18 @@ async function main(): Promise<void> {
 
   // ── Beat 4 · 6:30pm - the question no other assistant answers ────────────
   beat('6:30pm', "What's going to fall through the cracks this week?");
-  say('David (driving)', "Alexa, what's going to fall through the cracks this week?");
+  say('Tolu (driving)', "Alexa, what's going to fall through the cracks this week?");
   const gapsRes = alexa(await call(david, 'get_care_gaps', { withinDays: 7 }));
   board(gapsOf(gapsRes));
 
   const ride = gapsOf(gapsRes).find((g) => g.obligationId === rideObligationId)
-    ?? gapsOf(gapsRes).find((g) => /cardiology|drive/i.test(g.spoken));
-  say('David', "I'll drive Thursday.");
+    ?? gapsOf(gapsRes).find((g) => /check-up|take daddy/i.test(g.spoken));
+  say('Tolu', "I'll take him Thursday.");
   alexa(await call(david, 'claim_obligation', { obligationId: ride.obligationId }));
 
-  // The delivery pointed at the prescription; David confirms it and closes it out.
-  const rx = gapsOf(gapsRes).find((g) => /prescription/i.test(g.spoken));
-  say('David', 'And yes - that package was the prescription. Mark it picked up.');
+  // The delivery pointed at the refill; Tolu confirms it and closes it out.
+  const rx = gapsOf(gapsRes).find((g) => /refill/i.test(g.spoken));
+  say('Tolu', 'And yes - that package was the eye drops refill. Mark it picked up.');
   await call(david, 'claim_obligation', { obligationId: rx.obligationId });
   alexa(await call(david, 'resolve_obligation', {
     obligationId: rx.obligationId, note: 'Confirmed via the 2:14pm doorbell delivery.',
@@ -194,28 +194,28 @@ async function main(): Promise<void> {
     source: 'ring', kind: 'no_activity',
     detail: 'No activity detected at the door since 2:14pm',
   }));
-  say('David', 'Did Mom take her evening pill?');
+  say('Tolu', 'Did Daddy use his evening eye drops?');
   const eveningRes = alexa(await call(david, 'get_care_gaps', {}));
   board(gapsOf(eveningRes));
 
   // ── Beat 6 · 8:06pm - the living room already knew; the gap clears ───────
   beat('9:12pm', 'The ambient board prompts a call; the gap clears everywhere');
-  say('Renee (sees the Fire TV board)', 'I just called her - she took it at 7:50 and forgot to say.');
+  say('Funmi (sees the Fire TV board)', 'I just called him - he used them at 7:50 and forgot to say.');
   alexa(await call(renee, 'log_care_event', {
-    kind: 'medication_taken', medicationName: 'heart pill', aboutMemberId: 'm_margaret',
+    kind: 'medication_taken', medicationName: 'eye drops', aboutMemberId: 'm_margaret',
     occurredAt: wallClockToday(19, 50, TZ).toISOString(),
-    detail: 'Confirmed by phone; Margaret took it at 7:50pm.',
+    detail: 'Confirmed by phone; Daddy used them at 7:50pm.',
   }));
   const closedRes = await call(david, 'get_care_gaps', {});
-  console.log(dim('\n    After Renee confirms:'));
+  console.log(dim('\n    After Funmi confirms:'));
   board(gapsOf(closedRes));
 
   // ── Coda · one record, four roles ───────────────────────────────────────
   beat('-', 'One record, four people reach it differently');
-  say('Tasha (paid aide)', 'What do I need to know for my shift?');
+  say('Musa (driver)', 'What do I need to know for today?');
   alexa(await call(aide, 'get_shift_brief'));
-  say('Renee (caregiver)', 'Assign the pharmacy run to David.');
-  alexa(await call(renee, 'assign_obligation', { obligationId: ride.obligationId, assigneeName: 'David' }));
+  say('Funmi (caregiver)', 'Assign the pharmacy run to Tolu.');
+  alexa(await call(renee, 'assign_obligation', { obligationId: ride.obligationId, assigneeName: 'Tolu' }));
 
   console.log(bold(cyan('\n  CareCircle doesn\'t just tell a family what happened.')));
   console.log(bold(cyan('  It tells them what still needs someone.\n')));

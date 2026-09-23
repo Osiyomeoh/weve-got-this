@@ -61,7 +61,7 @@ export default function TVBoard() {
         <div className="flex items-center gap-4 2xl:gap-6">
           <span className="h-4 w-4 rounded-full bg-confirmed shadow-[0_0_22px_#7cf0c8] 2xl:h-6 2xl:w-6" />
           <div>
-            <h1 className="text-3xl font-semibold md:text-4xl 2xl:text-6xl">Margaret's care circle</h1>
+            <h1 className="text-3xl font-semibold md:text-4xl 2xl:text-6xl">Daddy's care circle</h1>
             <div className="text-base tracking-[0.04em] text-muted md:text-lg 2xl:text-2xl">THE SHARED CARE BOARD</div>
           </div>
         </div>

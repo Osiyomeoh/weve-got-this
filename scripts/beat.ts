@@ -29,7 +29,7 @@ import { seedScenario } from '../src/demo/scenario.ts';
 import { createCareCircleApp } from '../src/http/app.ts';
 
 const HOUSEHOLD = 'h_margaret';
-const TZ = 'America/New_York';
+const TZ = 'Africa/Lagos';
 
 /** The UTC instant for a wall-clock time today in a timezone (same helper as story.ts). */
 function wallClockToday(hour: number, minute: number, tz: string, base = new Date()): Date {
@@ -115,37 +115,37 @@ async function main(): Promise<void> {
 
   // 0:00 - the gap, and why it ranks
   beat('0:00', 'What is going to fall through the cracks?');
-  say('David', "What's going to fall through the cracks this week?");
+  say('Tolu', "What's going to fall through the cracks this week?");
   const gaps0 = alexa(await call(david, 'get_care_gaps', { withinDays: 7 }));
   surfaces('open', gapsOf(gaps0));
   const ride = gapsOf(gaps0).find((g) => g.obligationId === rideObligationId)
-    ?? gapsOf(gaps0).find((g) => /cardiology|drive/i.test(g.spoken));
+    ?? gapsOf(gaps0).find((g) => /check-up|take daddy/i.test(g.spoken));
   if (!ride) throw new Error('the ride gap did not surface - check the opening state');
   const rideId = ride.obligationId as string;
   console.log(dim(`    why it ranks: ${ride.because}`));
 
   // 0:06 - ask, not assign
   beat('0:06', 'Ask, not assign');
-  say('David', 'Ask Renee to take her.');
-  alexa(await call(david, 'request_owner', { obligationId: rideId, assigneeName: 'Renee' }));
-  surfaces('after asking Renee', gapsOf(await call(david, 'get_care_gaps', { withinDays: 7 })));
+  say('Tolu', 'Ask Funmi to take him.');
+  alexa(await call(david, 'request_owner', { obligationId: rideId, assigneeName: 'Funmi' }));
+  surfaces('after asking Funmi', gapsOf(await call(david, 'get_care_gaps', { withinDays: 7 })));
 
   // 0:16 - a "no" is information, not a failure
   beat('0:16', 'A "no" is information, not a failure');
-  say('Renee', "I can't, I'm working Thursday.");
+  say('Funmi', "I can't, I'm working Thursday.");
   alexa(await call(renee, 'respond_to_request', {
     obligationId: rideId, accepted: false, note: 'working Thursday',
   }));
-  say('David', 'Then ask Tasha, the aide.');
-  alexa(await call(david, 'request_owner', { obligationId: rideId, assigneeName: 'Tasha' }));
-  surfaces('after asking Tasha', gapsOf(await call(david, 'get_care_gaps', { withinDays: 7 })));
+  say('Tolu', 'Then ask Musa, the driver.');
+  alexa(await call(david, 'request_owner', { obligationId: rideId, assigneeName: 'Musa' }));
+  surfaces('after asking Musa', gapsOf(await call(david, 'get_care_gaps', { withinDays: 7 })));
 
   // 0:26 - the gap clears on both surfaces at once
   beat('0:26', 'The gap clears on both surfaces at once');
-  say('Tasha', "Yes, I've got Thursday.");
+  say('Musa', "Yes, I've got Thursday.");
   alexa(await call(tasha, 'respond_to_request', { obligationId: rideId, accepted: true }));
   const cleared = gapsOf(await call(david, 'get_care_gaps', { withinDays: 7 }));
-  surfaces('after Tasha accepts', cleared);
+  surfaces('after Musa accepts', cleared);
   const stillOpen = cleared.some((g) => g.obligationId === rideId);
   console.log(stillOpen
     ? amber('    ⚠ ride still shows as a gap - unexpected')
@@ -153,7 +153,7 @@ async function main(): Promise<void> {
 
   // 0:34 - the proof you cannot fake
   beat('0:34', 'The proof you cannot fake');
-  say('David', "How do we know Tasha's got it?");
+  say('Tolu', "How do we know Musa's got it?");
   const prov = alexa(await call(david, 'get_provenance', { obligationId: rideId }));
   const chain = prov.structuredContent?.chain ?? [];
   console.log(dim('    replayed from the append-only log:'));

@@ -22,7 +22,7 @@ const VOICE_ERRORS: Record<string, string> = {
 };
 
 export default function Console() {
-  const [member, setMember] = useState<Member>(MEMBERS[1]); // David
+  const [member, setMember] = useState<Member>(MEMBERS[1]); // Tolu
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
@@ -385,7 +385,7 @@ export default function Console() {
 
         {/* transcript */}
         <div ref={scrollRef} className="glass flex-1 space-y-3 overflow-y-auto rounded-2xl p-4" style={{ minHeight: 220, maxHeight: 340 }}>
-          {messages.length === 0 && <div className="p-6 text-center text-sm text-muted">Speak or type as {member.label}. Try “Did Mom take her heart pill?”</div>}
+          {messages.length === 0 && <div className="p-6 text-center text-sm text-muted">Speak or type as {member.label}. Try “Did Daddy use his eye drops?”</div>}
           {messages.map((m, i) => (
             <div key={i} className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-[0.9375rem] leading-snug animate-rise ${
               m.who === 'me' ? 'ml-auto bg-alexa/15 text-ink' : m.who === 'err' ? 'bg-sevHigh/15 text-sevHigh' : 'bg-white/5 text-ink'}`}>

@@ -58,7 +58,7 @@ export async function seedDemoHousehold(
   });
   await store.addMember({
     id: sid('m_aide'), householdId: HOUSEHOLD_ID, name: 'Musa',
-    role: 'helper', spokenAs: 'Musa, the driver',
+    role: 'helper',
   });
 
   await store.addMedication({

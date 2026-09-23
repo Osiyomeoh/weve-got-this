@@ -3,7 +3,7 @@
  *
  *   npm run demo:reset:prod                 dry run: shows what would change
  *   npm run demo:reset:prod -- --apply      writes it
- *   ... -- --apply --claimed                ride already claimed by Renee
+ *   ... -- --apply --claimed                ride already claimed by Funmi
  *
  * `npm run demo:reset` resets a local file and wipes every household. This one works
  * on the live DynamoDB table and removes only `h_margaret`, then seeds it again with
@@ -69,7 +69,7 @@ const { cardiologyAt } = await seedScenario(store, DEMO, { rideClaimedByRenee: c
 await store.quiesce();
 
 summary(store, 'Demo household after');
-console.log(`Cardiology: ${cardiologyAt.toISOString()}  Ride: ${claimed ? 'claimed by Renee' : 'unclaimed'}`);
+console.log(`Eye check-up: ${cardiologyAt.toISOString()}  Ride: ${claimed ? 'claimed by Funmi' : 'unclaimed'}`);
 for (const g of detectCareGaps(store.getCareState(DEMO))) console.log(`  [${g.severity}] ${g.spoken}`);
 
 // Re-read from the table itself, not the copy in memory, before calling it safe.

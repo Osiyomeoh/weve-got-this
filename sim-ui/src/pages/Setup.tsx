@@ -179,7 +179,7 @@ function AddCareDetail({ busy, onSubmit }: StepProps) {
       onSubmit={(e) => { e.preventDefault(); if (ok) onSubmit('add_medication', { name: name.trim(), times: parsed }); }}
     >
       <Field label="A medication to keep an eye on">
-        <input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. heart pill" />
+        <input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. eye drops" />
       </Field>
       <Field label="Times it's due (24-hour, comma-separated)">
         <input className={inputCls} value={times} onChange={(e) => setTimes(e.target.value)} placeholder="08:00, 20:00" />

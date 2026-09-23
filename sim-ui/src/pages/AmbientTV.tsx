@@ -32,19 +32,19 @@ const ACCENT: Record<string, string> = {
  *  network, or no backend). Mirrors src/demo/scenario.ts and always carries a HIGH
  *  gap; the online dot stays red, so it never masquerades as live. */
 const DEMO_GAPS = [
-  { spoken: "There's no record of Mom's evening heart pill from 20:00.", severity: 'HIGH', obligationId: 'demo_heart_pm' },
-  { spoken: "Pick up Mom's prescription - nobody has taken this yet.", severity: 'MEDIUM', obligationId: 'demo_rx' },
-  { spoken: 'Drive Mom to cardiology Thursday at 10 AM', severity: 'LOW', obligationId: 'demo_ride' },
+  { spoken: "There's no record of Daddy's evening eye drops from 20:00.", severity: 'HIGH', obligationId: 'demo_heart_pm' },
+  { spoken: "Pick up Daddy's eye drops refill - nobody has taken this yet.", severity: 'MEDIUM', obligationId: 'demo_rx' },
+  { spoken: 'Take Daddy to his eye check-up Thursday at 10 AM', severity: 'LOW', obligationId: 'demo_ride' },
 ];
 
 /**
  * The order the household is offered in on the television.
  *
- * Margaret is on this list because she is a participant in her own care, not a
- * subject of it - she can take something on. But she is never the *default*: the
+ * Daddy is on this list because he is a participant in his own care, not a
+ * subject of it - he can take something on. But he is never the *default*: the
  * chooser opens on whoever is highlighted, and a viewer who presses OK twice
  * quickly would otherwise assign work in the care recipient's name without ever
- * having chosen her. A default that quietly decides who is responsible is the same
+ * having chosen him. A default that quietly decides who is responsible is the same
  * mistake as reading a missing record as a missed dose, and this is the one product
  * that cannot afford to make it.
  */
@@ -208,7 +208,7 @@ export default function AmbientTV() {
         <div className="mt-2 text-[3vw] font-light text-white/70">{day}</div>
         <div className="mt-10 flex items-center gap-3 text-[1.4vw] uppercase tracking-[0.35em] text-white/40">
           <span className={`h-2.5 w-2.5 rounded-full ${online ? 'bg-confirmed' : 'bg-sevHigh'}`} />
-          Margaret's care circle
+          Daddy's care circle
         </div>
 
         {/*

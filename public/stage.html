@@ -82,7 +82,7 @@
 
   <div class="shared">
     <div class="lbl">
-      <h2>Margaret's care record <span>· shared, live</span></h2>
+      <h2>Daddy's care record <span>· shared, live</span></h2>
       <div class="hint">Both devices read and write the same record. Watch it change when either of them speaks.</div>
     </div>
     <div class="gaps" id="gaps"><div class="none">loading…</div></div>
@@ -91,10 +91,10 @@
 
 <script type="module">
 const DEVICES = [
-  { id:'m_margaret', name:'Margaret', role:'in her kitchen', emoji:'\u{1F469}\u{200D}\u{1F9B3}',
-    chips:['I took my heart pill','I have cardiology on Thursday at ten'] },
-  { id:'m_david', name:'David', role:'driving home', emoji:'\u{1F468}',
-    chips:["What's going to fall through the cracks this week?","I'll take the cardiology one","How's Mom doing today?"] },
+  { id:'m_margaret', name:'Daddy', role:'at home', emoji:'\u{1F469}\u{200D}\u{1F9B3}',
+    chips:['I used my eye drops','I have my eye check-up on Thursday at ten'] },
+  { id:'m_david', name:'Tolu', role:'driving home', emoji:'\u{1F468}',
+    chips:["What's going to fall through the cracks this week?","I'll take the check-up one","How's Daddy doing today?"] },
 ];
 const $ = (id)=>document.getElementById(id);
 const esc = (s)=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
