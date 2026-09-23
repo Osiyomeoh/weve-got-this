@@ -30,15 +30,19 @@ person, and never accuses anyone of what it didn't see.*
 - [ ] Two phones in the "Magaret's CareCircle" group, mapped in `TELEGRAM_RECIPIENTS`: one
       as **Renee** (already mapped), one as **Tasha** (needs a second Telegram account; map
       it with `npm run telegram:ids`).
-- [ ] `npm run demo:reset`, then dismiss any stale `PROPOSED` rows dated in the past
-      (`confirm_proposal`, `confirmed:false`) so no old dates appear on camera.
+- [ ] Fresh demo dates in **production**. `npm run demo:reset` only resets the local
+      `carecircle.db.json` file and never touches the live DynamoDB table (and it wipes
+      every household, so never point it at production). The live demo household still
+      shows December 2024 dates; it needs a production-safe reset of `h_margaret` only.
+      After resetting, re-fire `ring:simulate` so the connections board still says Ring
+      is live.
 - [ ] Console voice pace **gentle** (Polly). Console left, `/tv` right, phones on a stand
       in frame. Never alt-tab on camera.
 - [ ] Claude Desktop (or MCPJam) connected to the live `/mcp` endpoint via OAuth, tested
       once before the take.
 - [ ] Burn in captions. The video makes an accessibility argument; it has to be captioned.
 - [ ] Say numbers only if they match the repo on record day: tools (`get_started` lists
-      them, 25 today), tests (`npm test`, 406 today), trust benchmark
+      them, 25 today), tests (`npm test`, 413 today), trust benchmark
       (`npm run trust-benchmark`).
 
 ---
@@ -156,7 +160,7 @@ week?"* It calls `get_care_gaps` on the same server and gives the same answer.
 
 ## 2:50-3:00 - End card
 
-> **VO:** "Twenty-five tools. Four hundred and six tests. Every number in this video can
+> **VO:** "Twenty-five tools. Four hundred and thirteen tests. Every number in this video can
 > be reproduced from the repo."
 
 ```
