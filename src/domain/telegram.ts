@@ -34,6 +34,11 @@ export interface TelegramInbound {
   text: string;
   /** Telegram's update id, for idempotency. */
   updateId: string;
+  /** A one-to-one chat with the bot, as opposed to the family group. */
+  isPrivate: boolean;
+  /** In a group: whether the message was meant for the bot - it @-mentions a bot, or
+   *  replies to one. Family chatter that isn't is left alone. Always true in a DM. */
+  addressedToBot: boolean;
 }
 
 interface TgUpdate {
@@ -42,7 +47,8 @@ interface TgUpdate {
     message_id?: number;
     text?: string;
     from?: { id?: number | string };
-    chat?: { id?: number | string };
+    chat?: { id?: number | string; type?: string };
+    reply_to_message?: { from?: { is_bot?: boolean } };
   };
 }
 
@@ -61,7 +67,13 @@ export function parseTelegramUpdate(payload: unknown): TelegramInbound[] {
   // In a DM Telegram still sends `from`, and it equals the chat; fall back to the
   // chat id so a payload without `from` (older fixtures, channel posts) still resolves.
   const fromId = fromRaw === undefined || fromRaw === null ? chatId : String(fromRaw);
-  const text = typeof u.message?.text === 'string' ? u.message.text.trim() : '';
+  const raw = typeof u.message?.text === 'string' ? u.message.text.trim() : '';
+  // Bot usernames always end in "bot", so a mention of one is a message for us. The
+  // mention itself is not part of what the person said.
+  const mention = /@\w*bot\b/i;
+  const text = raw.replace(new RegExp(mention.source, 'gi'), '').replace(/\s{2,}/g, ' ').trim();
   if (!updateId || !chatId || !text) return [];
-  return [{ chatId, fromId, text, updateId }];
+  const isPrivate = u.message?.chat?.type === 'private';
+  const addressedToBot = isPrivate || mention.test(raw) || u.message?.reply_to_message?.from?.is_bot === true;
+  return [{ chatId, fromId, text, updateId, isPrivate, addressedToBot }];
 }

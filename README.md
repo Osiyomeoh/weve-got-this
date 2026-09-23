@@ -52,9 +52,10 @@ what happened          what must happen        who has it
 - **It never turns silence into blame.** A missing record is "there's no record", never "he
   missed it": **0%** false accusations, where the raw model it plans with makes them **50%** of
   the time on the same cases.
-- **It works across borders.** The Echo sits with whoever coordinates; the rest of the family
-  answers on Telegram or WhatsApp, in any country, and a brother abroad gets an evening update
-  instead of being asked to drive.
+- **It works across borders.** The Echo sits with whoever coordinates; everyone else talks to
+  CareCircle in Telegram, in any country. With no Echo in the house, Daddy tells the bot "I used
+  my eye drops" himself, and a brother abroad gets an evening update instead of being asked to
+  drive.
 - **It holds up under an assistant it did not write.** Tool choice is measured on three models,
   and under the system prompt of an Alexa Skill bridge instead of our own (Kay Lerch's
   open-source [alexa-skill-mcp-bridge](https://github.com/KayLerch/alexa-skill-mcp-bridge),
@@ -95,7 +96,7 @@ work.
 The demo family (Daddy, his children Tolu and Funmi, Kunle in London, and Musa the
 driver) is fictional and modelled on mine. No real names or medical details are used.
 
-**And it is real - not a mockup.** Live MCP server you can hit right now, **487 tests**
+**And it is real - not a mockup.** Live MCP server you can hit right now, **495 tests**
 (including property-based proofs of the risk model), **95.8%** measured tool-selection
 accuracy on Amazon Bedrock (138/144; 92.5% on held-out phrasings never tuned against),
 **94.4% on Amazon Nova Pro**, and an append-only care record that keeps who said what.

@@ -70,13 +70,20 @@ This is a real person's care, so:
 
 ## 3. What the family does day to day
 
-Nothing special, which is the point:
+Nothing special, which is the point. Everything happens in Telegram, which the family
+already uses:
 
-- Say or type what happens in the console ("Mum took her evening pill", "She has the
-  clinic Thursday at 10").
+- **Talk to it in a private chat with the bot.** Each person opens `@carecircle0111_bot`
+  once and taps **Start** (Telegram won't let a bot message anyone first). After that,
+  anything they send it goes to CareCircle as them: *"I used my eye drops"*, *"He has the
+  clinic Thursday at 10"*, *"How was Daddy's day?"*, *"What's still open?"*. The person
+  being cared for logs his own care this way, with no Echo and no app to learn.
+- **In the family group, mention the bot or reply to it** to talk to CareCircle there
+  (*"@carecircle0111_bot what needs doing this week?"*). Everything else in the group is
+  family conversation, and the bot stays out of it.
 - When CareCircle asks someone in the group ("can you take ...?"), they reply **yes** or
-  **can't** in Telegram.
-- Once a day, anyone can ask "what needs doing?" and see what nobody owns.
+  **can't**.
+- The console still works for whoever prefers a screen, and it shows the whole care board.
 
 ## 4. What to capture (this is the evidence)
 

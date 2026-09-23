@@ -11,6 +11,8 @@ import { log } from '../obs/log.js';
 import { createRingWebhook } from './ring-webhook.js';
 import { createWhatsAppWebhook, createWhatsAppVerify } from './whatsapp-webhook.js';
 import { createTelegramWebhook } from './telegram-webhook.js';
+import { createTelegramChat } from './telegram-chat.js';
+import { providerFromEnv } from '../sim/providers.js';
 import { OAuthProvider, oauthResolver } from './oauth.js';
 import { createSandboxRoute } from './sandbox.js';
 
@@ -142,11 +144,17 @@ const tgMemberByChat = ((): Map<string, string> => {
   return m;
 })();
 const tgBotToken = process.env['TELEGRAM_BOT_TOKEN'] ?? '';
+// Talking to CareCircle in Telegram, not only answering its asks. On whenever the bot
+// can reply at all; TELEGRAM_CHAT=off keeps the door to yes/no only.
+const tgChat = tgBotToken && process.env['TELEGRAM_CHAT'] !== 'off'
+  ? createTelegramChat({ store, provider: providerFromEnv(), notifier: messenger, ...(now ? { now } : {}) })
+  : undefined;
 app.post(
   '/telegram/webhook',
   createTelegramWebhook({
     store, secretToken: tgSecret, botToken: tgBotToken,
     memberByChat: tgMemberByChat, householdId: tgHousehold, ...(now ? { now } : {}),
+    ...(tgChat ? { chat: tgChat } : {}),
   }),
 );
 

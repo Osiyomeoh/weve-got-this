@@ -78,7 +78,7 @@ must own that work. A Care Gap is the failure state of the third stage.
 The judges' own advice is to beware glossy vapor. CareCircle is the opposite:
 
 - A **live MCP server** a judge can hit now (Streamable HTTP, spec 2025-11-25).
-- **487 automated tests**, strict TypeScript, an adversarial suite, CI.
+- **495 automated tests**, strict TypeScript, an adversarial suite, CI.
 - Tool selection **measured at 95.8%** (138/144; 92.5% on the held-out cases never tuned
   against) on Amazon Bedrock - `npm run evals`, and it reproduces. **Amazon Nova Pro: 94.4%**,
   and 93.1% under an Alexa Skill bridge's own system prompt, which we didn't write: the tool
@@ -285,7 +285,7 @@ graceful shutdown, DynamoDB persistence, App Runner deployment), runtime onboard
   turns up in benefits reviews and care-plan audits, and it is exactly where the model
   asserted compliance in Alex's name on somebody else's word. Reproducible, with the
   erasing questions printed by id: `npm run trust-benchmark`.
-- **487 automated tests** incl. an adversarial suite (credential swap mid-session,
+- **495 automated tests** incl. an adversarial suite (credential swap mid-session,
   cross-household access, prompt-injection through note text), strict TypeScript, CI.
 - Deterministic end-to-end demo over real MCP: `npm run story`.
 

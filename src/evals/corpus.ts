@@ -23,6 +23,12 @@ export interface EvalCase {
   expect?: string[];
   /** True when the right behaviour is to answer or ask, not to call a tool. */
   expectNone?: boolean;
+  /**
+   * True when calling nothing is as right as any tool in `expect` - for requests another
+   * part of the assistant could equally own (a reminder, a calendar question), where
+   * leaving it alone is correct and taking it is in scope.
+   */
+  noneOk?: boolean;
   /** Argument assertions on the chosen call. */
   args?: Record<string, (value: unknown) => boolean>;
   /** Why this case exists, when it is not obvious. */

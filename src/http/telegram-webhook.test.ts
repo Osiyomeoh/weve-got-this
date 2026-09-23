@@ -108,3 +108,56 @@ test('a redelivered update id is not acted on twice', async () => {
   assert.equal((res2.body as { results: Array<{ status: string }> }).results[0]!.status, 'duplicate');
   assert.equal(store.getCareState(HH).events.length, afterFirst, 'no second event for a redelivery');
 });
+
+// --- Talking to CareCircle, not only answering it ----------------------------
+
+const dm = (text: string, updateId: number): unknown => ({
+  update_id: updateId,
+  message: { message_id: 20, chat: { id: 987654, type: 'private' }, from: { id: 987654 }, text },
+});
+const group = (text: string, updateId: number, replyToBot = false): unknown => ({
+  update_id: updateId,
+  message: {
+    message_id: 30, chat: { id: -100200300, type: 'supergroup' }, from: { id: 987654 }, text,
+    ...(replyToBot ? { reply_to_message: { from: { is_bot: true } } } : {}),
+  },
+});
+function chatHandler(said: Array<{ memberId: string; text: string }>) {
+  return createTelegramWebhook({
+    store, secretToken: SECRET, botToken: 'bot-token',
+    memberByChat: new Map([['987654', 'm_renee']]), householdId: HH, now: () => NOW,
+    fetchImpl: captureFetch([]),
+    chat: async (memberId, text) => { said.push({ memberId, text }); return 'Got it.'; },
+  });
+}
+
+test('in a private chat, anything that is not an answer goes to CareCircle as that member', async () => {
+  const said: Array<{ memberId: string; text: string }> = [];
+  const res = mockRes();
+  await chatHandler(said)(postReq(dm('I picked up the eye drops', 101), SECRET), res);
+  assert.deepEqual(said, [{ memberId: 'm_renee', text: 'I picked up the eye drops' }]);
+  assert.equal((res.body as { results: { status: string }[] }).results[0]!.status, 'chat');
+});
+
+test('family chatter in the group is left alone', async () => {
+  const said: Array<{ memberId: string; text: string }> = [];
+  await chatHandler(said)(postReq(group('who is cooking tonight?', 102), SECRET), mockRes());
+  assert.deepEqual(said, []);
+});
+
+test('in the group, a message that mentions or replies to the bot is for CareCircle', async () => {
+  const said: Array<{ memberId: string; text: string }> = [];
+  await chatHandler(said)(postReq(group('@carecircle0111_bot how was Grace\'s day?', 103), SECRET), mockRes());
+  await chatHandler(said)(postReq(group('what else is open?', 104, true), SECRET), mockRes());
+  assert.deepEqual(said.map((s) => s.text), ["how was Grace's day?", 'what else is open?']);
+});
+
+test('a yes that answers an ask is only that, and a yes that answers nothing is talk', async () => {
+  const said: Array<{ memberId: string; text: string }> = [];
+  const h = chatHandler(said);
+  await h(postReq(dm('yes', 105), SECRET), mockRes());
+  assert.equal(store.getCareState(HH).obligations[0]!.ownerId, 'm_renee');
+  assert.deepEqual(said, []);
+  await h(postReq(dm('yes, and I dropped the prescription off too', 106), SECRET), mockRes());
+  assert.equal(said.length, 1);
+});

@@ -5,6 +5,7 @@ import { parseTelegramUpdate, interpretReply } from '../domain/telegram.js';
 import { sendTelegramMessage } from '../notify/telegram.js';
 import { applyRequestResponse } from '../domain/request-response.js';
 import { SeenEvents } from './ring-webhook.js';
+import type { ChatReply } from './telegram-chat.js';
 
 /**
  * The Telegram webhook - the inbound half of the delegation loop's reply channel.
@@ -50,6 +51,11 @@ export interface TelegramWebhookOptions {
   now?: () => Date;
   /** Injectable for tests; defaults to global fetch. */
   fetchImpl?: typeof fetch;
+  /**
+   * Talking to CareCircle: anything that isn't an answer to an ask goes here, from a DM
+   * or from a group message addressed to the bot. Without it, only yes/no is understood.
+   */
+  chat?: ChatReply;
 }
 
 export function createTelegramWebhook(opts: TelegramWebhookOptions) {
@@ -87,22 +93,32 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
         results.push({ updateId: msg.updateId, status: 'unknown-sender' });
         continue;
       }
-      const intent = interpretReply(msg.text);
-      if (!intent) {
-        // Not a yes or a no - ordinary group chatter. Ignore it without a peep.
-        results.push({ updateId: msg.updateId, status: 'unparsed' });
-        continue;
-      }
+      const talk = opts.chat && msg.addressedToBot ? opts.chat : null;
       try {
-        const r = await applyRequestResponse(
-          opts.store,
-          { householdId: opts.householdId, memberId, accepted: intent === 'accepted', note: msg.text, channel: 'telegram' },
-          now(),
-        );
-        // The bot answers where the reply came from, so the loop is visible: a "yes"
-        // in the family group gets "that's yours now" in the family group.
-        await answer(msg.chatId, r.spoken);
-        results.push({ updateId: msg.updateId, status: r.ok ? intent : 'no-open-request', ...(r.obligationId ? { obligationId: r.obligationId } : {}) });
+        const intent = interpretReply(msg.text);
+        if (intent) {
+          const r = await applyRequestResponse(
+            opts.store,
+            { householdId: opts.householdId, memberId, accepted: intent === 'accepted', note: msg.text, channel: 'telegram' },
+            now(),
+          );
+          // A yes or no that answers an ask is exactly that, and nothing else. One that
+          // answers nothing ("yes, I took my pills") is someone talking to CareCircle.
+          if (r.ok || !talk) {
+            // The bot answers where the reply came from, so the loop is visible: a "yes"
+            // in the family group gets "that's yours now" in the family group.
+            await answer(msg.chatId, r.spoken);
+            results.push({ updateId: msg.updateId, status: r.ok ? intent : 'no-open-request', ...(r.obligationId ? { obligationId: r.obligationId } : {}) });
+            continue;
+          }
+        }
+        if (!talk) {
+          // Not a yes or a no, and not meant for the bot - ordinary family chatter.
+          results.push({ updateId: msg.updateId, status: 'unparsed' });
+          continue;
+        }
+        await answer(msg.chatId, await talk(memberId, msg.text));
+        results.push({ updateId: msg.updateId, status: 'chat' });
       } catch (err) {
         results.push({ updateId: msg.updateId, status: 'error', detail: (err as Error).message });
       }

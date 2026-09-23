@@ -71,6 +71,7 @@ function judge(c: EvalCase, chosen: string | null, args: Record<string, unknown>
       : { pass: false, reason: `called ${chosen} when it should have just answered` };
   }
   if (chosen === null) {
+    if (c.noneOk) return { pass: true, reason: 'no tool, which is fine here' };
     return { pass: false, reason: `called nothing; expected ${c.expect?.join(' or ')}` };
   }
   if (!c.expect?.includes(chosen)) {
@@ -108,20 +109,20 @@ export async function runEvals(options: {
    * matters most is what the tool descriptions do under somebody else's.
    */
   systemPrompt?: string;
+  /** Cases other than the authored corpus - an outside dataset, say. */
+  cases?: EvalCase[];
+  /** How many cases run at once. Each is its own conversation, so order doesn't matter. */
+  concurrency?: number;
 }): Promise<CaseResult[]> {
-  const cases = options.filter
-    ? CORPUS.filter((c) => c.id.startsWith(options.filter!))
-    : CORPUS;
+  const all = options.cases ?? CORPUS;
+  const cases = options.filter ? all.filter((c) => c.id.startsWith(options.filter!)) : all;
 
   // Tool definitions are identical for every member; fetch once.
   const tools = await toolsFor(options.endpoint, TOKENS.m_david);
-  const results: CaseResult[] = [];
   const pace = options.paceMs ?? 0;
   const maxRetries = options.maxRetries ?? 5;
 
-  for (const [index, c] of cases.entries()) {
-    if (index > 0 && pace > 0) await sleep(pace);
-
+  const runCase = async (c: EvalCase): Promise<CaseResult> => {
     let chosen: string | null = null;
     let args: Record<string, unknown> = {};
     let failure: string | null = null;
@@ -144,13 +145,27 @@ export async function runEvals(options: {
     }
 
     if (failure !== null) {
-      results.push({ case: c, chosen: null, args: {}, pass: false, errored: true, reason: failure });
-    } else {
-      const { pass, reason } = judge(c, chosen, args);
-      results.push({ case: c, chosen, args, pass, reason });
+      return { case: c, chosen: null, args: {}, pass: false, errored: true, reason: failure };
     }
-    options.onProgress?.(index + 1, cases.length);
-  }
+    const { pass, reason } = judge(c, chosen, args);
+    return { case: c, chosen, args, pass, reason };
+  };
+
+  const results: CaseResult[] = new Array(cases.length);
+  let next = 0;
+  let done = 0;
+  const worker = async (): Promise<void> => {
+    for (;;) {
+      const index = next++;
+      const c = cases[index];
+      if (!c) return;
+      if (index > 0 && pace > 0) await sleep(pace);
+      results[index] = await runCase(c);
+      done += 1;
+      options.onProgress?.(done, cases.length);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.max(1, options.concurrency ?? 1) }, worker));
   return results;
 }
 

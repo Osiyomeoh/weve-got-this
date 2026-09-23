@@ -115,7 +115,15 @@ export class SimulatedAlexa {
     });
     await mcp.connect(transport as never);
 
-    const host = new SimulatedAlexa(opts.provider, mcp);
+    return SimulatedAlexa.over(mcp, opts.provider);
+  }
+
+  /**
+   * The same planner over an MCP client that is already connected - for example one
+   * joined in-process to a server bound to one member, as the Telegram chat does.
+   */
+  static async over(mcp: Client, provider: ModelProvider): Promise<SimulatedAlexa> {
+    const host = new SimulatedAlexa(provider, mcp);
     await host.#loadTools();
     await host.#loadSpeaker();
     await host.#loadTimezone();
