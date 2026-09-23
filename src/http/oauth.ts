@@ -158,10 +158,22 @@ export class OAuthProvider {
 
   #now(): number { return (this.#opts.now?.() ?? new Date()).getTime(); }
 
+  /**
+   * The resource identifier: the MCP endpoint a client actually connects to. RFC 8707
+   * and the MCP auth spec name the server by its canonical URI, so a client that checks
+   * the metadata against the URL it was given finds they agree.
+   */
+  get resource(): string { return `${this.#opts.issuer}/mcp`; }
+
+  /** Where the protected resource metadata lives, for the 401 challenge to point at. */
+  get resourceMetadataUrl(): string {
+    return `${this.#opts.issuer}/.well-known/oauth-protected-resource/mcp`;
+  }
+
   /** RFC 9728: how an MCP client discovers which authorization server guards this API. */
   protectedResource = (_req: Request, res: Response): void => {
     res.json({
-      resource: this.#opts.issuer,
+      resource: this.resource,
       authorization_servers: [this.#opts.issuer],
       bearer_methods_supported: ['header'],
       scopes_supported: ['carecircle.read', 'carecircle.write'],
@@ -174,12 +186,59 @@ export class OAuthProvider {
       issuer: this.#opts.issuer,
       authorization_endpoint: `${this.#opts.issuer}/oauth/authorize`,
       token_endpoint: `${this.#opts.issuer}/oauth/token`,
+      registration_endpoint: `${this.#opts.issuer}/oauth/register`,
       response_types_supported: ['code'],
       grant_types_supported: ['authorization_code', 'refresh_token'],
       // No `plain`. OAuth 2.1 removed it and so do we.
       code_challenge_methods_supported: ['S256'],
       token_endpoint_auth_methods_supported: ['none'],
       scopes_supported: ['carecircle.read', 'carecircle.write'],
+    });
+  };
+
+  /**
+   * RFC 7591 dynamic client registration, which is how an MCP client with no prior
+   * relationship (Claude Desktop, MCPJam, the MCP Inspector) gets a client_id.
+   *
+   * Clients here are public (PKCE, no secret), so registration issues an id and
+   * nothing to protect. What it does enforce is the redirect allowlist, at the door:
+   * a client cannot register a redirect that /oauth/authorize would refuse anyway.
+   */
+  register = (req: Request, res: Response): void => {
+    const body = (req.body ?? {}) as Record<string, unknown>;
+    const uris = body['redirect_uris'];
+    if (!Array.isArray(uris) || uris.length === 0 || !uris.every((u) => typeof u === 'string')) {
+      res.status(400).json({
+        error: 'invalid_redirect_uri',
+        error_description: 'redirect_uris must be a non-empty array of strings.',
+      });
+      return;
+    }
+    const refused = (uris as string[]).find((u) => !redirectAllowed(u, this.#allowed));
+    if (refused) {
+      res.status(400).json({
+        error: 'invalid_redirect_uri',
+        error_description: `redirect_uri is not permitted for this server: ${refused}`,
+      });
+      return;
+    }
+    const method = body['token_endpoint_auth_method'];
+    if (method !== undefined && method !== 'none') {
+      res.status(400).json({
+        error: 'invalid_client_metadata',
+        error_description: 'Only public clients are supported: token_endpoint_auth_method must be "none".',
+      });
+      return;
+    }
+    const name = typeof body['client_name'] === 'string' ? body['client_name'].slice(0, 100) : undefined;
+    res.status(201).json({
+      client_id: `cc_${randomUUID()}`,
+      client_id_issued_at: Math.floor(this.#now() / 1000),
+      redirect_uris: uris,
+      token_endpoint_auth_method: 'none',
+      grant_types: ['authorization_code', 'refresh_token'],
+      response_types: ['code'],
+      ...(name ? { client_name: name } : {}),
     });
   };
 

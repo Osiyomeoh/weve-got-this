@@ -5,7 +5,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import { createCareCircleApp } from './app.ts';
 import { CareStore } from '../store/store.ts';
 import { seedDemoHousehold, DEMO_TOKENS } from '../demo/seed.ts';
-import { makePkce, pkceMatches, redirectAllowed, signToken, verifyToken, oauthResolver } from './oauth.ts';
+import { makePkce, pkceMatches, redirectAllowed, signToken, verifyToken, oauthResolver, OAuthProvider } from './oauth.ts';
 import { resolverFromEnv } from './identity.ts';
 
 /**
@@ -365,4 +365,92 @@ test('PKCE S256 is computed the way the RFC says', () => {
   assert.equal(pkceMatches(verifier, expected), true);
   assert.equal(pkceMatches(verifier, 'not-the-challenge'), false);
   assert.equal(pkceMatches('', expected), false);
+});
+
+// --- a client with no prior relationship (Claude Desktop, MCPJam) ---------
+
+test('a new MCP client can register itself and complete the flow (RFC 7591)', async () => {
+  const meta = await (await fetch(`${base}/.well-known/oauth-authorization-server`)).json();
+  assert.equal(meta.registration_endpoint, `${ISSUER}/oauth/register`);
+
+  const reg = await fetch(`${base}/oauth/register`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ redirect_uris: [REDIRECT], client_name: 'Claude', token_endpoint_auth_method: 'none' }),
+  });
+  assert.equal(reg.status, 201);
+  const client = await reg.json();
+  assert.match(client.client_id, /^cc_/);
+  assert.deepEqual(client.redirect_uris, [REDIRECT]);
+  assert.equal(client.token_endpoint_auth_method, 'none');
+
+  // The issued id works in the real flow, end to end.
+  const { verifier, challenge } = makePkce();
+  const res = await fetch(authorizeUrl({ client_id: client.client_id, code_challenge: challenge, member: 'm_david' }), { redirect: 'manual' });
+  assert.equal(res.status, 302);
+  const code = new URL(res.headers.get('location')!).searchParams.get('code')!;
+  const { status, json } = await exchange({
+    grant_type: 'authorization_code', code, code_verifier: verifier, redirect_uri: REDIRECT,
+  });
+  assert.equal(status, 200);
+  assert.equal(verifyToken(json.access_token, SECRET)?.sub, 'm_david');
+});
+
+test('registration without redirect URIs is refused', async () => {
+  const res = await fetch(`${base}/oauth/register`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({}),
+  });
+  assert.equal(res.status, 400);
+  assert.equal((await res.json()).error, 'invalid_redirect_uri');
+});
+
+test('attack: a client cannot register a redirect the allowlist would refuse', () => {
+  const oauth = new OAuthProvider({
+    secret: SECRET, issuer: ISSUER, members: () => [], allowedRedirects: ['https://client.example/cb'],
+  });
+  let status = 0; let body: any = null;
+  const res = { status(c: number) { status = c; return this; }, json(b: unknown) { body = b; return this; } };
+  oauth.register({ body: { redirect_uris: ['https://attacker.test/cb'] } } as never, res as never);
+  assert.equal(status, 400);
+  assert.equal(body.error, 'invalid_redirect_uri');
+});
+
+test('attack: a confidential-client registration is refused (public clients only)', () => {
+  const oauth = new OAuthProvider({ secret: SECRET, issuer: ISSUER, members: () => [] });
+  let status = 0;
+  const res = { status(c: number) { status = c; return this; }, json() { return this; } };
+  oauth.register({ body: { redirect_uris: [REDIRECT], token_endpoint_auth_method: 'client_secret_basic' } } as never, res as never);
+  assert.equal(status, 400);
+});
+
+test('the resource is the MCP endpoint, discoverable at the path-suffixed URL', async () => {
+  const res = await fetch(`${base}/.well-known/oauth-protected-resource/mcp`);
+  assert.equal(res.status, 200);
+  assert.equal((await res.json()).resource, `${ISSUER}/mcp`);
+});
+
+test('a 401 from /mcp points the client at the resource metadata', async () => {
+  const res = await fetch(`${base}/mcp`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', accept: 'application/json, text/event-stream' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize', params: {} }),
+  });
+  assert.equal(res.status, 401);
+  assert.match(res.headers.get('www-authenticate') ?? '',
+    new RegExp(`resource_metadata="${ISSUER}/\\.well-known/oauth-protected-resource/mcp"`));
+});
+
+test('attack: the demo sign-in never offers a member of another household', async () => {
+  // Demo sign-in asks who you are instead of authenticating you. If it listed real
+  // families, anyone could sign in as one of them and read their care record.
+  await store.addHousehold({ id: 'h_real_family', name: 'real family', timezone: 'Africa/Lagos' });
+  await store.addMember({ id: 'm_real_aunt', householdId: 'h_real_family', name: 'Aunty Real', role: 'caregiver' });
+
+  const { challenge } = makePkce();
+  const page = await (await fetch(authorizeUrl({ code_challenge: challenge }))).text();
+  assert.doesNotMatch(page, /Aunty Real/);
+  assert.match(page, /Renee/);
+
+  const res = await fetch(authorizeUrl({ code_challenge: challenge, member: 'm_real_aunt' }), { redirect: 'manual' });
+  assert.equal(res.status, 400, 'consenting as another household\'s member must be refused');
 });

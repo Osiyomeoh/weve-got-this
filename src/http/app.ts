@@ -154,17 +154,29 @@ app.post(
 // rather than present-and-insecure: a half-configured auth server is worse than
 // no auth server, because it looks like protection.
 const oauthSecret = process.env['CARECIRCLE_OAUTH_SECRET'] ?? '';
+const oauthHousehold = process.env['CARECIRCLE_OAUTH_HOUSEHOLD']?.trim() || 'h_margaret';
+let bearerChallenge = 'Bearer realm="carecircle"';
 if (oauthSecret) {
   const oauth = new OAuthProvider({
     secret: oauthSecret,
     issuer: (process.env['CARECIRCLE_PUBLIC_URL'] ?? 'http://localhost:8787').replace(/\/$/, ''),
-    members: () => store.allMembers().map((m) => ({ id: m.id, name: m.spokenAs ?? m.name })),
+    // Demo sign-in asks who you are rather than authenticating you, so it must only
+    // ever offer the demo household. Offering every household would let anyone who
+    // opens this page sign in as a member of a real family and read their care record.
+    members: () => store.allMembers()
+      .filter((m) => m.householdId === oauthHousehold)
+      .map((m) => ({ id: m.id, name: m.spokenAs ?? m.name })),
     allowedRedirects: (process.env['CARECIRCLE_OAUTH_REDIRECTS'] ?? '')
       .split(',').map((u) => u.trim()).filter(Boolean),
     ...(now ? { now } : {}),
   });
   // RFC 9728 - how an MCP client finds the authorization server for this resource.
   app.get('/.well-known/oauth-protected-resource', oauth.protectedResource);
+  // Path-suffixed form (RFC 9728 section 3.1), which MCP clients try first.
+  app.get('/.well-known/oauth-protected-resource/mcp', oauth.protectedResource);
+  app.post('/oauth/register', oauth.register);
+  // Point a 401 at the metadata, so a client can start discovery from the challenge.
+  bearerChallenge = `Bearer realm="carecircle", resource_metadata="${oauth.resourceMetadataUrl}"`;
   app.get('/.well-known/oauth-authorization-server', oauth.metadata);
   app.get('/oauth/authorize', oauth.authorize);
   app.post('/oauth/token', oauth.token);
@@ -215,7 +227,7 @@ type ConnectArg = Parameters<McpServer['connect']>[0];
 app.post('/mcp', async (req, res) => {
   const actorId = actorFor(req);
   if (!actorId) {
-    res.set('WWW-Authenticate', 'Bearer realm="carecircle"');
+    res.set('WWW-Authenticate', bearerChallenge);
     rpcError(res, 401, -32001,
       'Unauthorized: this server needs to know which member of the care circle you are.');
     return;

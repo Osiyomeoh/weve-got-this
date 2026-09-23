@@ -51,9 +51,24 @@ allowed to do, so pick the one whose authority you want to exercise.
 
 ## Client configuration
 
-### Claude Desktop
+### Claude (Desktop or claude.ai): custom connector with OAuth
 
-Remote servers go through the `mcp-remote` shim. In
+The server supports the full MCP authorization flow, including dynamic client
+registration (RFC 7591), so Claude can connect with no config file and no token:
+
+1. **Settings → Connectors → Add custom connector.**
+2. Name `CareCircle`, URL `https://ypq2dfq2p7.us-east-1.awsapprunner.com/mcp`. Add.
+3. **Connect.** Claude discovers the auth server from the 401, registers itself, and
+   opens the CareCircle sign-in page. Pick who you are in the demo household.
+4. Ask *"What care gaps still need an owner?"*
+
+The sign-in page is a demo sign-in: it asks which member you are instead of
+authenticating you, so it only ever offers the demo household
+(`CARECIRCLE_OAUTH_HOUSEHOLD`, default `h_margaret`), never a real family's members.
+
+### Claude Desktop: config file with a demo token
+
+The older path, with no OAuth. Remote servers go through the `mcp-remote` shim. In
 `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or
 `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
 
