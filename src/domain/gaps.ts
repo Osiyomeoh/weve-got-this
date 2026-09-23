@@ -293,6 +293,9 @@ export function doseRecord(
   });
 }
 
+/** How long after a dose's time the board waits before it shows "no record". */
+export const DOSE_GRACE_MINUTES = 60;
+
 /**
  * Medication doses that were expected earlier today and have no matching record.
  *
@@ -314,8 +317,7 @@ function unconfirmedMedicationGaps(state: CareState, now: Date): CareGap[] {
       if (expectedMinutes === null) continue;
 
       // Only look at doses whose time has already passed today, with a grace period.
-      const GRACE_MINUTES = 60;
-      if (nowLocal.minutes < expectedMinutes + GRACE_MINUTES) continue;
+      if (nowLocal.minutes < expectedMinutes + DOSE_GRACE_MINUTES) continue;
 
       if (doseRecord(state, med.id, time, now)) continue;
 

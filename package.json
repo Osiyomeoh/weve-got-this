@@ -35,7 +35,8 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\"",
     "telegram:ids": "tsx --env-file-if-exists=.env scripts/telegram-ids.ts",
-    "demo:reset:prod": "tsx scripts/demo-reset-prod.ts"
+    "demo:reset:prod": "tsx scripts/demo-reset-prod.ts",
+    "pilot:report": "tsx --env-file-if-exists=.env scripts/pilot-report.ts"
   },
   "dependencies": {
     "@aws-sdk/client-bedrock": "^3.1131.0",
