@@ -337,7 +337,7 @@ diff a phrase-set signature and rebuild on drift. *Again?* Yes.
 
 ## Feature requests (concrete, prioritized)
 
-The full set - 17 requests and 20 friction entries, each with task, steps, expected vs
+The full set - 18 requests and 20 friction entries, each with task, steps, expected vs
 actual, severity and workaround - is in [FEATURE-REQUESTS.md](FEATURE-REQUESTS.md) and
 [FRICTION-LOG.md](FRICTION-LOG.md). The highest-leverage ones:
 

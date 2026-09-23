@@ -77,7 +77,7 @@ test('a New York evening still has the morning on the record', async () => {
 
   const summary = await call(base, 'ann-token', 'get_care_summary');
   assert.equal(summary.structured['medicationsLogged'], 1);
-  assert.match(summary.text, /One medication logged today/);
+  assert.match(summary.text, /Logged today: blood pressure pill at 8:05 AM\./);
   assert.match(summary.text, /There's no record of Dad's blood pressure pill from 8 PM\./);
   const logged = summary.structured['medications'] as { name: string; time: string }[];
   assert.deepEqual(logged.map((m) => [m.name, m.time]), [['blood pressure pill', '8:05 AM']]);

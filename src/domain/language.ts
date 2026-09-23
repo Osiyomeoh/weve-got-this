@@ -3,11 +3,11 @@ import type { LanguageCode, Member } from './types.js';
 /**
  * The language a person is written to in.
  *
- * Why these: the families this is for. Nigerian families speak English, Pidgin, Yoruba,
- * Igbo, Hausa and Edo, often in one sentence. In the US, 23% of people over five speak
- * a language other than English at home: Spanish most (44.9M), then Chinese (3.7M);
- * Yoruba, Igbo and other West African languages are 773K (ACS 2024, table B16001).
- * Alexa+ has launched in Canada in French and English, and in Mexico. The sources are in
+ * Why these: the families this is for, and where Alexa+ is sold. Nigerian families speak
+ * English, Pidgin, Yoruba, Igbo, Hausa and Edo, often in one sentence. In the US, 5.6M
+ * people over 65 speak English less than very well, 2.9M of them Spanish speakers (ACS
+ * 2024, B16004): the parent in one language, the grown children in another. Alexa+ is
+ * launching in Spanish, French, Portuguese, German, Italian and Hindi. The sources are in
  * docs/LANGUAGES.md.
  *
  * What is honest to promise differs by language, so each one says what it can do:
@@ -48,6 +48,10 @@ export const LANGUAGES: Record<LanguageCode, Language> = {
   en: { code: 'en', name: 'English', native: 'English', status: 'ready', locale: 'en-US', hears: 'en-US', voice: 'Ruth' },
   es: { code: 'es', name: 'Spanish', native: 'Español', status: 'ready', locale: 'es-US', hears: 'es-US', voice: 'Lupe' },
   fr: { code: 'fr', name: 'French', native: 'Français', status: 'ready', locale: 'fr', hears: 'fr-FR', voice: 'Lea' },
+  pt: { code: 'pt', name: 'Portuguese (Brazil)', native: 'Português', status: 'ready', locale: 'pt-BR', hears: 'pt-BR', voice: 'Camila' },
+  de: { code: 'de', name: 'German', native: 'Deutsch', status: 'ready', locale: 'de-DE', hears: 'de-DE', voice: 'Vicki' },
+  it: { code: 'it', name: 'Italian', native: 'Italiano', status: 'ready', locale: 'it-IT', hears: 'it-IT', voice: 'Bianca' },
+  hi: { code: 'hi', name: 'Hindi', native: 'हिन्दी', status: 'ready', locale: 'hi-IN', hears: 'hi-IN', voice: 'Kajal' },
   zh: { code: 'zh', name: 'Chinese (Mandarin, simplified characters)', native: '中文', status: 'ready', locale: 'zh-CN', hears: 'zh-CN', voice: 'Zhiyu' },
   // Pidgin is English-lexified: English recognition follows it well enough to show back
   // ("I heard: ...") for the speaker to correct, and an English voice reads it clearly.
@@ -127,6 +131,74 @@ const BOOKS: Partial<Record<LanguageCode, Partial<Phrasebook>>> = {
     apptUnowned: `Le rendez-vous de {them} ({kind}) est {when}, et personne ne s'en est encore chargé : {tasks}. Dites « demande à quelqu'un de libre » et je demanderai.`,
     heard: "J'ai entendu : « {text} »",
     languageSet: "C'est noté : je vous écrirai en français.",
+  },
+  pt: {
+    dose: '{time}: hora do remédio: {med}.',
+    taken: '✅ Já usei',
+    snooze: '⏰ Daqui a 15 minutos',
+    recorded: '✅ Anotado: {med}, {time}.',
+    alreadyYou: 'Esta dose de {med} já está registrada ({time}), por você. Não adicionei outra.',
+    alreadyBy: 'Esta dose de {med} já está registrada ({time}), por {by}. Não adicionei outra.',
+    snoozed: '⏰ Vou lembrar você de novo ({time}): {med}.',
+    repeat: 'Lembrete: {med}.',
+    appt: 'Lembrete: {when}, sua consulta: {kind}.',
+    apptWithOne: ' {names} vai cuidar disso.',
+    apptWithMany: ' {names} vão cuidar disso.',
+    apptHolder: 'Lembrete: {when}, consulta de {them}: {kind}. Com você: {tasks}.',
+    apptUnowned: 'A consulta de {them} ({kind}) é {when}, e ninguém assumiu ainda: {tasks}. Diga "pergunte a quem estiver livre" e eu pergunto a alguém.',
+    heard: 'Eu ouvi: "{text}"',
+    languageSet: 'Pronto: vou escrever para você em português.',
+  },
+  de: {
+    dose: '{time}: Zeit für {med}.',
+    taken: '✅ Erledigt',
+    snooze: '⏰ In 15 Minuten',
+    recorded: '✅ Notiert: {med}, {time}.',
+    alreadyYou: 'Diese Dosis {med} ist schon eingetragen ({time}), von Ihnen. Ich habe keine zweite hinzugefügt.',
+    alreadyBy: 'Diese Dosis {med} ist schon eingetragen ({time}), von {by}. Ich habe keine zweite hinzugefügt.',
+    snoozed: '⏰ Ich erinnere Sie um {time} noch einmal: {med}.',
+    repeat: 'Erinnerung: {med}.',
+    appt: 'Erinnerung: {when}, Ihr Termin: {kind}.',
+    apptWithOne: ' {names} kümmert sich darum.',
+    apptWithMany: ' {names} kümmern sich darum.',
+    apptHolder: 'Erinnerung: {when}, Termin von {them}: {kind}. Ihre Aufgabe: {tasks}.',
+    apptUnowned: 'Der Termin von {them} ({kind}) ist {when}, und niemand hat das bisher übernommen: {tasks}. Sagen Sie „frag, wer Zeit hat“, dann frage ich jemanden.',
+    heard: 'Ich habe verstanden: „{text}“',
+    languageSet: 'Alles klar: Ich schreibe Ihnen ab jetzt auf Deutsch.',
+  },
+  it: {
+    dose: "{time}: è l'ora di {med}.",
+    taken: '✅ Fatto',
+    snooze: '⏰ Tra 15 minuti',
+    recorded: '✅ Annotato: {med}, {time}.',
+    alreadyYou: "Questa dose di {med} è già registrata ({time}), da Lei. Non ne ho aggiunta un'altra.",
+    alreadyBy: "Questa dose di {med} è già registrata ({time}), da {by}. Non ne ho aggiunta un'altra.",
+    snoozed: '⏰ Glielo ricorderò di nuovo alle {time}: {med}.',
+    repeat: 'Promemoria: {med}.',
+    appt: 'Promemoria: {when}, il Suo appuntamento: {kind}.',
+    apptWithOne: ' Se ne occupa {names}.',
+    apptWithMany: ' Se ne occupano {names}.',
+    apptHolder: 'Promemoria: {when}, appuntamento di {them}: {kind}. A Lei: {tasks}.',
+    apptUnowned: "L'appuntamento di {them} ({kind}) è {when}, e nessuno se ne è ancora occupato: {tasks}. Dica «chiedi a chi è libero» e chiederò a qualcuno.",
+    heard: 'Ho sentito: «{text}»',
+    languageSet: "Fatto: d'ora in poi Le scriverò in italiano.",
+  },
+  hi: {
+    dose: '{time}: {med} का समय हो गया है।',
+    taken: '✅ ले लिया',
+    snooze: '⏰ 15 मिनट बाद',
+    recorded: '✅ दर्ज किया: {med}, {time}।',
+    alreadyYou: '{med} की यह खुराक पहले से दर्ज है ({time}, आपके द्वारा)। दोबारा नहीं जोड़ी गई।',
+    alreadyBy: '{med} की यह खुराक पहले से दर्ज है ({time}, {by} द्वारा)। दोबारा नहीं जोड़ी गई।',
+    snoozed: '⏰ {time} पर फिर याद दिलाया जाएगा: {med}।',
+    repeat: 'रिमाइंडर: {med}।',
+    appt: 'रिमाइंडर: {when}, आपकी अपॉइंटमेंट: {kind}।',
+    apptWithOne: ' {names} इसे संभालेंगे।',
+    apptWithMany: ' {names} इसे संभालेंगे।',
+    apptHolder: 'रिमाइंडर: {when}, {them} की अपॉइंटमेंट: {kind}। आपके ज़िम्मे: {tasks}।',
+    apptUnowned: '{them} की अपॉइंटमेंट ({kind}) {when} है, और अभी तक किसी ने यह नहीं लिया: {tasks}। "जो खाली हो उससे पूछो" कहें, तो किसी से पूछ लिया जाएगा।',
+    heard: 'सुना गया: "{text}"',
+    languageSet: 'ठीक है, अब से आपको हिंदी में लिखा जाएगा।',
   },
   zh: {
     dose: '{time}：该用{med}了。',
@@ -294,7 +366,7 @@ export function replyLanguageRule(lang: LanguageCode | undefined): string {
     ? ` Your ${l.name} has not been checked by a native speaker, so after each fact about a medicine, a dose, a time or who is doing something, give the key words in English in brackets.`
     : '';
   return `\n- This person prefers ${l.name}. Write every reply in ${l.name}, whatever language the tools answer in.`
-    + ` Write a medicine's name exactly as the tools give it, in its own words, even inside a ${l.name} sentence; you may add a translation in brackets after it (a family can have two kinds of drops, and the name is how they tell them apart).`
+    + ` Write a medicine's name exactly as the tools give it, in its own words, even inside a ${l.name} sentence: if the tools say "heart pill", write "heart pill", never only a translation of it; a translation in brackets after it is fine (a family can have two kinds of drops, and the name is how they tell them apart).`
     + ` Keep people's names, times and dates exactly as the tools give them.`
     + ` Translate what the tools said and nothing more: no "his day went well", no reassurance they did not give.`
     + ` "No record" must stay "no record" in ${l.name}: never a word for "missed", "forgot" or "didn't take".${draft}`

@@ -16,6 +16,12 @@ the model chose, and whether that passed.
 
 | `2026-09-23-massive-nova-pro-alexa-bridge-prompt.json` | Amazon Nova Pro on all 2,974 cases of Amazon's MASSIVE en-US test set (`npm run evals:massive`) | the Alexa Skill bridge's |
 
+| `2026-09-24-claude-sonnet-4-5-language-fixes.json` | Claude Sonnet 4.5, 155 cases, after the 2026-09-24 description changes (Pidgin "don", not alarms/email/lists/smart home) | the console's |
+| `2026-09-24-nova-pro-alexa-bridge-prompt.json` | Amazon Nova Pro, 155 cases, after the 2026-09-24 description changes: 145/155 (93.5%) | an Alexa Skill bridge's |
+| `2026-09-24-dialects-sonnet-4-5.json` | the 34 dialect and language cases, after those changes | the console's |
+| `2026-09-24-languages-handoff-sonnet-4-5-before-fix.json` | 12 languages (part 1) and a two-language family (part 2), before the medicine-name fix | the chat channel's |
+| `2026-09-24-languages-handoff-sonnet-4-5.json` | the same, after it | the chat channel's |
+
 The dialect and language runs are explained in `docs/LANGUAGES.md`.
 
 **MASSIVE**, in outside words, measures what CareCircle does with everyday Alexa requests that

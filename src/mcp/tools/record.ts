@@ -27,12 +27,16 @@ export function registerLogCareEvent({ server, store, now, actor, state, nameOf 
       + 'scheduled in the future use record_appointment instead; for an observation or '
       + 'concern with no action attached use add_note. When what happened is that a task '
       + 'or errand got done - a ride given, a pickup made, a job finished - that closes '
-      + 'the task: use resolve_obligation.',
+      + 'the task: use resolve_obligation. In Nigerian Pidgin "I don take am", "I don use my '
+      + 'drops" means it HAS been done ("don" marks the past, not "don\'t"). Only for the care '
+      + 'of someone in this circle: never a smart-home action (lights, a vacuum, a coffee maker).',
     inputSchema: {
       kind: z.enum(['medication_taken', 'check_in'])
         .describe('What sort of event this is.'),
       medicationName: z.string().optional()
         .describe('For medication_taken: what they took, as they said it (e.g. "heart pill").'),
+      notOnSchedule: z.boolean().optional()
+        .describe('For medication_taken: true only when they confirmed it is a medicine that is not on their schedule.'),
       detail: z.string().optional()
         .describe('Anything else they said about it, kept verbatim for the record.'),
       occurredAt: z.string().optional()
@@ -42,7 +46,7 @@ export function registerLogCareEvent({ server, store, now, actor, state, nameOf 
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
     outputSchema: OUT.log_care_event,
-  }, async ({ kind, medicationName, detail, occurredAt, aboutMemberId }) => {
+  }, async ({ kind, medicationName, notOnSchedule, detail, occurredAt, aboutMemberId }) => {
     try {
       const me = actor();
       let subject = me.id;
@@ -70,6 +74,20 @@ export function registerLogCareEvent({ server, store, now, actor, state, nameOf 
           );
         }
         medicationId = matches[0]?.id;
+        // No name matched, but this person has medicines on their schedule. People say a
+        // medicine in their own words and their own language ("colírio", "my drops"): saved
+        // as a stray, the dose would never count, and the family would hear "no record" for
+        // a dose that was taken. So nothing is saved until the name is settled.
+        const scheduled = meds.filter((m) => m.forMemberId === subject);
+        if (!medicationId && !notOnSchedule && scheduled.length > 0) {
+          return guidance(
+            `"${medicationName}" is not a name on ${subject === me.id ? 'your' : nameOf(subject) ? `${nameOf(subject)}'s` : 'their'} schedule, which has: `
+            + `${joinSpoken(scheduled.map((m) => `"${m.name}"`))}. If they meant one of these, in another `
+            + 'language or other words, call this again with that name exactly as written here. If it '
+            + 'really is a medicine that is not on the schedule, call again with notOnSchedule: true. '
+            + 'If you cannot tell, ask them which one.',
+          );
+        }
       }
 
       const when = happenedAt(occurredAt, state().household.timezone, now());
@@ -127,6 +145,8 @@ export function registerRecordAppointment({ server, store, now, actor }: ToolCon
       'Record a scheduled appointment or any future dated commitment the person mentions '
       + '- a doctor\'s visit, a haircut, book club on Wednesday, a birthday. It does not '
       + 'have to be medical: use this, not add_note, whenever there is a date and time. '
+      + 'Not an alarm, a timer or a wake-up call, and not booking a taxi, train or flight: '
+      + 'the assistant does those itself. '
       + 'It also works out what the appointment probably requires - only a MEDICAL one '
       + 'proposes a ride or a companion - and PROPOSES that work for a human to confirm. '
       + 'Proposals are guesses and are never treated as real until confirmed with '
@@ -179,7 +199,9 @@ export function registerAddNote({ server, store, now, actor, state, nameOf }: To
       'Record an observation, concern, or piece of context that the rest of the family '
       + 'should see - "Mom sounded tired", "the doctor changed her dose". Use this when '
       + 'there is something to SAY but nothing specific that must be DONE. If someone needs '
-      + 'to take an action, use record_appointment or let the note stand and let them claim it.\n\n'
+      + 'to take an action, use record_appointment or let the note stand and let them claim it. '
+      + 'Only about someone\'s care: never a shopping or to-do list, music, a smart-home command '
+      + 'or a message to someone outside the family - leave those to the assistant.\n\n'
       + 'IMPORTANT: if the person says they (or someone) will be UNAVAILABLE - "I can\'t drive '
       + 'Thursday", "I won\'t be able to make Friday after all", "Renee is away next week" - '
       + 'this is still an add_note, with `unavailable` filled in. It is never "nothing to do": '

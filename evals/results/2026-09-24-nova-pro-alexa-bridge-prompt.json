@@ -1,0 +1,1533 @@
+{
+  "provider": "bedrock",
+  "modelId": "us.amazon.nova-pro-v1:0",
+  "at": "2026-09-23T23:37:50.607Z",
+  "systemPrompt": "evals/results/alexa-bridge-system-prompt.txt",
+  "total": 155,
+  "passed": 145,
+  "accuracy": 0.9354838709677419,
+  "errored": 0,
+  "byCategory": [
+    {
+      "category": "log",
+      "passed": 8,
+      "total": 8
+    },
+    {
+      "category": "appt",
+      "passed": 6,
+      "total": 6
+    },
+    {
+      "category": "medchange",
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "category": "move",
+      "passed": 3,
+      "total": 3
+    },
+    {
+      "category": "urgent",
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "category": "note",
+      "passed": 6,
+      "total": 6
+    },
+    {
+      "category": "gap",
+      "passed": 8,
+      "total": 8
+    },
+    {
+      "category": "claim",
+      "passed": 6,
+      "total": 6
+    },
+    {
+      "category": "assign",
+      "passed": 3,
+      "total": 5
+    },
+    {
+      "category": "confirm",
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "category": "resolve",
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "category": "sum",
+      "passed": 5,
+      "total": 5
+    },
+    {
+      "category": "shift",
+      "passed": 2,
+      "total": 4
+    },
+    {
+      "category": "notify",
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "category": "cons",
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "category": "h",
+      "passed": 61,
+      "total": 67
+    },
+    {
+      "category": "h2",
+      "passed": 9,
+      "total": 9
+    },
+    {
+      "category": "none",
+      "passed": 4,
+      "total": 4
+    }
+  ],
+  "splits": [
+    {
+      "split": "authored",
+      "passed": 75,
+      "total": 79
+    },
+    {
+      "split": "held-out",
+      "passed": 61,
+      "total": 66
+    },
+    {
+      "split": "seen",
+      "passed": 9,
+      "total": 10
+    }
+  ],
+  "failures": [
+    {
+      "case": {
+        "id": "assign-03",
+        "member": "m_david",
+        "utterance": "Funmi should do the prescription.",
+        "expect": [
+          "assign_obligation",
+          "get_care_gaps"
+        ]
+      },
+      "chosen": "request_owner",
+      "args": {
+        "assigneeName": "Funmi",
+        "obligationId": "prescription"
+      },
+      "pass": false,
+      "reason": "chose request_owner; expected assign_obligation or get_care_gaps"
+    },
+    {
+      "case": {
+        "id": "assign-05",
+        "member": "m_david",
+        "utterance": "Can Musa cover the Monday visit?",
+        "expect": [
+          "assign_obligation",
+          "notify_member",
+          "get_care_gaps"
+        ]
+      },
+      "chosen": "request_owner",
+      "args": {
+        "assigneeName": "Musa",
+        "obligationId": "Monday visit"
+      },
+      "pass": false,
+      "reason": "chose request_owner; expected assign_obligation or notify_member or get_care_gaps"
+    },
+    {
+      "case": {
+        "id": "shift-03",
+        "member": "m_aide",
+        "utterance": "What medications is he on today?",
+        "expect": [
+          "get_shift_brief"
+        ]
+      },
+      "chosen": "get_care_summary",
+      "args": {},
+      "pass": false,
+      "reason": "chose get_care_summary; expected get_shift_brief"
+    },
+    {
+      "case": {
+        "id": "shift-04",
+        "member": "m_aide",
+        "utterance": "Anything assigned to me?",
+        "expect": [
+          "get_shift_brief",
+          "get_care_gaps"
+        ]
+      },
+      "chosen": "get_my_requests",
+      "args": {},
+      "pass": false,
+      "reason": "chose get_my_requests; expected get_shift_brief or get_care_gaps"
+    },
+    {
+      "case": {
+        "id": "h-log-04",
+        "member": "m_margaret",
+        "utterance": "I skipped my evening pill on purpose, the doctor said to.",
+        "expect": [
+          "add_note"
+        ],
+        "note": "Adversarial: a deliberate skip is a note, NOT a medication_taken."
+      },
+      "chosen": "log_care_event",
+      "args": {
+        "medicationName": "evening pill",
+        "occurredAt": "2026-09-23T20:00:00",
+        "kind": "medication_taken",
+        "notOnSchedule": true
+      },
+      "pass": false,
+      "reason": "chose log_care_event; expected add_note"
+    },
+    {
+      "case": {
+        "id": "h-appt-01",
+        "member": "m_renee",
+        "utterance": "Move his eye check-up to Friday instead.",
+        "expect": [
+          "record_appointment",
+          "add_note",
+          "change_appointment"
+        ],
+        "seen": "2026-09-23: answer key widened after the run that added change_appointment",
+        "note": "Chose change_appointment in the 2026-09-23 run, which is right; the key predated the tool."
+      },
+      "chosen": "get_care_gaps",
+      "args": {
+        "withinDays": 7
+      },
+      "pass": false,
+      "reason": "chose get_care_gaps; expected record_appointment or add_note or change_appointment"
+    },
+    {
+      "case": {
+        "id": "h-gap-01",
+        "member": "m_david",
+        "utterance": "Who's got room to take something on?",
+        "expect": [
+          "get_care_gaps"
+        ]
+      },
+      "chosen": "get_my_requests",
+      "args": {},
+      "pass": false,
+      "reason": "chose get_my_requests; expected get_care_gaps"
+    },
+    {
+      "case": {
+        "id": "h-assign-02",
+        "member": "m_david",
+        "utterance": "Get Musa to pick up the meds.",
+        "expect": [
+          "assign_obligation",
+          "notify_member",
+          "get_care_gaps"
+        ]
+      },
+      "chosen": "request_owner",
+      "args": {
+        "assigneeName": "Musa",
+        "obligationId": "pick_up_meds"
+      },
+      "pass": false,
+      "reason": "chose request_owner; expected assign_obligation or notify_member or get_care_gaps"
+    },
+    {
+      "case": {
+        "id": "h-confirm-01",
+        "member": "m_david",
+        "utterance": "Yep, that's needed.",
+        "expect": [
+          "confirm_proposal",
+          "get_care_gaps"
+        ]
+      },
+      "chosen": null,
+      "args": {},
+      "pass": false,
+      "reason": "called nothing; expected confirm_proposal or get_care_gaps"
+    },
+    {
+      "case": {
+        "id": "h-confirm-03",
+        "member": "m_david",
+        "utterance": "No, skip that one.",
+        "expect": [
+          "confirm_proposal",
+          "get_care_gaps"
+        ]
+      },
+      "chosen": null,
+      "args": {},
+      "pass": false,
+      "reason": "called nothing; expected confirm_proposal or get_care_gaps"
+    }
+  ],
+  "errors": [],
+  "results": [
+    {
+      "id": "log-01",
+      "utterance": "I took my eye drops.",
+      "member": "m_margaret",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "log-02",
+      "utterance": "Just took my supplement.",
+      "member": "m_margaret",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "log-03",
+      "utterance": "I've had my morning tablets.",
+      "member": "m_margaret",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "log-04",
+      "utterance": "I took the little white one about an hour ago.",
+      "member": "m_margaret",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "log-05",
+      "utterance": "I'm feeling alright today.",
+      "member": "m_margaret",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "log-06",
+      "utterance": "I had my pills with breakfast.",
+      "member": "m_margaret",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "log-07",
+      "utterance": "Daddy took his evening pill, I watched him.",
+      "member": "m_david",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "log-08",
+      "utterance": "Daddy took his eye drops at two.",
+      "member": "m_aide",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "appt-01",
+      "utterance": "Daddy has his eye check-up on Thursday at ten.",
+      "member": "m_renee",
+      "chosen": "record_appointment",
+      "pass": true,
+      "reason": "record_appointment"
+    },
+    {
+      "id": "appt-02",
+      "utterance": "I have a dentist appointment next Tuesday at 2pm.",
+      "member": "m_margaret",
+      "chosen": "record_appointment",
+      "pass": true,
+      "reason": "record_appointment"
+    },
+    {
+      "id": "appt-03",
+      "utterance": "Put Daddy down for physical therapy Friday morning at nine.",
+      "member": "m_david",
+      "chosen": "record_appointment",
+      "pass": true,
+      "reason": "record_appointment"
+    },
+    {
+      "id": "appt-04",
+      "utterance": "The clinic moved his bloodwork to Monday at eight.",
+      "member": "m_renee",
+      "chosen": "change_appointment",
+      "pass": true,
+      "reason": "change_appointment"
+    },
+    {
+      "id": "appt-05",
+      "utterance": "He's got an eye test on the fourth at 11:30.",
+      "member": "m_david",
+      "chosen": "record_appointment",
+      "pass": true,
+      "reason": "record_appointment"
+    },
+    {
+      "id": "appt-06",
+      "utterance": "Book club is Wednesday evening at seven.",
+      "member": "m_renee",
+      "chosen": "record_appointment",
+      "pass": true,
+      "reason": "record_appointment"
+    },
+    {
+      "id": "medchange-01",
+      "utterance": "The doctor says Daddy can stop the eye drops now.",
+      "member": "m_david",
+      "chosen": "change_medication",
+      "pass": true,
+      "reason": "change_medication"
+    },
+    {
+      "id": "medchange-02",
+      "utterance": "His eye drops are at nine and nine now, not eight.",
+      "member": "m_renee",
+      "chosen": "change_medication",
+      "pass": true,
+      "reason": "change_medication"
+    },
+    {
+      "id": "medchange-03",
+      "utterance": "He only needs the antibiotic until Sunday.",
+      "member": "m_david",
+      "chosen": "change_medication",
+      "pass": true,
+      "reason": "change_medication"
+    },
+    {
+      "id": "medchange-04",
+      "utterance": "Add his new vitamin, every morning at nine.",
+      "member": "m_david",
+      "chosen": "add_medication",
+      "pass": true,
+      "reason": "add_medication"
+    },
+    {
+      "id": "move-01",
+      "utterance": "The eye check-up has moved to Friday at two.",
+      "member": "m_renee",
+      "chosen": "change_appointment",
+      "pass": true,
+      "reason": "change_appointment"
+    },
+    {
+      "id": "move-02",
+      "utterance": "They cancelled Daddy's physio tomorrow.",
+      "member": "m_david",
+      "chosen": "change_appointment",
+      "pass": true,
+      "reason": "change_appointment"
+    },
+    {
+      "id": "move-03",
+      "utterance": "The clinic pushed his appointment back an hour.",
+      "member": "m_renee",
+      "chosen": "change_appointment",
+      "pass": true,
+      "reason": "change_appointment"
+    },
+    {
+      "id": "urgent-01",
+      "utterance": "I've fallen in the bathroom and I can't get up.",
+      "member": "m_margaret",
+      "chosen": "raise_urgent",
+      "pass": true,
+      "reason": "raise_urgent"
+    },
+    {
+      "id": "urgent-02",
+      "utterance": "Daddy is having chest pains, tell everyone now.",
+      "member": "m_renee",
+      "chosen": "raise_urgent",
+      "pass": true,
+      "reason": "raise_urgent"
+    },
+    {
+      "id": "urgent-03",
+      "utterance": "He's suddenly very confused and doesn't know where he is.",
+      "member": "m_aide",
+      "chosen": "raise_urgent",
+      "pass": true,
+      "reason": "raise_urgent"
+    },
+    {
+      "id": "urgent-04",
+      "utterance": "Daddy fell asleep early tonight.",
+      "member": "m_renee",
+      "chosen": "add_note",
+      "pass": true,
+      "reason": "add_note"
+    },
+    {
+      "id": "note-01",
+      "utterance": "Daddy sounded tired on the phone.",
+      "member": "m_renee",
+      "chosen": "add_note",
+      "pass": true,
+      "reason": "add_note"
+    },
+    {
+      "id": "note-02",
+      "utterance": "The doctor changed his dose to twice a day.",
+      "member": "m_david",
+      "chosen": "change_medication",
+      "pass": true,
+      "reason": "change_medication"
+    },
+    {
+      "id": "note-03",
+      "utterance": "He didn't eat much lunch today.",
+      "member": "m_aide",
+      "chosen": "add_note",
+      "pass": true,
+      "reason": "add_note"
+    },
+    {
+      "id": "note-04",
+      "utterance": "Just so everyone knows, the pharmacy called about the refill.",
+      "member": "m_renee",
+      "chosen": "add_note",
+      "pass": true,
+      "reason": "add_note"
+    },
+    {
+      "id": "note-05",
+      "utterance": "He seemed a bit confused this morning but fine by lunch.",
+      "member": "m_david",
+      "chosen": "add_note",
+      "pass": true,
+      "reason": "add_note"
+    },
+    {
+      "id": "note-06",
+      "utterance": "Her ankles looked a little swollen.",
+      "member": "m_aide",
+      "chosen": "add_note",
+      "pass": true,
+      "reason": "add_note"
+    },
+    {
+      "id": "gap-01",
+      "utterance": "What's going to fall through the cracks this week?",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "gap-02",
+      "utterance": "What hasn't been assigned?",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "gap-03",
+      "utterance": "Is anything being missed with Daddy?",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "gap-04",
+      "utterance": "What still needs doing for Daddy?",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "gap-05",
+      "utterance": "What does Daddy need this week?",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "gap-06",
+      "utterance": "Is there anything nobody has picked up?",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "gap-07",
+      "utterance": "Anything I need to worry about?",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "gap-08",
+      "utterance": "What are the open items?",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "claim-01",
+      "utterance": "I'll take the check-up one.",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "claim-02",
+      "utterance": "I've got Thursday.",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "claim-03",
+      "utterance": "I'll do the prescription pickup.",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "claim-04",
+      "utterance": "I'll handle both of those.",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "claim-05",
+      "utterance": "I can take that one.",
+      "member": "m_aide",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "claim-06",
+      "utterance": "Put me down for the drive.",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "assign-01",
+      "utterance": "Give the pharmacy run to Funmi.",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "assign-02",
+      "utterance": "Ask Funmi to take Thursday.",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "assign-03",
+      "utterance": "Funmi should do the prescription.",
+      "member": "m_david",
+      "chosen": "request_owner",
+      "pass": false,
+      "reason": "chose request_owner; expected assign_obligation or get_care_gaps"
+    },
+    {
+      "id": "assign-04",
+      "utterance": "Assign the check-up drive to Tolu.",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "assign-05",
+      "utterance": "Can Musa cover the Monday visit?",
+      "member": "m_david",
+      "chosen": "request_owner",
+      "pass": false,
+      "reason": "chose request_owner; expected assign_obligation or notify_member or get_care_gaps"
+    },
+    {
+      "id": "confirm-01",
+      "utterance": "Yes, he'll need a ride.",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "confirm-02",
+      "utterance": "No, he doesn't need anyone to go in with him.",
+      "member": "m_david",
+      "chosen": "confirm_proposal",
+      "pass": true,
+      "reason": "confirm_proposal"
+    },
+    {
+      "id": "confirm-03",
+      "utterance": "That's right, someone should drive him.",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "confirm-04",
+      "utterance": "He can get himself there, leave it out.",
+      "member": "m_david",
+      "chosen": "confirm_proposal",
+      "pass": true,
+      "reason": "confirm_proposal"
+    },
+    {
+      "id": "resolve-01",
+      "utterance": "Picked up the prescription.",
+      "member": "m_renee",
+      "chosen": "resolve_obligation",
+      "pass": true,
+      "reason": "resolve_obligation"
+    },
+    {
+      "id": "resolve-02",
+      "utterance": "Took him to the eye clinic, all done.",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "resolve-03",
+      "utterance": "Finished the shopping for him.",
+      "member": "m_aide",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "resolve-04",
+      "utterance": "That's sorted now.",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "sum-01",
+      "utterance": "How's Daddy doing today?",
+      "member": "m_david",
+      "chosen": "get_care_summary",
+      "pass": true,
+      "reason": "get_care_summary"
+    },
+    {
+      "id": "sum-02",
+      "utterance": "Catch me up on Daddy.",
+      "member": "m_renee",
+      "chosen": "get_care_summary",
+      "pass": true,
+      "reason": "get_care_summary"
+    },
+    {
+      "id": "sum-03",
+      "utterance": "What happened with Daddy today?",
+      "member": "m_david",
+      "chosen": "get_care_summary",
+      "pass": true,
+      "reason": "get_care_summary"
+    },
+    {
+      "id": "sum-04",
+      "utterance": "Has Daddy taken his medication today?",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "sum-05",
+      "utterance": "Did Daddy use his evening eye drops?",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "shift-01",
+      "utterance": "What do I need to know today?",
+      "member": "m_aide",
+      "chosen": "get_shift_brief",
+      "pass": true,
+      "reason": "get_shift_brief"
+    },
+    {
+      "id": "shift-02",
+      "utterance": "What's on for this shift?",
+      "member": "m_aide",
+      "chosen": "get_shift_brief",
+      "pass": true,
+      "reason": "get_shift_brief"
+    },
+    {
+      "id": "shift-03",
+      "utterance": "What medications is he on today?",
+      "member": "m_aide",
+      "chosen": "get_care_summary",
+      "pass": false,
+      "reason": "chose get_care_summary; expected get_shift_brief"
+    },
+    {
+      "id": "shift-04",
+      "utterance": "Anything assigned to me?",
+      "member": "m_aide",
+      "chosen": "get_my_requests",
+      "pass": false,
+      "reason": "chose get_my_requests; expected get_shift_brief or get_care_gaps"
+    },
+    {
+      "id": "notify-01",
+      "utterance": "Tell Funmi I'm taking Daddy Thursday.",
+      "member": "m_david",
+      "chosen": "notify_member",
+      "pass": true,
+      "reason": "notify_member"
+    },
+    {
+      "id": "notify-02",
+      "utterance": "Let Tolu know the pharmacy called.",
+      "member": "m_renee",
+      "chosen": "notify_member",
+      "pass": true,
+      "reason": "notify_member"
+    },
+    {
+      "id": "notify-03",
+      "utterance": "Message Funmi about the appointment change.",
+      "member": "m_david",
+      "chosen": "notify_member",
+      "pass": true,
+      "reason": "notify_member"
+    },
+    {
+      "id": "notify-04",
+      "utterance": "Let the family know he slept badly.",
+      "member": "m_aide",
+      "chosen": "add_note",
+      "pass": true,
+      "reason": "add_note"
+    },
+    {
+      "id": "cons-01",
+      "utterance": "I can't drive Thursday, I'm out of town.",
+      "member": "m_renee",
+      "chosen": "add_note",
+      "pass": true,
+      "reason": "add_note"
+    },
+    {
+      "id": "cons-02",
+      "utterance": "I'm away all next week.",
+      "member": "m_david",
+      "chosen": "add_note",
+      "pass": true,
+      "reason": "add_note"
+    },
+    {
+      "id": "cons-03",
+      "utterance": "I won't be able to make Friday after all.",
+      "member": "m_renee",
+      "chosen": "add_note",
+      "pass": true,
+      "reason": "add_note"
+    },
+    {
+      "id": "cons-04",
+      "utterance": "I'm off sick tomorrow.",
+      "member": "m_aide",
+      "chosen": "add_note",
+      "pass": true,
+      "reason": "add_note"
+    },
+    {
+      "id": "h-log-01",
+      "utterance": "I already had my tablets, don't fuss.",
+      "member": "m_margaret",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "h-log-02",
+      "utterance": "I gave Daddy his insulin this morning.",
+      "member": "m_david",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "h-log-03",
+      "utterance": "He had everything that was due before noon.",
+      "member": "m_aide",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "h-log-04",
+      "utterance": "I skipped my evening pill on purpose, the doctor said to.",
+      "member": "m_margaret",
+      "chosen": "log_care_event",
+      "pass": false,
+      "reason": "chose log_care_event; expected add_note"
+    },
+    {
+      "id": "h-log-05",
+      "utterance": "Had my blood pressure one just now.",
+      "member": "m_margaret",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "h-log-06",
+      "utterance": "I can't remember if I took my morning pill.",
+      "member": "m_margaret",
+      "chosen": "get_care_summary",
+      "pass": true,
+      "reason": "get_care_summary"
+    },
+    {
+      "id": "h-log-07",
+      "utterance": "Gave him the antibiotic at noon.",
+      "member": "m_aide",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "h-appt-01",
+      "utterance": "Move his eye check-up to Friday instead.",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": false,
+      "reason": "chose get_care_gaps; expected record_appointment or add_note or change_appointment"
+    },
+    {
+      "id": "h-appt-02",
+      "utterance": "Her hair appointment got cancelled.",
+      "member": "m_david",
+      "chosen": "change_appointment",
+      "pass": true,
+      "reason": "change_appointment"
+    },
+    {
+      "id": "h-appt-03",
+      "utterance": "My grandson's graduation is on the 20th.",
+      "member": "m_margaret",
+      "chosen": "record_appointment",
+      "pass": true,
+      "reason": "record_appointment"
+    },
+    {
+      "id": "h-appt-04",
+      "utterance": "Schedule his flu shot for next week sometime.",
+      "member": "m_david",
+      "chosen": "record_appointment",
+      "pass": true,
+      "reason": "record_appointment"
+    },
+    {
+      "id": "h-appt-05",
+      "utterance": "He needs to fast before the Monday bloodwork.",
+      "member": "m_renee",
+      "chosen": "record_appointment",
+      "pass": true,
+      "reason": "record_appointment"
+    },
+    {
+      "id": "h-note-01",
+      "utterance": "FYI he's been coughing a bit.",
+      "member": "m_aide",
+      "chosen": "add_note",
+      "pass": true,
+      "reason": "add_note"
+    },
+    {
+      "id": "h-note-02",
+      "utterance": "Daddy mentioned his knee hurts when it rains.",
+      "member": "m_david",
+      "chosen": "add_note",
+      "pass": true,
+      "reason": "add_note"
+    },
+    {
+      "id": "h-note-03",
+      "utterance": "The new aide starts Monday.",
+      "member": "m_renee",
+      "chosen": "add_note",
+      "pass": true,
+      "reason": "add_note"
+    },
+    {
+      "id": "h-note-04",
+      "utterance": "He’s in good spirits today.",
+      "member": "m_david",
+      "chosen": "add_note",
+      "pass": true,
+      "reason": "add_note"
+    },
+    {
+      "id": "h-note-05",
+      "utterance": "Her cardiologist is Dr. Patel now.",
+      "member": "m_renee",
+      "chosen": "add_note",
+      "pass": true,
+      "reason": "add_note"
+    },
+    {
+      "id": "h-gap-01",
+      "utterance": "Who's got room to take something on?",
+      "member": "m_david",
+      "chosen": "get_my_requests",
+      "pass": false,
+      "reason": "chose get_my_requests; expected get_care_gaps"
+    },
+    {
+      "id": "h-gap-02",
+      "utterance": "Are we covered for the week?",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "h-gap-03",
+      "utterance": "Walk me through what nobody owns.",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "h-gap-04",
+      "utterance": "Anything slipping through?",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "h-gap-05",
+      "utterance": "Is everything handled for tomorrow?",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "h-claim-01",
+      "utterance": "Leave that with me.",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "h-claim-02",
+      "utterance": "I've got it.",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "h-claim-03",
+      "utterance": "Sign me up for the Monday one.",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "h-claim-04",
+      "utterance": "I'll cover the shopping.",
+      "member": "m_aide",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "h-claim-05",
+      "utterance": "I'll be the one driving.",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "h-assign-01",
+      "utterance": "Have Funmi handle Thursday's drive.",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "h-assign-02",
+      "utterance": "Get Musa to pick up the meds.",
+      "member": "m_david",
+      "chosen": "request_owner",
+      "pass": false,
+      "reason": "chose request_owner; expected assign_obligation or notify_member or get_care_gaps"
+    },
+    {
+      "id": "h-assign-03",
+      "utterance": "Tolu should really take this one.",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "h-confirm-01",
+      "utterance": "Yep, that's needed.",
+      "member": "m_david",
+      "chosen": null,
+      "pass": false,
+      "reason": "called nothing; expected confirm_proposal or get_care_gaps"
+    },
+    {
+      "id": "h-confirm-02",
+      "utterance": "Correct, book the ride.",
+      "member": "m_renee",
+      "chosen": "confirm_proposal",
+      "pass": true,
+      "reason": "confirm_proposal"
+    },
+    {
+      "id": "h-confirm-03",
+      "utterance": "No, skip that one.",
+      "member": "m_david",
+      "chosen": null,
+      "pass": false,
+      "reason": "called nothing; expected confirm_proposal or get_care_gaps"
+    },
+    {
+      "id": "h-confirm-04",
+      "utterance": "Right, he needs company for that.",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "h-resolve-01",
+      "utterance": "Done and dusted.",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "h-resolve-02",
+      "utterance": "Handled it.",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "h-resolve-03",
+      "utterance": "Took care of that already.",
+      "member": "m_aide",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "h-resolve-04",
+      "utterance": "Dropped him at the clinic and he's home now.",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "h-sum-01",
+      "utterance": "Give me the rundown on Daddy.",
+      "member": "m_renee",
+      "chosen": "get_care_summary",
+      "pass": true,
+      "reason": "get_care_summary"
+    },
+    {
+      "id": "h-sum-02",
+      "utterance": "Is he okay today?",
+      "member": "m_david",
+      "chosen": "get_care_summary",
+      "pass": true,
+      "reason": "get_care_summary"
+    },
+    {
+      "id": "h-sum-03",
+      "utterance": "What's his day looked like?",
+      "member": "m_david",
+      "chosen": "get_care_summary",
+      "pass": true,
+      "reason": "get_care_summary"
+    },
+    {
+      "id": "h-shift-01",
+      "utterance": "Bring me up to speed for my shift.",
+      "member": "m_aide",
+      "chosen": "get_shift_brief",
+      "pass": true,
+      "reason": "get_shift_brief"
+    },
+    {
+      "id": "h-shift-02",
+      "utterance": "What's due while I'm here?",
+      "member": "m_aide",
+      "chosen": "get_shift_brief",
+      "pass": true,
+      "reason": "get_shift_brief"
+    },
+    {
+      "id": "h-shift-03",
+      "utterance": "Do I have anything to do today?",
+      "member": "m_aide",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "h-notify-01",
+      "utterance": "Ping Tolu about the dose change.",
+      "member": "m_renee",
+      "chosen": "notify_member",
+      "pass": true,
+      "reason": "notify_member"
+    },
+    {
+      "id": "h-notify-02",
+      "utterance": "Shoot Funmi a note that I'm running late.",
+      "member": "m_david",
+      "chosen": "notify_member",
+      "pass": true,
+      "reason": "notify_member"
+    },
+    {
+      "id": "h-notify-03",
+      "utterance": "Can you let Tolu know he is resting?",
+      "member": "m_aide",
+      "chosen": "notify_member",
+      "pass": true,
+      "reason": "notify_member"
+    },
+    {
+      "id": "h-notify-04",
+      "utterance": "Text the family that Daddy's home safe.",
+      "member": "m_david",
+      "chosen": "add_note",
+      "pass": true,
+      "reason": "add_note"
+    },
+    {
+      "id": "h-cons-01",
+      "utterance": "Something's come up, I can't do Thursday.",
+      "member": "m_david",
+      "chosen": "add_note",
+      "pass": true,
+      "reason": "add_note"
+    },
+    {
+      "id": "h-cons-02",
+      "utterance": "Count me out this weekend.",
+      "member": "m_renee",
+      "chosen": "add_note",
+      "pass": true,
+      "reason": "add_note"
+    },
+    {
+      "id": "h-cons-03",
+      "utterance": "I'll be unreachable this afternoon.",
+      "member": "m_renee",
+      "chosen": "add_note",
+      "pass": true,
+      "reason": "add_note"
+    },
+    {
+      "id": "h-buy-01",
+      "utterance": "Reorder Daddy's eye drops.",
+      "member": "m_david",
+      "chosen": "reorder_prescription",
+      "pass": true,
+      "reason": "reorder_prescription"
+    },
+    {
+      "id": "h-buy-02",
+      "utterance": "Can you refill his prescription?",
+      "member": "m_renee",
+      "chosen": "reorder_prescription",
+      "pass": true,
+      "reason": "reorder_prescription"
+    },
+    {
+      "id": "h-buy-03",
+      "utterance": "Order more of his supplement.",
+      "member": "m_david",
+      "chosen": "reorder_prescription",
+      "pass": true,
+      "reason": "reorder_prescription"
+    },
+    {
+      "id": "h-buy-04",
+      "utterance": "Set up a refill for his supplement.",
+      "member": "m_david",
+      "chosen": "reorder_prescription",
+      "pass": true,
+      "reason": "reorder_prescription"
+    },
+    {
+      "id": "h-buy-05",
+      "utterance": "He’s nearly out of his eye drops.",
+      "member": "m_david",
+      "chosen": "reorder_prescription",
+      "pass": true,
+      "reason": "reorder_prescription"
+    },
+    {
+      "id": "h-buy-06",
+      "utterance": "Yes, place the order.",
+      "member": "m_david",
+      "chosen": "confirm_purchase",
+      "pass": true,
+      "reason": "confirm_purchase"
+    },
+    {
+      "id": "h-buy-07",
+      "utterance": "Go ahead and buy it.",
+      "member": "m_david",
+      "chosen": "confirm_purchase",
+      "pass": true,
+      "reason": "confirm_purchase"
+    },
+    {
+      "id": "h-role-01",
+      "utterance": "Assign the pharmacy run to Tolu.",
+      "member": "m_aide",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "h-role-02",
+      "utterance": "Reorder my own prescription please.",
+      "member": "m_margaret",
+      "chosen": "reorder_prescription",
+      "pass": true,
+      "reason": "reorder_prescription"
+    },
+    {
+      "id": "h-multi-01",
+      "utterance": "Daddy took his pill and he seemed tired.",
+      "member": "m_david",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "h-multi-02",
+      "utterance": "What's outstanding, and I'll take the first one.",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "h-none-01",
+      "utterance": "Is it going to rain on Thursday?",
+      "member": "m_margaret",
+      "chosen": null,
+      "pass": true,
+      "reason": "no tool, as intended"
+    },
+    {
+      "id": "h-none-02",
+      "utterance": "Remind me what a cardiologist actually does.",
+      "member": "m_david",
+      "chosen": null,
+      "pass": true,
+      "reason": "no tool, as intended"
+    },
+    {
+      "id": "h-none-03",
+      "utterance": "You're doing a great job, thanks.",
+      "member": "m_renee",
+      "chosen": null,
+      "pass": true,
+      "reason": "no tool, as intended"
+    },
+    {
+      "id": "h-none-04",
+      "utterance": "Play some music for me.",
+      "member": "m_margaret",
+      "chosen": null,
+      "pass": true,
+      "reason": "no tool, as intended"
+    },
+    {
+      "id": "h-none-05",
+      "utterance": "Good night.",
+      "member": "m_margaret",
+      "chosen": null,
+      "pass": true,
+      "reason": "no tool, as intended"
+    },
+    {
+      "id": "h2-buy-01",
+      "utterance": "Can we get more of Daddy's eye drops delivered?",
+      "member": "m_renee",
+      "chosen": "reorder_prescription",
+      "pass": true,
+      "reason": "reorder_prescription"
+    },
+    {
+      "id": "h2-buy-02",
+      "utterance": "His medicine is running low, please order some.",
+      "member": "m_david",
+      "chosen": "reorder_prescription",
+      "pass": true,
+      "reason": "reorder_prescription"
+    },
+    {
+      "id": "h2-buy-03",
+      "utterance": "Buy another bottle of his supplement.",
+      "member": "m_david",
+      "chosen": "reorder_prescription",
+      "pass": true,
+      "reason": "reorder_prescription"
+    },
+    {
+      "id": "h2-buy-04",
+      "utterance": "Get the refill sent to the house.",
+      "member": "m_renee",
+      "chosen": "reorder_prescription",
+      "pass": true,
+      "reason": "reorder_prescription"
+    },
+    {
+      "id": "h2-buy-05",
+      "utterance": "Okay, order it.",
+      "member": "m_david",
+      "chosen": "confirm_purchase",
+      "pass": true,
+      "reason": "confirm_purchase"
+    },
+    {
+      "id": "h2-buy-06",
+      "utterance": "Sure, go ahead with the purchase.",
+      "member": "m_renee",
+      "chosen": "confirm_purchase",
+      "pass": true,
+      "reason": "confirm_purchase"
+    },
+    {
+      "id": "h2-buy-07",
+      "utterance": "No, don't buy it.",
+      "member": "m_david",
+      "chosen": "confirm_purchase",
+      "pass": true,
+      "reason": "confirm_purchase"
+    },
+    {
+      "id": "h2-buy-08",
+      "utterance": "Order his supplement.",
+      "member": "m_aide",
+      "chosen": "reorder_prescription",
+      "pass": true,
+      "reason": "reorder_prescription"
+    },
+    {
+      "id": "h2-buy-09",
+      "utterance": "How much would a refill of his eye drops cost?",
+      "member": "m_david",
+      "chosen": "reorder_prescription",
+      "pass": true,
+      "reason": "reorder_prescription"
+    },
+    {
+      "id": "none-01",
+      "utterance": "Thank you, that's all.",
+      "member": "m_margaret",
+      "chosen": null,
+      "pass": true,
+      "reason": "no tool, as intended"
+    },
+    {
+      "id": "none-02",
+      "utterance": "What can you help me with?",
+      "member": "m_david",
+      "chosen": null,
+      "pass": true,
+      "reason": "no tool, as intended"
+    },
+    {
+      "id": "none-03",
+      "utterance": "What's the weather like?",
+      "member": "m_margaret",
+      "chosen": null,
+      "pass": true,
+      "reason": "no tool, as intended"
+    },
+    {
+      "id": "none-04",
+      "utterance": "Never mind.",
+      "member": "m_renee",
+      "chosen": null,
+      "pass": true,
+      "reason": "no tool, as intended"
+    }
+  ]
+}

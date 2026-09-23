@@ -28,7 +28,7 @@ with a **✅ Taken** button, and the evening before and two hours before an appo
 **/reminders off** to stop them, **/reminders on** to have them back.
 
 **Your language.** Type **/language** and tap one: English, Pidgin, Yorùbá, Igbo, Hausa,
-Ẹ̀dó, Français, Español or 中文. CareCircle writes to you in it. Medicine names, names and
+Ẹ̀dó, Français, Español, Português, Deutsch, Italiano, हिन्दी or 中文. CareCircle writes to you in it. Medicine names, names and
 times stay exactly as the family wrote them. The Yoruba, Igbo, Hausa and Pidgin reminders
 are new, so they come with the English underneath. If a word is wrong, tell CareCircle the
 right one. Voice notes in Yoruba, Igbo, Hausa or Edo can't be heard yet (no computer can),

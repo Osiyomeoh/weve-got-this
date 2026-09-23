@@ -107,3 +107,24 @@ test('logging a dose that is already on the record says so, with when and who', 
   const grandma = await call(base, 'log_care_event', { kind: 'medication_taken', medicationName: 'eye drops', aboutMemberId: 'Grandma', occurredAt: '2026-09-24T08:40:00' });
   assert.doesNotMatch(grandma.text, /already a record/, "Grandma's drops are a different dose");
 });
+
+test('a medicine said in another language or other words is matched to the schedule, never saved as a stray', async () => {
+  const { store, base } = await family();
+  const doses = () => store.getCareState('h2').events.filter((e) => e.kind === 'medication_taken');
+
+  // "Colírio" is Portuguese for eye drops. Saved as a stray it would never clear Dad's dose,
+  // and the family would be told there is no record of a dose he took.
+  const r = await call(base, 'log_care_event', { kind: 'medication_taken', medicationName: 'colírio', aboutMemberId: 'Dad' });
+  assert.match(r.text, /"colírio" is not a name on Dad's schedule, which has: "eye drops"\./);
+  assert.equal(doses().length, 0, 'nothing saved until the name is settled');
+
+  const ok = await call(base, 'log_care_event', { kind: 'medication_taken', medicationName: 'eye drops', aboutMemberId: 'Dad' });
+  assert.equal(ok.isError, false, ok.text);
+  assert.equal(doses().at(-1)!.data['medicationId'], 'med_dad');
+
+  // A real one-off, once they have said so, is kept.
+  const once = await call(base, 'log_care_event', { kind: 'medication_taken', medicationName: 'paracetamol', aboutMemberId: 'Dad', notOnSchedule: true });
+  assert.equal(once.isError, false, once.text);
+  assert.equal(doses().at(-1)!.data['medicationName'], 'paracetamol');
+  assert.equal(doses().at(-1)!.data['medicationId'], undefined);
+});

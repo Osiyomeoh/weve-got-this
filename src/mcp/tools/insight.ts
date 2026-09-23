@@ -4,7 +4,7 @@
 
 import { activeMedications, upcomingAppointments, type Appointment } from '../../domain/care-changes.js';
 import { spokenClock, spokenDue } from '../../domain/gaps.js';
-import type { CareState } from '../../domain/types.js';
+import type { CareEvent, CareState } from '../../domain/types.js';
 import { z } from 'zod';
 import { attributionOf, isReported, sayWhoSaysSo } from '../../domain/attribution.js';
 import { require as requireCap } from '../../domain/auth.js';
@@ -110,9 +110,15 @@ export function registerGetCareSummary({ server, now, actor, state, nameOf }: To
       // A bare count silently upgrades "the aide says you took it" into "you took
       // it", which is the accusation rule failing in the opposite direction.
       const proxied = meds.filter(isReported);
-      parts.push(meds.length > 0
-        ? sentence(`${countPhrase(meds.length, 'medication')} logged today.`)
-        : 'Nothing logged for medications today yet.');
+      // Which dose, not how many: "one medication logged" left a family (and a translation)
+      // to guess whether it was the eye drops or the supplement.
+      const medName = (e: CareEvent) => s.medications.find((m) => m.id === e.data['medicationId'])?.name
+        ?? (typeof e.data['medicationName'] === 'string' ? e.data['medicationName'] : 'a medication');
+      parts.push(meds.length === 0
+        ? 'Nothing logged for medications today yet.'
+        : meds.length <= 3
+          ? sentence(`Logged today: ${joinSpoken(meds.map((e) => `${medName(e)} at ${clockTime(e.occurredAt, tz)}`))}.`)
+          : sentence(`${countPhrase(meds.length, 'medication')} logged today.`));
       for (const e of proxied.slice(0, 2)) {
         parts.push(sentence(`${sayWhoSaysSo(attributionOf(e), (id) => nameOf(id) ?? null)}.`));
       }

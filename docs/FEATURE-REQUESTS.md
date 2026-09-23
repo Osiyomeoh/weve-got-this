@@ -197,6 +197,31 @@ so - the workaround is usually the tell for what the platform should have handle
   exception, not the rule. Every assistant integration model we have seen assumes the
   conversation is the product.
 
+### Tell an add-on each speaker's language, per person
+- **Urgency:** important
+- **What:** Alexa+ should pass the add-on the language of the person speaking (for
+  example `es-US`), per turn or per recognized voice profile. Today, if anything is
+  passed, it is the device's locale.
+- **Why it matters:** Care is where one family speaks several languages. In the US,
+  5.6M people over 65 speak English "less than very well", 2.9M of them Spanish
+  speakers (ACS 2024, B16004). The typical case is a parent in Spanish and grown
+  children in English, sharing one Echo in bilingual mode. Alexa+ itself is launching
+  in Spanish, French, Portuguese, German, Italian and Hindi. When we measured our own
+  add-on, the failure was not the wording of replies. It was **the record**:
+  - A mother said "colírio" or "gotas para los ojos", and the planner passed that
+    name to the tool.
+  - It matched nothing on her schedule, so her son was then told there was no record
+    of the dose she had taken. That happened in 10 of 11 languages
+    (`npm run evals:languages`, part 2).
+  - We fixed it on the server. An unmatched name is now answered with the names on
+    that person's schedule, so the planner can call again with the right one.
+  - The host is the only party that knows who is speaking and in what language, and
+    it doesn't tell us.
+- **Instead:** Each member picks a language in Telegram (`/language`). Every
+  reminder, button and reply follows that person's choice, not the device's. The rule
+  is written once, in `src/domain/language.ts`: medicine names and times are never
+  translated, and "no record" never becomes "missed".
+
 ---
 
 ## AWS (Transcribe, Polly) and Ring

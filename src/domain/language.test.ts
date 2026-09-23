@@ -167,3 +167,22 @@ test('tapping Taken answers in their language, with the time written their way',
   assert.equal(await t.tap('dose:med:08:00'), 'tap-taken');
   assert.equal(t.calls.find((c) => c.method === 'editMessageText')!.body['text'], '✅ Noté : eye drops, 8:06.');
 });
+
+test('every language with a phrasebook has every phrase, so nothing quietly falls back to English', () => {
+  const keys = ['dose', 'taken', 'snooze', 'recorded', 'alreadyYou', 'alreadyBy', 'snoozed', 'repeat',
+    'appt', 'apptWithOne', 'apptWithMany', 'apptHolder', 'apptUnowned', 'heard', 'languageSet'] as const;
+  const vars = { time: 'T', med: 'eye drops', by: 'B', when: 'W', kind: 'K', names: 'N', it: 'it', them: 'M', tasks: 'X', text: 'Y' };
+  for (const code of LANGUAGE_CODES) {
+    if (code === 'en' || LANGUAGES[code].status === 'understood') continue;
+    for (const key of keys) {
+      const own = phrase(code, [key, vars]);
+      assert.notEqual(own, phrase('en', [key, vars]), `${code} has its own "${key}"`);
+      assert.doesNotMatch(own, /\{\w+\}/, `${code} "${key}" fills every blank`);
+      if (key === 'dose' || key === 'recorded' || key === 'repeat') assert.match(own, /eye drops/, `${code} "${key}" keeps the medicine's name`);
+    }
+  }
+  // Every language Alexa+ is sold in can be heard and spoken.
+  for (const code of ['es', 'fr', 'pt', 'de', 'it', 'hi'] as const) assert.equal(LANGUAGES[code].status, 'ready');
+  assert.equal(phrase('hi', ['dose', { time: '20:00', med: 'eye drops' }]), '20:00: eye drops का समय हो गया है।');
+  assert.equal(phrase('de', ['dose', { time: '20:00', med: 'eye drops' }]), '20:00: Zeit für eye drops.');
+});

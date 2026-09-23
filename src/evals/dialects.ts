@@ -24,7 +24,8 @@ export const DIALECT_CASES: EvalCase[] = [
   { id: 'hd-aae-07', member: 'm_david', utterance: 'How Daddy doing today?', expect: ['get_care_summary'] },
 
   // --- Nigerian Pidgin ----------------------------------------------------
-  { id: 'hd-pcm-01', member: 'm_margaret', utterance: 'I don use my eye drop this morning.', expect: ['log_care_event'] },
+  { id: 'hd-pcm-01', member: 'm_margaret', utterance: 'I don use my eye drop this morning.', expect: ['log_care_event'],
+    seen: '2026-09-24: log_care_event now says what Pidgin "don" means, after this case failed twice' },
   { id: 'hd-pcm-02', member: 'm_david', utterance: 'Abeg, who go carry Daddy go eye clinic on Thursday?', expect: ['get_care_gaps', 'request_owner'] },
   { id: 'hd-pcm-03', member: 'm_renee', utterance: 'Wetin still remain wey nobody don do for Daddy?', expect: ['get_care_gaps'] },
   { id: 'hd-pcm-04', member: 'm_david', utterance: 'Daddy get appointment for eye clinic Friday by 10.', expect: ['record_appointment'] },

@@ -319,7 +319,9 @@ export function registerNotifyMember({ server, store, now, notifier, actor, stat
       + 'taking Mom Thursday", "let David know the pharmacy called", "message Renee about '
       + 'the appointment change", "text Renee". Any of tell / message / text / let-know a '
       + 'named person maps here. Use this when the speaker wants a specific PERSON told '
-      + 'something. To record something for the whole family to see later, use add_note.',
+      + 'something. To record something for the whole family to see later, use add_note. '
+      + 'Only for people in this care circle, and never for email: anyone else, or an email, '
+      + 'is the assistant\'s own job.',
     inputSchema: {
       recipientName: z.string().describe('Who to tell, as the speaker named them.'),
       message: z.string().describe('What to tell them, in the speaker\'s own words.'),

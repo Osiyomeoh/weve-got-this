@@ -74,7 +74,7 @@ async function main(): Promise<void> {
     await call('setWebhook', {
       url: `${publicUrl}/telegram/webhook`,
       secret_token: secret,
-      allowed_updates: ['message'],
+      allowed_updates: ['message', 'callback_query'],
     });
     console.log(`\nWebhook re-registered at ${publicUrl}/telegram/webhook`);
   }

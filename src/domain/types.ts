@@ -58,8 +58,11 @@ export interface Member {
   language?: LanguageCode;
 }
 
-/** English, Spanish, French, Chinese, Nigerian Pidgin, Yoruba, Igbo, Hausa, Edo. */
-export type LanguageCode = 'en' | 'es' | 'fr' | 'zh' | 'pcm' | 'yo' | 'ig' | 'ha' | 'bin';
+/**
+ * Every language Alexa+ is sold in (English, Spanish, French, Portuguese, German, Italian,
+ * Hindi), Chinese, and Nigeria's: Pidgin, Yoruba, Igbo, Hausa, Edo.
+ */
+export type LanguageCode = 'en' | 'es' | 'fr' | 'pt' | 'de' | 'it' | 'hi' | 'zh' | 'pcm' | 'yo' | 'ig' | 'ha' | 'bin';
 
 /** What an entity is. People are modelled as `Member`; this widens the graph to the rest. */
 export type EntityType =
