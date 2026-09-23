@@ -12,8 +12,8 @@
  * 1. **It shows its provenance.** Every row says how we came to believe it -
  *    a person told us, we inferred it by a named rule, or we simply have no
  *    record. "No record" is drawn as an absence of information, never as an
- *    accusation, because the difference between "Mom didn't take her pill" and
- *    "we have no record of the pill" is the difference between a useful system
+ *    accusation, because the difference between "Daddy didn't use his eye drops" and
+ *    "we have no record of the eye drops" is the difference between a useful system
  *    and a family argument.
  *
  * 2. **The ranking explains itself.** The score is not an opaque verdict from a

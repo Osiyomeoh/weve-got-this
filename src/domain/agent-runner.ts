@@ -12,7 +12,7 @@ import { deliberate, AGENT_ID, type AgentAction, type Deliberation } from './age
  *
  * Every act the agent takes becomes an event in the same append-only log as every
  * human act, attributed to `system:carecircle`. That attribution is not cosmetic:
- * `attribution.ts` will render an agent-made request as "CareCircle asked Renee",
+ * `attribution.ts` will render an agent-made request as "CareCircle asked Funmi",
  * never as a person having asked, so "why did I get this?" is always answerable and
  * the machine is held to the same standard of saying who-said-so as everyone else.
  */

@@ -39,7 +39,7 @@ export interface SignalOutcome {
   /** A care event to record: the signal happened, attributed to the device. */
   event: Omit<CareEvent, 'id' | 'recordedAt'>;
   /**
-   * An obligation this signal proposes creating, if any - e.g. "check on Mom".
+   * An obligation this signal proposes creating, if any - e.g. "check on Daddy".
    * Enters PROPOSED, like every inference.
    */
   proposeObligation?: {

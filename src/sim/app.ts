@@ -19,7 +19,7 @@ import {
  *
  * Serves the device mock and brokers turns between the browser, a Bedrock model,
  * and the CareCircle MCP server. One host per member, so each device in the demo
- * (Margaret's kitchen Echo, David's phone) keeps its own conversation.
+ * (Daddy's Echo at home, Tolu's phone) keeps its own conversation.
  */
 
 const PORT = Number(process.env['SIM_PORT'] ?? 5173);

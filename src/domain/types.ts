@@ -35,7 +35,7 @@ export interface Member {
   householdId: string;
   name: string;
   role: Role;
-  /** How the person is referred to when spoken about, e.g. "Mom", "your sister Renee". */
+  /** How the person is referred to when spoken about, e.g. "Daddy", "your sister Funmi". */
   spokenAs?: string;
   /**
    * Standing accessibility facts about this person. A person is modelled as a Member,
@@ -205,7 +205,7 @@ export type ConsequenceClass = 'medical' | 'logistical' | 'social';
 export interface Obligation {
   id: string;
   householdId: string;
-  /** Spoken description, e.g. "Drive Margaret to cardiology". */
+  /** Spoken description, e.g. "Take Daddy to his eye check-up". */
   what: string;
   status: ObligationStatus;
   consequence: ConsequenceClass;

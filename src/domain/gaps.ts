@@ -215,7 +215,7 @@ function unclaimedGap(o: Obligation, timezone: string, now: Date, attrs?: Entity
  * being asked genuinely does make the work likelier to happen, but only while the
  * ask is fresh. The relief decays on TAU_REPLY, so an unanswered request climbs
  * back to the full risk of unowned work within a day. That is the arithmetic of
- * "I asked David" quietly becoming "nobody is doing this".
+ * "I asked Funmi" quietly becoming "nobody is doing this".
  */
 function awaitingReplyGap(
   o: Obligation, askedOf: string, timezone: string, now: Date, attrs?: EntityAttributes,

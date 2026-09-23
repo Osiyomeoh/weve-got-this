@@ -31,7 +31,7 @@ export interface Candidate {
  *
  * A paid helper is scoped to the work in front of them - the same reason `canActOn`
  * limits them to what they own. Ranking purely by who is least busy would hand the
- * aide the cardiology drive ahead of both children simply because she starts the
+ * driver the eye-clinic run ahead of the family simply because he starts the
  * week empty, which is neither what the family means nor what they are paying for.
  * Helpers are asked only once the family has run out.
  */

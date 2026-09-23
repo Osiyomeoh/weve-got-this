@@ -90,8 +90,8 @@ async function main(): Promise<void> {
   const clock = () => wallClockToday(9, 0, TZ);   // morning of the shot
   const seedNow = wallClockToday(12, 0, TZ);       // anchor scenario dates to today
 
-  // A clean opening state in a throwaway store: the ride to cardiology is OPEN and
-  // unowned, its subject Margaret (who needs accessible transport).
+  // A clean opening state in a throwaway store: the ride to the eye check-up is OPEN
+  // and unowned, its subject Daddy (who needs accessible transport).
   const dbPath = join(mkdtempSync(join(tmpdir(), 'carecircle-beat-')), 'beat.db.json');
   const store = new CareStore(new FilePersistence(dbPath));
   await store.reset();
@@ -106,9 +106,9 @@ async function main(): Promise<void> {
   const { port } = http.address() as AddressInfo;
   const url = `http://127.0.0.1:${port}/mcp`;
 
-  const david = await connect(url, 'david-token');   // primary caregiver
-  const renee = await connect(url, 'renee-token');    // caregiver (family)
-  const tasha = await connect(url, 'aide-token');     // paid aide
+  const tolu = await connect(url, 'david-token');   // primary caregiver
+  const funmi = await connect(url, 'renee-token');    // caregiver (family)
+  const musa = await connect(url, 'aide-token');     // paid driver
 
   console.log(bold('\n  CareCircle · the 40-second beat  (real server, append-only log)'));
   console.log(dim('  ═══════════════════════════════════════════════════════════'));
@@ -116,7 +116,7 @@ async function main(): Promise<void> {
   // 0:00 - the gap, and why it ranks
   beat('0:00', 'What is going to fall through the cracks?');
   say('Tolu', "What's going to fall through the cracks this week?");
-  const gaps0 = alexa(await call(david, 'get_care_gaps', { withinDays: 7 }));
+  const gaps0 = alexa(await call(tolu, 'get_care_gaps', { withinDays: 7 }));
   surfaces('open', gapsOf(gaps0));
   const ride = gapsOf(gaps0).find((g) => g.obligationId === rideObligationId)
     ?? gapsOf(gaps0).find((g) => /check-up|take daddy/i.test(g.spoken));
@@ -127,24 +127,24 @@ async function main(): Promise<void> {
   // 0:06 - ask, not assign
   beat('0:06', 'Ask, not assign');
   say('Tolu', 'Ask Funmi to take him.');
-  alexa(await call(david, 'request_owner', { obligationId: rideId, assigneeName: 'Funmi' }));
-  surfaces('after asking Funmi', gapsOf(await call(david, 'get_care_gaps', { withinDays: 7 })));
+  alexa(await call(tolu, 'request_owner', { obligationId: rideId, assigneeName: 'Funmi' }));
+  surfaces('after asking Funmi', gapsOf(await call(tolu, 'get_care_gaps', { withinDays: 7 })));
 
   // 0:16 - a "no" is information, not a failure
   beat('0:16', 'A "no" is information, not a failure');
   say('Funmi', "I can't, I'm working Thursday.");
-  alexa(await call(renee, 'respond_to_request', {
+  alexa(await call(funmi, 'respond_to_request', {
     obligationId: rideId, accepted: false, note: 'working Thursday',
   }));
   say('Tolu', 'Then ask Musa, the driver.');
-  alexa(await call(david, 'request_owner', { obligationId: rideId, assigneeName: 'Musa' }));
-  surfaces('after asking Musa', gapsOf(await call(david, 'get_care_gaps', { withinDays: 7 })));
+  alexa(await call(tolu, 'request_owner', { obligationId: rideId, assigneeName: 'Musa' }));
+  surfaces('after asking Musa', gapsOf(await call(tolu, 'get_care_gaps', { withinDays: 7 })));
 
   // 0:26 - the gap clears on both surfaces at once
   beat('0:26', 'The gap clears on both surfaces at once');
   say('Musa', "Yes, I've got Thursday.");
-  alexa(await call(tasha, 'respond_to_request', { obligationId: rideId, accepted: true }));
-  const cleared = gapsOf(await call(david, 'get_care_gaps', { withinDays: 7 }));
+  alexa(await call(musa, 'respond_to_request', { obligationId: rideId, accepted: true }));
+  const cleared = gapsOf(await call(tolu, 'get_care_gaps', { withinDays: 7 }));
   surfaces('after Musa accepts', cleared);
   const stillOpen = cleared.some((g) => g.obligationId === rideId);
   console.log(stillOpen
@@ -154,7 +154,7 @@ async function main(): Promise<void> {
   // 0:34 - the proof you cannot fake
   beat('0:34', 'The proof you cannot fake');
   say('Tolu', "How do we know Musa's got it?");
-  const prov = alexa(await call(david, 'get_provenance', { obligationId: rideId }));
+  const prov = alexa(await call(tolu, 'get_provenance', { obligationId: rideId }));
   const chain = prov.structuredContent?.chain ?? [];
   console.log(dim('    replayed from the append-only log:'));
   for (const step of chain) {
@@ -164,7 +164,7 @@ async function main(): Promise<void> {
   console.log(dim('\n  ═══════════════════════════════════════════════════════════'));
   console.log(green('  Reproducible with no cloud and no keys: npm run beat'));
 
-  await Promise.all([david.close(), renee.close(), tasha.close()]);
+  await Promise.all([tolu.close(), funmi.close(), musa.close()]);
   http.close();
 }
 

@@ -1,8 +1,8 @@
 import type { CareStore } from '../store/store.js';
 
 /**
- * The demo household: Daddy, going on 70 in Lagos, two of his grown children, and the
- * family's paid driver.
+ * The demo household: Daddy, going on 70 in Lagos, two of his grown children nearby, a
+ * son in London, and the family's paid driver.
  *
  * A fictional family modelled on the builder's own: a father recovering from surgery,
  * with drops and supplements to take, check-ups to get to, and getting around no longer
@@ -10,8 +10,10 @@ import type { CareStore } from '../store/store.js';
  * Seeded rather than invented at runtime so the story is identical every time it is
  * shown, and anyone who clones the repo sees what the video shows.
  *
- * Ids (`m_margaret`, `m_david`, ...) are internal keys kept from the first version of the
- * demo; nothing a person sees or hears uses them.
+ * Ids and tokens (`m_margaret`, `david-token`, ...) are stable keys kept from the first
+ * version of the demo. Nothing a person sees or hears uses them, and they cannot change
+ * without breaking what depends on them: the live DynamoDB records, the Telegram
+ * member mapping, and the tokens published in the README for judges to try.
  */
 
 export const DEMO_TOKENS: Record<string, string> = {

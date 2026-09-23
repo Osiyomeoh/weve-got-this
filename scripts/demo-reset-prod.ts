@@ -65,11 +65,11 @@ if (!apply) {
 
 await store.removeHousehold(DEMO);
 await seedDemoHousehold(store);
-const { cardiologyAt } = await seedScenario(store, DEMO, { rideClaimedByRenee: claimed });
+const { checkUpAt } = await seedScenario(store, DEMO, { rideClaimedByFunmi: claimed });
 await store.quiesce();
 
 summary(store, 'Demo household after');
-console.log(`Eye check-up: ${cardiologyAt.toISOString()}  Ride: ${claimed ? 'claimed by Funmi' : 'unclaimed'}`);
+console.log(`Eye check-up: ${checkUpAt.toISOString()}  Ride: ${claimed ? 'claimed by Funmi' : 'unclaimed'}`);
 for (const g of detectCareGaps(store.getCareState(DEMO))) console.log(`  [${g.severity}] ${g.spoken}`);
 
 // Re-read from the table itself, not the copy in memory, before calling it safe.

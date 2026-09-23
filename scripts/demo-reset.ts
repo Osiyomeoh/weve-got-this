@@ -18,8 +18,8 @@ const claimed = process.argv.includes('--claimed');
 const store = new CareStore(new FilePersistence(dbPath));
 await store.reset();
 await seedDemoHousehold(store);
-const { cardiologyAt } = await seedScenario(store, 'h_margaret', {
-  rideClaimedByRenee: claimed,
+const { checkUpAt } = await seedScenario(store, 'h_margaret', {
+  rideClaimedByFunmi: claimed,
 });
 
 const state = store.getCareState('h_margaret');
@@ -28,7 +28,7 @@ const gaps = detectCareGaps(state);
 const when = new Intl.DateTimeFormat('en-US', {
   timeZone: 'Africa/Lagos', weekday: 'long', month: 'long', day: 'numeric',
   hour: 'numeric', minute: '2-digit',
-}).format(cardiologyAt);
+}).format(checkUpAt);
 
 console.log(`Demo reset - ${dbPath}`);
 console.log(`  Eye check-up: ${when} (Africa/Lagos)`);

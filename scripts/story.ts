@@ -109,12 +109,12 @@ async function main(): Promise<void> {
   const store = new CareStore(new FilePersistence(dbPath));
   await store.reset();
   await seedDemoHousehold(store);
-  const { cardiologyAt, rideObligationId } = await seedScenario(store, HOUSEHOLD, {
+  const { checkUpAt, rideObligationId } = await seedScenario(store, HOUSEHOLD, {
     now: seedNow,
     // The ride is Funmi's at the open, so the constraint beat can orphan it live.
-    rideClaimedByRenee: true,
+    rideClaimedByFunmi: true,
     // Beat one logs the eye drops on camera; don't seed a duplicate dose.
-    skipMorningHeartPill: true,
+    skipMorningEyeDrops: true,
   });
 
   // 2. The real server, in-process. Same factory the deployed server uses.
@@ -127,15 +127,15 @@ async function main(): Promise<void> {
 
   const when = new Intl.DateTimeFormat('en-US', {
     timeZone: TZ, weekday: 'long', hour: 'numeric', minute: '2-digit',
-  }).format(cardiologyAt);
+  }).format(checkUpAt);
 
   // 3. Four members, four credentials, four sessions.
-  const margaret = await connect(url, 'margaret-token');
-  const david = await connect(url, 'david-token');
-  const renee = await connect(url, 'renee-token');
-  const aide = await connect(url, 'aide-token');
+  const daddy = await connect(url, 'margaret-token');
+  const tolu = await connect(url, 'david-token');
+  const funmi = await connect(url, 'renee-token');
+  const musa = await connect(url, 'aide-token');
 
-  const tools = await david.listTools();
+  const tools = await tolu.listTools();
   console.log(bold('\nCareCircle - the one-day story, over real MCP'));
   console.log(dim(`  server: ${url}  ·  spec 2025-11-25  ·  ${tools.tools.length} tools`));
   console.log(dim(`  the eye check-up is genuinely ${when} in ${TZ}`));
@@ -143,7 +143,7 @@ async function main(): Promise<void> {
   // ── Beat 1 · 7:42am - she logs her own care by talking ──────────────────
   beat('7:42am', 'The parent logs his own care by voice');
   say('Daddy (Echo at home)', 'Alexa, I used my eye drops.');
-  alexa(await call(margaret, 'log_care_event', {
+  alexa(await call(daddy, 'log_care_event', {
     kind: 'medication_taken', medicationName: 'eye drops',
     occurredAt: wallClockToday(7, 42, TZ).toISOString(),
   }));
@@ -151,19 +151,19 @@ async function main(): Promise<void> {
   // ── Beat 2 · the constraint - work comes loose, silently ────────────────
   beat('9:15am', 'A constraint quietly orphans work nobody re-assigned');
   say('Funmi (phone)', "I can't take Daddy to his eye check-up on Thursday after all.");
-  alexa(await call(renee, 'add_note', {
+  alexa(await call(funmi, 'add_note', {
     note: "I can't take Daddy to his eye check-up Thursday.",
     unavailable: {
       memberName: 'Funmi',
-      from: new Date(cardiologyAt.getTime() - 3 * 3600_000).toISOString(),
-      to: new Date(cardiologyAt.getTime() + 3 * 3600_000).toISOString(),
+      from: new Date(checkUpAt.getTime() - 3 * 3600_000).toISOString(),
+      to: new Date(checkUpAt.getTime() + 3 * 3600_000).toISOString(),
     },
   }));
 
   // ── Beat 3 · 2:14pm - a doorbell becomes evidence, never a conclusion ────
   beat('2:14pm', 'Ring sees a delivery - evidence toward the refill, not proof');
   say('Ring doorbell', '(a package is left at Daddy\'s door)');
-  alexa(await call(david, 'ingest_signal', {
+  alexa(await call(tolu, 'ingest_signal', {
     source: 'ring', kind: 'delivery_arrived',
     detail: 'Package left at front door',
   }));
@@ -171,56 +171,56 @@ async function main(): Promise<void> {
   // ── Beat 4 · 6:30pm - the question no other assistant answers ────────────
   beat('6:30pm', "What's going to fall through the cracks this week?");
   say('Tolu (driving)', "Alexa, what's going to fall through the cracks this week?");
-  const gapsRes = alexa(await call(david, 'get_care_gaps', { withinDays: 7 }));
+  const gapsRes = alexa(await call(tolu, 'get_care_gaps', { withinDays: 7 }));
   board(gapsOf(gapsRes));
 
   const ride = gapsOf(gapsRes).find((g) => g.obligationId === rideObligationId)
     ?? gapsOf(gapsRes).find((g) => /check-up|take daddy/i.test(g.spoken));
   say('Tolu', "I'll take him Thursday.");
-  alexa(await call(david, 'claim_obligation', { obligationId: ride.obligationId }));
+  alexa(await call(tolu, 'claim_obligation', { obligationId: ride.obligationId }));
 
   // The delivery pointed at the refill; Tolu confirms it and closes it out.
   const rx = gapsOf(gapsRes).find((g) => /refill/i.test(g.spoken));
   say('Tolu', 'And yes - that package was the eye drops refill. Mark it picked up.');
-  await call(david, 'claim_obligation', { obligationId: rx.obligationId });
-  alexa(await call(david, 'resolve_obligation', {
+  await call(tolu, 'claim_obligation', { obligationId: rx.obligationId });
+  alexa(await call(tolu, 'resolve_obligation', {
     obligationId: rx.obligationId, note: 'Confirmed via the 2:14pm doorbell delivery.',
   }));
 
   // ── Beat 5 · 8:05pm - an absence, refused the shape of an accusation ─────
   beat('9:10pm', 'Known != Assumed - an absence is surfaced as a question');
   say('Ring doorbell', '(no activity at the door since afternoon)');
-  alexa(await call(david, 'ingest_signal', {
+  alexa(await call(tolu, 'ingest_signal', {
     source: 'ring', kind: 'no_activity',
     detail: 'No activity detected at the door since 2:14pm',
   }));
   say('Tolu', 'Did Daddy use his evening eye drops?');
-  const eveningRes = alexa(await call(david, 'get_care_gaps', {}));
+  const eveningRes = alexa(await call(tolu, 'get_care_gaps', {}));
   board(gapsOf(eveningRes));
 
   // ── Beat 6 · 8:06pm - the living room already knew; the gap clears ───────
   beat('9:12pm', 'The ambient board prompts a call; the gap clears everywhere');
   say('Funmi (sees the Fire TV board)', 'I just called him - he used them at 7:50 and forgot to say.');
-  alexa(await call(renee, 'log_care_event', {
+  alexa(await call(funmi, 'log_care_event', {
     kind: 'medication_taken', medicationName: 'eye drops', aboutMemberId: 'm_margaret',
     occurredAt: wallClockToday(19, 50, TZ).toISOString(),
     detail: 'Confirmed by phone; Daddy used them at 7:50pm.',
   }));
-  const closedRes = await call(david, 'get_care_gaps', {});
+  const closedRes = await call(tolu, 'get_care_gaps', {});
   console.log(dim('\n    After Funmi confirms:'));
   board(gapsOf(closedRes));
 
   // ── Coda · one record, four roles ───────────────────────────────────────
   beat('-', 'One record, four people reach it differently');
   say('Musa (driver)', 'What do I need to know for today?');
-  alexa(await call(aide, 'get_shift_brief'));
+  alexa(await call(musa, 'get_shift_brief'));
   say('Funmi (caregiver)', 'Assign the pharmacy run to Tolu.');
-  alexa(await call(renee, 'assign_obligation', { obligationId: ride.obligationId, assigneeName: 'Tolu' }));
+  alexa(await call(funmi, 'assign_obligation', { obligationId: ride.obligationId, assigneeName: 'Tolu' }));
 
   console.log(bold(cyan('\n  CareCircle doesn\'t just tell a family what happened.')));
   console.log(bold(cyan('  It tells them what still needs someone.\n')));
 
-  await Promise.all([margaret.close(), david.close(), renee.close(), aide.close()]);
+  await Promise.all([daddy.close(), tolu.close(), funmi.close(), musa.close()]);
   await new Promise<void>((r) => http.close(() => r()));
 }
 

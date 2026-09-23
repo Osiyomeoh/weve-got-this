@@ -5,7 +5,7 @@ import type { ConsequenceClass } from './types.js';
  * vendor-neutral shape CareCircle acts on.
  *
  * Bee (bee.computer) is a wearable that overhears ordinary conversation and distils
- * it into `facts` ("Mom's cardiology appointment is on the 24th") and `todos`
+ * it into `facts` ("Dad's eye check-up is on the 24th") and `todos`
  * ("pick up the prescription Friday"). That is a genuinely different kind of evidence
  * from a doorbell: nobody typed it, and nobody has confirmed it either. So the one
  * rule that governs every door governs this one hardest:

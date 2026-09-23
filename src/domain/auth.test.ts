@@ -96,16 +96,16 @@ test('the scenario puts cardiology on a real Thursday at 10:00 New York', async 
   const store = new CareStore();
   await store.reset();
   await seedDemoHousehold(store);
-  const { cardiologyAt } = await seedScenario(store, 'h_margaret');
+  const { checkUpAt } = await seedScenario(store, 'h_margaret');
 
   const fmt = new Intl.DateTimeFormat('en-US', {
     timeZone: 'Africa/Lagos', weekday: 'long', hour: 'numeric', minute: '2-digit', hour12: false,
   });
-  const parts = Object.fromEntries(fmt.formatToParts(cardiologyAt).map((p) => [p.type, p.value]));
+  const parts = Object.fromEntries(fmt.formatToParts(checkUpAt).map((p) => [p.type, p.value]));
   assert.equal(parts['weekday'], 'Thursday');
   assert.equal(Number(parts['hour']) % 24, 10);
   assert.equal(parts['minute'], '00');
-  assert.ok(cardiologyAt.getTime() > Date.now(), 'must be in the future');
+  assert.ok(checkUpAt.getTime() > Date.now(), 'must be in the future');
 });
 
 test('the scenario opens with the ride unowned and the evening dose unrecorded', async () => {

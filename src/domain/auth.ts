@@ -28,9 +28,9 @@ const CAPABILITIES: Record<Role, ReadonlySet<Capability>> = {
   // The person being cared for: full authority over their own life, and they can
   // see their own day. They are a participant, not a subject.
   care_recipient: new Set([
-    // Margaret can ask her family for help. She cannot *assign* anyone work, but a
-    // person being cared for asking "could David drive me?" is the most ordinary
-    // sentence in this whole system, and refusing it would make her a subject
+    // Daddy can ask his family for help. He cannot *assign* anyone work, but a
+    // person being cared for asking "could Tolu drive me?" is the most ordinary
+    // sentence in this whole system, and refusing it would make him a subject
     // rather than a participant.
     'log_own_event', 'read_shift', 'create_obligation', 'request_owner',
   ]),

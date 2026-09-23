@@ -5,7 +5,7 @@
  *
  * The other half of the calendar door: once the family settles who owns a dated
  * obligation, this makes it appear on the shared calendar everyone already carries
- * on their phone - "David has the Thursday ride" without anyone re-typing it. Only
+ * on their phone - "Musa has the Thursday ride" without anyone re-typing it. Only
  * real, dated work is written (OPEN / REQUESTED / ASSIGNED), each entry phrased to
  * match its true status. Idempotent, and safe to run alongside `calendar:sync`
  * because every event it writes is tagged so the inbound door skips it.

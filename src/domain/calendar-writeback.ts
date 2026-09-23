@@ -6,7 +6,7 @@ import { CARECIRCLE_SOURCE, type GoogleCalendarEvent } from './calendar.js';
  *
  * This is the other half of the calendar door. When the family settles who owns a
  * dated piece of work, that fact should appear on the shared calendar every one of
- * them already carries on their phone - so "David has the Thursday ride" is not a
+ * them already carries on their phone - so "Musa has the Thursday ride" is not a
  * thing buried in one app, it is on everyone's calendar without anyone re-typing it.
  *
  * Two honesty rules carry over from everywhere else in the system:
