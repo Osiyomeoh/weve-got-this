@@ -70,7 +70,7 @@ export async function runAgentOnce(
     const delivery = await deps.notifier.deliver({
       to: member.id, toName: name, from: 'CareCircle',
       message: action.kind === 'ASK'
-        ? `CareCircle noticed nobody has "${obligation.what}" yet. Can you take it on?`
+        ? `CareCircle noticed nobody has "${obligation.what}" yet. Can you take it on?\n\nReply "yes" or "can't".`
         : `CareCircle couldn't find anyone for "${obligation.what}". It may need you to step in.`,
     });
 

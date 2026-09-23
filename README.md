@@ -24,7 +24,7 @@ what happened        what must happen        who has it
  Thursday at 10"     drive her                has claimed it
 ```
 
-**And it is real - not a mockup.** Live MCP server you can hit right now, **405 tests**
+**And it is real - not a mockup.** Live MCP server you can hit right now, **406 tests**
 (including property-based proofs of the risk model), **~92-93%** measured tool-selection
 accuracy on Amazon Bedrock (124-126/135 across repeated runs), and a trust model **measured at 0% false accusations where a
 raw LLM hits 50%**.
@@ -395,7 +395,7 @@ git clone https://github.com/Osiyomeoh/carecircle && cd carecircle
 npm ci
 npm run lint      # eslint (typescript-eslint, strict) - 0 findings
 npm run typecheck # tsc under strict + noUncheckedIndexedAccess + exactOptionalPropertyTypes
-npm test          # 405 tests (unit, adversarial, and property-based)
+npm test          # 406 tests (unit, adversarial, and property-based)
 npm run story     # the whole one-day story, end to end, over real MCP
 ```
 

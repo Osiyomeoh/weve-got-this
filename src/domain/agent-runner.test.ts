@@ -72,3 +72,13 @@ test('a notification is delivered for the ask', async () => {
   await runAgentOnce(HH, { store, notifier: spy as never, now: () => DAYTIME });
   assert.equal(delivered.length, 1);
 });
+
+test('the agent\'s ask tells the person how to answer, like a human ask does', async () => {
+  // Over a chat channel the reply IS the answer, so the ask must say what to type.
+  const messages: string[] = [];
+  const spy = { channel: 'spy', deliver: async (m: { message: string }) => { messages.push(m.message); return { delivered: true }; } };
+  await runAgentOnce(HH, { store, notifier: spy as never, now: () => DAYTIME });
+  assert.equal(messages.length, 1);
+  assert.match(messages[0]!, /Drive Margaret to cardiology/);
+  assert.match(messages[0]!, /Reply "yes" or "can't"\./);
+});
