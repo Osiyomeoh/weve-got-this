@@ -16,7 +16,7 @@ This is a real person's care, so:
 
 - Get a clear yes from the person being cared for **and** each family member before
   adding them. Explain: what is recorded, who sees it, and that they can leave any time.
-- Keep health detail minimal: "evening heart pill" is enough; no diagnoses, no records.
+- Keep health detail minimal: "evening eye drops" is enough; no diagnoses, no records.
 - Ask separately before filming anyone or showing their name in the video. Offer first
   names only or a pseudonym.
 - At the end, offer to delete their household. Tell them you will.

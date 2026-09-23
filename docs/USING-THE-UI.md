@@ -32,7 +32,7 @@ in development it runs at `http://localhost:8082`.
 
 ## Driving the console (`/console`)
 
-1. **Pick who you are.** The member buttons (Tasha, David, Margaret, Renee) set *who is
+1. **Pick who you are.** The member buttons (Musa, Tolu, Daddy, Funmi) set *who is
    speaking*. This is the identity every tool sees — CareCircle only lets you do what that
    person is allowed to do.
 2. **Talk or type.** Tap the **orb** (or the Speak button) and talk, or type in the box.
@@ -48,13 +48,13 @@ what the common things you can say actually do:
 | Say something like… | The MCP tool it drives | What happens |
 |---|---|---|
 | "What needs doing?" / "Is anything being missed?" | `get_care_gaps` | Lists unowned, missing, or overdue work |
-| "Ask Renee if she can drive Mom to cardiology" | `request_owner` | Asks that person — and **messages them on Telegram** |
+| "Ask Funmi if she can take Daddy to his eye check-up" | `request_owner` | Asks that person — and **messages them on Telegram** |
 | "Yes, I'll take it" / "I can't" | `respond_to_request` | Answers a request made of *you*; assigns or reopens it |
-| "How do you know that?" / "Who said she needs a ride?" | `get_provenance` | Walks the whole chain behind an item |
+| "How do you know that?" / "Who said he needs a ride?" | `get_provenance` | Walks the whole chain behind an item |
 | **"What are you connected to?"** | **`get_connections`** | Reports each data door: LIVE / connected / not set up |
-| "Mom took her evening pill" | `log_care_event` | Records a dose (as reported) |
-| "Cardiology is Thursday at 10" | `record_appointment` | Records it and *proposes* the ride/companion for a human to confirm |
-| "How is she doing?" / "Catch me up" | `get_care_summary` | The day: what's logged, notes, what's coming |
+| "Daddy used his evening eye drops" | `log_care_event` | Records a dose (as reported) |
+| "The eye check-up is Thursday at 10" | `record_appointment` | Records it and *proposes* the ride/companion for a human to confirm |
+| "How is he doing?" / "Catch me up" | `get_care_summary` | The day: what's logged, notes, what's coming |
 | "What's on my shift?" | `get_shift_brief` | What's assigned to you and due |
 | "Check on things" / "Chase the open items" | `run_care_agent` | The agent reviews everything unowned and asks the fairest person |
 
@@ -70,9 +70,9 @@ The full tool set also includes `claim_obligation`, `assign_obligation`, `confir
 The strongest thing to show: an ask leaving CareCircle and an answer coming back over a real
 channel.
 
-1. As **David**, say: *"Ask Renee if she can drive Mom to cardiology on Thursday."*
-2. CareCircle asks Renee and **sends her a Telegram** (in the family group, if group mode is on).
-3. Renee replies **"yes"** in Telegram → the board flips the ride to **ASSIGNED, owner Renee**,
+1. As **Tolu**, say: *"Ask Funmi if she can take Daddy to his eye check-up on Thursday."*
+2. CareCircle asks Funmi and **sends her a Telegram** (in the family group, if group mode is on).
+3. Funmi replies **"yes"** in Telegram → the board flips the ride to **ASSIGNED, owner Funmi**,
    and the bot answers in the chat. No one touched the console for the reply.
 
 The reply travelled the *same* path a spoken "yes" would (`respond_to_request`), so how you

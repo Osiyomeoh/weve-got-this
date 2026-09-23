@@ -95,7 +95,7 @@ the loop. Verified live in the group **"Magaret's CareCircle"** (`-5450402543`).
 
 **Behaviour:**
 - **Outbound:** with `TELEGRAM_GROUP_CHAT_ID` set, an ask posts to the group, prefixed with
-  the person's name ("Renee, David asked if you can take this on: …"), so everyone sees who
+  the person's name ("Funmi, Tolu asked if you can take this on: …"), so everyone sees who
   was asked.
 - **Inbound:** a reply is attributed to the **sender's own user id** (`message.from.id`), so
   in a group one member's "yes" is told apart from another's, and still only answers *that

@@ -31,7 +31,7 @@ dose" and an accusation aimed at whoever was supposed to be there.
 | **Protocol** | `2025-11-25` |
 | **Auth** | `Authorization: Bearer <token>` - required on every request |
 
-The public server runs the demo household (Margaret's care circle) so a client can
+The public server runs the demo household (Daddy's care circle) so a client can
 be pointed at it and immediately have something real to talk about. It is a demo:
 do not put anybody's actual medical information in it.
 
@@ -42,10 +42,10 @@ allowed to do, so pick the one whose authority you want to exercise.
 
 | Token | Member | Role |
 |---|---|---|
-| `renee-token` | Renee | `primary_caregiver` - full authority |
-| `david-token` | David | `caregiver` |
-| `margaret-token` | Margaret | `care_recipient` - the person being cared for |
-| `aide-token` | Tasha | `helper` - paid aide, scoped to her shift |
+| `renee-token` | Funmi | `primary_caregiver` - full authority |
+| `david-token` | Tolu | `caregiver` |
+| `margaret-token` | Daddy | `care_recipient` - the person being cared for |
+| `aide-token` | Musa | `helper` - the paid driver, scoped to his own work |
 
 ---
 
@@ -249,8 +249,8 @@ payment is taken - but the shape is what a real merchant integration would retur
     "id": "gap_unclaimed_obl_…",
     "kind": "UNCLAIMED",        // | UNCONFIRMED | NEEDS_FOLLOW_UP
     "severity": "HIGH",         // | MEDIUM | LOW
-    "spoken": "Drive Mom to cardiology Thursday at 10 AM - nobody has taken this yet.",
-    "because": "Confirmed as needed, originally inferred from cardiology appointment.",
+    "spoken": "Take Daddy to his eye check-up Thursday at 10 AM - nobody has taken this yet.",
+    "because": "Confirmed as needed, originally inferred from eye check-up appointment.",
     "obligationId": "obl_…",    // null when there is nothing to assign yet
     "score": 17,                // round(cost * pDrop * confidence * 100)
     "factors": { "cost": 1, "pDrop": 0.2876, "confidence": 0.6 }
