@@ -295,6 +295,41 @@ export class CareStore {
     });
   }
 
+  /**
+   * Delete one household and everything it owns: members and their sign-in mappings,
+   * events, obligations and their transitions, medications, entities. Nothing outside
+   * the household is touched, which is the point: this is how a family's "delete our
+   * data" request is honoured, and how the demo household is re-seeded in production
+   * without disturbing anyone else's care record.
+   */
+  removeHousehold(householdId: string): Promise<{ removed: number }> {
+    return this.#write(() => {
+      const snap = this.#snapshot;
+      if (!snap.households.some((h) => h.id === householdId)) {
+        throw new NotFoundError('household', householdId);
+      }
+      const memberIds = new Set(snap.members.filter((m) => m.householdId === householdId).map((m) => m.id));
+      const obligationIds = new Set(snap.obligations.filter((o) => o.householdId === householdId).map((o) => o.id));
+      const before = snap.households.length + snap.members.length + snap.events.length
+        + snap.obligations.length + snap.medications.length + snap.transitions.length
+        + snap.identities.length + (snap.entities ?? []).length;
+
+      snap.households = snap.households.filter((h) => h.id !== householdId);
+      snap.members = snap.members.filter((m) => m.householdId !== householdId);
+      snap.events = snap.events.filter((e) => e.householdId !== householdId);
+      snap.obligations = snap.obligations.filter((o) => o.householdId !== householdId);
+      snap.medications = snap.medications.filter((m) => m.householdId !== householdId);
+      snap.transitions = snap.transitions.filter((t) => !obligationIds.has(t.obligationId));
+      snap.identities = snap.identities.filter((i) => i.householdId !== householdId && !memberIds.has(i.memberId));
+      if (snap.entities) snap.entities = snap.entities.filter((e) => e.householdId !== householdId);
+
+      const after = snap.households.length + snap.members.length + snap.events.length
+        + snap.obligations.length + snap.medications.length + snap.transitions.length
+        + snap.identities.length + (snap.entities ?? []).length;
+      return { removed: before - after };
+    });
+  }
+
   /** Members with a given role in a household. Used to protect the last caregiver. */
   membersWithRole(householdId: string, role: Member['role']): Member[] {
     return this.#snapshot.members.filter((m) => m.householdId === householdId && m.role === role);

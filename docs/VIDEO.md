@@ -33,16 +33,18 @@ person, and never accuses anyone of what it didn't see.*
 - [ ] Fresh demo dates in **production**. `npm run demo:reset` only resets the local
       `carecircle.db.json` file and never touches the live DynamoDB table (and it wipes
       every household, so never point it at production). The live demo household still
-      shows December 2024 dates; it needs a production-safe reset of `h_margaret` only.
-      After resetting, re-fire `ring:simulate` so the connections board still says Ring
-      is live.
+      shows December 2024 dates. Use the production-safe reset, which re-seeds only
+      `h_margaret`, restarts both services and re-fires a Ring event:
+      `AWS_PROFILE=conductor bash infra/demo-reset-prod.sh` (dry run first:
+      `AWS_PROFILE=conductor CARECIRCLE_TABLE=carecircle AWS_REGION=us-east-1 npm run demo:reset:prod`).
+      Telegram shows "configured" rather than "live" until the group's first reply.
 - [ ] Console voice pace **gentle** (Polly). Console left, `/tv` right, phones on a stand
       in frame. Never alt-tab on camera.
 - [ ] Claude Desktop (or MCPJam) connected to the live `/mcp` endpoint via OAuth, tested
       once before the take.
 - [ ] Burn in captions. The video makes an accessibility argument; it has to be captioned.
 - [ ] Say numbers only if they match the repo on record day: tools (`get_started` lists
-      them, 25 today), tests (`npm test`, 413 today), trust benchmark
+      them, 25 today), tests (`npm test`, 416 today), trust benchmark
       (`npm run trust-benchmark`).
 
 ---
@@ -160,7 +162,7 @@ week?"* It calls `get_care_gaps` on the same server and gives the same answer.
 
 ## 2:50-3:00 - End card
 
-> **VO:** "Twenty-five tools. Four hundred and thirteen tests. Every number in this video can
+> **VO:** "Twenty-five tools. Four hundred and sixteen tests. Every number in this video can
 > be reproduced from the repo."
 
 ```

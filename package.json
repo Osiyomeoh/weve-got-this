@@ -34,7 +34,8 @@
     "lint:fix": "eslint \"src/**/*.ts\" --fix",
     "format": "prettier --write \"src/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\"",
-    "telegram:ids": "tsx --env-file-if-exists=.env scripts/telegram-ids.ts"
+    "telegram:ids": "tsx --env-file-if-exists=.env scripts/telegram-ids.ts",
+    "demo:reset:prod": "tsx scripts/demo-reset-prod.ts"
   },
   "dependencies": {
     "@aws-sdk/client-bedrock": "^3.1131.0",
