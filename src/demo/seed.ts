@@ -15,9 +15,14 @@ export const DEMO_TOKENS: Record<string, string> = {
   'aide-token': 'm_aide',
 };
 
-const HOUSEHOLD_ID = 'h_margaret';
+export const DEMO_HOUSEHOLD_ID = 'h_margaret';
 
-export async function seedDemoHousehold(store: CareStore): Promise<void> {
+export async function seedDemoHousehold(
+  store: CareStore, options: { suffix?: string } = {},
+): Promise<void> {
+  // A suffix gives a per-visitor sandbox copy ids of its own; ids are global keys.
+  const sid = (id: string): string => `${id}${options.suffix ?? ''}`;
+  const HOUSEHOLD_ID = sid(DEMO_HOUSEHOLD_ID);
   try {
     store.getCareState(HOUSEHOLD_ID);
     return; // already seeded
@@ -30,7 +35,7 @@ export async function seedDemoHousehold(store: CareStore): Promise<void> {
   });
 
   await store.addMember({
-    id: 'm_margaret', householdId: HOUSEHOLD_ID, name: 'Margaret',
+    id: sid('m_margaret'), householdId: HOUSEHOLD_ID, name: 'Margaret',
     role: 'care_recipient', spokenAs: 'Mom',
     // Margaret uses a wheelchair; getting to cardiology needs an accessible vehicle. This
     // is a logistics fact the graph carries so a dropped ride ranks with the weight it
@@ -38,31 +43,31 @@ export async function seedDemoHousehold(store: CareStore): Promise<void> {
     attributes: { needsAccessibleTransport: true },
   });
   await store.addMember({
-    id: 'm_david', householdId: HOUSEHOLD_ID, name: 'David',
+    id: sid('m_david'), householdId: HOUSEHOLD_ID, name: 'David',
     role: 'primary_caregiver',
   });
   await store.addMember({
-    id: 'm_renee', householdId: HOUSEHOLD_ID, name: 'Renee',
+    id: sid('m_renee'), householdId: HOUSEHOLD_ID, name: 'Renee',
     role: 'caregiver',
   });
   await store.addMember({
-    id: 'm_aide', householdId: HOUSEHOLD_ID, name: 'Tasha',
+    id: sid('m_aide'), householdId: HOUSEHOLD_ID, name: 'Tasha',
     role: 'helper',
   });
 
   await store.addMedication({
-    id: 'med_heart', householdId: HOUSEHOLD_ID, name: 'heart pill',
-    times: ['08:00', '20:00'], forMemberId: 'm_margaret',
+    id: sid('med_heart'), householdId: HOUSEHOLD_ID, name: 'heart pill',
+    times: ['08:00', '20:00'], forMemberId: sid('m_margaret'),
   });
   await store.addMedication({
-    id: 'med_thyroid', householdId: HOUSEHOLD_ID, name: 'thyroid tablet',
-    times: ['08:00'], forMemberId: 'm_margaret',
+    id: sid('med_thyroid'), householdId: HOUSEHOLD_ID, name: 'thyroid tablet',
+    times: ['08:00'], forMemberId: sid('m_margaret'),
   });
 
   // The cardiology practice as a first-class non-person node. The ride obligation points
   // its subject at Margaret (whose accessibility need drives risk); this entity is here so
   // the graph names the destination the ride is *to*, the first step of the widening.
   await store.addEntity({
-    id: 'e_cardiology', householdId: HOUSEHOLD_ID, type: 'service', name: 'Cardiology',
+    id: sid('e_cardiology'), householdId: HOUSEHOLD_ID, type: 'service', name: 'Cardiology',
   });
 }

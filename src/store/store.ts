@@ -119,6 +119,11 @@ export class CareStore {
   }
 
   /** How many households are loaded. Used by the health check. */
+  /** Every household id. Used by the demo-sandbox sweeper. */
+  householdIds(): string[] {
+    return this.#snapshot.households.map((h) => h.id);
+  }
+
   householdCount(): number {
     return this.#snapshot.households.length;
   }

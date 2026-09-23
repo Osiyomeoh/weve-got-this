@@ -81,21 +81,24 @@ export class TelegramNotifier implements Notifier {
 
   async deliver(input: { to: string; toName: string; from: string; message: string }): Promise<DeliveryResult> {
     // Group mode: post the ask into the family group, naming the person, so the
-    // whole circle sees who was asked and can watch the answer come back. A member
-    // with no mapping can still be named in the group - the group is the audience,
-    // not a private line - but if we have neither a group nor their own chat, we
-    // stay honest and do not claim to have reached them.
+    // whole circle sees who was asked and can watch the answer come back.
+    //
+    // Only for people mapped to this family. One server holds many households
+    // (sign-ups, per-visitor demo sandboxes, a real pilot family), and the group is
+    // one real family's chat: an unmapped member belongs to someone else's circle, and
+    // posting their care into this group would leak it. A member must be mapped anyway
+    // for their reply to be recognised, so requiring it costs the family nothing.
     const chatId = this.#cfg.recipients.get(input.to);
+    if (!chatId) {
+      // Honest: we did not message someone we have no chat with.
+      return { delivered: false, channel: 'telegram', detail: 'no Telegram chat for this member' };
+    }
     if (this.#cfg.groupChatId) {
       const text = `${input.toName}, ${input.message}`;
       const r = await sendTelegramMessage(this.#cfg.token, this.#cfg.groupChatId, text, this.#fetch);
       return r.ok
         ? { delivered: true, channel: 'telegram', ...(r.id ? { detail: r.id } : {}) }
         : { delivered: false, channel: 'telegram', ...(r.detail ? { detail: r.detail } : {}) };
-    }
-    if (!chatId) {
-      // Honest: we did not message someone we have no chat with.
-      return { delivered: false, channel: 'telegram', detail: 'no Telegram chat for this member' };
     }
     const r = await sendTelegramMessage(this.#cfg.token, chatId, input.message, this.#fetch);
     return r.ok

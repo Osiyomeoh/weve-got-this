@@ -150,7 +150,7 @@ env.update({
     # the judge-facing /setup flow.
     "CARECIRCLE_ALLOW_SELF_SIGNUP": os.environ.get("CARECIRCLE_ALLOW_SELF_SIGNUP", "true"),
 })
-for key in ("CARECIRCLE_OAUTH_SECRET", "CARECIRCLE_PUBLIC_URL", "CARECIRCLE_OAUTH_REDIRECTS", "CARECIRCLE_OAUTH_HOUSEHOLD", "RING_HMAC_KEY", "RING_HOUSEHOLD_ID",
+for key in ("CARECIRCLE_OAUTH_SECRET", "CARECIRCLE_PUBLIC_URL", "CARECIRCLE_OAUTH_REDIRECTS", "CARECIRCLE_OAUTH_HOUSEHOLD", "CARECIRCLE_SANDBOX_KEY", "RING_HMAC_KEY", "RING_HOUSEHOLD_ID",
             # The connector heartbeat: how often Google/Bee are polled (off when unset),
             # and which household their events sync into (required, or the loop is disabled).
             "CARECIRCLE_CONNECTOR_INTERVAL_MS", "CARECIRCLE_HOUSEHOLD",

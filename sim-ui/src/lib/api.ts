@@ -61,7 +61,11 @@ export interface Turn {
   corrections?: Correction[];
 }
 
-export interface SimConfig { provider: string; region: string; modelId: string; endpoint: string; }
+export interface SimConfig {
+  provider: string; region: string; modelId: string; endpoint: string;
+  /** 'private': this browser has its own copy of the demo. 'shared': the live demo household. */
+  demo?: 'shared' | 'private';
+}
 
 export interface Transcription {
   text: string;
@@ -109,6 +113,9 @@ export const api = {
       method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ memberId, tool, args }),
     }).then(jsonOrThrow),
+  /** Throw away this browser's copy of the demo; the next request gets a fresh one. */
+  resetSandbox: (): Promise<{ ok: boolean }> =>
+    fetch('/api/sandbox/reset', { method: 'POST' }).then(jsonOrThrow),
   /** Reset the onboarding demo so setup starts from a blank new circle. */
   resetSetup: (): Promise<{ ok: boolean }> =>
     fetch('/api/setup/reset', { method: 'POST' }).then(jsonOrThrow),

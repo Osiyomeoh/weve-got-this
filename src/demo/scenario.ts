@@ -63,6 +63,11 @@ export interface ScenarioOptions {
    * missed record. Defaults to false, which keeps `npm run demo:reset` unchanged.
    */
   skipMorningHeartPill?: boolean;
+  /**
+   * Appended to every member and medication id, matching `seedDemoHousehold`'s
+   * suffix, so a per-visitor sandbox copy of the demo gets ids of its own.
+   */
+  suffix?: string;
 }
 
 /**
@@ -79,32 +84,33 @@ export async function seedScenario(
   store: CareStore, householdId: string, options: ScenarioOptions = {},
 ): Promise<{ cardiologyAt: Date; rideObligationId: string }> {
   const now = options.now ?? new Date();
+  const sid = (id: string): string => `${id}${options.suffix ?? ''}`;
   const cardiologyAt = nextWeekdayAt(4, 10, 0, now, NY); // 4 = Thursday
 
   // Morning medications, confirmed by Margaret herself. The heart pill is optionally
   // left for the live walkthrough to log on camera (see skipMorningHeartPill).
   if (!options.skipMorningHeartPill) {
     await store.appendEvent({
-      householdId, kind: 'medication_taken', reportedBy: 'm_margaret',
+      householdId, kind: 'medication_taken', reportedBy: sid('m_margaret'),
       occurredAt: todayAt(8, 10, now, NY).toISOString(),
       source: 'voice', confidence: 'reported',
-      data: { medicationId: 'med_heart', medicationName: 'heart pill', aboutMemberId: 'm_margaret' },
+      data: { medicationId: sid('med_heart'), medicationName: 'heart pill', aboutMemberId: sid('m_margaret') },
     });
   }
   await store.appendEvent({
-    householdId, kind: 'medication_taken', reportedBy: 'm_margaret',
+    householdId, kind: 'medication_taken', reportedBy: sid('m_margaret'),
     occurredAt: todayAt(8, 12, now, NY).toISOString(),
     source: 'voice', confidence: 'reported',
-    data: { medicationId: 'med_thyroid', medicationName: 'thyroid tablet', aboutMemberId: 'm_margaret' },
+    data: { medicationId: sid('med_thyroid'), medicationName: 'thyroid tablet', aboutMemberId: sid('m_margaret') },
   });
   // The evening dose is deliberately absent. Not "missed" - unrecorded.
 
   const appointment = await store.appendEvent({
-    householdId, kind: 'appointment_scheduled', reportedBy: 'm_renee',
+    householdId, kind: 'appointment_scheduled', reportedBy: sid('m_renee'),
     occurredAt: cardiologyAt.toISOString(),
     source: 'voice', confidence: 'reported',
     detail: 'Cardiology, Thursday at 10',
-    data: { appointmentKind: 'cardiology', forMemberId: 'm_margaret' },
+    data: { appointmentKind: 'cardiology', forMemberId: sid('m_margaret') },
   });
 
   const ride = await store.createObligation({
@@ -114,14 +120,14 @@ export async function seedScenario(
     consequence: 'medical',
     // Inferred originally, then confirmed by a human - which is why it counts.
     provenance: { kind: 'INFERRED', rule: 'medical-appointment-transport', from: 'cardiology appointment' },
-    ownerId: options.rideClaimedByRenee ? 'm_renee' : null,
+    ownerId: options.rideClaimedByRenee ? sid('m_renee') : null,
     dueAt: cardiologyAt.toISOString(),
     sourceEventId: appointment.id,
     // The ride is *for* Margaret; her accessibility need flows into how this gap ranks.
-    aboutEntityId: 'm_margaret',
+    aboutEntityId: sid('m_margaret'),
   });
   if (options.rideClaimedByRenee) {
-    await store.transition(ride.id, householdId, 'ASSIGNED', 'm_renee', { ownerId: 'm_renee' });
+    await store.transition(ride.id, householdId, 'ASSIGNED', sid('m_renee'), { ownerId: sid('m_renee') });
   }
 
   await store.createObligation({
@@ -129,17 +135,17 @@ export async function seedScenario(
     what: "Pick up Mom's prescription",
     status: 'OPEN',
     consequence: 'medical',
-    provenance: { kind: 'CONFIRMED', byMemberId: 'm_renee', at: now.toISOString() },
+    provenance: { kind: 'CONFIRMED', byMemberId: sid('m_renee'), at: now.toISOString() },
     ownerId: null,
     dueAt: new Date(cardiologyAt.getTime() - 86_400_000).toISOString(),
   });
 
   await store.appendEvent({
-    householdId, kind: 'note_added', reportedBy: 'm_renee',
+    householdId, kind: 'note_added', reportedBy: sid('m_renee'),
     occurredAt: todayAt(14, 20, now, NY).toISOString(),
     source: 'voice', confidence: 'reported',
     detail: 'Mom sounded tired on the phone.',
-    data: { aboutMemberId: 'm_margaret' },
+    data: { aboutMemberId: sid('m_margaret') },
   });
 
   return { cardiologyAt, rideObligationId: ride.id };

@@ -9,6 +9,10 @@ import { DEMO_TOKENS } from '../demo/seed.js';
 import { buildVocabulary, correctTranscript } from './transcript.js';
 import { ensureVocabulary, hasEnoughAudio, transcribePcm, unhyphenate, SAMPLE_RATE } from './transcribe.js';
 import { isRate, synthesize } from './speech.js';
+import {
+  VisitorSandboxes, parseCookies, isVisitorId, newVisitorId, toSandbox, fromSandbox,
+  VISITOR_COOKIE, LIVE_COOKIE, type SandboxGrant,
+} from './sandbox.js';
 
 /**
  * Simulated Alexa+ experience.
@@ -42,15 +46,60 @@ const FOUNDER_ID = '__founder__';
 function newFounderToken(): string { return `founder-${randomUUID()}`; }
 tokenFor.set(FOUNDER_ID, newFounderToken());
 
-async function hostFor(memberId: string): Promise<SimulatedAlexa> {
-  const existing = hosts.get(memberId);
+/**
+ * Whose copy of the demo a request acts on. `live` is the shared demo household (and
+ * onboarding); a sandbox context is one visitor's private copy (see ./sandbox.ts).
+ */
+interface Ctx { key: string; suffix: string; token: (memberId: string) => string | undefined }
+const LIVE: Ctx = { key: 'live', suffix: '', token: (m) => tokenFor.get(m) };
+
+// Per-visitor sandboxes are on when the console shares a key with the MCP server.
+const SANDBOX_KEY = process.env['CARECIRCLE_SANDBOX_KEY']?.trim() ?? '';
+// The recording operator opts a browser into the shared demo with /live?key=...,
+// because the Telegram scene must act on the real demo household.
+const LIVE_KEY = process.env['SIM_LIVE_KEY']?.trim() ?? '';
+const sandboxes = new VisitorSandboxes({
+  create: async (): Promise<SandboxGrant> => {
+    const res = await fetch(new URL('/sandbox', MCP_ENDPOINT), {
+      method: 'POST', headers: { 'x-sandbox-key': SANDBOX_KEY },
+    });
+    if (!res.ok) throw new Error(`Could not create a demo copy (${res.status})`);
+    const body = await res.json() as { suffix: string; tokens: Record<string, string>; expiresAt: string };
+    return { suffix: body.suffix, tokens: body.tokens, expiresAt: Date.parse(body.expiresAt) };
+  },
+});
+
+async function contextFor(req: express.Request): Promise<Ctx> {
+  if (!SANDBOX_KEY) return LIVE;
+  const cookies = parseCookies(req.header('cookie'));
+  if (LIVE_KEY && cookies[LIVE_COOKIE] === '1') return LIVE;
+  // No visitor cookie: the Fire TV app, scripts, curl. They read the shared demo.
+  const visitor = cookies[VISITOR_COOKIE];
+  if (!isVisitorId(visitor)) return LIVE;
+  const grant = await sandboxes.get(visitor);
+  return { key: `${visitor}${grant.suffix}`, suffix: grant.suffix, token: (m) => grant.tokens[m] };
+}
+
+const MAX_HOSTS = 2_000;
+
+async function hostFor(ctx: Ctx, memberId: string): Promise<SimulatedAlexa> {
+  // Onboarding is not part of the demo story; it always runs as the founder.
+  if (memberId === FOUNDER_ID) ctx = LIVE;
+  const hostKey = `${ctx.key}|${memberId}`;
+  const existing = hosts.get(hostKey);
   if (existing) return existing;
-  const token = tokenFor.get(memberId);
+  const token = ctx.token(memberId);
   if (!token) throw new Error(`No credential for ${memberId}`);
   const host = await SimulatedAlexa.connect({
     endpoint: MCP_ENDPOINT, token, provider,
   });
-  hosts.set(memberId, host);
+  hosts.set(hostKey, host);
+  // Bounded: an idle visitor's hosts are dropped oldest first and reconnect on use.
+  while (hosts.size > MAX_HOSTS) {
+    const oldest = hosts.keys().next().value;
+    if (oldest === undefined) break;
+    hosts.delete(oldest);
+  }
   return host;
 }
 
@@ -77,6 +126,31 @@ async function withRetry<T>(fn: () => Promise<T>, tries = 4): Promise<T> {
 
 const app = express();
 app.use(express.json());
+
+// Give each browser that opens a console page its own visitor id, and so its own
+// copy of the demo. Only page loads set it; API callers without it (the Fire TV app)
+// keep the shared demo.
+app.use((req, res, next) => {
+  if (SANDBOX_KEY && req.method === 'GET' && !req.path.startsWith('/api/')
+    && !isVisitorId(parseCookies(req.header('cookie'))[VISITOR_COOKIE])) {
+    const secure = req.header('x-forwarded-proto') === 'https' ? '; Secure' : '';
+    res.append('Set-Cookie',
+      `${VISITOR_COOKIE}=${newVisitorId()}; Path=/; HttpOnly; SameSite=Lax; Max-Age=43200${secure}`);
+  }
+  next();
+});
+
+// Recording mode: this browser acts on the shared demo household instead of a copy.
+app.get('/live', (req, res) => {
+  if (!LIVE_KEY || req.query['key'] !== LIVE_KEY) { res.status(404).send('Not found'); return; }
+  const secure = req.header('x-forwarded-proto') === 'https' ? '; Secure' : '';
+  res.append('Set-Cookie', `${LIVE_COOKIE}=1; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400${secure}`);
+  res.redirect(302, '/console');
+});
+app.get('/live/off', (_req, res) => {
+  res.append('Set-Cookie', `${LIVE_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`);
+  res.redirect(302, '/console');
+});
 // The read-only board endpoints are also consumed by the React Native TV app's
 // web build (a different origin), so allow cross-origin GETs. No credentials, no
 // cookies - this is public demo state.
@@ -93,8 +167,8 @@ app.use(express.static(join(here, '../../public')));
 
 /** One spoken turn from one member's device. */
 /** Read the whole care picture from the MCP server, as a fresh short session. */
-async function readCareState(): Promise<Record<string, unknown>> {
-  const token = tokenFor.get('m_david');
+async function readCareState(ctx: Ctx = LIVE): Promise<Record<string, unknown>> {
+  const token = ctx.token('m_david');
   const response = await fetch(MCP_ENDPOINT, {
     method: 'POST',
     headers: {
@@ -134,7 +208,7 @@ async function readCareState(): Promise<Record<string, unknown>> {
   });
   const body = await read.json() as { result?: { contents?: { text?: string }[] } };
   void fetch(MCP_ENDPOINT, { method: 'DELETE', headers }).catch(() => undefined);
-  return JSON.parse(body.result?.contents?.[0]?.text ?? '{}');
+  return fromSandbox(JSON.parse(body.result?.contents?.[0]?.text ?? '{}'), ctx.suffix);
 }
 
 /**
@@ -170,8 +244,9 @@ app.post('/api/say', async (req, res) => {
     // transcript back onto the household's own vocabulary before the planner
     // sees it, and report what changed rather than rewriting anyone silently.
     const { text: heard, corrections } = correctTranscript(text, await vocabulary());
-    const host = await hostFor(memberId);
-    const turn = await withRetry(() => host.say(heard));
+    const ctx = await contextFor(req);
+    const host = await hostFor(ctx, memberId);
+    const turn = fromSandbox(await withRetry(() => host.say(heard)), ctx.suffix);
     res.json({ ...turn, ...(corrections.length ? { heard, corrections } : {}) });
   } catch (err) {
     const message = (err as Error).message;
@@ -238,9 +313,10 @@ app.post('/api/act', async (req, res) => {
     return;
   }
   try {
-    const host = await hostFor(memberId);
-    const out = await withRetry(() => host.callToolDirect(tool, args ?? {}));
-    res.json(out);
+    const ctx = await contextFor(req);
+    const host = await hostFor(ctx, memberId);
+    const out = await withRetry(() => host.callToolDirect(tool, toSandbox(args ?? {}, ctx.suffix)));
+    res.json(fromSandbox(out, ctx.suffix));
   } catch (err) {
     res.status(502).json({ error: (err as Error).message });
   }
@@ -307,17 +383,30 @@ app.post('/api/speak', async (req, res) => {
   }
 });
 
-app.get('/api/state', async (_req, res) => {
+// "Start over": this visitor gets a brand-new copy of the demo on their next request.
+app.post('/api/sandbox/reset', (req, res) => {
+  const visitor = parseCookies(req.header('cookie'))[VISITOR_COOKIE];
+  if (isVisitorId(visitor)) {
+    const old = sandboxes.forget(visitor);
+    if (old) for (const k of [...hosts.keys()]) if (k.startsWith(`${visitor}${old.suffix}|`)) hosts.delete(k);
+  }
+  res.json({ ok: true });
+});
+
+app.get('/api/state', async (req, res) => {
   try {
-    res.json(await readCareState());
+    res.json(await readCareState(await contextFor(req)));
   } catch (err) {
     res.status(502).json({ error: (err as Error).message });
   }
 });
 
-app.get('/api/config', (_req, res) => {
+app.get('/api/config', async (req, res) => {
+  const ctx = await contextFor(req).catch(() => LIVE);
   res.json({
     provider: provider.name, region: REGION, modelId: MODEL_ID, endpoint: MCP_ENDPOINT,
+    // What the UI tells the visitor: their own copy, or the shared live demo.
+    demo: ctx === LIVE ? 'shared' : 'private',
   });
 });
 

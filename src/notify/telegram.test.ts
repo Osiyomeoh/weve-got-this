@@ -64,3 +64,19 @@ test('config needs a bot token and a valid recipients map', () => {
   const c = telegramConfigFromEnv({ TELEGRAM_BOT_TOKEN: 't', TELEGRAM_RECIPIENTS: '{"m_renee":"987"}' } as NodeJS.ProcessEnv);
   assert.equal(c!.recipients.get('m_renee'), '987');
 });
+
+test('attack: group mode never posts a member from another household into the family group', async () => {
+  // The group is one real family's chat; the server also holds sign-ups and demo
+  // sandboxes. An unmapped member is someone else's care, and must not appear there.
+  const calls: unknown[] = [];
+  const fetchImpl = (async (_url: string, init: { body: string }) => {
+    calls.push(JSON.parse(init.body));
+    return new Response(JSON.stringify({ ok: true, result: { message_id: 1 } }));
+  }) as unknown as typeof fetch;
+  const n = new TelegramNotifier({
+    token: 't', recipients: new Map([['m_renee', '987654']]), groupChatId: '-100200300', fetchImpl,
+  });
+  const r = await n.deliver({ to: 'm_david~sbx1', toName: 'David', from: 'CareCircle', message: 'hi' });
+  assert.equal(r.delivered, false);
+  assert.equal(calls.length, 0, 'nothing may be posted to the family group');
+});

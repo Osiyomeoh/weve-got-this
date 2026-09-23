@@ -45,6 +45,9 @@ export default function Console() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [calls, setCalls] = useState<ToolCall[]>([]);
   const { state, online } = useBoard(3000);
+  // Whether this browser has its own copy of the demo (see src/sim/sandbox.ts).
+  const [demo, setDemo] = useState<'shared' | 'private' | undefined>();
+  useEffect(() => { api.config().then((c) => setDemo(c.demo)).catch(() => undefined); }, []);
   const recRef = useRef<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -267,6 +270,17 @@ export default function Console() {
             {online ? 'connected' : 'offline'}
           </div>
         </div>
+
+        {demo === 'private' && (
+          <div className="glass flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-[0.75rem] text-muted">
+            <span>This is your own copy of the demo family. Nothing you do here reaches anyone else.</span>
+            <button type="button"
+              onClick={() => { void api.resetSandbox().then(() => { setMessages([]); setCalls([]); }); }}
+              className="shrink-0 font-semibold text-core hover:underline">
+              Start over
+            </button>
+          </div>
+        )}
 
         {/* who is speaking */}
         <div className="flex flex-wrap gap-2">

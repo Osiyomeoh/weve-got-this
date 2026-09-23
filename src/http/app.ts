@@ -12,6 +12,7 @@ import { createRingWebhook } from './ring-webhook.js';
 import { createWhatsAppWebhook, createWhatsAppVerify } from './whatsapp-webhook.js';
 import { createTelegramWebhook } from './telegram-webhook.js';
 import { OAuthProvider, oauthResolver } from './oauth.js';
+import { createSandboxRoute } from './sandbox.js';
 
 /**
  * Streamable HTTP transport (MCP spec 2025-11-25).
@@ -175,6 +176,15 @@ if (oauthSecret) {
   // Path-suffixed form (RFC 9728 section 3.1), which MCP clients try first.
   app.get('/.well-known/oauth-protected-resource/mcp', oauth.protectedResource);
   app.post('/oauth/register', oauth.register);
+  // Per-visitor demo copies for the console (see sandbox.ts). Tokens are signed
+  // with the OAuth secret, so they verify through the same resolver as any other.
+  app.post('/sandbox', createSandboxRoute({
+    store,
+    key: process.env['CARECIRCLE_SANDBOX_KEY'] ?? '',
+    secret: oauthSecret,
+    issuer: oauth.issuer,
+    ...(now ? { now } : {}),
+  }));
   // Point a 401 at the metadata, so a client can start discovery from the challenge.
   bearerChallenge = `Bearer realm="carecircle", resource_metadata="${oauth.resourceMetadataUrl}"`;
   app.get('/.well-known/oauth-authorization-server', oauth.metadata);
