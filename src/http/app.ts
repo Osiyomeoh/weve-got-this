@@ -282,7 +282,7 @@ app.post('/mcp', async (req, res) => {
     await server.connect(transport as unknown as ConnectArg);
     await transport.handleRequest(req, res, req.body);
   } catch (err) {
-    console.error('[carecircle] initialize failed', err);
+    log.error('mcp request failed', { reason: (err as Error).message });
     if (!res.headersSent) rpcError(res, 500, -32603, 'Internal server error');
   }
 });
