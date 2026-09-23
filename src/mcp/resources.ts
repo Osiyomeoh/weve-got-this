@@ -42,6 +42,7 @@ export function registerMeResource({ server, actor, state }: ToolContext): void 
           name: me.name,
           spokenAs: me.spokenAs ?? null,
           role: me.role,
+          ...(me.language ? { language: me.language } : {}),
           can: capabilitiesOf(me),
           // Who else is in the circle, by name and part only, so a host knows who "Dad"
           // and "Sandra" are without asking. No contact details.

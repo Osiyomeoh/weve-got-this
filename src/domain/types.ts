@@ -54,7 +54,12 @@ export interface Member {
   dailyUpdate?: boolean;
   /** Reminders (their doses, their appointments) are on unless they turned them off. */
   reminders?: 'off';
+  /** The language they are written to in (domain/language.ts). English when unset. */
+  language?: LanguageCode;
 }
+
+/** English, Spanish, French, Chinese, Nigerian Pidgin, Yoruba, Igbo, Hausa, Edo. */
+export type LanguageCode = 'en' | 'es' | 'fr' | 'zh' | 'pcm' | 'yo' | 'ig' | 'ha' | 'bin';
 
 /** What an entity is. People are modelled as `Member`; this widens the graph to the rest. */
 export type EntityType =

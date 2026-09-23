@@ -11,6 +11,21 @@ the model chose, and whether that passed.
 | `2026-09-23-nova-pro.json` | Amazon Nova Pro | the console's |
 | `2026-09-23-nova-2-lite.json` | Amazon Nova 2 Lite | the console's |
 | `2026-09-23-nova-pro-alexa-bridge-prompt.json` | Amazon Nova Pro | an Alexa Skill bridge's, not ours |
+| `2026-09-23-dialects-sonnet-4-5.json` | Claude Sonnet 4.5, 34 held-out dialect and language cases (`--dialects`) | the console's |
+| `2026-09-23-languages-sonnet-4-5.json` | Claude Sonnet 4.5 answering in 8 languages over the Telegram chat path, graded by a separate call (`npm run evals:languages`) | the chat channel's, with the language rule |
+
+| `2026-09-23-massive-nova-pro-alexa-bridge-prompt.json` | Amazon Nova Pro on all 2,974 cases of Amazon's MASSIVE en-US test set (`npm run evals:massive`) | the Alexa Skill bridge's |
+
+The dialect and language runs are explained in `docs/LANGUAGES.md`.
+
+**MASSIVE**, in outside words, measures what CareCircle does with everyday Alexa requests that
+are not about care, on Alexa's likeliest planner under a host prompt we did not write:
+- 2,538 requests are not care. **1,944 (76.6%) were left alone**, 297 (11.7%) only read something,
+  and 297 (11.7%) wrote. **94 (3.7%) logged an event or messaged someone**, for example "switch off the
+  lights" logged as a care event, or "set an alarm for nine am" recorded as an appointment.
+- 436 calendar and alarm requests are in scope either way: **321 were handled right**.
+- Those 94 writes are the next thing for the tool descriptions to fix. Any change there needs a fresh
+  corpus run.
 
 `alexa-bridge-system-prompt.txt` is the system prompt of
 [KayLerch/alexa-skill-mcp-bridge](https://github.com/KayLerch/alexa-skill-mcp-bridge)

@@ -4,6 +4,7 @@
  *   npm run evals                 the whole corpus
  *   npm run evals -- gap          only cases whose id starts with "gap"
  *   npm run evals -- --json       machine-readable, for CI
+ *   npm run evals -- --dialects   the dialect and language set (src/evals/dialects.ts)
  *
  * EVALS_SYSTEM_PROMPT_FILE=<file> measures under another host's system prompt instead of
  * the console's (for example an Alexa Skill bridge's), with the same tools and cases.
@@ -13,9 +14,11 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { runEvals, summarise, MEMBER_LABEL } from '../src/evals/run.ts';
 import { providerFromEnv } from '../src/sim/providers.ts';
+import { DIALECT_CASES } from '../src/evals/dialects.ts';
 
 const args = process.argv.slice(2);
 const asJson = args.includes('--json');
+const dialects = args.includes('--dialects');
 const filter = args.find((a) => !a.startsWith('--'));
 
 const endpoint = process.env.CARECIRCLE_URL ?? 'http://localhost:8787/mcp';
@@ -32,6 +35,7 @@ const results = await runEvals({
   endpoint, provider, paceMs,
   ...(promptFile ? { systemPrompt: readFileSync(promptFile, 'utf8') } : {}),
   ...(filter ? { filter } : {}),
+  ...(dialects ? { cases: DIALECT_CASES } : {}),
   onProgress: (done, total) => {
     process.stdout.write(`\rRunning on ${provider.name}: ${done}/${total}   `);
   },
@@ -81,7 +85,22 @@ if (asJson) {
   console.log('');
 }
 
-writeFileSync('evals-results.json', JSON.stringify({
+if (dialects && !asJson) {
+  // One line per way of speaking, so a weak one is visible rather than averaged away.
+  const by = new Map<string, { passed: number; total: number }>();
+  for (const r of results) {
+    if (r.errored) continue;
+    const k = r.case.id.split('-')[1]!;
+    const e = by.get(k) ?? { passed: 0, total: 0 };
+    e.total += 1; if (r.pass) e.passed += 1;
+    by.set(k, e);
+  }
+  console.log('  By way of speaking');
+  for (const [k, e] of by) console.log(`    ${k.padEnd(5)} ${e.passed}/${e.total}`);
+  console.log('');
+}
+
+writeFileSync(dialects ? 'evals-results-dialects.json' : 'evals-results.json', JSON.stringify({
   provider: provider.name, modelId, at: new Date().toISOString(),
   systemPrompt: promptFile ?? 'console', ...s,
   results: results.map((r) => ({

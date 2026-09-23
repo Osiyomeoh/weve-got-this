@@ -61,10 +61,15 @@ export function createTelegramChat(opts: TelegramChatOptions): ChatReply {
   return async (memberId, text) => {
     const at = Date.now();
     for (const [id, t] of threads) if (at - t.lastUsed > idleMs || at - t.opened > MAX_AGE_MS) threads.delete(id);
-    let thread = threads.get(memberId);
+    // A new language starts a new conversation: the planner is told the language when a
+    // thread opens.
+    let language = 'en';
+    try { language = opts.store.getMember(memberId).language ?? 'en'; } catch { /* unknown: the tools will say so */ }
+    const key = `${memberId}:${language}`;
+    let thread = threads.get(key);
     if (!thread) {
       thread = { host: open(memberId), opened: at, lastUsed: at, queue: Promise.resolve() };
-      threads.set(memberId, thread);
+      threads.set(key, thread);
     }
     thread.lastUsed = at;
     const t = thread;
@@ -74,7 +79,7 @@ export function createTelegramChat(opts: TelegramChatOptions): ChatReply {
         return reply.spoken.trim() || SORRY;
       } catch {
         // A broken thread is not kept: the next message starts a clean one.
-        threads.delete(memberId);
+        threads.delete(key);
         return SORRY;
       }
     });

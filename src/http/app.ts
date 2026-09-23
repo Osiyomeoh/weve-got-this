@@ -166,11 +166,10 @@ app.post(
     // Voice notes in, voice notes out: Amazon Transcribe and Polly. For someone whose eyes
     // are recovering from surgery, speaking is easier than typing, and listening than reading.
     ...(tgChat && process.env['TELEGRAM_VOICE'] !== 'off' ? {
-      hear: async (fileId: string) => transcribeOggOpus(await downloadTelegramFile(tgBotToken, fileId), {
-        languageCode: process.env['TELEGRAM_VOICE_LANGUAGE']?.trim() || 'en-US',
-      }),
-      speak: async (chatId: string, text: string) => {
-        const spoken = await synthesize(text, 'gentle');
+      // Each person's own language (their /language choice); English when unset.
+      hear: async (fileId: string, languageCode: string) => transcribeOggOpus(await downloadTelegramFile(tgBotToken, fileId), { languageCode }),
+      speak: async (chatId: string, text: string, voice: string) => {
+        const spoken = await synthesize(text, 'gentle', voice);
         await sendTelegramVoice(tgBotToken, chatId, spoken.audio);
       },
     } : {}),

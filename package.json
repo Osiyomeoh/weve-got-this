@@ -20,6 +20,7 @@
     "demo:reset": "tsx --env-file-if-exists=.env scripts/demo-reset.ts",
     "evals": "tsx --env-file-if-exists=.env scripts/evals.ts",
     "evals:massive": "tsx --env-file-if-exists=.env scripts/evals-massive.ts",
+    "evals:languages": "tsx --env-file-if-exists=.env scripts/evals-languages.ts",
     "dynamo:check": "tsx --env-file-if-exists=.env scripts/dynamo-check.ts",
     "preflight": "tsx --env-file-if-exists=.env scripts/preflight.ts",
     "trust-benchmark": "tsx --env-file-if-exists=.env scripts/trust-benchmark.ts",

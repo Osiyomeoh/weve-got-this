@@ -13,6 +13,8 @@ import { SeenEvents } from './ring-webhook.js';
 import type { ChatReply } from './telegram-chat.js';
 import { memberFromInvite, startPayload, welcome } from '../domain/telegram-invite.js';
 import { NotFoundError } from '../store/store.js';
+import { LANGUAGES, LANGUAGE_CODES, buttonLabel, isLanguageCode, languageNote, languageOf, phrase, timeIn } from '../domain/language.js';
+import type { LanguageCode } from '../domain/types.js';
 
 /**
  * The Telegram webhook - the inbound half of the delegation loop's reply channel.
@@ -72,10 +74,11 @@ export interface TelegramWebhookOptions {
   /** The family group this door serves: joins are announced there, and a new face there is
    *  pointed to their invite. Other groups never hear from the bot unprompted. */
   groupChatId?: string;
-  /** Turn a voice note (Telegram file id) into text. Without it, voice notes get a polite "please type". */
-  hear?: (fileId: string) => Promise<string>;
-  /** Say a reply back as a voice note, to someone who spoke to us. */
-  speak?: (chatId: string, text: string) => Promise<void>;
+  /** Turn a voice note (Telegram file id) into text, in a Transcribe language ("es-US").
+   *  Without it, voice notes get a polite "please type". */
+  hear?: (fileId: string, languageCode: string) => Promise<string>;
+  /** Say a reply back as a voice note, in a Polly voice, to someone who spoke to us. */
+  speak?: (chatId: string, text: string, voice: string) => Promise<void>;
   /** The family calendar (a Telegram Mini App); `/calendar` opens it. */
   calendarUrl?: string;
 }
@@ -161,13 +164,18 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
     return 'linked';
   };
 
-  const hearVoice = async (msg: TelegramInbound): Promise<{ text: string } | { reply: string; status: string }> => {
+  const languageFor = (memberId: string) => {
+    try { return languageOf(opts.store.getMember(memberId)); } catch { return LANGUAGES.en; }
+  };
+
+  const hearVoice = async (msg: TelegramInbound, memberId: string): Promise<{ text: string } | { reply: string; status: string }> => {
     if (!opts.hear) return { reply: "I can't listen to voice notes yet. Could you type it for me?", status: 'voice-unsupported' };
     if ((msg.voice?.seconds ?? 0) > MAX_VOICE_SECONDS) {
       return { reply: 'That voice note is a bit long for me. Could you send it in shorter pieces, under two minutes each?', status: 'voice-too-long' };
     }
     let text = '';
-    try { text = (await opts.hear(msg.voice!.fileId)).trim(); } catch { text = ''; }
+    // A language no speech service hears is heard as English, which is what they were told.
+    try { text = (await opts.hear(msg.voice!.fileId, languageFor(memberId).hears ?? 'en-US')).trim(); } catch { text = ''; }
     return text ? { text } : { reply: "I couldn't make out that voice note. Could you say it again, or type it?", status: 'voice-unclear' };
   };
 
@@ -180,6 +188,14 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
     const sender = whoIs(t.fromId);
     const ack = (text: string) => tg('answerCallbackQuery', { callback_query_id: t.callbackId, text });
     if (!sender) { await ack("I don't know who you are in this circle yet."); return 'unknown-sender'; }
+    // "lang:<code>" - a choice from /language.
+    if (t.data.startsWith('lang:')) {
+      const code = t.data.slice(5);
+      if (!isLanguageCode(code)) { await ack(''); return 'tap-unknown'; }
+      await setLanguage(sender.memberId, sender.householdId, code, t.chatId, Number(t.messageId));
+      await ack(LANGUAGES[code].native);
+      return 'language-set';
+    }
     // "dose:<medicationId>:<HH:MM>" - the time has a colon of its own.
     const [action, medId, ...rest] = t.data.split(':');
     const slot = rest.join(':');
@@ -188,36 +204,48 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
     const me = state.members.find((m) => m.id === sender.memberId);
     if (!med || !me || !slot) { await ack('That reminder is out of date.'); return 'tap-stale'; }
     const tz = state.household.timezone;
+    const lang = me.language;
+    const at = (iso: string) => ({ own: timeIn(lang, iso, tz), en: clockTime(iso, tz) });
     if (action === 'dose') {
       if (me.id !== med.forMemberId && !can(me, 'log_others_event')) { await ack('Only the person or the family can record this.'); return 'tap-refused'; }
       const earlier = doseRecord(state, med.id, slot, now());
       if (earlier) {
-        const by = earlier.reportedBy === me.id ? 'you' : (state.members.find((m) => m.id === earlier.reportedBy)?.spokenAs ?? state.members.find((m) => m.id === earlier.reportedBy)?.name ?? 'someone');
-        await tg('editMessageText', { chat_id: t.chatId, message_id: Number(t.messageId), text: `There's already a record of this ${med.name} dose, at ${clockTime(earlier.occurredAt, tz)}, from ${by}. I haven't added another.` });
+        const when = at(earlier.occurredAt);
+        const other = state.members.find((m) => m.id === earlier.reportedBy);
+        const text = earlier.reportedBy === me.id
+          ? phrase(lang, ['alreadyYou', { med: med.name, time: when.own }, { med: med.name, time: when.en }])
+          : phrase(lang, ['alreadyBy', { med: med.name, time: when.own, by: other?.spokenAs ?? other?.name ?? 'someone' },
+            { med: med.name, time: when.en, by: other?.spokenAs ?? other?.name ?? 'someone' }]);
+        await tg('editMessageText', { chat_id: t.chatId, message_id: Number(t.messageId), text });
         await ack('Already recorded');
         return 'tap-already';
       }
-      const at = now().toISOString();
+      const takenAt = now().toISOString();
       await opts.store.appendEvent({
-        householdId: sender.householdId, kind: 'medication_taken', reportedBy: me.id, occurredAt: at,
+        householdId: sender.householdId, kind: 'medication_taken', reportedBy: me.id, occurredAt: takenAt,
         source: 'telegram', confidence: 'reported', detail: `Tapped "Taken" on the ${med.name} reminder`,
         data: { medicationId: med.id, medicationName: med.name, aboutMemberId: med.forMemberId },
       });
-      await tg('editMessageText', { chat_id: t.chatId, message_id: Number(t.messageId), text: `✅ Recorded: ${med.name} at ${clockTime(at, tz)}.` });
+      const when = at(takenAt);
+      await tg('editMessageText', { chat_id: t.chatId, message_id: Number(t.messageId), text: phrase(lang, ['recorded', { med: med.name, time: when.own }, { med: med.name, time: when.en }]) });
       await ack('Recorded');
       return 'tap-taken';
     }
     if (action === 'snooze') {
       const again = new Date(now().getTime() + 15 * 60_000);
-      await tg('editMessageText', { chat_id: t.chatId, message_id: Number(t.messageId), text: `⏰ I'll remind you about the ${med.name} again at ${clockTime(again.toISOString(), tz)}.` });
+      const when = at(again.toISOString());
+      await tg('editMessageText', { chat_id: t.chatId, message_id: Number(t.messageId), text: phrase(lang, ['snoozed', { med: med.name, time: when.own }, { med: med.name, time: when.en }]) });
       await ack('In 15 minutes');
       // Held in memory: a restart in the next 15 minutes loses this one repeat, not the record.
       setTimeout(() => {
         const later = opts.store.getCareState(sender.householdId);
         if (doseRecord(later, med.id, slot, new Date())) return;
         void tg('sendMessage', {
-          chat_id: t.chatId, text: `Reminder: your ${med.name}.`,
-          reply_markup: { inline_keyboard: [[{ text: '✅ Taken', callback_data: `dose:${med.id}:${slot}` }, { text: '⏰ In 15 minutes', callback_data: `snooze:${med.id}:${slot}` }]] },
+          chat_id: t.chatId, text: phrase(lang, ['repeat', { med: med.name }]),
+          reply_markup: { inline_keyboard: [[
+            { text: buttonLabel(lang, 'taken'), callback_data: `dose:${med.id}:${slot}` },
+            { text: buttonLabel(lang, 'snooze'), callback_data: `snooze:${med.id}:${slot}` },
+          ]] },
         });
       }, 15 * 60_000).unref?.();
       return 'tap-snoozed';
@@ -226,9 +254,36 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
     return 'tap-unknown';
   };
 
+  // Choosing a language: said back in it, with what to expect from voice notes. The
+  // message with the buttons becomes the answer, so the choice is visible where it was made.
+  const setLanguage = async (memberId: string, householdId: string, code: LanguageCode, chatId: string, messageId?: number): Promise<void> => {
+    await opts.store.setMemberPreference(memberId, householdId, { language: code });
+    const text = `${phrase(code, ['languageSet', {}])}\n\n${languageNote(code)}`;
+    if (messageId) await tg('editMessageText', { chat_id: chatId, message_id: messageId, text });
+    else await answer(chatId, text);
+  };
+
   // A few plain commands, answered without the model.
   const onCommand = async (msg: TelegramInbound, memberId: string, householdId: string): Promise<string | null> => {
     const cmd = msg.text.trim().toLowerCase();
+    const lang = /^\/language(?:@\w+)?(?:\s+(.+))?$/.exec(cmd);
+    if (lang) {
+      const wanted = lang[1]?.trim();
+      const code = wanted
+        ? LANGUAGE_CODES.find((c) => c === wanted || LANGUAGES[c].name.toLowerCase().startsWith(wanted) || LANGUAGES[c].native.toLowerCase().startsWith(wanted))
+        : undefined;
+      if (code) { await setLanguage(memberId, householdId, code, msg.chatId); return 'language-set'; }
+      const buttons = LANGUAGE_CODES.map((c) => ({ text: LANGUAGES[c].native, callback_data: `lang:${c}` }));
+      const rows: { text: string; callback_data: string }[][] = [];
+      for (let i = 0; i < buttons.length; i += 3) rows.push(buttons.slice(i, i + 3));
+      await tg('sendMessage', {
+        chat_id: msg.chatId,
+        text: `Which language should I write to you in? Now: ${languageFor(memberId).native}.`
+          + '\nMedicine names, people\'s names and times always stay exactly as the family wrote them.',
+        reply_markup: { inline_keyboard: rows },
+      });
+      return 'language-menu';
+    }
     if (/^\/reminders\s+(off|on)$/.test(cmd)) {
       const off = cmd.endsWith('off');
       await opts.store.setMemberPreference(memberId, householdId, { reminders: off ? 'off' : undefined });
@@ -306,7 +361,7 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
       let heard: string | null = null;
       if (msg.voice) {
         if (!msg.addressedToBot) { results.push({ updateId: msg.updateId, status: 'unparsed' }); continue; }
-        const said = await hearVoice(msg);
+        const said = await hearVoice(msg, memberId);
         if ('reply' in said) {
           await answer(msg.chatId, said.reply);
           results.push({ updateId: msg.updateId, status: said.status });
@@ -319,9 +374,11 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
       if (command) { results.push({ updateId: msg.updateId, status: command }); continue; }
       // What we heard is shown back, so a misheard word is caught before it becomes the record.
       // Whoever spoke to us gets the answer spoken too.
+      const language = languageFor(memberId);
       const reply = async (text: string): Promise<void> => {
-        await answer(msg.chatId, heard ? `I heard: "${heard}"\n\n${text}` : text);
-        if (heard && opts.speak) await opts.speak(msg.chatId, text).catch(() => undefined);
+        await answer(msg.chatId, heard ? `${phrase(language.code, ['heard', { text: heard }])}\n\n${text}` : text);
+        // Spoken back only in a voice that speaks their language; otherwise it stays written.
+        if (heard && opts.speak && language.voice) await opts.speak(msg.chatId, text, language.voice).catch(() => undefined);
       };
       try {
         const intent = interpretReply(msg.text);

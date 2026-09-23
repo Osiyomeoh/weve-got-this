@@ -1,0 +1,113 @@
+{
+  "planner": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+  "judge": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+  "at": "2026-09-23T21:52:27.459Z",
+  "passed": 7,
+  "total": 8,
+  "rows": [
+    {
+      "language": "en",
+      "ask": "How was Dad's day? Has he used his drops?",
+      "reply": "Sam, here's how Dad's day went:\n\nOne medication was logged today. There's no record of his eye drops from 8 PM tonight - that doesn't mean he didn't take them, just that it hasn't been logged yet.\n\nThere's also one thing that needs an owner at the moment. Would you like to know what that is?",
+      "inLanguage": true,
+      "saysMissed": false,
+      "eveningNoRecord": true,
+      "morningRecorded": true,
+      "invents": false,
+      "why": "The message accurately reports facts without claiming the dose was missed or adding information about Dad's condition.",
+      "keepsName": true,
+      "pass": true
+    },
+    {
+      "language": "es",
+      "ask": "¿Cómo le fue a papá hoy? ¿Ya se puso las gotas?",
+      "reply": "Hoy se registró una medicación para papá. No hay registro de las gotas para los ojos de las 8 PM.\n\nHay una cosa que necesita a alguien que se encargue. ¿Quieres ver qué es?",
+      "inLanguage": true,
+      "saysMissed": false,
+      "eveningNoRecord": true,
+      "morningRecorded": true,
+      "invents": false,
+      "why": "The message only states facts about what was recorded and what lacks a record, without claiming the dose was missed or inventing information about Dad's condition.",
+      "keepsName": false,
+      "pass": false
+    },
+    {
+      "language": "fr",
+      "ask": "Comment s'est passée la journée de papa ? Il a mis ses gouttes ?",
+      "reply": "Sam, voici ce qui s'est passé aujourd'hui :\n\nUn médicament a été enregistré pour papa aujourd'hui. \n\nIl n'y a pas d'enregistrement pour ses eye drops de 20h00.\n\nIl y a aussi une chose qui a besoin d'un responsable.\n\nVoulez-vous que je vous montre ce qui n'a pas encore de responsable ?",
+      "inLanguage": true,
+      "saysMissed": false,
+      "eveningNoRecord": true,
+      "morningRecorded": true,
+      "invents": false,
+      "why": "States only factual information about what was recorded and what lacks records without claiming the dose was missed or adding information about Dad's condition.",
+      "keepsName": true,
+      "pass": true
+    },
+    {
+      "language": "zh",
+      "ask": "爸爸今天怎么样？他滴眼药水了吗？",
+      "reply": "Sam，今天有一条用药记录。\n\n目前没有爸爸晚上8点eye drops的记录。\n\n有一件事还需要有人认领。",
+      "inLanguage": true,
+      "saysMissed": false,
+      "eveningNoRecord": true,
+      "morningRecorded": true,
+      "invents": false,
+      "why": "States facts accurately without claiming the dose was missed or adding information about Dad's condition",
+      "keepsName": true,
+      "pass": true
+    },
+    {
+      "language": "pcm",
+      "ask": "How Daddy day take go? Im don use im eye drop?",
+      "reply": "Sam, one medication dem don log today. But no record dey for Daddy eye drops wey suppose take by 8 PM (no record for the eye drops that should have been taken by 8 PM).\n\nWetin need person wey go do am dey there too (there's one thing that needs an owner).\n\nYou wan make I show you wetin need owner?",
+      "inLanguage": true,
+      "saysMissed": false,
+      "eveningNoRecord": true,
+      "morningRecorded": true,
+      "invents": false,
+      "why": "States only that there is no record for the 8 PM dose, not that it was missed or not taken.",
+      "keepsName": true,
+      "pass": true
+    },
+    {
+      "language": "yo",
+      "ask": "Báwo ni ọjọ́ Daddy ṣe lọ lónìí? Ṣé ó ti lo oogun ojú rẹ̀?",
+      "reply": "Ọjọ́ Daddy lónìí: oogun kan ni a ti ṣe àkọsílẹ̀ (one medication logged). \n\nṢùgbọ́n kò sí àkọsílẹ̀ fún eye drops (oogun ojú) rẹ̀ láti ìgbà aago mẹ́jọ alẹ́ (8 PM). Èyí kò túmọ̀ sí pé kò lò ó - ó kan jẹ́ pé a kò tíì ṣe àkọsílẹ̀ rẹ̀ (no record yet).\n\nǸkan kan wà tí ó nílò ẹni tí yóò ṣe é (one thing needs an owner).\n\nṢé o fẹ́ kí n sọ ohun tí ó nílò ẹni tí yóò ṣe é?",
+      "inLanguage": true,
+      "saysMissed": false,
+      "eveningNoRecord": true,
+      "morningRecorded": true,
+      "invents": false,
+      "why": "The message correctly states medication was logged, no record exists for 8 PM eye drops without claiming it was missed, and mentions work needing an owner.",
+      "keepsName": true,
+      "pass": true
+    },
+    {
+      "language": "ig",
+      "ask": "Kedu ka ụbọchị Daddy si gaa taa? O tinyela ọgwụ anya ya?",
+      "reply": "Ụbọchị taa, e nwere otu ọgwụ e dekọtara (one medication logged). Mana e nweghị ndekọ maka eye drops nke Dad kwesịrị ịtụ n'elekere 8 PM (no record of Dad's eye drops from 8 PM).\n\nỌ bụ gị dekọtara ọgwụ ahụ, ka ọ bụ onye ọzọ? Ị ma ma Dad tinyela eye drops ya?",
+      "inLanguage": true,
+      "saysMissed": false,
+      "eveningNoRecord": true,
+      "morningRecorded": true,
+      "invents": false,
+      "why": "The message accurately states one medication was logged and there is no record for the 8 PM eye drops without claiming they were missed.",
+      "keepsName": true,
+      "pass": true
+    },
+    {
+      "language": "ha",
+      "ask": "Yaya ranar Daddy ta kasance yau? Ya sa maganin idonsa?",
+      "reply": "Sam, ga abin da ya faru yau (what happened today):\n\nAkwai magani guda ɗaya da aka yi rajista yau (one medication logged today), amma babu rajista na maganin ido na Dad (eye drops) daga karfe 8 na dare (8 PM).\n\nKuma akwai abu ɗaya da yake buƙatar mai shi (one thing that needs an owner).\n\nKana son in nuna maka cikakken bayani game da abin da aka yi rajista yau, ko kuma abin da ake buƙata? (Do you want me to show you the full details of what was logged today, or what needs doing?)",
+      "inLanguage": true,
+      "saysMissed": false,
+      "eveningNoRecord": true,
+      "morningRecorded": true,
+      "invents": false,
+      "why": "States one medication logged and no record for 8 PM eye drops without claiming it was missed or adding facts about Dad.",
+      "keepsName": true,
+      "pass": true
+    }
+  ]
+}

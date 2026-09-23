@@ -1,5 +1,7 @@
 import { appointmentsOf, activeMedications } from './care-changes.js';
 import { doseRecord, localParts, spokenClock, spokenDue } from './gaps.js';
+import { buttonLabel, phrase, timeIn, whenIn, type Piece } from './language.js';
+import { toInstant } from './time.js';
 import type { CareStore } from '../store/store.js';
 import type { Notifier } from '../notify/notifier.js';
 import type { CareState, Member, Obligation } from './types.js';
@@ -16,7 +18,8 @@ import { called } from './who.js';
  *    is told, so the gap is seen while there is still time.
  *
  * Each reminder has a key and is recorded when sent, so a restart never sends one
- * twice. Anyone can turn theirs off.
+ * twice. Anyone can turn theirs off. Each is written in the language of whoever it goes
+ * to; the medicine's name and the appointment's kind stay as the family wrote them.
  */
 
 export interface Button { text: string; data: string }
@@ -50,10 +53,14 @@ export function dueReminders(state: CareState, now: Date): Reminder[] {
       const due = Number(slot.slice(0, 2)) * 60 + Number(slot.slice(3, 5));
       if (local.minutes < due || local.minutes >= due + DOSE_WINDOW_MIN) continue;
       if (doseRecord(state, med.id, slot, now)) continue;
+      const at = toInstant(`${local.date}T${slot}:00`, tz) ?? now.toISOString();
       push({
         key: `dose:${med.id}:${local.date}:${slot}`, to: who.id,
-        text: `It's ${spokenClock(slot)}: time for your ${med.name}.`,
-        buttons: [[{ text: '✅ Taken', data: `dose:${med.id}:${slot}` }, { text: '⏰ In 15 minutes', data: `snooze:${med.id}:${slot}` }]],
+        text: phrase(who.language, ['dose', { time: timeIn(who.language, at, tz), med: med.name }, { time: spokenClock(slot), med: med.name }]),
+        buttons: [[
+          { text: buttonLabel(who.language, 'taken'), data: `dose:${med.id}:${slot}` },
+          { text: buttonLabel(who.language, 'snooze'), data: `snooze:${med.id}:${slot}` },
+        ]],
       });
     }
   }
@@ -75,22 +82,28 @@ export function dueReminders(state: CareState, now: Date): Reminder[] {
     const work = state.obligations.filter((o) => o.sourceEventId === a.eventId && LIVE.has(o.status));
     const holders = work.filter((o) => o.status === 'ASSIGNED' && o.ownerId).map((o) => member(o.ownerId)!).filter(Boolean);
     const unowned = work.filter((o) => o.status !== 'ASSIGNED');
-    const byWhom = holders.length ? ` ${holders.map(called).join(' and ')} ${holders.length === 1 ? 'is' : 'are'} taking care of ${work[0]?.what.toLowerCase().startsWith('drive') ? 'the ride' : 'it'}.` : '';
+    // Said in the person's own language: "when" in theirs, the rest as the family wrote it.
+    const names = holders.map(called).join(' and ');
+    const it = work[0]?.what.toLowerCase().startsWith('drive') ? 'the ride' : 'it';
+    const whenFor = (m: Member) => (m.language ? whenIn(m.language, a.at, tz) : when);
 
     if (wants(subject)) {
-      push({ key, to: subject.id, text: `Reminder: ${when}, your ${a.kind}.${byWhom}` });
+      const pieces: Piece[] = [['appt', { when: whenFor(subject), kind: a.kind }, { when, kind: a.kind }]];
+      if (holders.length) pieces.push([holders.length === 1 ? 'apptWithOne' : 'apptWithMany', { names, it }]);
+      push({ key, to: subject.id, text: phrase(subject.language, ...pieces) });
     }
     for (const h of holders) {
       if (!wants(h) || h.id === subject?.id) continue;
-      const mine = work.filter((o) => o.ownerId === h.id).map((o) => o.what);
-      push({ key, to: h.id, text: `Reminder: ${when}, ${them}'s ${a.kind}. You have: ${mine.join('; ')}.` });
+      const mine = work.filter((o) => o.ownerId === h.id).map((o) => o.what).join('; ');
+      push({ key, to: h.id, text: phrase(h.language, ['apptHolder', { when: whenFor(h), them, kind: a.kind, tasks: mine }, { when, them, kind: a.kind, tasks: mine }]) });
     }
     if (unowned.length) {
+      const tasks = unowned.map((o) => o.what).join('; ');
       for (const c of state.members.filter((m) => m.role === 'primary_caregiver')) {
         if (!wants(c)) continue;
         push({
           key: `${key}:unowned`, to: c.id,
-          text: `${them}'s ${a.kind} is ${when}, and nobody has taken this on yet: ${unowned.map((o) => o.what).join('; ')}. Say "ask whoever's free" and I'll ask someone.`,
+          text: phrase(c.language, ['apptUnowned', { when: whenFor(c), them, kind: a.kind, tasks }, { when, them, kind: a.kind, tasks }]),
         });
       }
     }

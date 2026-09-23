@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type {
-  CareEvent, CareState, Entity, Household, IdentityMapping, Member, MedicationSchedule, Obligation, TelegramLink,
+  CareEvent, CareState, Entity, Household, IdentityMapping, LanguageCode, Member, MedicationSchedule, Obligation, TelegramLink,
 } from '../domain/types.js';
 
 /**
@@ -260,11 +260,16 @@ export class CareStore {
   }
 
   /** A member's own preferences, set by them: reminders on or off. */
-  setMemberPreference(memberId: string, householdId: string, changes: { reminders?: 'off' | undefined }): Promise<Member> {
+  setMemberPreference(
+    memberId: string, householdId: string,
+    changes: { reminders?: 'off' | undefined; language?: LanguageCode | undefined },
+  ): Promise<Member> {
     return this.#write(() => {
       const m = this.#snapshot.members.find((x) => x.id === memberId && x.householdId === householdId);
       if (!m) throw new NotFoundError('member', memberId);
-      if (changes.reminders === 'off') m.reminders = 'off'; else delete m.reminders;
+      // Only what was named changes: setting a language leaves reminders as they were.
+      if ('reminders' in changes) { if (changes.reminders === 'off') m.reminders = 'off'; else delete m.reminders; }
+      if ('language' in changes) { if (changes.language && changes.language !== 'en') m.language = changes.language; else delete m.language; }
       return m;
     });
   }

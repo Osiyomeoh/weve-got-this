@@ -95,18 +95,18 @@ export interface Spoken {
   engine: string;
 }
 
-async function speakWith(text: string, rate: Rate, engine: Engine): Promise<Spoken> {
+async function speakWith(text: string, rate: Rate, engine: Engine, voice: string): Promise<Spoken> {
   const res = await polly().send(new SynthesizeSpeechCommand({
     Text: toSsml(text, rate),
     TextType: 'ssml',
     OutputFormat: 'mp3',
-    VoiceId: VOICE as never,
+    VoiceId: voice as never,
     Engine: engine,
   }));
   if (!res.AudioStream) throw new Error('Polly returned no audio.');
   return {
     audio: Buffer.from(await res.AudioStream.transformToByteArray()),
-    contentType: 'audio/mpeg', voice: VOICE, engine,
+    contentType: 'audio/mpeg', voice, engine,
   };
 }
 
@@ -119,13 +119,14 @@ async function speakWith(text: string, rate: Rate, engine: Engine): Promise<Spok
  */
 const FALLBACKS: Record<string, Engine> = { generative: 'neural', neural: 'standard' };
 
-export async function synthesize(text: string, rate: Rate = 'normal'): Promise<Spoken> {
+/** `voice` is a Polly voice id; each language has its own (domain/language.ts). */
+export async function synthesize(text: string, rate: Rate = 'normal', voice: string = VOICE): Promise<Spoken> {
   if (!text.trim()) throw new Error('Nothing to say.');
   let engine: Engine | undefined = ENGINE;
   let last: unknown;
   while (engine) {
     try {
-      return await speakWith(text, rate, engine);
+      return await speakWith(text, rate, engine, voice);
     } catch (err) {
       last = err;
       engine = FALLBACKS[engine];
