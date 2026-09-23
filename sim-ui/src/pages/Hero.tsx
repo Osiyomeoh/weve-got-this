@@ -515,8 +515,8 @@ export default function Hero() {
           eyebrow="See it"
           title={<>It is running right now.</>}
           lead={<>
-            Not a mockup: a live MCP server, 101 tests including property-based proofs of the risk
-            model, and 93.3% measured tool-selection accuracy. The full story runs end to end in
+            Not a mockup: a live MCP server, 455 tests including property-based proofs of the risk
+            model, and 96.5% measured tool-selection accuracy. The full story runs end to end in
             about a minute with no AWS account and no keys.
           </>}
         >

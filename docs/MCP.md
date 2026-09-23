@@ -225,8 +225,8 @@ rather than the same one twice.
 
 | Tool | Arguments | Notes |
 |---|---|---|
-| `reorder_prescription` | `medicationName?`, `obligationId?` | Returns a priced **offer** with an ETA. Never charges. |
-| `confirm_purchase` | `offerId`, `confirmed` | The human decision that makes it real. |
+| `reorder_prescription` | `medicationName?`, `obligationId?` | Returns a priced **offer** with an ETA. Never charges. Works out *which* medicine from the record ("his prescription" = the refill already waiting) and asks back only when it can't tell. |
+| `confirm_purchase` | `offerId?`, `confirmed` | The human decision that makes it real. Without an `offerId` ("yes, place the order" in a new conversation) it finds the waiting order; it places it only for the person who was quoted the price, and reads the price back to anyone else. |
 
 Purchase follows the same discipline as everything else: the offer is a proposal,
 and only a confirmation makes it happen. Storefronts are simulated - no real

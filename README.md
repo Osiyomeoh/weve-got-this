@@ -34,9 +34,9 @@ what happened          what must happen        who has it
 The demo family (Daddy, his children Tolu and Funmi, and Musa the driver) is fictional
 and modelled on mine. No real names or medical details are used.
 
-**And it is real - not a mockup.** Live MCP server you can hit right now, **430 tests**
-(including property-based proofs of the risk model), **~92-93%** measured tool-selection
-accuracy on Amazon Bedrock (124-126/135 across repeated runs), and a trust model **measured at 0% false accusations where a
+**And it is real - not a mockup.** Live MCP server you can hit right now, **455 tests**
+(including property-based proofs of the risk model), **96.5%** measured tool-selection
+accuracy on Amazon Bedrock (139/144; 92.6% on held-out phrasings never tuned against), and a trust model **measured at 0% false accusations where a
 raw LLM hits 50%**.
 
 ### Try it live in your browser - no clone, no keys
@@ -487,17 +487,25 @@ npm run demo:reset && npm run dev   # in one shell
 npm run evals                       # in another
 ```
 
-**Result: ~92-93% first-tool accuracy (124-126 / 135 across repeated runs, 0 errored) -
-Claude Sonnet 4.5 on Amazon Bedrock.** The planner runs at temperature 0, yet a couple of
-borderline cases still flip run-to-run, so we quote the range rather than a single
-false-precision decimal - a live model is not perfectly reproducible and we don't pretend it is.
+**Result: 96.5% first-tool accuracy (139 / 144, 0 errored) - Claude Sonnet 4.5 on Amazon
+Bedrock, 2026-09-23.** That is one run. The planner runs at temperature 0, yet a borderline
+case or two still flips run-to-run: the previous corpus measured 124-126 / 135 across
+repeated runs (~92-93%) and the same 135 now score 130. A live model is not perfectly
+reproducible and we don't pretend it is.
 
-The corpus is deliberately split so the number cannot be gamed:
+The corpus is deliberately split so the number cannot be gamed, and `npm run evals`
+prints each part on its own:
 
-- **68 authored cases**, used while tuning the tool descriptions - **~100%**.
-- **67 held-out cases**, written afterward and never tuned against (harder phrasings,
-  multi-intent, wrong-role attempts, the purchase flow, and out-of-scope lines that
-  name care words on purpose) - **~86-87%**.
+- **68 authored cases**, used while tuning the tool descriptions - **68/68**.
+- **68 held-out cases never tuned against** (harder phrasings, multi-intent, wrong-role
+  attempts, and out-of-scope lines that name care words on purpose) - **63/68, 92.6%**.
+  This is the honest number.
+- **8 held-out purchase cases we later used to fix the server** - **8/8**, reported
+  apart. They failed because the planner asked "which medication?" instead of letting
+  the server work it out, so we fixed the purchase tools (see the friction log). That
+  made them no longer unseen, so we marked them `seen` and wrote **9 fresh purchase
+  phrasings** before running again, including a decline and a helper who may not buy.
+  Those scored **9/9** and count in the held-out figure above.
 
 The model receives the real tool definitions and one utterance, using the exact
 planner prompt the simulator ships (imported, not a friendlier copy written to
@@ -505,15 +513,18 @@ score well); we record its first tool choice and execute nothing. Cases that nev
 reach the model - credentials, throttling - are excluded from the figure rather than
 counted as wrong, because a number that can lie is worse than no number.
 
-**Honest limitations** (the ~9-11 held-out misses, unfixed on purpose): reschedules
-("move his eye check-up to Friday"), vague-time scheduling ("a flu shot next week
-sometime"), a couple of elliptical unavailabilities ("count me out this weekend"),
-and cold purchase confirmations with no offer in context. These are the edges a
+**Honest limitations** (the 5 held-out misses, unfixed on purpose): a reschedule
+("move his eye check-up to Friday" checks the record first), vague-time scheduling ("a
+flu shot next week sometime" gets asked which day, which our own never-guess-a-date rule
+requires), a date with no month said by Daddy logged as a note, "he had everything that
+was due before noon" checking what was due before logging it, and a helper's "anything
+to do today?" reaching for his requests rather than his shift brief. Several are
+defensible behaviour the strict grader still counts as wrong. These are the edges a
 larger corpus would harden next.
 
 We went from an early 85.3% to 100% on the authored set by finding the exact failures
 the harness named and rewriting the ambiguous descriptions - then re-measured on the
-held-out set to get the honest ~92-93%.
+held-out set to get the honest number.
 
 Demo credentials (one per member - the identity model in miniature):
 

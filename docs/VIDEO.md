@@ -52,7 +52,7 @@ person, and never accuses anyone of what it didn't see.*
       him on camera. Also check your siblings are happy for the family to be described.
 - [ ] Burn in captions. The video makes an accessibility argument; it has to be captioned.
 - [ ] Say numbers only if they match the repo on record day: tools (`get_started` lists
-      them, 25 today), tests (`npm test`, 430 today), trust benchmark
+      them, 25 today), tests (`npm test`, 455 today), trust benchmark
       (`npm run trust-benchmark`).
 
 ---
@@ -156,6 +156,18 @@ flips to `ASSIGNED - Musa`, and the TV card clears.
 
 The eye-drops refill gap. One offer card, confirmed in the conversation, and the gap closes.
 
+> **Tolu:** "Can you refill his prescription?"
+> **CareCircle:** "Eye drops refill - 30-day supply from Cornerside Pharmacy is $12.00,
+> delivered to the door by tomorrow evening. Want me to place it? Nothing is charged
+> until you confirm."
+> **Tolu:** "Yes, place the order."
+> **CareCircle:** "Done - eye drops refill - 30-day supply is ordered for $12.00, and that
+> takes "Pick up Daddy's eye drops refill" off the list."
+
+Tolu never says *which* medicine: CareCircle knows the eye drops are the refill waiting
+to be picked up. Don't confirm the doorbell's "was that the medicine?" card before this
+beat, or the pickup is already closed and there's nothing left to buy.
+
 > **VO:** "When the fix is a purchase, it happens right here, and the gap closes when the
 > order is placed."
 
@@ -204,8 +216,8 @@ Repo:  npm ci && npm run story     (no AWS, no keys)
 - **The Fire TV APK install.** The `/tv` surface makes the shared-display point faster.
 - **The D-pad "who is taking this on?" beat.** Real multimodal work, but 12 seconds the
   Telegram loop needs more. Keep it for the Fire TV track writeup.
-- **The eval number (~92-93%).** A tool-selection metric that invites "what about the
-  other 7%?" mid-video. It's in the writeup with the miss analysis.
+- **The eval number (96.5%).** A tool-selection metric that invites "what about the
+  other 3.5%?" mid-video. It's in the writeup with the miss analysis.
 - **A tour of every connection (Gmail, Calendar sync, Bee).** One story beats a feature
   list. The calendar appears only as the 3-second payoff of the loop.
 - **Voice-accuracy tooling (Transcribe, repair).** Infrastructure for the demo, not the

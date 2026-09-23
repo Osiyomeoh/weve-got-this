@@ -557,3 +557,94 @@ Template:
   hardest on accessibility features, which are exactly the ones a developer is least
   able to evaluate by ear.
 - **Date:** 2026-09-18
+
+### MCP TypeScript SDK - the server accepts a tool result that its own client rejects
+- **Task attempted:** Return structured results from tools with a declared
+  `outputSchema`, as the Alexa+ MCP design guide asks ("treat your schema as a promise").
+- **Steps taken:** Declared each tool's output shape with zod in `registerTool`.
+  Unit-tested the handlers, and ran the whole flow over HTTP in end-to-end tests.
+  Then drove the same tools through the SDK's own `Client`, as Claude Desktop and an
+  Alexa+ host do.
+- **Expected:** The server and client agree on what is valid. If the server lets a
+  result through, a client from the same SDK accepts it too.
+- **Actual:** They disagree. `McpServer.validateToolOutput` checks the result with a
+  plain zod `safeParse`, which ignores fields the schema does not name, so the server
+  sends it. But the schema it publishes in `tools/list` is converted to JSON Schema
+  with **`"additionalProperties": false`**. The `Client` enforces that and throws
+  `-32602 Structured content does not match the tool's output schema: data must NOT
+  have additional properties`. One field added to a result but not to the schema
+  breaks the tool for every real host, and every server-side test still passes. It
+  hit us three times: `ingest_signal` crashed our scripted story, the purchase tools
+  failed for any strict client, and an audit found three more tools (`add_note`,
+  `respond_to_request`, `confirm_proposal`) with the same gap. Six of 25 tools had it.
+- **Severity:** major - the failure appears only in a live host, not in tests.
+- **Workaround:** Wrapped `registerTool` so every result is checked with the same
+  zod shape made `.strict()`, on every call. The first test that touches a drifted
+  tool now fails. Also added tests that go through the real SDK `Client` and call
+  `listTools()` first, because the client only validates against schemas it has
+  already fetched.
+- **Suggestion:** Validate on the server with the same strictness as the published
+  schema: `.strict()` when converting with `additionalProperties: false`, or publish
+  `additionalProperties: true` when validating loosely. Either way, one SDK should
+  not hold two definitions of "valid". A dev-mode warning naming the undeclared key
+  would have saved us every one of these.
+- **Date:** 2026-09-22
+
+### MCP / Alexa+ planning - the planner asks the family what the server already knows
+- **Task attempted:** Make "can you refill his prescription?" and "yes, place the
+  order" work in one turn, as a person would say them to a smart speaker.
+- **Steps taken:** Ran our 135-case tool-selection evals on Bedrock (the planner the
+  submission ships), then printed the planner's text for each miss rather than only
+  its tool choice.
+- **Expected:** With `medicationName` optional and the household's medicines on the
+  server, the planner calls `reorder_prescription` and lets the server work out
+  which medicine.
+- **Actual:** On 6 of the 8 purchase lines it called nothing and asked instead:
+  "Which medication needs to be refilled?", "Which supplement would you like to
+  reorder?". The planner can't see the medication list, so it treats every missing
+  argument as a question for the person. For "yes, place the order" in a new
+  conversation it could not call `confirm_purchase` at all: the required `offerId`
+  was only ever in an earlier conversation's result. A family member would be asked
+  something the system already knew, or told nothing was waiting.
+- **Severity:** major - a voice assistant that asks a question it could have answered
+  itself is exactly the friction families give up on.
+- **Workaround:** Moved the resolution to the server and said so in the descriptions.
+  `reorder_prescription` now matches loose words ("his supplement", "my own
+  prescription") against what is on record. If the medicine is unclear it uses the
+  refill already waiting to be picked up, and it asks back only when the record
+  can't tell. `offerId` became optional, and `confirm_purchase` finds the waiting
+  order itself. It places the order at once only for the person who was quoted the
+  price; anyone else hears the price read back first. The purchase lines went from
+  2/8 to 8/8, stable across repeated runs.
+- **Suggestion:** Give servers a way to declare that an argument is **resolved
+  server-side, don't ask for it**: a schema annotation, or a documented convention in
+  the Alexa+ MCP design guide. Today the only lever is prose in the description
+  ("do not ask which medication first"), which works, but it's advice to one model
+  rather than a contract every host honours. The design guide should also say plainly
+  that ids from a previous turn won't exist in a new conversation, and that tools
+  users confirm by voice should accept "the pending one" without an id.
+- **Date:** 2026-09-23
+
+### AWS App Runner - pushing a new `:latest` image and calling `update-service` keeps the old code
+- **Task attempted:** Deploy a new build to an App Runner service that runs an ECR
+  image tagged `:latest`, with automatic deployments off.
+- **Steps taken:** Built and pushed the image with CodeBuild, then called
+  `aws apprunner update-service` with the same `ImageIdentifier` (`<repo>:latest`) and
+  new environment variables. It returned success and the service went back to
+  `RUNNING`.
+- **Expected:** The service runs the image the tag now points to, or the call says it
+  did not pull a new one.
+- **Actual:** The service kept serving the image from a day earlier. Because the image
+  URI string hadn't changed, App Runner didn't resolve the tag again, and nothing in
+  the response, the operation list or the console said the running image was stale.
+  We found it only because live responses lagged behind the repository's tests.
+- **Severity:** major - a successful deploy that ships nothing is the hardest kind to
+  notice.
+- **Workaround:** After every build, wait for `RUNNING`, then call `aws apprunner
+  start-deployment` explicitly, for both services that share the image. It's a hard
+  rule in our handoff notes, and our production reset script does it for both.
+- **Suggestion:** Show the running image **digest** in `describe-service` and the
+  console, and have `update-service` either resolve a mutable tag again or return a
+  warning that it did not. Mutable tags like `:latest` are how most small teams start,
+  and "success, but the old code" is the worst possible response for them.
+- **Date:** 2026-09-17
