@@ -9,10 +9,11 @@ import { appointmentsOf, emergencyAdvice, isActiveMedication } from '../../domai
 import { localParts, spokenClock, spokenDue } from '../../domain/gaps.js';
 import { toInstant } from '../../domain/time.js';
 import { called, subjectOf } from '../../domain/who.js';
-import type { Member, MedicationSchedule } from '../../domain/types.js';
+import { LANGUAGES, namesMedicine } from '../../domain/language.js';
+import type { LanguageCode, Member, MedicationSchedule } from '../../domain/types.js';
 import { OUT } from '../output-schemas.js';
 import { joinSpoken } from '../text.js';
-import { describeError, guidance, reply, type ToolContext } from '../toolkit.js';
+import { ALSO_CALLED, describeError, guidance, namesFrom, reply, type ToolContext } from '../toolkit.js';
 
 const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -47,10 +48,11 @@ export function registerChangeMedication({ server, store, now, actor, state }: T
       times: z.array(z.string()).optional().describe('New due times, 24-hour "HH:MM", e.g. ["09:00","21:00"].'),
       until: z.string().optional().describe('The last day it is taken, "YYYY-MM-DD" in the household\'s time. Work it out from what they said against today\'s date.'),
       stopNow: z.boolean().optional().describe('True when it has been stopped as of now.'),
+      alsoCalled: ALSO_CALLED,
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
     outputSchema: OUT.change_medication,
-  }, async ({ medicationName, forMemberId, times, until, stopNow }) => {
+  }, async ({ medicationName, forMemberId, times, until, stopNow, alsoCalled }) => {
     try {
       const me = actor();
       const s = state();
@@ -61,9 +63,8 @@ export function registerChangeMedication({ server, store, now, actor, state }: T
         if ('problem' in who) return guidance(who.problem);
         forId = who.member.id;
       }
-      const needle = medicationName.toLowerCase();
       const named = s.medications.filter((m) => isActiveMedication(m, now(), tz)
-        && (m.name.toLowerCase().includes(needle) || needle.includes(m.name.toLowerCase()))
+        && namesMedicine(medicationName, m)
         && (!forId || m.forMemberId === forId));
       if (named.length === 0) {
         const all = s.medications.filter((m) => isActiveMedication(m, now(), tz)).map((m) => m.name);
@@ -79,15 +80,17 @@ export function registerChangeMedication({ server, store, now, actor, state }: T
       if (!(me.role === 'care_recipient' && med.forMemberId === me.id)) requireCap(me, 'log_others_event');
       if (me.role === 'helper') return guidance('A change to a medication needs someone in the family to make it. Ask them to.');
 
-      if (!times?.length && !until && !stopNow) return guidance('Ask what has changed: new times, a last day, or stopping it.');
+      const names = namesFrom(alsoCalled);
+      if (!times?.length && !until && !stopNow && !names) return guidance('Ask what has changed: new times, a last day, or stopping it.');
       if (times?.length && !times.every((t) => HHMM.test(t))) return guidance('I need the new times as 24-hour "HH:MM", like ["09:00","21:00"].');
       if (until && !DATE.test(until)) return guidance('I need the last day as a date, like "2026-10-07". Ask which day they meant.');
       if (until && until < localParts(now(), tz).date) return guidance('That last day has already passed. If it has stopped, say so and I will stop it now.');
 
-      const changes: Partial<Pick<MedicationSchedule, 'times' | 'until' | 'stoppedAt'>> = {};
+      const changes: Partial<Pick<MedicationSchedule, 'times' | 'until' | 'stoppedAt' | 'names'>> = {};
       if (times?.length) changes.times = times;
       if (until) changes.until = until;
       if (stopNow) changes.stoppedAt = now().toISOString();
+      if (names) changes.names = names;
       await store.updateMedication(med.id, me.householdId, changes);
 
       const whose = `${called(s.members.find((m) => m.id === med.forMemberId) ?? me)}'s ${med.name}`;
@@ -96,6 +99,7 @@ export function registerChangeMedication({ server, store, now, actor, state }: T
         : [
           times?.length ? `${whose} ${times.length === 1 ? 'is' : 'are'} now at ${joinSpoken(times.map(spokenClock))}.` : '',
           until ? `The last day is ${spokenDate(until, tz)}; after that I won't expect it.` : '',
+          names ? `${whose} can also be called ${joinSpoken(Object.entries(names).map(([code, n]) => `"${n}" in ${LANGUAGES[code as LanguageCode].name}`))}.` : '',
         ].filter(Boolean).join(' ');
       const event = await store.appendEvent({
         householdId: me.householdId, kind: 'medication_changed', reportedBy: me.id,

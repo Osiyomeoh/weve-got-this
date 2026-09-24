@@ -326,6 +326,12 @@ export interface MedicationSchedule {
   id: string;
   householdId: string;
   name: string;
+  /**
+   * What the family calls it in another language ("colírio" for Portuguese), given by the
+   * family, never translated by us. A reader in that language sees this name, and it is
+   * matched when someone says it. `name` stays the one on the record.
+   */
+  names?: Partial<Record<LanguageCode, string>>;
   /** Local times of day, "HH:MM", when a dose is expected. */
   times: string[];
   forMemberId: string;

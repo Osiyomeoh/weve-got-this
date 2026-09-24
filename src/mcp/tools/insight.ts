@@ -10,6 +10,7 @@ import { attributionOf, isReported, sayWhoSaysSo } from '../../domain/attributio
 import { require as requireCap } from '../../domain/auth.js';
 import { describeConnections } from '../../domain/connections.js';
 import { detectCareGaps, pendingProposals } from '../../domain/gaps.js';
+import { asReadBy } from '../../domain/language.js';
 import { clockTime, isLocalToday } from '../../domain/local-time.js';
 import { explainProvenance } from '../../domain/provenance.js';
 import { OUT } from '../output-schemas.js';
@@ -97,7 +98,7 @@ export function registerGetCareSummary({ server, now, actor, state, nameOf }: To
     try {
       const me = actor();
       requireCap(me, 'read_full_state');
-      const s = state();
+      const s = asReadBy(state(), me.language);
       const tz = s.household.timezone;
       const todays = s.events.filter((e) => isLocalToday(e.occurredAt, now(), tz));
       const meds = todays.filter((e) => e.kind === 'medication_taken');
@@ -172,7 +173,7 @@ export function registerGetShiftBrief({ server, actor, state, now }: ToolContext
     try {
       const me = actor();
       requireCap(me, 'read_shift');
-      const s = state();
+      const s = asReadBy(state(), me.language);
       const mine = s.obligations.filter((o) => o.ownerId === me.id && o.status === 'ASSIGNED');
       const active = activeMedications(s, now());
       const meds = active.map((m) => `${m.name} at ${joinSpoken(m.times.map(spokenClock))}`);

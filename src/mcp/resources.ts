@@ -81,6 +81,7 @@ export function registerCareStateResource({ server, now, state, nameOf }: ToolCo
           // and those are precisely the words it gets wrong.
           medications: s.medications.map((m) => ({
             id: m.id, name: m.name, times: m.times, forMemberId: m.forMemberId,
+            ...(m.names ? { names: m.names } : {}),
           })),
           obligations: s.obligations.map((o) => ({
             id: o.id, what: o.what, status: o.status,

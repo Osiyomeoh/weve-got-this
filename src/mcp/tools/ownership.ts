@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { attributionOf } from '../../domain/attribution.js';
 import { canActOn, require as requireCap } from '../../domain/auth.js';
 import { detectCareGaps } from '../../domain/gaps.js';
+import { asReadBy } from '../../domain/language.js';
 import { clockTime, isLocalToday } from '../../domain/local-time.js';
 import { appToolMeta } from '../app/protocol.js';
 import { OUT } from '../output-schemas.js';
@@ -51,7 +52,9 @@ export function registerGetCareGaps({ server, now, actor, state, nameOf }: ToolC
     try {
       const me = actor();
       requireCap(me, 'read_full_state');
-      const gaps = detectCareGaps(state(), {
+      // Read-only, so each medicine can go by the name the reader's family gave it.
+      const s = asReadBy(state(), me.language);
+      const gaps = detectCareGaps(s, {
         now: now(),
         ...(withinDays !== undefined ? { withinDays } : {}),
       });
@@ -63,11 +66,13 @@ export function registerGetCareGaps({ server, now, actor, state, nameOf }: ToolC
       // happen live, to a dose the aide had just logged. Absence is only half the
       // record and a tool that hands over half a record invites the other half to
       // be invented.
-      const tz = state().household.timezone;
-      const recordedToday = state().events
+      const tz = s.household.timezone;
+      const recordedToday = s.events
         .filter((e) => e.kind === 'medication_taken' && isLocalToday(e.occurredAt, now(), tz))
         .map((e) => ({
-          what: e.data['medicationName'] ?? 'medication',
+          // The medicine's name, not the words it was logged in: Mum's "colírio" is her
+          // son's "eye drops".
+          what: s.medications.find((m) => m.id === e.data['medicationId'])?.name ?? e.data['medicationName'] ?? 'medication',
           at: e.occurredAt,
           time: clockTime(e.occurredAt, tz),
           attribution: attributionOf(e),

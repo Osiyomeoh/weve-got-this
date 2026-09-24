@@ -1,4 +1,4 @@
-import type { LanguageCode, Member } from './types.js';
+import type { CareState, LanguageCode, Member, MedicationSchedule } from './types.js';
 
 /**
  * The language a person is written to in.
@@ -350,6 +350,44 @@ export function whenIn(lang: LanguageCode | undefined, iso: string, timezone: st
   return new Intl.DateTimeFormat(l.locale, {
     timeZone: timezone, weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit',
   }).format(new Date(iso));
+}
+
+/**
+ * A medicine's name for someone who reads `lang`: the name the family gave it in that
+ * language, else the name on the record. Never a translation of ours.
+ */
+export function medicineName(med: Pick<MedicationSchedule, 'name' | 'names'>, lang: LanguageCode | undefined): string {
+  return (lang && med.names?.[lang]?.trim()) || med.name;
+}
+
+/** Every name the family has given a medicine, in any language: what it can be called. */
+export function medicineNames(med: Pick<MedicationSchedule, 'name' | 'names'>): string[] {
+  return [med.name, ...Object.values(med.names ?? {})].filter((n): n is string => !!n?.trim());
+}
+
+/** Case, accents and spacing set aside: "Colírio" and "colirio" are the same word. */
+function plain(s: string): string {
+  return s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+/** Whether what someone said names this medicine, by any of the names the family gave it. */
+export function namesMedicine(said: string, med: Pick<MedicationSchedule, 'name' | 'names'>): boolean {
+  const needle = plain(said);
+  if (!needle) return false;
+  return medicineNames(med).some((n) => {
+    const name = plain(n);
+    return name.includes(needle) || needle.includes(name);
+  });
+}
+
+/**
+ * The record as someone who reads `lang` should hear it: each medicine under the name the
+ * family gave it in that language. For what is read and spoken only; anything written to
+ * the record, or matched against it, uses the record itself.
+ */
+export function asReadBy(state: CareState, lang: LanguageCode | undefined): CareState {
+  if (!lang || !state.medications.some((m) => m.names?.[lang])) return state;
+  return { ...state, medications: state.medications.map((m) => ({ ...m, name: medicineName(m, lang) })) };
 }
 
 /**

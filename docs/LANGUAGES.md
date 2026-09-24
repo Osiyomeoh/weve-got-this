@@ -94,6 +94,12 @@ Every language Alexa+ is sold in is "ready". Some rules hold in every language:
 
 - **Facts never change with the language.** A medicine's name stays as the family wrote it,
   times and names stay exact, and "no record" is never translated as "missed".
+- **A medicine can have the family's own name in each language.** "Mum calls her eye drops
+  colírio" is saved with `change_medication` (or `add_medication`) as `alsoCalled`. Mum then
+  sees "colírio" in her reminders, her tap answers and her shift brief. Her son still sees
+  "eye drops", and "colírio" matches her drops the first time she says it, with or without
+  the accent. The name comes from the family, never from a translation of ours. The record
+  keeps its own name, and only the tools that read the record out loud use the other one.
 - **A medicine said in another language is matched to the schedule, never saved as a stray.**
   When the name matches nothing on the person's schedule, `log_care_event` saves nothing yet.
   It answers with the names on that person's schedule, so the planner can call again with the

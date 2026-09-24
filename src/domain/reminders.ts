@@ -1,6 +1,6 @@
 import { appointmentsOf, activeMedications } from './care-changes.js';
 import { doseRecord, localParts, spokenClock, spokenDue } from './gaps.js';
-import { buttonLabel, phrase, timeIn, whenIn, type Piece } from './language.js';
+import { buttonLabel, medicineName, phrase, timeIn, whenIn, type Piece } from './language.js';
 import { toInstant } from './time.js';
 import type { CareStore } from '../store/store.js';
 import type { Notifier } from '../notify/notifier.js';
@@ -56,7 +56,7 @@ export function dueReminders(state: CareState, now: Date): Reminder[] {
       const at = toInstant(`${local.date}T${slot}:00`, tz) ?? now.toISOString();
       push({
         key: `dose:${med.id}:${local.date}:${slot}`, to: who.id,
-        text: phrase(who.language, ['dose', { time: timeIn(who.language, at, tz), med: med.name }, { time: spokenClock(slot), med: med.name }]),
+        text: phrase(who.language, ['dose', { time: timeIn(who.language, at, tz), med: medicineName(med, who.language) }, { time: spokenClock(slot), med: med.name }]),
         buttons: [[
           { text: buttonLabel(who.language, 'taken'), data: `dose:${med.id}:${slot}` },
           { text: buttonLabel(who.language, 'snooze'), data: `snooze:${med.id}:${slot}` },

@@ -1,6 +1,8 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { NotPermittedError } from '../domain/auth.js';
-import type { CareState, Member, Obligation } from '../domain/types.js';
+import { z } from 'zod';
+import { LANGUAGE_CODES } from '../domain/language.js';
+import type { CareState, LanguageCode, Member, Obligation } from '../domain/types.js';
 import type { Notifier } from '../notify/notifier.js';
 import { HouseholdScopeError, NotFoundError, type CareStore } from '../store/store.js';
 import { matchObligation } from '../domain/obligation-ref.js';
@@ -103,4 +105,17 @@ export function isValidTimeZone(tz: string): boolean {
 /** Every entry must be a 24-hour "HH:MM"; a malformed time is silently un-checkable. */
 export function validMedicationTimes(times: string[]): boolean {
   return times.length > 0 && times.every((t) => /^([01]\d|2[0-3]):[0-5]\d$/.test(t));
+}
+
+/** A medicine's name in another language, as the family says it: add_medication and change_medication. */
+export const ALSO_CALLED = z.array(z.object({
+  language: z.enum(LANGUAGE_CODES as [LanguageCode, ...LanguageCode[]])
+    .describe('The language of that name: es, fr, pt, de, it, hi, zh, pcm, yo, ig, ha, bin or en.'),
+  name: z.string().describe('The name, exactly as the family says it in that language (e.g. "colírio").'),
+})).optional()
+  .describe('Only when the family says what they call it in another language ("Mum calls her eye drops colírio"). Never translate a name yourself.');
+
+export function namesFrom(alsoCalled: z.infer<typeof ALSO_CALLED>): Partial<Record<LanguageCode, string>> | undefined {
+  const named = (alsoCalled ?? []).filter((a) => a.name.trim());
+  return named.length ? Object.fromEntries(named.map((a) => [a.language, a.name.trim()])) : undefined;
 }

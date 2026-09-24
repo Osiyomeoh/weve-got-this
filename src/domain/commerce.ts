@@ -13,6 +13,9 @@
  * purchase kind (e.g. a paid medical ride) is a new OfferKind and one branch here.
  */
 
+import { namesMedicine } from './language.js';
+import type { MedicationSchedule } from './types.js';
+
 export type OfferKind = 'prescription_refill';
 
 export interface PurchaseOffer {
@@ -99,7 +102,7 @@ export type RefillChoice =
  */
 export function chooseRefill(
   said: string | undefined,
-  medications: readonly { name: string }[],
+  medications: readonly Pick<MedicationSchedule, 'name' | 'names'>[],
   openWork: readonly { id: string; what: string }[],
 ): RefillChoice {
   const refillWork = openWork.filter((o) => REFILL_WORK.test(o.what));
@@ -108,7 +111,8 @@ export function chooseRefill(
 
   let itemName: string | undefined;
   if (named) {
-    const matches = medications.filter((m) => mentions(m.name, named) || mentions(named, m.name));
+    // By any name the family gave it; the order goes out under the name on the record.
+    const matches = medications.filter((m) => namesMedicine(named, m));
     if (matches.length > 1) return { ok: false, choices: matches.map((m) => m.name) };
     // Not on the schedule is still a real thing to buy; keep their words.
     itemName = matches[0]?.name ?? said!.trim();

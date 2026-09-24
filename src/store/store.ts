@@ -247,14 +247,19 @@ export class CareStore {
     return this.#write(() => { this.#snapshot.medications.push(m); return m; });
   }
 
-  /** Change a medication's times, course end, or stop it. It is never deleted: the record keeps it. */
+  /**
+   * Change a medication's times, course end, or stop it. It is never deleted: the record
+   * keeps it. `names` adds to the names it already has in other languages.
+   */
   updateMedication(
-    id: string, householdId: string, changes: Partial<Pick<MedicationSchedule, 'times' | 'until' | 'stoppedAt'>>,
+    id: string, householdId: string, changes: Partial<Pick<MedicationSchedule, 'times' | 'until' | 'stoppedAt' | 'names'>>,
   ): Promise<MedicationSchedule> {
     return this.#write(() => {
       const m = this.#snapshot.medications.find((x) => x.id === id && x.householdId === householdId);
       if (!m) throw new NotFoundError('medication', id);
-      Object.assign(m, changes);
+      const { names, ...rest } = changes;
+      Object.assign(m, rest);
+      if (names) m.names = { ...m.names, ...names };
       return m;
     });
   }

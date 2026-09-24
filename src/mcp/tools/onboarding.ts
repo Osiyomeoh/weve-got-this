@@ -11,9 +11,11 @@ import { bootstrapSubject } from '../../http/identity.js';
 import { OUT } from '../output-schemas.js';
 import { countPhrase, joinSpoken, sentence } from '../text.js';
 import {
+  ALSO_CALLED,
   describeError,
   guidance,
   isValidTimeZone,
+  namesFrom,
   reply,
   type ToolContext,
   validMedicationTimes,
@@ -177,10 +179,11 @@ export function registerAddMedication({ server, store, actor, state, now }: Tool
       times: z.array(z.string()).describe('Due times, 24-hour "HH:MM", e.g. ["08:00","20:00"].'),
       until: z.string().optional().describe('The last day, "YYYY-MM-DD" in the household\'s time, when it is for a set course ("for two weeks").'),
       forMemberId: z.string().optional().describe('Who it is for: their name as the family says it (e.g. "Mum"), or their id. Leave it out when only one person is being cared for.'),
+      alsoCalled: ALSO_CALLED,
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
     outputSchema: OUT.add_medication,
-  }, async ({ name, times, forMemberId, until }) => {
+  }, async ({ name, times, forMemberId, until, alsoCalled }) => {
     try {
       const me = actor();
       requireCap(me, 'manage_circle');
@@ -192,8 +195,13 @@ export function registerAddMedication({ server, store, actor, state, now }: Tool
       const forId = who.member.id;
       const id = `med_${randomUUID()}`;
       if (until && !/^\d{4}-\d{2}-\d{2}$/.test(until)) return guidance('I need the last day as a date, like "2026-10-07". Ask which day they meant.');
-      await store.addMedication({ id, householdId: me.householdId, name, times, forMemberId: forId, since: now().toISOString(), ...(until ? { until } : {}) });
-      return reply(`Added ${name} at ${joinSpoken(times)}${until ? `, until ${until}` : ''}.`, { medicationId: id });
+      const names = namesFrom(alsoCalled);
+      await store.addMedication({
+        id, householdId: me.householdId, name, times, forMemberId: forId, since: now().toISOString(),
+        ...(until ? { until } : {}), ...(names ? { names } : {}),
+      });
+      const called = names ? ` (also called ${joinSpoken(Object.values(names).map((n) => `"${n}"`))})` : '';
+      return reply(`Added ${name}${called} at ${joinSpoken(times)}${until ? `, until ${until}` : ''}.`, { medicationId: id });
     } catch (err) { return guidance(describeError(err)); }
   });
 }

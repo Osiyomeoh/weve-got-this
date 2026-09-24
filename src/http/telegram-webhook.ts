@@ -13,7 +13,7 @@ import { SeenEvents } from './ring-webhook.js';
 import type { ChatReply } from './telegram-chat.js';
 import { memberFromInvite, startPayload, welcome } from '../domain/telegram-invite.js';
 import { NotFoundError } from '../store/store.js';
-import { LANGUAGES, LANGUAGE_CODES, buttonLabel, isLanguageCode, languageNote, languageOf, phrase, timeIn } from '../domain/language.js';
+import { LANGUAGES, LANGUAGE_CODES, buttonLabel, isLanguageCode, languageNote, languageOf, medicineName, phrase, timeIn } from '../domain/language.js';
 import type { LanguageCode } from '../domain/types.js';
 
 /**
@@ -206,6 +206,8 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
     const tz = state.household.timezone;
     const lang = me.language;
     const at = (iso: string) => ({ own: timeIn(lang, iso, tz), en: clockTime(iso, tz) });
+    // The medicine as this person's family calls it in their language; the English keeps the record's name.
+    const called = medicineName(med, lang);
     if (action === 'dose') {
       if (me.id !== med.forMemberId && !can(me, 'log_others_event')) { await ack('Only the person or the family can record this.'); return 'tap-refused'; }
       const earlier = doseRecord(state, med.id, slot, now());
@@ -213,8 +215,8 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
         const when = at(earlier.occurredAt);
         const other = state.members.find((m) => m.id === earlier.reportedBy);
         const text = earlier.reportedBy === me.id
-          ? phrase(lang, ['alreadyYou', { med: med.name, time: when.own }, { med: med.name, time: when.en }])
-          : phrase(lang, ['alreadyBy', { med: med.name, time: when.own, by: other?.spokenAs ?? other?.name ?? 'someone' },
+          ? phrase(lang, ['alreadyYou', { med: called, time: when.own }, { med: med.name, time: when.en }])
+          : phrase(lang, ['alreadyBy', { med: called, time: when.own, by: other?.spokenAs ?? other?.name ?? 'someone' },
             { med: med.name, time: when.en, by: other?.spokenAs ?? other?.name ?? 'someone' }]);
         await tg('editMessageText', { chat_id: t.chatId, message_id: Number(t.messageId), text });
         await ack('Already recorded');
@@ -227,21 +229,21 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
         data: { medicationId: med.id, medicationName: med.name, aboutMemberId: med.forMemberId },
       });
       const when = at(takenAt);
-      await tg('editMessageText', { chat_id: t.chatId, message_id: Number(t.messageId), text: phrase(lang, ['recorded', { med: med.name, time: when.own }, { med: med.name, time: when.en }]) });
+      await tg('editMessageText', { chat_id: t.chatId, message_id: Number(t.messageId), text: phrase(lang, ['recorded', { med: called, time: when.own }, { med: med.name, time: when.en }]) });
       await ack('Recorded');
       return 'tap-taken';
     }
     if (action === 'snooze') {
       const again = new Date(now().getTime() + 15 * 60_000);
       const when = at(again.toISOString());
-      await tg('editMessageText', { chat_id: t.chatId, message_id: Number(t.messageId), text: phrase(lang, ['snoozed', { med: med.name, time: when.own }, { med: med.name, time: when.en }]) });
+      await tg('editMessageText', { chat_id: t.chatId, message_id: Number(t.messageId), text: phrase(lang, ['snoozed', { med: called, time: when.own }, { med: med.name, time: when.en }]) });
       await ack('In 15 minutes');
       // Held in memory: a restart in the next 15 minutes loses this one repeat, not the record.
       setTimeout(() => {
         const later = opts.store.getCareState(sender.householdId);
         if (doseRecord(later, med.id, slot, new Date())) return;
         void tg('sendMessage', {
-          chat_id: t.chatId, text: phrase(lang, ['repeat', { med: med.name }]),
+          chat_id: t.chatId, text: phrase(lang, ['repeat', { med: called }, { med: med.name }]),
           reply_markup: { inline_keyboard: [[
             { text: buttonLabel(lang, 'taken'), callback_data: `dose:${med.id}:${slot}` },
             { text: buttonLabel(lang, 'snooze'), callback_data: `snooze:${med.id}:${slot}` },

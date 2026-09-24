@@ -245,7 +245,7 @@ payment is taken - but the shape is what a real merchant integration would retur
 |---|---|---|
 | `create_household` | `name`, `timezone`, `callerName`, `spokenAs?` | Bootstrap. `timezone` must be a valid IANA name. |
 | `add_member` | `name`, `role`, `spokenAs?`, `subject?` | `manage_circle`. |
-| `add_medication` | `name`, `times`, `forMemberId?` | `times` are 24-hour `"HH:MM"`. These are what "no record" is measured against. |
+| `add_medication` | `name`, `times`, `until?`, `forMemberId?`, `alsoCalled?` | `times` are 24-hour `"HH:MM"`. These are what "no record" is measured against. `alsoCalled` is `[{ language, name }]`: what the family calls it in another language (`change_medication` takes it too). A reader in that language hears that name, and it is matched when said. |
 | `remove_member` | `memberId` | `manage_circle`. Destructive; releases their work back to unowned. |
 
 ### `get_care_gaps` structured output

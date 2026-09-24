@@ -10,6 +10,7 @@ import { require as requireCap } from '../../domain/auth.js';
 import { orphanedBy } from '../../domain/inference.js';
 import { clockTime, happenedAt } from '../../domain/local-time.js';
 import { doseRecord, localParts, parseHHMM, spokenClock } from '../../domain/gaps.js';
+import { namesMedicine } from '../../domain/language.js';
 import type { CareEvent, CareState } from '../../domain/types.js';
 import { OUT } from '../output-schemas.js';
 import { joinSpoken } from '../text.js';
@@ -60,9 +61,8 @@ export function registerLogCareEvent({ server, store, now, actor, state, nameOf 
       const meds = activeMedications(state(), now());
       let medicationId: string | undefined;
       if (kind === 'medication_taken' && medicationName) {
-        const needle = medicationName.toLowerCase();
-        const named = meds.filter((m) => m.name.toLowerCase().includes(needle)
-          || needle.includes(m.name.toLowerCase()));
+        // By any name the family gave it: "colírio" is Mum's eye drops on the first call.
+        const named = meds.filter((m) => namesMedicine(medicationName, m));
         // Two people on eye drops: the one this is about decides whose dose it was.
         const theirs = named.filter((m) => m.forMemberId === subject);
         const matches = named.length > 1 && theirs.length > 0 ? theirs : named;

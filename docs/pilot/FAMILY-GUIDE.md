@@ -29,7 +29,9 @@ with a **✅ Taken** button, and the evening before and two hours before an appo
 
 **Your language.** Type **/language** and tap one: English, Pidgin, Yorùbá, Igbo, Hausa,
 Ẹ̀dó, Français, Español, Português, Deutsch, Italiano, हिन्दी or 中文. CareCircle writes to you in it. Medicine names, names and
-times stay exactly as the family wrote them. The Yoruba, Igbo, Hausa and Pidgin reminders
+times stay exactly as the family wrote them. If you call a medicine something else in your
+language, tell CareCircle once ("in Yoruba, Daddy's eye drops are oogun ojú"): from then on
+your reminders use your word, and it understands your word when you say it. The Yoruba, Igbo, Hausa and Pidgin reminders
 are new, so they come with the English underneath. If a word is wrong, tell CareCircle the
 right one. Voice notes in Yoruba, Igbo, Hausa or Edo can't be heard yet (no computer can),
 so speak those in English or Pidgin.

@@ -5,6 +5,13 @@
  *   npm run evals:languages                    both parts, every language
  *   npm run evals:languages -- --only=es,hi    some languages
  *   npm run evals:languages -- --part=handoff  one part ("ask" or "handoff")
+ *   npm run evals:languages -- --named         the family has named the drops in each language
+ *
+ * Without --named the medicine has only its English name, and a reply in another
+ * language must keep "eye drops" as written. With --named the family has also given it
+ * their own word in the reader's language ("colírio"), as add_medication / change_medication
+ * let them: a reply passes on the name when it uses a name the family gave (theirs, or
+ * "eye drops"), and never one of the model's own.
  *
  * Part 1, "ask". A coordinator who has chosen a language asks, in it, how Dad's day went.
  * Dad has two eye-drop times: the morning one is on the record, 8 PM is not. Graded:
@@ -70,10 +77,36 @@ const LOGGED: Record<Exclude<Code, 'en'>, string> = {
   ha: 'Yanzu na sa maganin idona.',
 };
 
+// What a family in each language calls the drops. Pidgin says "eye drop", so it has none.
+const FAMILY_WORD: Partial<Record<Code, string>> = {
+  es: 'gotas para los ojos',
+  fr: 'gouttes pour les yeux',
+  pt: 'colírio',
+  de: 'Augentropfen',
+  it: 'collirio',
+  hi: 'आँखों की दवा',
+  zh: '眼药水',
+  yo: 'oogun ojú',
+  ig: 'ọgwụ anya',
+  ha: 'maganin ido',
+};
+
 const args = process.argv.slice(2);
 const only = args.find((a) => a.startsWith('--only='))?.slice(7).split(',');
 const part = args.find((a) => a.startsWith('--part='))?.slice(7);
+const named = args.includes('--named');
 const wanted = (c: string) => !only || only.includes(c);
+
+const plainText = (s: string) => s.normalize('NFC').toLowerCase();
+/** The reply names the drops by a name the family gave: "eye drops", or (--named) their own word. */
+const keepsFamilyName = (reply: string, code: LanguageCode): boolean => {
+  const word = named ? FAMILY_WORD[code as Code] : undefined;
+  return plainText(reply).includes('eye drop') || (!!word && plainText(reply).includes(plainText(word)));
+};
+const namesFor = (code: LanguageCode) => {
+  const word = named ? FAMILY_WORD[code as Code] : undefined;
+  return word ? { names: { [code]: word } } : {};
+};
 
 // The planner is told the real date and time, so the household is put in whichever fixed
 // offset makes it about 22:00-23:00 there now: the 8 PM time has passed.
@@ -94,7 +127,7 @@ async function askCircle(language: LanguageCode): Promise<CareStore> {
   const store = await household();
   await store.addMember({ id: 'm_dad', householdId: 'h', name: 'Pius', role: 'care_recipient', spokenAs: 'Dad' });
   await store.addMember({ id: 'm_sam', householdId: 'h', name: 'Sam', role: 'primary_caregiver', language });
-  await store.addMedication({ id: 'med', householdId: 'h', name: 'eye drops', times: ['08:00', '20:00'], forMemberId: 'm_dad', since: at('00:00') });
+  await store.addMedication({ id: 'med', householdId: 'h', name: 'eye drops', times: ['08:00', '20:00'], forMemberId: 'm_dad', since: at('00:00'), ...namesFor(language) });
   await store.appendEvent({
     householdId: 'h', kind: 'medication_taken', reportedBy: 'm_dad', occurredAt: at('08:10'),
     source: 'telegram', confidence: 'reported', detail: 'I used my eye drops',
@@ -108,7 +141,7 @@ async function handoffCircle(language: LanguageCode): Promise<CareStore> {
   const store = await household();
   await store.addMember({ id: 'm_mom', householdId: 'h', name: 'Rosa', role: 'care_recipient', spokenAs: 'Mom', language });
   await store.addMember({ id: 'm_son', householdId: 'h', name: 'Daniel', role: 'primary_caregiver' });
-  await store.addMedication({ id: 'med', householdId: 'h', name: 'eye drops', times: ['08:00', '20:00'], forMemberId: 'm_mom', since: at('00:00') });
+  await store.addMedication({ id: 'med', householdId: 'h', name: 'eye drops', times: ['08:00', '20:00'], forMemberId: 'm_mom', since: at('00:00'), ...namesFor(language) });
   return store;
 }
 
@@ -180,7 +213,7 @@ if (part !== 'handoff') {
     if (!wanted(code)) continue;
     const reply = await patiently(async () => createTelegramChat({ store: await askCircle(code), provider })('m_sam', ask), answered);
     const v = await patiently(() => judge<AskVerdict>(askRubric(LANGUAGES[code].name), reply));
-    const keepsName = reply.toLowerCase().includes('eye drop');
+    const keepsName = keepsFamilyName(reply, code);
     const pass = v.inLanguage && !v.saysMissed && !v.invents && v.eveningNoRecord && v.morningRecorded && keepsName;
     asks.push({ language: code, ask, reply, ...v, keepsName, pass });
     console.log(`\n${pass ? '✔' : '✖'} ${LANGUAGES[code].name}`);
@@ -219,9 +252,9 @@ if (part !== 'ask') {
 }
 
 const score = (rows: Array<Record<string, unknown>>) => `${rows.filter((r) => r['pass']).length}/${rows.length}`;
-console.log(`\nask: ${score(asks)} · handoff: ${score(handoffs)} · planner ${provider.modelId} · judge ${JUDGE}\n`);
-writeFileSync('evals-results-languages.json', JSON.stringify({
-  planner: provider.modelId, judge: JUDGE, at: new Date().toISOString(),
+console.log(`\nask: ${score(asks)} · handoff: ${score(handoffs)} · ${named ? 'named by the family' : 'English name only'} · planner ${provider.modelId} · judge ${JUDGE}\n`);
+writeFileSync(named ? 'evals-results-languages-named.json' : 'evals-results-languages.json', JSON.stringify({
+  planner: provider.modelId, judge: JUDGE, at: new Date().toISOString(), named,
   ask: { passed: asks.filter((r) => r['pass']).length, total: asks.length, rows: asks },
   handoff: { passed: handoffs.filter((r) => r['pass']).length, total: handoffs.length, rows: handoffs },
 }, null, 2));
