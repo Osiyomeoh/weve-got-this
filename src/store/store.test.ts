@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ScanCommand, BatchWriteCommand, type DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import { CareStore, NotFoundError } from './store.ts';
 import { DynamoPersistence } from './dynamo.ts';
+import { fakeTable } from './fake-table.ts';
 import { seedDemoHousehold } from '../demo/seed.ts';
 import { seedScenario } from '../demo/scenario.ts';
 
@@ -13,32 +13,6 @@ import { seedScenario } from '../demo/scenario.ts';
  * check it survives unchanged - including through the DynamoDB diff that production
  * actually writes with.
  */
-
-type Item = { pk: string; sk: string; body: unknown };
-
-/** An in-memory table that answers the two commands DynamoPersistence sends. */
-function fakeTable(): { client: DynamoDBDocumentClient; rows: Map<string, Item> } {
-  const rows = new Map<string, Item>();
-  const client = {
-    send: async (cmd: unknown) => {
-      if (cmd instanceof ScanCommand) return { Items: [...rows.values()].map((r) => structuredClone(r)) };
-      if (cmd instanceof BatchWriteCommand) {
-        for (const reqs of Object.values(cmd.input.RequestItems ?? {})) {
-          for (const r of reqs) {
-            if (r.PutRequest) {
-              const item = structuredClone(r.PutRequest.Item) as Item;
-              rows.set(`${item.pk}|${item.sk}`, item);
-            }
-            if (r.DeleteRequest) rows.delete(`${r.DeleteRequest.Key!['pk']}|${r.DeleteRequest.Key!['sk']}`);
-          }
-        }
-        return { UnprocessedItems: {} };
-      }
-      throw new Error('unexpected command');
-    },
-  } as unknown as DynamoDBDocumentClient;
-  return { client, rows };
-}
 
 async function seedOtherFamily(store: CareStore): Promise<void> {
   await store.addHousehold({ id: 'h_other', name: 'another family', timezone: 'Africa/Lagos' });

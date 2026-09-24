@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { LANGUAGE_CODES } from '../domain/language.js';
 import type { CareState, LanguageCode, Member, Obligation } from '../domain/types.js';
 import type { Notifier } from '../notify/notifier.js';
-import { HouseholdScopeError, NotFoundError, type CareStore } from '../store/store.js';
+import { HouseholdScopeError, NotFoundError, RecordChangedError, type CareStore } from '../store/store.js';
 import { matchObligation } from '../domain/obligation-ref.js';
 
 /**
@@ -92,6 +92,12 @@ export function describeError(err: unknown): string {
   if (err instanceof HouseholdScopeError) return err.message;
   if (err instanceof NotFoundError) {
     return `I couldn't find that ${err.what}. Ask the person which one they mean, or list what's open first.`;
+  }
+  if (err instanceof RecordChangedError) {
+    // Someone else changed the record in the same moment. Deciding again on the fresh record
+    // is right; repeating the same call blindly may undo what they just did.
+    return 'Someone else changed the care record at the same moment, so this was not saved. '
+      + 'Read the record again (get_care_gaps), then do it again only if it still applies.';
   }
   return "Something went wrong saving that, so it hasn't been recorded. Tell the person it didn't save and offer to try again.";
 }

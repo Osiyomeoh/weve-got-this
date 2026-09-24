@@ -120,6 +120,8 @@ export function startConnectorSync(deps: Omit<ConnectorSyncDeps, 'householdId'> 
     if (running) return; // never overlap passes
     running = true;
     try {
+      // Another instance, or a script, may have written since the last pass.
+      await deps.store.refresh().catch(() => undefined);
       await runConnectorsOnce({ ...deps, householdId });
     } finally {
       running = false;

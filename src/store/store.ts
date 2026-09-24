@@ -24,7 +24,34 @@ export interface ObligationTransition {
 /** Persistence is deliberately behind an interface so hosting can change later. */
 export interface Persistence {
   load(): Promise<StoreSnapshot | null>;
+  /** Throws StaleRecordError, and writes nothing, when another process wrote first. */
   save(snapshot: StoreSnapshot): Promise<void>;
+  /**
+   * Whether another process has written since this one last read or wrote. Absent when
+   * only one process can write (a JSON file on one machine).
+   */
+  stale?(): Promise<boolean>;
+}
+
+/** From persistence: another process wrote first, so this save was refused whole. */
+export class StaleRecordError extends Error {
+  constructor() {
+    super('Another process changed the care record first; nothing was written.');
+    this.name = 'StaleRecordError';
+  }
+}
+
+/**
+ * To callers: what they were doing was not saved, because the record changed under them
+ * (another instance, or a script). The store already holds the fresh record, so reading
+ * again and deciding again is always right; repeating the same write blindly is not - it
+ * may have been decided on something that is no longer true.
+ */
+export class RecordChangedError extends Error {
+  constructor() {
+    super('The care record changed at the same moment, so this was not saved.');
+    this.name = 'RecordChangedError';
+  }
 }
 
 export interface StoreSnapshot {
@@ -85,6 +112,22 @@ export class CareStore {
   }
 
   /**
+   * Read the record again if another process has written since. Called before every
+   * request and every background tick, so an instance never answers from a record another
+   * one has already changed. One small read when nothing changed. Runs in the write queue,
+   * so it can never land in the middle of a save.
+   */
+  refresh(): Promise<boolean> {
+    const run = this.#writeQueue.then(async () => {
+      if (!(await this.#persistence?.stale?.())) return false;
+      this.#snapshot = (await this.#persistence!.load()) ?? emptySnapshot();
+      return true;
+    });
+    this.#writeQueue = run.catch(() => undefined);
+    return run;
+  }
+
+  /**
    * Wait for any in-flight write to finish persisting. Used on graceful shutdown so
    * a rolling deploy never tears the process down mid-save and loses a care write.
    */
@@ -92,11 +135,23 @@ export class CareStore {
     await this.#writeQueue;
   }
 
-  /** Run a mutation and persist, with writes serialised. */
+  /**
+   * Run a mutation and persist, with writes serialised. A mutation that did not persist
+   * does not stay in memory as if it had: the record is read back, so what this process
+   * serves is what the table holds.
+   */
   async #write<T>(fn: () => T): Promise<T> {
     const run = this.#writeQueue.then(async () => {
       const result = fn();
-      await this.#persistence?.save(this.#snapshot);
+      try {
+        await this.#persistence?.save(this.#snapshot);
+      } catch (err) {
+        try {
+          const fresh = await this.#persistence?.load();
+          if (this.#persistence) this.#snapshot = fresh ?? emptySnapshot();
+        } catch { /* the table is unreachable too: keep what we have, and report the save */ }
+        throw err instanceof StaleRecordError ? new RecordChangedError() : err;
+      }
       return result;
     });
     // Keep the queue alive even if this write rejects.

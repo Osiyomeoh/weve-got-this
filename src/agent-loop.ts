@@ -42,6 +42,8 @@ export function startAgentLoop(deps: AgentLoopDeps): () => void {
     // over the fatigue window.
     if (running) return;
     running = true;
+    // Another instance, or a script, may have written since the last tick.
+    await deps.store.refresh().catch((err: unknown) => deps.log.error('record refresh failed', { reason: (err as Error).name }));
     try {
       const runs = await runAgentAll(deps);
       const asked = runs.reduce((n, r) => n + r.performed.length, 0);
@@ -71,7 +73,9 @@ export function startAgentLoop(deps: AgentLoopDeps): () => void {
   const remind = setInterval(() => {
     if (reminding) return;
     reminding = true;
-    void sendDueReminders(deps)
+    void deps.store.refresh()
+      .catch((err: unknown) => deps.log.error('record refresh failed', { reason: (err as Error).name }))
+      .then(() => sendDueReminders(deps))
       .then((n) => { if (n > 0) deps.log.info('reminders sent', { reminders: n }); })
       .catch((err: unknown) => deps.log.error('reminders failed', { reason: (err as Error).message }))
       .finally(() => { reminding = false; });

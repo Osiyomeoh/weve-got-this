@@ -86,6 +86,18 @@ const resolver = identity
 const messenger = notifier ?? new RecordOnlyNotifier();
 const app = express();
 
+// Before anything touches the care record, make sure this process has the latest of it: another
+// instance, or a script, may have written since. One small read when nothing changed. First in
+// the chain so the webhooks, mounted next, are covered too. A failure to check is not a failure
+// to serve: the request goes ahead on what this process holds, and a write made on it is still
+// refused if the record has moved on.
+app.use((req, _res, next) => {
+  if (req.path === '/health') { next(); return; }
+  store.refresh()
+    .catch((err: unknown) => log.warn('record refresh failed', { reason: (err as Error).name }))
+    .finally(() => next());
+});
+
 // The Ring webhook is mounted BEFORE the JSON parser and takes the raw bytes.
 // An HMAC has to be computed over exactly what was sent: parse-then-restringify
 // changes key order and whitespace, and the signature stops matching.
