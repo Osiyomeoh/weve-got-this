@@ -5,7 +5,7 @@ import { AGENT_ID } from '../domain/agent.js';
 import type { Member } from '../domain/types.js';
 import { RecordOnlyNotifier, type Notifier } from '../notify/notifier.js';
 import type { CareStore } from '../store/store.js';
-import type { ToolContext } from './toolkit.js';
+import { closed, type ToolContext } from './toolkit.js';
 import {
   registerAddNote,
   registerLogCareEvent,
@@ -92,9 +92,16 @@ export function createCareCircleServer({ store, actorId, ...opts }: ServerContex
   // therefore breaks that tool for every real client while handler-level tests still
   // pass - it happened to ingest_signal and to the purchase tools. So every result is
   // checked here, on every call, and the first test that touches the tool fails.
+  //
+  // Inputs are declared closed: the model is told not to invent arguments, as it was under
+  // zod 3, while an extra one it sends anyway is still dropped rather than refused. zod 4
+  // only writes `additionalProperties: false` for an input object marked so.
   const registerTool = server.registerTool.bind(server);
-  server.registerTool = ((name: string, config: { outputSchema?: z.ZodRawShape }, handler: Handler) =>
-    registerTool(name, config as never, (async (...args: unknown[]) => {
+  server.registerTool = ((name: string, config: { inputSchema?: z.ZodRawShape; outputSchema?: z.ZodRawShape }, handler: Handler) =>
+    registerTool(name, {
+      ...config,
+      ...(config.inputSchema && Object.keys(config.inputSchema).length > 0 ? { inputSchema: closed(config.inputSchema) } : {}),
+    } as never, (async (...args: unknown[]) => {
       const result = await handler(...args) as { structuredContent?: unknown };
       if (config.outputSchema && result.structuredContent !== undefined) {
         const check = z.object(config.outputSchema).strict().safeParse(result.structuredContent);

@@ -14,7 +14,7 @@ import { namesMedicine } from '../../domain/language.js';
 import type { CareEvent, CareState } from '../../domain/types.js';
 import { OUT } from '../output-schemas.js';
 import { joinSpoken } from '../text.js';
-import { describeError, guidance, reply, type ToolContext } from '../toolkit.js';
+import { closed, describeError, guidance, reply, type ToolContext } from '../toolkit.js';
 
 /**
  * "I used my eye drops."
@@ -210,7 +210,7 @@ export function registerAddNote({ server, store, now, actor, state, nameOf }: To
     inputSchema: {
       note: z.string().describe('The observation, in the words it was said.'),
       aboutMemberId: z.string().optional().describe('Who it concerns: their name as the family says it (e.g. "Mum"), or their id.'),
-      unavailable: z.object({
+      unavailable: closed({
         memberName: z.string().describe('Who is unavailable, as the speaker named them.'),
         from: z.string().describe('ISO start of the window they cannot cover.'),
         to: z.string().describe('ISO end of the window.'),

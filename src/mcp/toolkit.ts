@@ -113,8 +113,16 @@ export function validMedicationTimes(times: string[]): boolean {
   return times.length > 0 && times.every((t) => /^([01]\d|2[0-3]):[0-5]\d$/.test(t));
 }
 
+/**
+ * An input object the model is told is closed (`additionalProperties: false`), as every tool
+ * input was declared under zod 3. At runtime an extra key is still dropped, not refused.
+ */
+export function closed<T extends z.ZodRawShape>(shape: T) {
+  return z.object(shape).meta({ additionalProperties: false });
+}
+
 /** A medicine's name in another language, as the family says it: add_medication and change_medication. */
-export const ALSO_CALLED = z.array(z.object({
+export const ALSO_CALLED = z.array(closed({
   language: z.enum(LANGUAGE_CODES as [LanguageCode, ...LanguageCode[]])
     .describe('The language of that name: es, fr, pt, de, it, hi, zh, pcm, yo, ig, ha, bin or en.'),
   name: z.string().describe('The name, exactly as the family says it in that language (e.g. "colírio").'),
