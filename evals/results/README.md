@@ -36,6 +36,7 @@ absent half), the tool was fixed, and the rubric made strict:
 |---|---|---|
 | `2026-09-24-languages-handoff-strict-before-whole-record.json` | the handoff, 11 languages, strict judge, before the fix: **0/11**. Every son heard only "no record from 8 AM" | the chat channel's |
 | `2026-09-24-languages-handoff-strict-after-whole-record.json` | the same after it: **11/11**. Every son was told his mother's dose was on the record, and the 8 AM gap was still said | the chat channel's |
+| `2026-09-24-languages-sonnet-4-5-named-whole-record.json` | both parts, with the family's names (`--named`), after the fix: part 1 **10/12** (the name kept in all 12; Pidgin and Igbo again said his day went well), part 2 **11/11**, her word matched on the first call **11/11** (3/11 with the English name only) | the chat channel's |
 
 The dialect and language runs are explained in `docs/LANGUAGES.md`.
 

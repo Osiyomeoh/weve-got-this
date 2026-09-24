@@ -131,10 +131,28 @@ results are in `evals/results/`.
 | Before the fix | ✖ | ✖ | ✖ | ✖ | ✖ | ✖ | ✖ | ✔ | ✖ | ✖ | ✖ |
 | After | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ |
 
-That is **1/11 before and 11/11 after**. Before the fix, the planner passed Mom's own word for
+That is **1/11 before and 11/11 after**, graded by the first rubric (see below: it was too lenient). Before the fix, the planner passed Mom's own word for
 the medicine, it matched nothing, and it was saved as an unscheduled medicine. Her son was then
 told there was no record of a dose she had taken. Only Pidgin passed, because Pidgin says
 "eye drop".
+
+**Then the whole path was traced (2026-09-24), and it found two more things.**
+- *The son heard only half the record.* Every turn now records its steps (see `src/obs/trace.ts`).
+  The son's path was `get_care_gaps` and then the answer, and the answer was "There's no record of
+  Mom's eye drops from 8 AM", about a mother who had logged her evening dose. `get_care_gaps` kept
+  what is on the record only in its structured data, and many hosts give the model only the text.
+  It now says the doses on the record whenever it mentions one without.
+- *The judge had passed those answers.* Its rubric let "no record from 8 AM" count as telling him a
+  dose was logged. It now requires the reply to say so.
+
+| Part 2, strict judge | Son told her dose is on the record | Her word matched on the first call |
+| --- | --- | --- |
+| Before the fix, English name only | 0/11 | 3/11 |
+| After, English name only | 11/11 | 3/11 |
+| After, with the family's name in her language (`--named`) | **11/11** | **11/11** |
+
+Without her family's word, Mom's "colírio" first comes back with the names on her schedule and is
+logged on the second call; with it, on the first.
 
 **Replies in your own language keep the facts (part 1).**
 - The setup: a coordinator asks, in their language, how Dad's day went. The morning dose is on
@@ -143,14 +161,19 @@ told there was no record of a dose she had taken. Only Pidgin passed, because Pi
   had said, and let one Hausa reply assume the reader's gender. The rule now forbids both.
   Since then, in every run and every language, replies have never said "missed", never invented
   anything, and have given both the logged dose and the 8 PM "no record".
-- The one weakness: Spanish, Portuguese and Italian replies sometimes translate the medicine's
-  name ("colírio", "collirio"), despite the rule. That makes 9 or 10 out of 12, depending on
-  the run.
+- Spanish, Portuguese and Italian replies sometimes translated the medicine's name ("colírio",
+  "collirio"), despite the rule: 9 or 10 out of 12, depending on the run. With the family's own
+  name in each language (`--named`), the name was kept in **all 12**.
+- **Open:** on 2026-09-24, Pidgin and Igbo replies said "Daddy's day went well" in both runs, with
+  and without names. No tool said it, and the rule forbids it. Part 1 is 9/12 with the English name
+  only and 10/12 named; those two are the misses left.
 
 **Understanding (`npm run evals -- --dialects`).**
 - 34 held-out cases. Each is a standard-English corpus request said another way: African
   American English, Pidgin, Nigerian English, Yoruba, Igbo, Hausa, Spanish, French and Chinese.
-- Results: **34/34** now, after 30/34 and 32/34.
+- Results: **34/34**, after 30/34 and 32/34. After `alsoCalled` was added to two tools: 33/34.
+  The miss, "I will carry Daddy to the hospital on Thursday", was re-run head to head: the old
+  tools 17/17, the new 15/17, within chance (Fisher p ≈ 0.5).
 - The miss that repeated was Pidgin "I don use my eye drop". It was saved as a note, because
   "don" was read as "don't". `log_care_event` now says what Pidgin "don" means, and that case
   is marked `seen`.
@@ -160,9 +183,8 @@ as before. One case changed in each direction.
 
 ## Next, by what it's worth
 
-1. **Medicine names per language.** Let the family give a medicine its name in each person's
-   language ("eye drops" = "colírio"). That would end the name translation in Spanish,
-   Portuguese and Italian replies, and would match "colírio" on the first call.
+1. **Pidgin and Igbo still add "his day went well".** Measure it on fresh phrasings before
+   changing the rule again, so the fix is not tuned on the cases that found it.
 2. A native speaker checks the Yoruba, Igbo, Hausa and Pidgin phrasebooks. Checked ones
    become "ready".
 3. An Edo speaker fills in the Edo phrasebook.
