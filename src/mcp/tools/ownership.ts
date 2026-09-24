@@ -79,7 +79,19 @@ export function registerGetCareGaps({ server, now, actor, state, nameOf }: ToolC
           saidBy: nameOf(e.reportedBy) ?? null,
         }));
 
-      return reply(speakGaps(gaps), {
+      // And it has to be in the sentence, not only in `recordedToday`: many hosts hand the
+      // model the text of a result and nothing else. We watched a son ask whether his
+      // mother had used her drops and hear only "no record from 8 AM", about a dose she
+      // had logged that evening. When the answer speaks of a dose with no record, it also
+      // says which doses are on the record today, and who logged them.
+      let spoken = speakGaps(gaps);
+      if (recordedToday.length > 0 && gaps.some((g) => g.kind === 'UNCONFIRMED')) {
+        const shown = recordedToday.slice(0, 3).map((r) => `${r.what} at ${r.time}${r.saidBy ? `, from ${r.saidBy}` : ''}`);
+        const more = recordedToday.length - shown.length;
+        spoken += ` On the record today: ${joinSpoken(shown)}${more > 0 ? `, and ${more} more` : ''}.`;
+      }
+
+      return reply(spoken, {
         recordedToday,
         gaps: gaps.map((g) => ({
           id: g.id, kind: g.kind, severity: g.severity, spoken: g.spoken,
