@@ -90,22 +90,26 @@ test('an unavailability outside the window orphans nothing', () => {
   );
 });
 
-test('the scenario puts cardiology on a real Thursday at 10:00 New York', async () => {
-  // The video says "Thursday at ten". A card reading "Wednesday at 6:44 AM" while
-  // the narrator says Thursday is the kind of detail a judge notices.
-  const store = new CareStore();
-  await store.reset();
-  await seedDemoHousehold(store);
-  const { checkUpAt } = await seedScenario(store, 'h_margaret');
-
+test('the scenario puts the check-up on a real Thursday at 10:00 Lagos, whenever it is reset', async () => {
+  // The video says "Thursday at ten". A card reading "Wednesday" while the narrator says
+  // Thursday is the kind of detail a judge notices. Every hour of a week, on a fixed clock:
+  // reading the UTC day once put it on Wednesday when reset between midnight and 1 AM Lagos.
   const fmt = new Intl.DateTimeFormat('en-US', {
     timeZone: 'Africa/Lagos', weekday: 'long', hour: 'numeric', minute: '2-digit', hour12: false,
   });
-  const parts = Object.fromEntries(fmt.formatToParts(checkUpAt).map((p) => [p.type, p.value]));
-  assert.equal(parts['weekday'], 'Thursday');
-  assert.equal(Number(parts['hour']) % 24, 10);
-  assert.equal(parts['minute'], '00');
-  assert.ok(checkUpAt.getTime() > Date.now(), 'must be in the future');
+  for (let h = 0; h < 24 * 7; h += 1) {
+    const now = new Date(Date.UTC(2026, 8, 21, 0, 30) + h * 3_600_000);
+    const store = new CareStore();
+    await store.reset();
+    await seedDemoHousehold(store);
+    const { checkUpAt } = await seedScenario(store, 'h_margaret', { now });
+    const parts = Object.fromEntries(fmt.formatToParts(checkUpAt).map((p) => [p.type, p.value]));
+    const at = `reset at ${now.toISOString()}`;
+    assert.equal(parts['weekday'], 'Thursday', at);
+    assert.equal(Number(parts['hour']) % 24, 10, at);
+    assert.equal(parts['minute'], '00', at);
+    assert.ok(checkUpAt.getTime() > now.getTime(), `must be in the future: ${at}`);
+  }
 });
 
 test('the scenario opens with the ride unowned and the evening dose unrecorded', async () => {

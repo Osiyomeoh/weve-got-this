@@ -19,12 +19,15 @@ import { seedScenario } from './demo/scenario.ts';
 let server: Server;
 let base: string;
 const store = new CareStore();
+// One fixed evening, 8 PM in Lagos, for the seed and the server alike: on the real clock,
+// the morning doses and "now" could fall on different days.
+const NOW = new Date('2026-09-22T19:00:00Z');
 
 before(async () => {
   await store.reset();
   await seedDemoHousehold(store);
-  await seedScenario(store, 'h_margaret');
-  const app = createCareCircleApp({ store, tokens: new Map(Object.entries(DEMO_TOKENS)) });
+  await seedScenario(store, 'h_margaret', { now: NOW });
+  const app = createCareCircleApp({ store, now: () => NOW, tokens: new Map(Object.entries(DEMO_TOKENS)) });
   await new Promise<void>((resolve) => {
     server = app.listen(0, () => {
       const a = server.address();
@@ -37,7 +40,7 @@ before(async () => {
 beforeEach(async () => {
   await store.reset();
   await seedDemoHousehold(store);
-  await seedScenario(store, 'h_margaret');
+  await seedScenario(store, 'h_margaret', { now: NOW });
 });
 
 after(() => { server?.close(); });
@@ -125,7 +128,7 @@ test('the same dose reads differently depending on who logged it', async () => {
 
   await store.reset();
   await seedDemoHousehold(store);
-  await seedScenario(store, 'h_margaret');
+  await seedScenario(store, 'h_margaret', { now: NOW });
 
   const aide = await openSession('aide-token');
   await call('aide-token', aide, 'log_care_event', {

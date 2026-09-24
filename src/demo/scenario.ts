@@ -1,3 +1,4 @@
+import { toInstant } from '../domain/time.js';
 import type { CareStore } from '../store/store.js';
 
 /**
@@ -11,19 +12,19 @@ import type { CareStore } from '../store/store.js';
 
 const TZ = 'Africa/Lagos';
 
-/** The UTC instant corresponding to a local wall-clock time in a timezone. */
+/**
+ * A local wall-clock time on the day `date` falls on *in the timezone*. The day is the
+ * zone's, not UTC's: between midnight and 1 AM in Lagos it is still yesterday in UTC, and
+ * reading the UTC day put Thursday's check-up on Wednesday and the morning doses on the
+ * day before.
+ */
 function localTimeToUtc(date: Date, hour: number, minute: number, timezone: string): Date {
-  // Start from the naive UTC guess, then correct by the zone's offset at that moment.
-  const guess = new Date(Date.UTC(
-    date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), hour, minute, 0, 0,
-  ));
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: timezone, hour: '2-digit', hour12: false, minute: '2-digit',
-  }).formatToParts(guess);
-  const asLocalHour = Number(parts.find((p) => p.type === 'hour')?.value ?? '0') % 24;
-  const asLocalMin = Number(parts.find((p) => p.type === 'minute')?.value ?? '0');
-  const driftMinutes = (asLocalHour * 60 + asLocalMin) - (hour * 60 + minute);
-  return new Date(guess.getTime() - driftMinutes * 60_000);
+  const day = new Intl.DateTimeFormat('en-CA', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' })
+    .format(date);
+  const clock = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+  const at = toInstant(`${day}T${clock}:00`, timezone);
+  if (!at) throw new Error(`Cannot place ${day} ${clock} in ${timezone}`);
+  return new Date(at);
 }
 
 /** The next occurrence of a weekday (0=Sun) at a local time, strictly in the future. */
