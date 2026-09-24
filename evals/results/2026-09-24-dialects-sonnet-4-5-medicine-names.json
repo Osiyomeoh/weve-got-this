@@ -1,0 +1,332 @@
+{
+  "provider": "bedrock",
+  "modelId": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+  "at": "2026-09-24T00:47:22.603Z",
+  "systemPrompt": "console",
+  "total": 34,
+  "passed": 33,
+  "accuracy": 0.9705882352941176,
+  "errored": 0,
+  "byCategory": [
+    {
+      "category": "hd",
+      "passed": 33,
+      "total": 34
+    }
+  ],
+  "splits": [
+    {
+      "split": "authored",
+      "passed": 0,
+      "total": 0
+    },
+    {
+      "split": "held-out",
+      "passed": 31,
+      "total": 32
+    },
+    {
+      "split": "seen",
+      "passed": 2,
+      "total": 2
+    }
+  ],
+  "failures": [
+    {
+      "case": {
+        "id": "hd-ng-03",
+        "member": "m_david",
+        "utterance": "I will carry Daddy to the hospital on Thursday.",
+        "expect": [
+          "claim_obligation",
+          "get_care_gaps"
+        ],
+        "note": "\"Carry\" means take someone somewhere."
+      },
+      "chosen": "record_appointment",
+      "args": {
+        "kind": "hospital",
+        "startsAt": "2026-09-25T00:00:00",
+        "forMemberId": "Daddy",
+        "detail": "I will carry Daddy to the hospital"
+      },
+      "pass": false,
+      "reason": "chose record_appointment; expected claim_obligation or get_care_gaps"
+    }
+  ],
+  "errors": [],
+  "results": [
+    {
+      "id": "hd-aae-01",
+      "utterance": "Daddy done took his eye drops already.",
+      "member": "m_david",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "hd-aae-02",
+      "utterance": "I been took my pills this morning, don't worry about it.",
+      "member": "m_margaret",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "hd-aae-03",
+      "utterance": "Who finna take Daddy to his eye appointment Thursday?",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "hd-aae-04",
+      "utterance": "Put it down that Daddy got a doctor's appointment Tuesday at 2.",
+      "member": "m_david",
+      "chosen": "record_appointment",
+      "pass": true,
+      "reason": "record_appointment"
+    },
+    {
+      "id": "hd-aae-05",
+      "utterance": "Ain't nobody picked up his prescription yet?",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "hd-aae-06",
+      "utterance": "I can't drive him Thursday, I'm gon' be out of town.",
+      "member": "m_renee",
+      "chosen": "add_note",
+      "pass": true,
+      "reason": "add_note"
+    },
+    {
+      "id": "hd-aae-07",
+      "utterance": "How Daddy doing today?",
+      "member": "m_david",
+      "chosen": "get_care_summary",
+      "pass": true,
+      "reason": "get_care_summary"
+    },
+    {
+      "id": "hd-pcm-01",
+      "utterance": "I don use my eye drop this morning.",
+      "member": "m_margaret",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "hd-pcm-02",
+      "utterance": "Abeg, who go carry Daddy go eye clinic on Thursday?",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "hd-pcm-03",
+      "utterance": "Wetin still remain wey nobody don do for Daddy?",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "hd-pcm-04",
+      "utterance": "Daddy get appointment for eye clinic Friday by 10.",
+      "member": "m_david",
+      "chosen": "record_appointment",
+      "pass": true,
+      "reason": "record_appointment"
+    },
+    {
+      "id": "hd-pcm-05",
+      "utterance": "Oga don take im medicine.",
+      "member": "m_aide",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "hd-pcm-06",
+      "utterance": "Daddy don fall for bathroom, e no fit stand up.",
+      "member": "m_david",
+      "chosen": "raise_urgent",
+      "pass": true,
+      "reason": "raise_urgent"
+    },
+    {
+      "id": "hd-pcm-07",
+      "utterance": "How Daddy day take go?",
+      "member": "m_renee",
+      "chosen": "get_care_summary",
+      "pass": true,
+      "reason": "get_care_summary"
+    },
+    {
+      "id": "hd-ng-01",
+      "utterance": "Daddy has taken his drugs.",
+      "member": "m_david",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "hd-ng-02",
+      "utterance": "Please help me to check if Daddy has used his drops.",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "hd-ng-03",
+      "utterance": "I will carry Daddy to the hospital on Thursday.",
+      "member": "m_david",
+      "chosen": "record_appointment",
+      "pass": false,
+      "reason": "chose record_appointment; expected claim_obligation or get_care_gaps"
+    },
+    {
+      "id": "hd-yo-01",
+      "utterance": "Mo ti lo eye drops mi this morning.",
+      "member": "m_margaret",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "hd-yo-02",
+      "utterance": "Mo ti lo oogun ojú mi.",
+      "member": "m_margaret",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "hd-yo-03",
+      "utterance": "Ẹ jọ̀ọ́, ask whoever is free to take Daddy to the clinic on Thursday.",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "hd-ig-01",
+      "utterance": "Biko, how was Daddy's day?",
+      "member": "m_renee",
+      "chosen": "get_care_summary",
+      "pass": true,
+      "reason": "get_care_summary"
+    },
+    {
+      "id": "hd-ig-02",
+      "utterance": "Aṅụla m ọgwụ m.",
+      "member": "m_margaret",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "hd-ha-01",
+      "utterance": "Don Allah, what's still open for Daddy?",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "hd-ha-02",
+      "utterance": "Na sha maganina.",
+      "member": "m_margaret",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "hd-es-01",
+      "utterance": "Ya me puse las gotas para los ojos.",
+      "member": "m_margaret",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "hd-es-02",
+      "utterance": "Papá tiene cita con el oculista el jueves a las diez.",
+      "member": "m_david",
+      "chosen": "record_appointment",
+      "pass": true,
+      "reason": "record_appointment"
+    },
+    {
+      "id": "hd-es-03",
+      "utterance": "¿Qué queda pendiente para papá?",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "hd-es-04",
+      "utterance": "Papá se cayó y no se puede levantar.",
+      "member": "m_renee",
+      "chosen": "raise_urgent",
+      "pass": true,
+      "reason": "raise_urgent"
+    },
+    {
+      "id": "hd-fr-01",
+      "utterance": "J'ai mis mes gouttes pour les yeux.",
+      "member": "m_margaret",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "hd-fr-02",
+      "utterance": "Papa a rendez-vous chez l'ophtalmo vendredi à 10h.",
+      "member": "m_david",
+      "chosen": "record_appointment",
+      "pass": true,
+      "reason": "record_appointment"
+    },
+    {
+      "id": "hd-fr-03",
+      "utterance": "Comment s'est passée la journée de papa ?",
+      "member": "m_renee",
+      "chosen": "get_care_summary",
+      "pass": true,
+      "reason": "get_care_summary"
+    },
+    {
+      "id": "hd-zh-01",
+      "utterance": "我已经滴了眼药水。",
+      "member": "m_margaret",
+      "chosen": "log_care_event",
+      "pass": true,
+      "reason": "log_care_event"
+    },
+    {
+      "id": "hd-zh-02",
+      "utterance": "爸爸今天怎么样？",
+      "member": "m_renee",
+      "chosen": "get_care_summary",
+      "pass": true,
+      "reason": "get_care_summary"
+    },
+    {
+      "id": "hd-zh-03",
+      "utterance": "爸爸周四上午十点要去看眼科。",
+      "member": "m_david",
+      "chosen": "record_appointment",
+      "pass": true,
+      "reason": "record_appointment"
+    }
+  ]
+}
