@@ -266,7 +266,7 @@ export default function Console() {
   return (
     <div className="mx-auto grid min-h-screen max-w-[1400px] grid-cols-1 gap-6 p-5 md:p-8 lg:grid-cols-[1fr_1.1fr]">
       {/* LEFT: device + conversation */}
-      <section className="flex flex-col gap-5">
+      <section className="flex min-w-0 flex-col gap-5">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5 text-muted transition hover:text-ink">
             <span className="h-2.5 w-2.5 rounded-full bg-core shadow-[0_0_14px_#7cf0c8]" />
@@ -416,7 +416,7 @@ export default function Console() {
       </section>
 
       {/* RIGHT: live board */}
-      <section className="flex flex-col gap-4">
+      <section className="flex min-w-0 flex-col gap-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Care board</h2>
           <Link to="/tv" className="text-sm text-muted transition hover:text-ink">TV view →</Link>
