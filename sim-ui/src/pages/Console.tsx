@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api, MEMBERS, type Member, type SpeechRate, type ToolCall } from '../lib/api';
+import { api, MEMBERS, type Member, type SpeechRate } from '../lib/api';
 import { record, type Recording } from '../lib/mic';
 import { useBoard } from '../lib/useBoard';
 import { ProvChip, provFromGap } from '../components/ProvChip';
+import { TraceCard, type TraceEntry } from '../components/TraceCard';
 import type { Provenance } from '../lib/api';
 
 type Msg = { who: 'me' | 'alexa' | 'err'; text: string; tag?: string; heard?: string };
@@ -43,7 +44,8 @@ export default function Console() {
   /** Speech pace. Slower is an access control for older listeners, not a demo toggle. */
   const [rate, setRate] = useState<SpeechRate>('normal');
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [calls, setCalls] = useState<ToolCall[]>([]);
+  /** The last few turns, newest first, each with how it was worked out. */
+  const [traces, setTraces] = useState<TraceEntry[]>([]);
   const { state, online } = useBoard(3000);
   // Whether this browser has its own copy of the demo (see src/sim/sandbox.ts).
   const [demo, setDemo] = useState<'shared' | 'private' | undefined>();
@@ -115,7 +117,7 @@ export default function Console() {
         setMessages((m) => m.map((msg, i) => (i === m.length - 1 ? { ...msg, heard: shown } : msg)));
       }
       setMessages((m) => [...m, { who: 'alexa', text: turn.spoken, tag: 'Alexa' }]);
-      setCalls((c) => [...turn.toolCalls, ...c].slice(0, 12));
+      setTraces((t) => [{ said: turn.heard ?? text, trace: turn.trace }, ...t].slice(0, 5));
       speak(turn.spoken);
     } catch (e) {
       setMessages((m) => [...m, { who: 'err', text: (e as Error).message }]);
@@ -189,7 +191,12 @@ export default function Console() {
     try {
       const res = await api.act(member.id, tool, args);
       setMessages((m) => [...m, { who: 'alexa', text: res.result, tag: 'Alexa · tapped' }]);
-      setCalls((c) => [res, ...c].slice(0, 12));
+      // A tap has no model in it: one step, the tool the card is bound to.
+      const tap: TraceEntry = {
+        said: `Tapped: ${tool}`, tapped: true,
+        trace: { channel: 'voice', model: 'none', outcome: 'answered', steps: [{ plannerMs: 0, calls: [res] }], plannerMs: 0, toolMs: res.ms, totalMs: res.ms },
+      };
+      setTraces((t) => [tap, ...t].slice(0, 5));
       speak(res.result);
     } catch (e) {
       setMessages((m) => [...m, { who: 'err', text: (e as Error).message }]);
@@ -275,7 +282,7 @@ export default function Console() {
           <div className="glass flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-[0.75rem] text-muted">
             <span>This is your own copy of the demo family. Nothing you do here reaches anyone else.</span>
             <button type="button"
-              onClick={() => { void api.resetSandbox().then(() => { setMessages([]); setCalls([]); }); }}
+              onClick={() => { void api.resetSandbox().then(() => { setMessages([]); setTraces([]); }); }}
               className="shrink-0 font-semibold text-core hover:underline">
               Start over
             </button>
@@ -466,17 +473,11 @@ export default function Console() {
             <div className="glass rounded-2xl p-8 text-center text-muted">Nothing outstanding. Everything recorded has an owner.</div>
           )}
 
-          {calls.length > 0 && (
+          {traces.length > 0 && (
             <div className="glass mt-2 rounded-2xl p-4">
-              <div className="mb-2 text-[0.6875rem] uppercase tracking-wider text-muted">Tool calls (real MCP)</div>
-              <div className="space-y-1.5">
-                {calls.map((c, i) => (
-                  <div key={i} className={`flex items-center gap-2 text-[0.75rem] ${c.isError ? 'text-sevHigh' : 'text-muted'}`}>
-                    <span className="w-12 text-right tabular-nums">{c.ms}ms</span>
-                    <span className="font-semibold text-ink">{c.name}</span>
-                    <span className="truncate">{JSON.stringify(c.arguments)}</span>
-                  </div>
-                ))}
+              <div className="mb-2 text-[0.6875rem] uppercase tracking-wider text-muted">How it worked it out (real MCP calls)</div>
+              <div className="space-y-2.5">
+                {traces.map((entry, i) => <TraceCard key={i} entry={entry} />)}
               </div>
             </div>
           )}

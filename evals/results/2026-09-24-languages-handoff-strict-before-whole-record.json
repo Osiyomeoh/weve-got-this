@@ -1,0 +1,290 @@
+{
+  "planner": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+  "judge": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+  "at": "2026-09-24T01:25:31.232Z",
+  "named": false,
+  "ask": {
+    "passed": 0,
+    "total": 0,
+    "rows": []
+  },
+  "handoff": {
+    "passed": 0,
+    "total": 11,
+    "firstCallMatched": 3,
+    "rows": [
+      {
+        "language": "es",
+        "said": "Ya me acabo de poner las gotas para los ojos.",
+        "momReply": "Perfecto, Rosa. He registrado que ya te pusiste las eye drops. ¡Que descanses!",
+        "sonReply": "There's no record of Mom's eye drops from 8 AM today. That doesn't mean she didn't take them - just that it hasn't been logged. Would you like to record it if she has taken them?",
+        "recordedByMom": true,
+        "momInLanguage": true,
+        "inEnglish": true,
+        "recordedToday": false,
+        "saysMissed": false,
+        "invents": false,
+        "why": "It only mentions the missing 8 AM record without stating that the evening dose was logged.",
+        "keepsName": true,
+        "pass": false,
+        "firstCallMatched": false,
+        "momSteps": [
+          "log_care_event:guidance",
+          "log_care_event:ok",
+          "answer"
+        ],
+        "sonSteps": [
+          "get_care_gaps:ok",
+          "answer"
+        ]
+      },
+      {
+        "language": "fr",
+        "said": "Je viens de mettre mes gouttes pour les yeux.",
+        "momReply": "C'est noté, Rosa. J'ai enregistré vos eye drops.",
+        "sonReply": "There's no record of Mom's eye drops from 8 AM today. That doesn't mean she didn't take them - just that it hasn't been logged. Would you like to record it if she has taken them?",
+        "recordedByMom": true,
+        "momInLanguage": true,
+        "inEnglish": true,
+        "recordedToday": false,
+        "saysMissed": false,
+        "invents": false,
+        "why": "It only mentions the missing 8 AM record without stating that the evening dose was logged.",
+        "keepsName": true,
+        "pass": false,
+        "firstCallMatched": false,
+        "momSteps": [
+          "log_care_event:guidance",
+          "log_care_event:ok",
+          "answer"
+        ],
+        "sonSteps": [
+          "get_care_gaps:ok",
+          "answer"
+        ]
+      },
+      {
+        "language": "pt",
+        "said": "Acabei de pingar o colírio.",
+        "momReply": "Entendido, Rosa. Registrei o eye drops (colírio).",
+        "sonReply": "There's no record of Mom's eye drops from 8 AM today. That doesn't mean she didn't take them - just that it hasn't been logged. Would you like to record it if she has taken them?",
+        "recordedByMom": true,
+        "momInLanguage": true,
+        "inEnglish": true,
+        "recordedToday": false,
+        "saysMissed": false,
+        "invents": false,
+        "why": "It only mentions the missing 8 AM record without stating that the evening dose was logged.",
+        "keepsName": true,
+        "pass": false,
+        "firstCallMatched": false,
+        "momSteps": [
+          "log_care_event:guidance",
+          "log_care_event:ok",
+          "answer"
+        ],
+        "sonSteps": [
+          "get_care_gaps:ok",
+          "answer"
+        ]
+      },
+      {
+        "language": "de",
+        "said": "Ich habe gerade meine Augentropfen genommen.",
+        "momReply": "Alles klar, Rosa. Ich habe die eye drops notiert.",
+        "sonReply": "There's no record of Mom's eye drops from 8 AM today, Daniel. That doesn't mean she didn't take them - just that it hasn't been logged. Would you like to record it if she has taken them?",
+        "recordedByMom": true,
+        "momInLanguage": true,
+        "inEnglish": true,
+        "recordedToday": false,
+        "saysMissed": false,
+        "invents": false,
+        "why": "It only mentions the missing 8 AM record without stating that the evening dose was logged.",
+        "keepsName": true,
+        "pass": false,
+        "firstCallMatched": false,
+        "momSteps": [
+          "log_care_event:guidance",
+          "log_care_event:ok",
+          "answer"
+        ],
+        "sonSteps": [
+          "get_care_gaps:ok",
+          "answer"
+        ]
+      },
+      {
+        "language": "it",
+        "said": "Ho appena messo il collirio.",
+        "momReply": "Perfetto, Rosa. Ho registrato le eye drops (collirio).",
+        "sonReply": "There's no record of Mom's eye drops from 8 AM today. That doesn't mean she didn't take them - just that it hasn't been logged. Would you like to record it if she has taken them?",
+        "recordedByMom": true,
+        "momInLanguage": true,
+        "inEnglish": true,
+        "recordedToday": false,
+        "saysMissed": false,
+        "invents": false,
+        "why": "It only mentions the missing 8 AM record without stating that the evening dose was logged.",
+        "keepsName": true,
+        "pass": false,
+        "firstCallMatched": false,
+        "momSteps": [
+          "log_care_event:guidance",
+          "log_care_event:ok",
+          "answer"
+        ],
+        "sonSteps": [
+          "get_care_gaps:ok",
+          "answer"
+        ]
+      },
+      {
+        "language": "hi",
+        "said": "मैंने अभी अपनी आँखों की दवा डाल ली है।",
+        "momReply": "समझ गया, मैंने eye drops का रिकॉर्ड कर लिया है।",
+        "sonReply": "There's no record of Mom's eye drops from 8 AM today. That doesn't mean she didn't take them - just that it hasn't been logged. Would you like to record it if she has taken them?",
+        "recordedByMom": true,
+        "momInLanguage": true,
+        "inEnglish": true,
+        "recordedToday": false,
+        "saysMissed": false,
+        "invents": false,
+        "why": "It only mentions the missing 8 AM record without stating that the evening dose was logged.",
+        "keepsName": true,
+        "pass": false,
+        "firstCallMatched": false,
+        "momSteps": [
+          "log_care_event:guidance",
+          "log_care_event:ok",
+          "answer"
+        ],
+        "sonSteps": [
+          "get_care_gaps:ok",
+          "answer"
+        ]
+      },
+      {
+        "language": "zh",
+        "said": "我刚滴了眼药水。",
+        "momReply": "好的,我已经记录了您的 eye drops。",
+        "sonReply": "There's no record of Mom's eye drops from 8 AM today. That doesn't mean she didn't take them - just that it hasn't been logged. Would you like to record it if she has taken them?",
+        "recordedByMom": true,
+        "momInLanguage": true,
+        "inEnglish": true,
+        "recordedToday": false,
+        "saysMissed": false,
+        "invents": false,
+        "why": "It only mentions the missing 8 AM record without stating that the evening dose was logged.",
+        "keepsName": true,
+        "pass": false,
+        "firstCallMatched": false,
+        "momSteps": [
+          "log_care_event:guidance",
+          "log_care_event:ok",
+          "answer"
+        ],
+        "sonSteps": [
+          "get_care_gaps:ok",
+          "answer"
+        ]
+      },
+      {
+        "language": "pcm",
+        "said": "I don use my eye drop now now.",
+        "momReply": "Okay, I don log am say you don use your eye drop (eye drop). Thank you for tell me, Rosa.",
+        "sonReply": "There's no record of Mom's eye drops from 8 AM today. That doesn't mean she didn't take them - just that it hasn't been logged. Would you like to record it if she has taken them?",
+        "recordedByMom": true,
+        "momInLanguage": true,
+        "inEnglish": true,
+        "recordedToday": false,
+        "saysMissed": false,
+        "invents": false,
+        "why": "It only mentions the missing 8 AM record without stating that the evening dose was logged.",
+        "keepsName": true,
+        "pass": false,
+        "firstCallMatched": true,
+        "momSteps": [
+          "log_care_event:ok",
+          "answer"
+        ],
+        "sonSteps": [
+          "get_care_gaps:ok",
+          "answer"
+        ]
+      },
+      {
+        "language": "yo",
+        "said": "Mo ṣẹ̀ṣẹ̀ lo oogun ojú mi.",
+        "momReply": "Ó dára, mo ti kọ ọ́ sílẹ̀ pé o ti lo eye drops (oogun ojú) rẹ.",
+        "sonReply": "There's no record of Mom's eye drops from 8 AM today. That doesn't mean she didn't take them - just that it hasn't been logged. Would you like to record it if she has taken them?",
+        "recordedByMom": true,
+        "momInLanguage": true,
+        "inEnglish": true,
+        "recordedToday": false,
+        "saysMissed": false,
+        "invents": false,
+        "why": "It only mentions the missing 8 AM record without stating that the evening dose was logged.",
+        "keepsName": true,
+        "pass": false,
+        "firstCallMatched": false,
+        "momSteps": [
+          "log_care_event:guidance",
+          "log_care_event:ok",
+          "answer"
+        ],
+        "sonSteps": [
+          "get_care_gaps:ok",
+          "answer"
+        ]
+      },
+      {
+        "language": "ig",
+        "said": "Etinyela m ọgwụ anya m ugbu a.",
+        "momReply": "Edekọtala m ya, Rosa. Ị tinyela ọgwụ anya gị (eye drops) ugbu a.",
+        "sonReply": "There's no record of Mom's eye drops from 8 AM today, Daniel. That doesn't mean she didn't take them - just that it hasn't been logged. Would you like to record it if she has taken them?",
+        "recordedByMom": true,
+        "momInLanguage": true,
+        "inEnglish": true,
+        "recordedToday": false,
+        "saysMissed": false,
+        "invents": false,
+        "why": "Does not mention the evening dose that Mom herself logged today.",
+        "keepsName": true,
+        "pass": false,
+        "firstCallMatched": true,
+        "momSteps": [
+          "log_care_event:ok",
+          "answer"
+        ],
+        "sonSteps": [
+          "get_care_gaps:ok",
+          "answer"
+        ]
+      },
+      {
+        "language": "ha",
+        "said": "Yanzu na sa maganin idona.",
+        "momReply": "Na rubuta cewa kin sha maganin ido (eye drops), Rosa. Na gode da sanar da ni.",
+        "sonReply": "There's no record of Mom's eye drops from 8 AM today. That doesn't mean she didn't take them - just that it hasn't been logged. Would you like to record it if she has taken them?",
+        "recordedByMom": true,
+        "momInLanguage": true,
+        "inEnglish": true,
+        "recordedToday": false,
+        "saysMissed": false,
+        "invents": false,
+        "why": "It only mentions the missing 8 AM record without stating that the evening dose was logged.",
+        "keepsName": true,
+        "pass": false,
+        "firstCallMatched": true,
+        "momSteps": [
+          "log_care_event:ok",
+          "answer"
+        ],
+        "sonSteps": [
+          "get_care_gaps:ok",
+          "answer"
+        ]
+      }
+    ]
+  }
+}

@@ -3,7 +3,9 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { createCareCircleServer } from '../mcp/server.js';
 import type { Notifier } from '../notify/notifier.js';
 import type { CareStore } from '../store/store.js';
-import { SimulatedAlexa } from '../sim/host.js';
+import { log } from '../obs/log.js';
+import { traceFields } from '../obs/trace.js';
+import { SimulatedAlexa, type TurnTrace } from '../sim/host.js';
 import type { ModelProvider } from '../sim/providers.js';
 
 /**
@@ -30,6 +32,12 @@ export interface TelegramChatOptions {
   now?: () => Date;
   /** How long a quiet conversation is kept. */
   idleMs?: number;
+  /**
+   * Every turn's full trace, for whoever needs to read it step by step (an eval, a test).
+   * It holds what was said and every result, so it is never logged; the log gets the
+   * redacted form (obs/trace.ts) whether or not this is set.
+   */
+  onTrace?: (memberId: string, trace: TurnTrace) => void;
 }
 
 interface Thread { host: Promise<SimulatedAlexa>; opened: number; lastUsed: number; queue: Promise<unknown> }
@@ -76,10 +84,14 @@ export function createTelegramChat(opts: TelegramChatOptions): ChatReply {
     const turn = t.queue.then(async () => {
       try {
         const reply = await (await t.host).say(text);
+        // Which step worked and which didn't, for every turn a family takes - without the care.
+        log.info('chat turn', traceFields(reply.trace));
+        opts.onTrace?.(memberId, reply.trace);
         return reply.spoken.trim() || SORRY;
-      } catch {
+      } catch (err) {
         // A broken thread is not kept: the next message starts a clean one.
         threads.delete(key);
+        log.warn('chat turn failed', { channel: 'chat', error: (err as Error).name });
         return SORRY;
       }
     });
