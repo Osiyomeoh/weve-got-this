@@ -1,6 +1,6 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
-import type { Conversation, ModelProvider, ToolResult, ToolSpec } from './providers.js';
+import type { Conversation, ModelProvider, ToolResult, ToolSpec, TurnOutput } from './providers.js';
 import { replyLanguageRule } from '../domain/language.js';
 import type { LanguageCode } from '../domain/types.js';
 
@@ -111,9 +111,34 @@ export interface ToolCallRecord {
   ms: number;
 }
 
+/** One reply from the model, and the tool calls it asked for (none on the reply that answers). */
+export interface TraceStep {
+  /** How long the model took to produce this reply. */
+  plannerMs: number;
+  calls: ToolCallRecord[];
+}
+
+/**
+ * Everything one turn did, in order: each model reply, each tool it called with what came
+ * back, and where the time went. A turn that goes wrong can then be read step by step -
+ * "the name matched nothing, the tool said which names it knows, the second call worked" -
+ * instead of only by its last sentence.
+ */
+export interface TurnTrace {
+  channel: Channel;
+  model: string;
+  /** "answered": the model replied without asking for more. "step_limit": it was cut off. */
+  outcome: 'answered' | 'step_limit';
+  steps: TraceStep[];
+  plannerMs: number;
+  toolMs: number;
+  totalMs: number;
+}
+
 export interface TurnResult {
   spoken: string;
   toolCalls: ToolCallRecord[];
+  trace: TurnTrace;
 }
 
 export class SimulatedAlexa {
@@ -220,18 +245,35 @@ export class SimulatedAlexa {
 
   /** One conversational turn: what the person said in, what Alexa says out. */
   async say(utterance: string): Promise<TurnResult> {
-    this.#conversation ??= this.#provider.start(systemPrompt(this.#context()), this.#tools);
+    const conversation = this.#conversation ??= this.#provider.start(systemPrompt(this.#context()), this.#tools);
+    const turnStarted = Date.now();
     const toolCalls: ToolCallRecord[] = [];
-    let output = await this.#conversation.say(utterance);
+    const steps: TraceStep[] = [];
+    const plan = async (ask: () => Promise<TurnOutput>): Promise<TurnOutput> => {
+      const started = Date.now();
+      const out = await ask();
+      steps.push({ plannerMs: Date.now() - started, calls: [] });
+      return out;
+    };
+    const finish = (spoken: string, outcome: TurnTrace['outcome']): TurnResult => {
+      const plannerMs = steps.reduce((sum, s) => sum + s.plannerMs, 0);
+      const toolMs = toolCalls.reduce((sum, c) => sum + c.ms, 0);
+      return {
+        spoken, toolCalls,
+        trace: { channel: this.#channel, model: this.#provider.modelId, outcome, steps, plannerMs, toolMs, totalMs: Date.now() - turnStarted },
+      };
+    };
+    let output = await plan(() => conversation.say(utterance));
 
     // Bounded so a confused model cannot loop forever on a live demo.
     // A chat message can carry several requests at once ("add her drops and the clinic on
     // Friday"), so it gets a little more room than a spoken turn.
     for (let step = 0; step < (this.#channel === 'chat' ? 10 : 6); step += 1) {
       if (output.toolUses.length === 0) {
-        return { spoken: output.text, toolCalls };
+        return finish(output.text, 'answered');
       }
 
+      const current = steps.at(-1)!;
       const results: ToolResult[] = [];
       for (const use of output.toolUses) {
         const started = Date.now();
@@ -249,20 +291,19 @@ export class SimulatedAlexa {
           text = `The tool failed: ${(err as Error).message}`;
           isError = true;
         }
-        toolCalls.push({
+        const call: ToolCallRecord = {
           name: use.name, arguments: use.input, result: text,
           ...(structured !== undefined ? { structured } : {}),
           isError, ms: Date.now() - started,
-        });
+        };
+        toolCalls.push(call);
+        current.calls.push(call);
         results.push({ id: use.id, name: use.name, text, isError });
       }
-      output = await this.#conversation.report(results);
+      output = await plan(() => conversation.report(results));
     }
 
-    return {
-      spoken: "Sorry, I got stuck working that out. Could you say it another way?",
-      toolCalls,
-    };
+    return finish("Sorry, I got stuck working that out. Could you say it another way?", 'step_limit');
   }
 
   /**

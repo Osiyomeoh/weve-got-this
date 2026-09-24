@@ -40,6 +40,8 @@ import { BedrockRuntimeClient, ConverseCommand } from '@aws-sdk/client-bedrock-r
 import { CareStore } from '../src/store/store.ts';
 import { createTelegramChat } from '../src/http/telegram-chat.ts';
 import { providerFromEnv } from '../src/sim/providers.ts';
+import { traceFields } from '../src/obs/trace.ts';
+import type { TurnTrace } from '../src/sim/host.ts';
 import { LANGUAGES } from '../src/domain/language.ts';
 import type { LanguageCode } from '../src/domain/types.ts';
 import { toInstant } from '../src/domain/time.ts';
@@ -230,31 +232,40 @@ if (part !== 'ask') {
     if (!wanted(code)) continue;
     const run = await patiently(async () => {
       const store = await handoffCircle(code);
-      const chat = createTelegramChat({ store, provider });
+      // The whole path, step by step: not only whether the dose got on the record, but how.
+      let momTrace: TurnTrace | undefined;
+      const chat = createTelegramChat({ store, provider, onTrace: (who, t) => { if (who === 'm_mom') momTrace ??= t; } });
       const momReply = await chat('m_mom', said);
       const sonReply = answered(momReply) ? await chat('m_son', 'Has Mom used her eye drops today?') : momReply;
-      return { store, momReply, sonReply };
+      return { store, momReply, sonReply, momTrace };
     }, (r) => answered(r.momReply) && answered(r.sonReply));
+    // Did her own word match her drops on the first call, or only after the tool listed the
+    // names on her schedule and the planner tried again? Reported, not graded.
+    const doseCalls = (run.momTrace?.steps ?? []).flatMap((s) => s.calls).filter((c) => c.name === 'log_care_event');
+    const firstCallMatched = doseCalls.length > 0 && !doseCalls[0]!.isError;
+    const momSteps = run.momTrace ? traceFields(run.momTrace).steps : [];
     const dose = run.store.getCareState('h').events.find((e) => e.kind === 'medication_taken' && e.data['medicationId'] === 'med');
     const recordedByMom = dose?.reportedBy === 'm_mom';
     const mom = await patiently(() => judge<InLanguage>(replyRubric(LANGUAGES[code].name), run.momReply));
     const son = await patiently(() => judge<SonVerdict>(sonRubric, run.sonReply));
     const keepsName = run.sonReply.toLowerCase().includes('eye drop');
     const pass = recordedByMom && mom.inLanguage && son.inEnglish && son.recordedToday && !son.saysMissed && !son.invents && keepsName;
-    handoffs.push({ language: code, said, momReply: run.momReply, sonReply: run.sonReply, recordedByMom, momInLanguage: mom.inLanguage, ...son, keepsName, pass });
+    handoffs.push({ language: code, said, momReply: run.momReply, sonReply: run.sonReply, recordedByMom, momInLanguage: mom.inLanguage, ...son, keepsName, pass, firstCallMatched, momSteps });
     console.log(`\n${pass ? '✔' : '✖'} ${LANGUAGES[code].name} → English`);
     console.log(`  Mom:    ${said}`);
     console.log(`  to Mom: ${indent(run.momReply)}`);
     console.log(`  to son: ${indent(run.sonReply)}`);
     console.log(`  graded: on the record from Mom ${yes(recordedByMom)} · Mom answered in ${LANGUAGES[code].name} ${yes(mom.inLanguage)} · son in English ${yes(son.inEnglish)} · son told it was recorded ${yes(son.recordedToday)} · "missed" ${son.saysMissed ? 'SAID' : 'never'} · invents ${son.invents ? 'YES' : 'nothing'} · name kept ${yes(keepsName)}`);
     console.log(`          ${son.why}`);
+    console.log(`  path:   ${momSteps.join(' → ')}${firstCallMatched ? ' (her word matched on the first call)' : ''}`);
   }
 }
 
 const score = (rows: Array<Record<string, unknown>>) => `${rows.filter((r) => r['pass']).length}/${rows.length}`;
-console.log(`\nask: ${score(asks)} · handoff: ${score(handoffs)} · ${named ? 'named by the family' : 'English name only'} · planner ${provider.modelId} · judge ${JUDGE}\n`);
+const firstCall = handoffs.filter((r) => r['firstCallMatched']).length;
+console.log(`\nask: ${score(asks)} · handoff: ${score(handoffs)} (her word matched on the first call: ${firstCall}/${handoffs.length}) · ${named ? 'named by the family' : 'English name only'} · planner ${provider.modelId} · judge ${JUDGE}\n`);
 writeFileSync(named ? 'evals-results-languages-named.json' : 'evals-results-languages.json', JSON.stringify({
   planner: provider.modelId, judge: JUDGE, at: new Date().toISOString(), named,
   ask: { passed: asks.filter((r) => r['pass']).length, total: asks.length, rows: asks },
-  handoff: { passed: handoffs.filter((r) => r['pass']).length, total: handoffs.length, rows: handoffs },
+  handoff: { passed: handoffs.filter((r) => r['pass']).length, total: handoffs.length, firstCallMatched: firstCall, rows: handoffs },
 }, null, 2));

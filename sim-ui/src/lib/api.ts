@@ -53,9 +53,24 @@ export interface ToolCall {
 /** A word the server mapped back onto a name this household actually uses. */
 export interface Correction { from: string; to: string }
 
+/** One reply from the model, and the tool calls it asked for (none on the reply that answers). */
+export interface TraceStep { plannerMs: number; calls: ToolCall[] }
+
+/** Everything one turn did, in order, and where the time went (see src/sim/host.ts). */
+export interface TurnTrace {
+  channel: 'voice' | 'chat';
+  model: string;
+  outcome: 'answered' | 'step_limit';
+  steps: TraceStep[];
+  plannerMs: number;
+  toolMs: number;
+  totalMs: number;
+}
+
 export interface Turn {
   spoken: string;
   toolCalls: ToolCall[];
+  trace: TurnTrace;
   /** The transcript after correction, present only when something was changed. */
   heard?: string;
   corrections?: Correction[];

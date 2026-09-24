@@ -3,6 +3,8 @@ import express from 'express';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { SimulatedAlexa } from './host.js';
+import { log } from '../obs/log.js';
+import { traceFields } from '../obs/trace.js';
 import { providerFromEnv } from './providers.js';
 import { diagnoseBedrock, describe as describeDiagnosis } from './preflight.js';
 import { DEMO_TOKENS } from '../demo/seed.js';
@@ -251,6 +253,8 @@ app.post('/api/say', async (req, res) => {
     const ctx = await contextFor(req);
     const host = await hostFor(ctx, memberId);
     const turn = fromSandbox(await withRetry(() => host.say(heard)), ctx.suffix);
+    // The whole trace goes back to the person who took the turn; the log gets it without the care.
+    log.info('console turn', traceFields(turn.trace));
     res.json({ ...turn, ...(corrections.length ? { heard, corrections } : {}) });
   } catch (err) {
     const message = (err as Error).message;
