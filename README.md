@@ -103,11 +103,13 @@ work.
 The demo family (Daddy, his children Tolu and Funmi, Kunle in London, and Musa the
 driver) is fictional and modelled on mine. No real names or medical details are used.
 
-**And it is real - not a mockup.** Live MCP server you can hit right now, **530 tests**
+**And it is real - not a mockup.** Live MCP server you can hit right now, **563 tests**
 (including property-based proofs of the risk model), **94.8%** measured tool-selection
 accuracy on Amazon Bedrock (147/155; 94.0% on held-out phrasings never tuned against),
 **94.4% on Amazon Nova Pro** (on the earlier 144 cases), and an append-only care record that
-keeps who said what.
+keeps who said what. On Amazon's own MASSIVE test set, 2,974 everyday Alexa requests, it leaves
+**87.6%** of the ones that are not about care alone (up from 76.6%; not held out, see
+`evals/results/README.md`).
 
 ### Try it live in your browser - no clone, no keys
 
@@ -447,7 +449,7 @@ git clone https://github.com/Osiyomeoh/carecircle && cd carecircle
 npm ci
 npm run lint      # eslint (typescript-eslint, strict) - 0 findings
 npm run typecheck # tsc under strict + noUncheckedIndexedAccess + exactOptionalPropertyTypes
-npm test          # 430 tests (unit, adversarial, and property-based)
+npm test          # 563 tests (unit, adversarial, and property-based)
 npm run story     # the whole one-day story, end to end, over real MCP
 ```
 

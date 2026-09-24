@@ -78,7 +78,7 @@ must own that work. A Care Gap is the failure state of the third stage.
 The judges' own advice is to beware glossy vapor. CareCircle is the opposite:
 
 - A **live MCP server** a judge can hit now (Streamable HTTP, spec 2025-11-25).
-- **530 automated tests**, strict TypeScript, an adversarial suite, CI.
+- **563 automated tests**, strict TypeScript, an adversarial suite, CI.
 - Tool selection **measured at 94.8%** (147/155 with 28 tools; 94.0% on the held-out cases never tuned
   against) on Amazon Bedrock - `npm run evals`, and it reproduces. **Amazon Nova Pro: 94.4%** (on the earlier 144 cases),
   and 93.1% under an Alexa Skill bridge's own system prompt, which we didn't write: the tool
@@ -87,6 +87,11 @@ The judges' own advice is to beware glossy vapor. CareCircle is the opposite:
   "she missed it" in **~50-58%** of absence cases, and reports a support worker's
   account as the disabled person's own act in **25%** of proxy cases. CareCircle:
   **0% on both** - `npm run trust-benchmark`.
+- **Staying out of the way, on outside data.** On all 2,974 requests of Amazon's MASSIVE test set
+  (Nova Pro, under the Alexa bridge's prompt), CareCircle left **87.6%** of the 2,538 non-care
+  requests alone, up from 76.6%, and wrote on 5.1% of them, down from 11.7%, after four tool
+  descriptions were sharpened. Not a held-out figure: those changes followed the first run's
+  failures. What is left is mostly "send an email to ...". Details in `evals/results/README.md`.
 - Reproduce the whole one-day story end-to-end with **no AWS or keys**: `npm ci && npm run story`.
 
 ## What's built vs. what's an adapter seam (no overclaiming)
@@ -102,7 +107,7 @@ different surfaces feed one shared responsibility system.
 - `ingest_signal` - the generic external-signal tool: any physical or wearable event becomes an `INFERRED` proposal a human must confirm. **This is the external-evidence seam; the Ring adapter uses it today, and the same path would accept a Bee or other wearable signal unchanged.**
 - Ownership / claiming / assignment, purchase-in-place (`reorder_prescription` / `confirm_purchase`), multi-person identity, SNS notifications (record-only fallback), DynamoDB persistence, App Runner deployment.
 - The shared multi-device board (the simulator) - the same view a Fire TV would render.
-- **290 tests**, adversarial suite, CI.
+- **563 tests**, adversarial suite, CI.
 
 - **The delegation loop** - `request_owner` / `respond_to_request` / `get_my_requests`.
   `REQUESTED` is its own status and **carries no owner**: being asked is not having
@@ -285,7 +290,7 @@ graceful shutdown, DynamoDB persistence, App Runner deployment), runtime onboard
   turns up in benefits reviews and care-plan audits, and it is exactly where the model
   asserted compliance in Alex's name on somebody else's word. Reproducible, with the
   erasing questions printed by id: `npm run trust-benchmark`.
-- **530 automated tests** incl. an adversarial suite (credential swap mid-session,
+- **563 automated tests** incl. an adversarial suite (credential swap mid-session,
   cross-household access, prompt-injection through note text), strict TypeScript, CI.
 - Deterministic end-to-end demo over real MCP: `npm run story`.
 
