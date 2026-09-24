@@ -7,7 +7,9 @@ import { randomUUID } from 'node:crypto';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { createCareCircleServer } from '../mcp/server.js';
+import { createCareCircleServer, createCareCircleServerV2 } from '../mcp/server.js';
+import { createMcpHandler, isLegacyRequest } from '@modelcontextprotocol/server';
+import { toNodeHandler, toWebRequest } from '@modelcontextprotocol/node';
 import type { CareStore } from '../store/store.js';
 import { staticTokens, firstOf, BOOTSTRAP_PREFIX, type IdentityResolver } from './identity.js';
 import { RecordOnlyNotifier, type Notifier } from '../notify/notifier.js';
@@ -278,12 +280,29 @@ function rpcError(res: express.Response, status: number, code: number, message: 
 /** `connect` accepts the SDK's own transport; see docs/FRICTION-LOG.md for the cast. */
 type ConnectArg = Parameters<McpServer['connect']>[0];
 
+// MCP 2026-07-28: no initialize, no session. Every request carries its protocol version and
+// is answered by a server built for it alone, for the member its credential names, so any
+// instance can answer any request. The credential is checked in front, as for every
+// request; `legacy: 'reject'` because 2025-era requests never reach this handler - they
+// keep the session-based path below, unchanged for every client that speaks it.
+const modern = toNodeHandler(createMcpHandler(({ authInfo }) => createCareCircleServerV2({
+  store, actorId: String(authInfo?.extra?.['actorId']), notifier: messenger, ...(now ? { now } : {}),
+}), { legacy: 'reject' }));
+
 app.post('/mcp', async (req, res) => {
   const actorId = actorFor(req);
   if (!actorId) {
     res.set('WWW-Authenticate', bearerChallenge);
     rpcError(res, 401, -32001,
       'Unauthorized: this server needs to know which member of the care circle you are.');
+    return;
+  }
+
+  // Which revision is this? The SDK's own classification, so this can never disagree with it.
+  if (!(await isLegacyRequest(await toWebRequest(req, req.body), req.body))) {
+    const token = req.header('authorization')?.replace(/^Bearer\s+/i, '') ?? '';
+    (req as express.Request & { auth?: unknown }).auth = { token, clientId: 'carecircle', scopes: [], extra: { actorId } };
+    await modern(req, res, req.body);
     return;
   }
 

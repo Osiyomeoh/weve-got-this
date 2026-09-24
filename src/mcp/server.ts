@@ -1,5 +1,6 @@
 import { registerChangeAppointment, registerChangeMedication, registerRaiseUrgent } from './tools/changes.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer as McpServerV2 } from '@modelcontextprotocol/server';
 import { z } from 'zod';
 import { AGENT_ID } from '../domain/agent.js';
 import type { Member } from '../domain/types.js';
@@ -73,19 +74,33 @@ export interface ServerContext {
 
 type Handler = (...args: unknown[]) => unknown;
 
-export function createCareCircleServer({ store, actorId, ...opts }: ServerContext): McpServer {
-  const server = new McpServer(
-    { name: 'carecircle', version: '0.1.0' },
-    {
-      capabilities: { tools: {}, resources: {}, prompts: {} },
-      instructions:
-        'CareCircle tracks what needs to happen for someone being cared for, and who is '
-        + 'responsible for it. Speak results as written - they are phrased for a voice '
-        + 'assistant. Never say that someone did not take a medication or did not do '
-        + 'something: the system only knows what has been recorded, and an absent record '
-        + 'is not evidence. When a tool returns an error, follow the instruction in it.',
-    },
-  );
+const SERVER_INFO = { name: 'carecircle', version: '0.1.0' };
+const SERVER_OPTIONS = {
+  capabilities: { tools: {}, resources: {}, prompts: {} },
+  instructions:
+    'CareCircle tracks what needs to happen for someone being cared for, and who is '
+    + 'responsible for it. Speak results as written - they are phrased for a voice '
+    + 'assistant. Never say that someone did not take a medication or did not do '
+    + 'something: the system only knows what has been recorded, and an absent record '
+    + 'is not evidence. When a tool returns an error, follow the instruction in it.',
+};
+
+/** For MCP 2025-11-25 and earlier: one server per session (v1 SDK). */
+export function createCareCircleServer(context: ServerContext): McpServer {
+  return populate(new McpServer(SERVER_INFO, SERVER_OPTIONS), context);
+}
+
+/**
+ * For MCP 2026-07-28: one server per request, built for its caller (v2 SDK). The same tools,
+ * resources and prompts, registered by the same code in the same order, so the two
+ * revisions can never offer different things.
+ */
+export function createCareCircleServerV2(context: ServerContext): McpServerV2 {
+  // The v2 McpServer takes the same register* calls this module makes; the type is v1's.
+  return populate(new McpServerV2(SERVER_INFO, SERVER_OPTIONS) as unknown as McpServer, context) as unknown as McpServerV2;
+}
+
+function populate(server: McpServer, { store, actorId, ...opts }: ServerContext): McpServer {
 
   // Hosts check a tool's structured result against its declared output schema and
   // reject any field it does not declare. A field added to a result but not to OUT
