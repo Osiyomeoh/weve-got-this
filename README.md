@@ -671,22 +671,28 @@ Product feedback, written while building. Full detail in
 
 ## Scaling and protocol roadmap
 
-CareCircle targets **MCP 2025-11-25** - the spec the Alexa+ ecosystem and the current
-SDK speak. That is a deliberate choice, not a floor we happened to hit.
+CareCircle speaks **MCP 2025-11-25**, the revision the Alexa+ ecosystem and the current
+clients speak.
 
-The one thing worth saying about scale: **state is already externalised to DynamoDB**,
-not held in a server session, so the care record is shared and durable across instances
-today. The MCP *connection* is per-session, so horizontal scaling on 2025-11-25 needs
-only session affinity at the load balancer - not a rewrite. Tool count (23) sits well
-under the ~50 where model tool-selection degrades, so no routing filter is needed.
+**What is true today, checked on 2026-09-24.** The care record is durable in DynamoDB, but each
+server process holds its working copy in memory: it loads the record once at start and writes
+through. MCP sessions also live in one process. So two instances would each have their own copy
+and their own sessions - a request reaching the other one would find neither. App Runner's
+default would scale out to 25 instances under load, so **both services are pinned to one
+instance** (`carecircle-single`, set by `infra/deploy-mcp.sh`). An earlier version of this
+section said scaling needed "only session affinity"; that was wrong.
 
-When volume ever warrants going fully stateless, the clean path is the
-**2026-07-28** revision, which removes the `initialize` handshake and per-connection
-sessions in favour of header-based versioning and server-minted state handles - making
-any instance able to serve any request behind a plain round-robin balancer. That is a
-post-submission migration (it needs an SDK that implements the stateless schema and would
-trade away compatibility with 2025-11-25 clients), captured here so the direction is
-explicit.
+**In progress, in this order:**
+1. **A store that is safe across instances**: each household's record versioned, reads fresh,
+   and a write that raced another refused and retried instead of overwriting it.
+2. **The 2026-07-28 revision alongside 2025-11-25.** That revision removes the `initialize`
+   handshake and per-connection sessions (header-based versioning, server-minted request
+   state), so any instance can serve any request. The v2 TypeScript SDK serves it from a
+   per-request server factory, and routes 2025-era requests (`isLegacyRequest`) to the existing
+   sessionful wiring - so no 2025-11-25 client, Alexa's bridge included, loses anything.
+
+Only when both are done does the one-instance pin come off. Tool count (28) sits well under
+the ~50 where model tool-selection degrades, so no routing filter is needed.
 
 ---
 

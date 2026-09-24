@@ -187,11 +187,23 @@ for k in CARECIRCLE_OAUTH_SECRET RING_HMAC_KEY; do
     echo "    $k: not set (feature stays off)"
   fi
 done
+# One instance, until the store is safe across instances: CareStore keeps the record in
+# memory, and MCP sessions live in one process. App Runner's default scales out to 25 under
+# load, which would fork the care record between instances.
+ASC=$(aws apprunner list-auto-scaling-configurations --auto-scaling-configuration-name carecircle-single --latest-only \
+  --region "$REGION" --query 'AutoScalingConfigurationSummaryList[0].AutoScalingConfigurationArn' --output text)
+if [ -z "$ASC" ] || [ "$ASC" = "None" ]; then
+  ASC=$(aws apprunner create-auto-scaling-configuration --auto-scaling-configuration-name carecircle-single \
+    --min-size 1 --max-size 1 --max-concurrency 100 --region "$REGION" \
+    --query 'AutoScalingConfiguration.AutoScalingConfigurationArn' --output text)
+fi
 ARN=$(aws apprunner list-services --region "$REGION" --query "ServiceSummaryList[?ServiceName=='carecircle-mcp'].ServiceArn" --output text)
 if [ -n "$ARN" ]; then
-  aws apprunner update-service --service-arn "$ARN" --source-configuration "{\"AuthenticationConfiguration\":{\"AccessRoleArn\":\"$AR_ROLE_ARN\"},$(echo "$CONFIG" | sed 's/^{//')" --region "$REGION" >/dev/null
+  aws apprunner update-service --service-arn "$ARN" --source-configuration "{\"AuthenticationConfiguration\":{\"AccessRoleArn\":\"$AR_ROLE_ARN\"},$(echo "$CONFIG" | sed 's/^{//')" \
+    --auto-scaling-configuration-arn "$ASC" --region "$REGION" >/dev/null
 else
   ARN=$(aws apprunner create-service --service-name carecircle-mcp \
+    --auto-scaling-configuration-arn "$ASC" \
     --source-configuration "{\"AuthenticationConfiguration\":{\"AccessRoleArn\":\"$AR_ROLE_ARN\"},$(echo "$CONFIG" | sed 's/^{//')" \
     --instance-configuration "{\"Cpu\":\"256\",\"Memory\":\"512\",\"InstanceRoleArn\":\"$INST_ROLE_ARN\"}" \
     --health-check-configuration '{"Protocol":"HTTP","Path":"/health","Interval":10,"Timeout":5,"HealthyThreshold":1,"UnhealthyThreshold":5}' \
