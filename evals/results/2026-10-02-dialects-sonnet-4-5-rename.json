@@ -1,0 +1,57 @@
+{
+  "modelId": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+  "total": 34,
+  "passed": 33,
+  "accuracy": 0.9705882352941176,
+  "errored": 0,
+  "byCategory": [
+    {
+      "category": "hd",
+      "passed": 33,
+      "total": 34
+    }
+  ],
+  "splits": [
+    {
+      "split": "authored",
+      "passed": 0,
+      "total": 0
+    },
+    {
+      "split": "held-out",
+      "passed": 31,
+      "total": 32
+    },
+    {
+      "split": "seen",
+      "passed": 2,
+      "total": 2
+    }
+  ],
+  "failures": [
+    {
+      "case": {
+        "id": "hd-ng-03",
+        "member": "m_david",
+        "utterance": "I will carry Daddy to the hospital on Thursday.",
+        "expect": [
+          "claim_obligation",
+          "get_care_gaps"
+        ],
+        "note": "\"Carry\" means take someone somewhere."
+      },
+      "chosen": "record_appointment",
+      "args": {
+        "kind": "hospital",
+        "startsAt": "2026-10-09T09:00:00",
+        "forMemberId": "Daddy",
+        "detail": "I will carry Daddy to the hospital"
+      },
+      "pass": false,
+      "reason": "chose record_appointment; expected claim_obligation or get_care_gaps"
+    }
+  ],
+  "errors": [],
+  "systemPrompt": "console",
+  "at": "2026-10-02"
+}

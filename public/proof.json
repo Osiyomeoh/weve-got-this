@@ -1,0 +1,76 @@
+{
+  "built": "2026-10-02T10:29:08.174Z",
+  "tests": 577,
+  "selection": [
+    {
+      "file": "2026-10-02-claude-sonnet-4-5-rename.json",
+      "planner": "Claude Sonnet 4.5 (Bedrock)",
+      "prompt": "our console",
+      "passed": 148,
+      "total": 155,
+      "heldOut": {
+        "passed": 64,
+        "total": 66
+      }
+    },
+    {
+      "file": "2026-09-24-nova-pro-alexa-bridge-prompt.json",
+      "planner": "Amazon Nova Pro (Bedrock)",
+      "prompt": "an Alexa Skill bridge's, not ours",
+      "passed": 145,
+      "total": 155,
+      "heldOut": {
+        "passed": 61,
+        "total": 66
+      }
+    }
+  ],
+  "dialects": {
+    "file": "2026-10-02-dialects-sonnet-4-5-rename.json",
+    "passed": 33,
+    "total": 34
+  },
+  "languages": {
+    "file": "2026-09-24-zod4-languages-named-sonnet-4-5.json",
+    "replies": {
+      "passed": 10,
+      "total": 12
+    },
+    "handoff": {
+      "passed": 11,
+      "total": 11
+    }
+  },
+  "massive": {
+    "files": [
+      "2026-09-23-massive-nova-pro-alexa-bridge-prompt.json",
+      "2026-09-24-massive-nova-pro-alexa-bridge-prompt.json"
+    ],
+    "cases": 2974,
+    "before": {
+      "total": 2538,
+      "leftAlone": 1944,
+      "readInstead": 297,
+      "wrote": 297,
+      "worst": 94
+    },
+    "after": {
+      "total": 2538,
+      "leftAlone": 2223,
+      "readInstead": 186,
+      "wrote": 129,
+      "worst": 48
+    },
+    "heldOut": false
+  },
+  "wordGate": {
+    "file": "2026-09-24-gate-nova-micro.json",
+    "threshold": 0.5,
+    "harmsStopped": 120,
+    "worstStopped": 41,
+    "careBlocked": 44,
+    "harms": 129,
+    "care": 180
+  },
+  "actionGuard": null
+}

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>CareCircle Proof</title>
+<meta name="description" content="What CareCircle has been measured on, with the file each number comes from." />
+<style>
+  :root{
+    --bg:#ffffff; --panel:#f7f8f7; --ink:#1a1f26; --ink-2:#3d4550; --muted:#6b7280;
+    --line:#e6e7e5; --accent:#0f9d76; --accent-soft:#e8f6f1; --warn:#b45309; --warn-soft:#fdf3e4;
+    --bar:#d9dedb;
+    --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --bg:#0c0e10; --panel:#12161a; --ink:#e9edf0; --ink-2:#c3cbd2; --muted:#8b95a0;
+    --line:#1f262b; --accent:#34d8a4; --accent-soft:#10231d; --warn:#f0a94b; --warn-soft:#2a1f10; --bar:#26303a;
+  }}
+  :root[data-theme="dark"]{
+    --bg:#0c0e10; --panel:#12161a; --ink:#e9edf0; --ink-2:#c3cbd2; --muted:#8b95a0;
+    --line:#1f262b; --accent:#34d8a4; --accent-soft:#10231d; --warn:#f0a94b; --warn-soft:#2a1f10; --bar:#26303a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  main{max-width:780px;margin:0 auto;padding:40px 16px 80px}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px;color:var(--ink);text-decoration:none}
+  .brand i{width:11px;height:11px;border-radius:50%;background:var(--accent);display:inline-block}
+  h1{font-size:clamp(28px,5vw,38px);letter-spacing:-.02em;line-height:1.15;margin:28px 0 10px;text-wrap:balance}
+  .lede{color:var(--ink-2);font-size:18px;margin:0 0 28px}
+  h2{font-size:22px;letter-spacing:-.01em;margin:44px 0 6px}
+  h2 + p{color:var(--ink-2);margin-top:0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 18px 14px;margin:14px 0}
+  ol.try{margin:0;padding-left:22px}
+  ol.try li{margin:0 0 10px}
+  .cta{display:inline-block;margin-top:6px;background:var(--accent);color:#fff;padding:10px 16px;border-radius:10px;font-weight:600;text-decoration:none}
+  @media (prefers-color-scheme:dark){.cta{color:#06120e}}
+  table{width:100%;border-collapse:collapse;font-size:15px}
+  th,td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  td.n{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+  .src{font-family:var(--mono);font-size:12px;color:var(--muted);word-break:break-all}
+  .big{font-size:34px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+  .stats .card{margin:0}
+  .stats p{margin:4px 0 0;color:var(--ink-2);font-size:14.5px}
+  .row{display:grid;grid-template-columns:110px 1fr 70px;gap:10px;align-items:center;margin:8px 0;font-size:14.5px}
+  .track{height:12px;background:var(--bar);border-radius:6px;overflow:hidden}
+  .fill{height:100%;background:var(--accent);border-radius:6px}
+  .fill.warn{background:var(--warn)}
+  .note{background:var(--warn-soft);border-radius:10px;padding:10px 14px;font-size:14.5px;color:var(--ink-2);margin:12px 0}
+  ul.honest li{margin:0 0 8px}
+  footer{margin-top:56px;color:var(--muted);font-size:13.5px}
+  @media (max-width:520px){.row{grid-template-columns:84px 1fr 56px}}
+</style>
+</head>
+<body>
+<main>
+  <a class="brand" href="/"><i></i>CareCircle</a>
+  <h1>What CareCircle has been measured on</h1>
+  <p class="lede">Every number on this page comes from a result file in the repository, named beside it, with every case it was counted from.</p>
+
+  <section aria-labelledby="try">
+    <h2 id="try">Try it in two minutes</h2>
+    <p>The live console gives you your own private copy of the demo family. Pick a member at the top left, then type or speak.</p>
+    <div class="card">
+      <ol class="try">
+        <li><b>As Tolu:</b> “Did Daddy use his evening eye drops?” It says there is no record of that dose. It never says he missed it.</li>
+        <li><b>As Tolu:</b> “Ask Funmi if she can take Daddy to his check-up.” It asks; it does not assign. Switch to <b>Funmi</b> and say “Yes, I can take him.” Now it is hers.</li>
+        <li><b>As Kunle</b>, the brother in London: “How was Daddy's day?” He gets the whole picture, with who logged what, and is never picked for a ride.</li>
+      </ol>
+      <a class="cta" href="/console.html">Open the console</a>
+    </div>
+  </section>
+
+  <section aria-labelledby="sel">
+    <h2 id="sel">It picks the right tool</h2>
+    <p>One request at a time, the planner sees our real tool descriptions and chooses what to call. Held-out cases were written after the descriptions were frozen.</p>
+    <div class="card"><table id="selection"><thead><tr><th>Planner</th><th>Host prompt</th><th>Right</th><th>Held-out</th></tr></thead><tbody></tbody></table></div>
+  </section>
+
+  <section aria-labelledby="lang">
+    <h2 id="lang">It understands the family as they speak</h2>
+    <p>Nigerian Pidgin, Yoruba, Igbo, Hausa, Spanish and more, in the words families use.</p>
+    <div class="stats" id="languages"></div>
+  </section>
+
+  <section aria-labelledby="alone">
+    <h2 id="alone">It leaves alone what isn't care</h2>
+    <p>Amazon's MASSIVE test set: everyday Alexa requests. The planner here is Amazon Nova Pro, under an Alexa Skill bridge's system prompt that we did not write.</p>
+    <div class="card" id="massive"></div>
+    <div class="note">Not a held-out measure: the description changes between the two runs were written after reading the first run's failures, from this same test set.</div>
+    <div id="gates"></div>
+  </section>
+
+  <section aria-labelledby="honest">
+    <h2 id="honest">What we do not claim</h2>
+    <ul class="honest">
+      <li>The pilot family's record is not shown here. It is theirs.</li>
+      <li>These are tool choices and replies, measured one request at a time; a whole conversation is shown in the console, not scored here.</li>
+      <li>The Ring and purchase paths in the demo are simulated, and say so where they appear.</li>
+    </ul>
+  </section>
+
+  <footer id="built"></footer>
+</main>
+<script>
+(async () => {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const pct = (a, b) => (b ? Math.round((100 * a) / b) : 0) + '%';
+  let d;
+  try { d = await (await fetch('proof.json', { cache: 'no-store' })).json(); }
+  catch { $('built').textContent = 'The numbers could not be loaded.'; return; }
+
+  $('selection').querySelector('tbody').innerHTML = d.selection.map((r) => `<tr>
+    <td>${esc(r.planner)}<div class="src">${esc(r.file)}</div></td><td>${esc(r.prompt)}</td>
+    <td class="n">${r.passed}/${r.total}<br><span style="font-weight:400;color:var(--muted)">${pct(r.passed, r.total)}</span></td>
+    <td class="n">${r.heldOut ? `${r.heldOut.passed}/${r.heldOut.total}` : '-'}</td></tr>`).join('');
+
+  const L = d.languages;
+  $('languages').innerHTML = [
+    [d.dialects.passed, d.dialects.total, 'dialect and language requests sent to the right tool', d.dialects.file],
+    [L.replies.passed, L.replies.total, 'languages answered correctly in that language, the medicine kept by the family\'s own name for it', L.file],
+    [L.handoff.passed, L.handoff.total, 'two-language handoffs: a mother logs a dose in one language, her son asks in another and hears it', L.file],
+  ].map(([a, b, what, f]) => `<div class="card"><div class="big">${a}/${b}</div><p>${esc(what)}</p><div class="src">${esc(f)}</div></div>`).join('');
+
+  const M = d.massive;
+  const bar = (label, n, total, warn) => `<div class="row"><span>${label}</span><div class="track"><div class="fill${warn ? ' warn' : ''}" style="width:${(100 * n) / total}%"></div></div><span class="n">${n}</span></div>`;
+  $('massive').innerHTML = `<p style="margin:0 0 8px">Of ${M.after.total.toLocaleString()} requests that were not about care (${M.cases.toLocaleString()} in all):</p>
+    <b>Wrote to the care record or reached a person</b>
+    ${bar('before', M.before.wrote, M.before.total, true)}${bar('after', M.after.wrote, M.after.total, true)}
+    <b>Left alone</b>
+    ${bar('before', M.before.leftAlone, M.before.total)}${bar('after', M.after.leftAlone, M.after.total)}
+    <div class="src">${M.files.map(esc).join(' · ')}</div>`;
+
+  const W = d.wordGate, G = d.actionGuard;
+  let gates = `<div class="card"><b>A gate on the words alone was tried and dropped.</b>
+    <p style="margin:6px 0">Asked whether each request was about care, Nova Micro stopped ${W.harmsStopped} of ${W.harms} harmful writes, and turned away ${W.careBlocked} of ${W.care} real care requests (${pct(W.careBlocked, W.care)}), like “That's sorted now”. Those only mean something next to what is on the board.</p>
+    <div class="src">${esc(W.file)}</div></div>`;
+  if (G) gates += `<div class="card"><b>The action guard: a second look at each write, with the call and the care record as evidence.</b>
+    <p style="margin:6px 0">Of ${G.harms} of those harmful requests re-planned, ${G.harmsWrote} drew a write and ${G.harmsLanded} would have landed; the server already turns the rest back with a question. The guard held back <b>${G.harmsHeld} of ${G.harmsLanded}</b>. Of ${G.careLanded} real care writes, it would have asked about <b>${G.careHeld}</b> first. A held write is a question to the family, never a refusal. Threshold ${G.threshold}, fixed before the run.</p>
+    <div class="src">${esc(G.file)}</div></div>`;
+  $('gates').innerHTML = gates;
+
+  $('built').textContent = `${d.tests ? d.tests + ' automated tests pass. ' : ''}Numbers built ${new Date(d.built).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}.`;
+})();
+</script>
+</body>
+</html>

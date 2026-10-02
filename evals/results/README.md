@@ -27,6 +27,9 @@ the model chose, and whether that passed.
 | `2026-09-24-languages-sonnet-4-5-medicine-names.json` | 12 languages, medicine with its English name only: part 1 **9/12** (Portuguese translated the name; Pidgin and Igbo said "Daddy's day went well") | the chat channel's |
 | `2026-09-24-languages-sonnet-4-5-medicine-names-named.json` | the same with the family's own name for the drops in each language (`--named`): part 1 **10/12**, the name kept in all 12; Pidgin and Igbo again said his day went well | the chat channel's |
 
+| `2026-10-02-claude-sonnet-4-5-rename.json` | 155 cases after `newName` was added to `change_medication` (Sonnet 4.5 via the `us.` profile, not `global.`): **148/155**, held-out 64/66 (was 147, 61/66). Summary and failures only; per-case rows were not kept | the console's |
+| `2026-10-02-dialects-sonnet-4-5-rename.json` | the 34 dialect cases after that change: **33/34**; the miss is hd-ng-03 again, the case already shown to be within chance | the console's |
+
 Part 2 (the two-language handoff) in the last two files was graded by a rubric that turned out to
 be too lenient: it passed a son's answer that spoke only of the dose with no record and never
 mentioned the one his mother had logged. The trace showed why (`get_care_gaps` spoke only the

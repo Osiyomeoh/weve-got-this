@@ -1,0 +1,227 @@
+{
+  "modelId": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+  "total": 155,
+  "passed": 148,
+  "accuracy": 0.9548387096774194,
+  "errored": 0,
+  "byCategory": [
+    {
+      "category": "log",
+      "passed": 8,
+      "total": 8
+    },
+    {
+      "category": "appt",
+      "passed": 6,
+      "total": 6
+    },
+    {
+      "category": "medchange",
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "category": "move",
+      "passed": 2,
+      "total": 3
+    },
+    {
+      "category": "urgent",
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "category": "note",
+      "passed": 5,
+      "total": 6
+    },
+    {
+      "category": "gap",
+      "passed": 8,
+      "total": 8
+    },
+    {
+      "category": "claim",
+      "passed": 6,
+      "total": 6
+    },
+    {
+      "category": "assign",
+      "passed": 5,
+      "total": 5
+    },
+    {
+      "category": "confirm",
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "category": "resolve",
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "category": "sum",
+      "passed": 5,
+      "total": 5
+    },
+    {
+      "category": "shift",
+      "passed": 3,
+      "total": 4
+    },
+    {
+      "category": "notify",
+      "passed": 3,
+      "total": 4
+    },
+    {
+      "category": "cons",
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "category": "h",
+      "passed": 64,
+      "total": 67
+    },
+    {
+      "category": "h2",
+      "passed": 9,
+      "total": 9
+    },
+    {
+      "category": "none",
+      "passed": 4,
+      "total": 4
+    }
+  ],
+  "splits": [
+    {
+      "split": "authored",
+      "passed": 75,
+      "total": 79
+    },
+    {
+      "split": "held-out",
+      "passed": 64,
+      "total": 66
+    },
+    {
+      "split": "seen",
+      "passed": 9,
+      "total": 10
+    }
+  ],
+  "failures": [
+    {
+      "case": {
+        "id": "move-03",
+        "member": "m_renee",
+        "utterance": "The clinic pushed his appointment back an hour.",
+        "expect": [
+          "change_appointment"
+        ]
+      },
+      "chosen": null,
+      "args": {},
+      "pass": false,
+      "reason": "called nothing; expected change_appointment"
+    },
+    {
+      "case": {
+        "id": "note-02",
+        "member": "m_david",
+        "utterance": "The doctor changed his dose to twice a day.",
+        "expect": [
+          "add_note",
+          "change_medication"
+        ],
+        "note": "change_medication was added 2026-09-23; without the new times it may still ask or note it."
+      },
+      "chosen": null,
+      "args": {},
+      "pass": false,
+      "reason": "called nothing; expected add_note or change_medication"
+    },
+    {
+      "case": {
+        "id": "shift-04",
+        "member": "m_aide",
+        "utterance": "Anything assigned to me?",
+        "expect": [
+          "get_shift_brief",
+          "get_care_gaps"
+        ]
+      },
+      "chosen": "get_my_requests",
+      "args": {},
+      "pass": false,
+      "reason": "chose get_my_requests; expected get_shift_brief or get_care_gaps"
+    },
+    {
+      "case": {
+        "id": "notify-03",
+        "member": "m_david",
+        "utterance": "Message Funmi about the appointment change.",
+        "expect": [
+          "notify_member"
+        ]
+      },
+      "chosen": null,
+      "args": {},
+      "pass": false,
+      "reason": "called nothing; expected notify_member"
+    },
+    {
+      "case": {
+        "id": "h-appt-01",
+        "member": "m_renee",
+        "utterance": "Move his eye check-up to Friday instead.",
+        "expect": [
+          "record_appointment",
+          "add_note",
+          "change_appointment"
+        ],
+        "seen": "2026-09-23: answer key widened after the run that added change_appointment",
+        "note": "Chose change_appointment in the 2026-09-23 run, which is right; the key predated the tool."
+      },
+      "chosen": null,
+      "args": {},
+      "pass": false,
+      "reason": "called nothing; expected record_appointment or add_note or change_appointment"
+    },
+    {
+      "case": {
+        "id": "h-appt-04",
+        "member": "m_david",
+        "utterance": "Schedule his flu shot for next week sometime.",
+        "expect": [
+          "record_appointment"
+        ]
+      },
+      "chosen": null,
+      "args": {},
+      "pass": false,
+      "reason": "called nothing; expected record_appointment"
+    },
+    {
+      "case": {
+        "id": "h-cons-02",
+        "member": "m_renee",
+        "utterance": "Count me out this weekend.",
+        "expect": [
+          "add_note"
+        ],
+        "args": {}
+      },
+      "chosen": null,
+      "args": {},
+      "pass": false,
+      "reason": "called nothing; expected add_note"
+    }
+  ],
+  "errors": [],
+  "systemPrompt": "console",
+  "at": "2026-10-02"
+}
