@@ -103,7 +103,7 @@ work.
 The demo family (Daddy, his children Tolu and Funmi, Kunle in London, and Musa the
 driver) is fictional and modelled on mine. No real names or medical details are used.
 
-**And it is real - not a mockup.** Live MCP server you can hit right now, **563 tests**
+**And it is real - not a mockup.** Live MCP server you can hit right now, **575 tests**
 (including property-based proofs of the risk model), **94.8%** measured tool-selection
 accuracy on Amazon Bedrock (147/155; 94.0% on held-out phrasings never tuned against),
 **94.4% on Amazon Nova Pro** (on the earlier 144 cases), and an append-only care record that
@@ -449,7 +449,7 @@ git clone https://github.com/Osiyomeoh/carecircle && cd carecircle
 npm ci
 npm run lint      # eslint (typescript-eslint, strict) - 0 findings
 npm run typecheck # tsc under strict + noUncheckedIndexedAccess + exactOptionalPropertyTypes
-npm test          # 563 tests (unit, adversarial, and property-based)
+npm test          # 575 tests (unit, adversarial, and property-based)
 npm run story     # the whole one-day story, end to end, over real MCP
 ```
 
@@ -671,28 +671,32 @@ Product feedback, written while building. Full detail in
 
 ## Scaling and protocol roadmap
 
-CareCircle speaks **MCP 2025-11-25**, the revision the Alexa+ ecosystem and the current
-clients speak.
+CareCircle speaks **MCP 2025-11-25**, the revision the Alexa+ ecosystem and today's clients
+speak, and **2026-07-28** alongside it.
 
-**What is true today, checked on 2026-09-24.** The care record is durable in DynamoDB, but each
-server process holds its working copy in memory: it loads the record once at start and writes
-through. MCP sessions also live in one process. So two instances would each have their own copy
-and their own sessions - a request reaching the other one would find neither. App Runner's
-default would scale out to 25 instances under load, so **both services are pinned to one
-instance** (`carecircle-single`, set by `infra/deploy-mcp.sh`). An earlier version of this
-section said scaling needed "only session affinity"; that was wrong.
+**Built and tested, 2026-09-24:**
+1. **A care record that is safe with more than one writer.** The table carries a version. A
+   save is one DynamoDB transaction that moves the version on only if it is still the one this
+   process read; if another process wrote first, the whole save is refused, the store reads the
+   record again, and the tool tells the caller to look again and act only if it still applies.
+   Before every request and every background tick, one small consistent read checks the
+   version, and the record is reloaded only if it moved. Checked against real DynamoDB
+   (`scripts/dynamo-concurrency-check.ts`) and in tests with two stores over one table.
+2. **The 2026-07-28 revision alongside 2025-11-25.** 2026-07-28 drops the `initialize`
+   handshake and per-connection sessions: each request carries its version and is answered by
+   a server built for that request alone (v2 TypeScript SDK, `createMcpHandler`), for the member
+   its credential names. 2025-era requests, told apart by the SDK's own `isLegacyRequest`, keep
+   the session-based path unchanged, so no 2025-11-25 client, Alexa's bridge included, loses
+   anything. One registration fills both, so they offer the same 28 tools word for word. Tested
+   with two instances over one table: a dose logged through one is read back through the other.
 
-**In progress, in this order:**
-1. **A store that is safe across instances**: each household's record versioned, reads fresh,
-   and a write that raced another refused and retried instead of overwriting it.
-2. **The 2026-07-28 revision alongside 2025-11-25.** That revision removes the `initialize`
-   handshake and per-connection sessions (header-based versioning, server-minted request
-   state), so any instance can serve any request. The v2 TypeScript SDK serves it from a
-   per-request server factory, and routes 2025-era requests (`isLegacyRequest`) to the existing
-   sessionful wiring - so no 2025-11-25 client, Alexa's bridge included, loses anything.
-
-Only when both are done does the one-instance pin come off. Tool count (28) sits well under
-the ~50 where model tool-selection degrades, so no routing filter is needed.
+**What still holds it to one instance.** Some state still lives in one process: 2025-11-25
+sessions, OAuth codes, webhook de-duplication and the background loops (the agent, reminders,
+connectors). App Runner's default would scale out to 25 instances under load, so **both
+services stay pinned to one instance** (`carecircle-single`, set by `infra/deploy-mcp.sh`)
+until that state is shared too. An earlier version of this section said scaling needed "only
+session affinity"; that was wrong. Tool count (28) sits well under the ~50 where model
+tool-selection degrades, so no routing filter is needed.
 
 ---
 
