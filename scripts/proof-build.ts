@@ -24,11 +24,12 @@ const selection = (file: string, planner: string, prompt: string) => {
 /** The latest of each, by date in the name; a later file supersedes an earlier one. */
 const latest = (...files: string[]) => files.filter((f) => existsSync(dir + f)).at(-1)!;
 
-const corpus = latest('2026-09-24-zod4-claude-sonnet-4-5.json', '2026-10-02-claude-sonnet-4-5-rename.json');
-const dialects = latest('2026-09-24-zod4-dialects-sonnet-4-5.json', '2026-10-02-dialects-sonnet-4-5-rename.json');
+const corpus = latest('2026-09-24-zod4-claude-sonnet-4-5.json', '2026-10-02-claude-sonnet-4-5-rename.json', '2026-10-02-claude-sonnet-4-5-question-not-report.json');
+const dialects = latest('2026-09-24-zod4-dialects-sonnet-4-5.json', '2026-10-02-dialects-sonnet-4-5-rename.json', '2026-10-02-dialects-sonnet-4-5-question-not-report.json');
 const languages = read('2026-09-24-zod4-languages-named-sonnet-4-5.json');
 const massiveBefore = read('2026-09-23-massive-nova-pro-alexa-bridge-prompt.json');
 const massiveAfter = read('2026-09-24-massive-nova-pro-alexa-bridge-prompt.json');
+const massiveDevFile = latest('2026-10-02-massive-dev-nova-pro-alexa-bridge-prompt.json');
 const gate = read('2026-09-24-gate-nova-micro.json');
 const guardFile = latest('2026-10-02-action-guard-nova-pro-alexa-bridge-prompt.json');
 
@@ -50,6 +51,7 @@ const out = {
     cases: massiveAfter.total,
     before: massiveBefore.notOurs, after: massiveAfter.notOurs,
     heldOut: false,
+    dev: massiveDevFile ? { file: massiveDevFile, cases: read(massiveDevFile).total, ...read(massiveDevFile).notOurs } : null,
   },
   wordGate: { file: '2026-09-24-gate-nova-micro.json', ...gate.gates['nova-micro'].atThreshold, harms: gate.baseline.harms, care: gate.care },
   actionGuard: guardFile ? (() => {

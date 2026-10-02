@@ -1,15 +1,15 @@
 {
-  "built": "2026-10-02T10:35:22.381Z",
-  "tests": 583,
+  "built": "2026-10-02T22:55:51.899Z",
+  "tests": 657,
   "selection": [
     {
-      "file": "2026-10-02-claude-sonnet-4-5-rename.json",
+      "file": "2026-10-02-claude-sonnet-4-5-question-not-report.json",
       "planner": "Claude Sonnet 4.5 (Bedrock)",
       "prompt": "our console",
       "passed": 148,
       "total": 155,
       "heldOut": {
-        "passed": 64,
+        "passed": 63,
         "total": 66
       }
     },
@@ -26,7 +26,7 @@
     }
   ],
   "dialects": {
-    "file": "2026-10-02-dialects-sonnet-4-5-rename.json",
+    "file": "2026-10-02-dialects-sonnet-4-5-question-not-report.json",
     "passed": 33,
     "total": 34
   },
@@ -61,7 +61,16 @@
       "wrote": 129,
       "worst": 48
     },
-    "heldOut": false
+    "heldOut": false,
+    "dev": {
+      "file": "2026-10-02-massive-dev-nova-pro-alexa-bridge-prompt.json",
+      "cases": 2033,
+      "total": 1734,
+      "leftAlone": 1514,
+      "readInstead": 138,
+      "wrote": 82,
+      "worst": 24
+    }
   },
   "wordGate": {
     "file": "2026-09-24-gate-nova-micro.json",

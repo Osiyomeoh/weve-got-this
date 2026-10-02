@@ -92,6 +92,7 @@
     <p>Amazon's MASSIVE test set: everyday Alexa requests. The planner here is Amazon Nova Pro, under an Alexa Skill bridge's system prompt that we did not write.</p>
     <div class="card" id="massive"></div>
     <div class="note">Not a held-out measure: the description changes between the two runs were written after reading the first run's failures, from this same test set.</div>
+    <div class="card" id="massiveDev"></div>
     <div id="gates"></div>
   </section>
 
@@ -135,6 +136,10 @@
     <b>Left alone</b>
     ${bar('before', M.before.leftAlone, M.before.total)}${bar('after', M.after.leftAlone, M.after.total)}
     <div class="src">${M.files.map(esc).join(' · ')}</div>`;
+  if (M.dev) $('massiveDev').innerHTML = `<b>Held out: MASSIVE's dev set, never read before the run.</b>
+    <p style="margin:6px 0">Of ${M.dev.total.toLocaleString()} requests that were not about care (${M.dev.cases.toLocaleString()} in all), ${M.dev.leftAlone.toLocaleString()} were left alone (${pct(M.dev.leftAlone, M.dev.total)}) and <b>${M.dev.wrote} wrote</b> (${(100 * M.dev.wrote / M.dev.total).toFixed(1)}%), ${M.dev.worst} of them a log or a message. Close to the test set's numbers above, which were not held out.</p>
+    <div class="src">${esc(M.dev.file)}</div>`;
+  else $('massiveDev').remove();
 
   const W = d.wordGate, G = d.actionGuard;
   let gates = `<div class="card"><b>A gate on the words alone was tried and dropped.</b>

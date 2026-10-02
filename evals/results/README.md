@@ -30,6 +30,7 @@ the model chose, and whether that passed.
 | `2026-10-02-claude-sonnet-4-5-rename.json` | 155 cases after `newName` was added to `change_medication` (Sonnet 4.5 via the `us.` profile, not `global.`): **148/155**, held-out 64/66 (was 147, 61/66). Summary and failures only; per-case rows were not kept | the console's |
 | `2026-10-02-dialects-sonnet-4-5-rename.json` | the 34 dialect cases after that change: **33/34**; the miss is hd-ng-03 again, the case already shown to be within chance | the console's |
 | `2026-10-02-action-guard-nova-pro-alexa-bridge-prompt.json` | The action guard (`src/mcp/guard.ts`, Nova Micro, threshold 0.5 fixed beforehand), every row kept. Of the 129 MASSIVE requests that were nobody's care, re-planned by Nova Pro: 81 drew a write, **23 landed** (the server turned the rest back), and the guard held back **4 of 23**. Of 141 care cases, 61 writes landed and it held back **0**. It scores almost every call 0.95, so it is not a working filter: **not wired into the server**. Not held out (MASSIVE test failures were read before). Its re-plan also shows the bridge prompt gives no date, so the planner guesses past ones | the Alexa bridge's |
+| `2026-10-02-massive-dev-nova-pro-alexa-bridge-prompt.json` | Amazon Nova Pro on all 2,033 cases of MASSIVE's en-US **dev** partition, never read before the run: the held-out measure. Of 1,734 requests that were nobody's care, **1,514 left alone (87.3%)**, 138 read instead, **82 wrote (4.7%)**, 24 of the worst kind (log/notify). Of 299 in scope, 226 right. Close to the test partition's 87.6% / 5.1%, so the 2026-09-24 changes were not fitted to it | the Alexa Skill bridge's |
 | `2026-10-02-claude-sonnet-4-5-question-not-report.json` | 155 cases after one sentence was added to `log_care_event`: a question about whether something happened is not a report that it did (the owner's Echo had logged "did daddy use his evening eye drops?" as a dose, mid-conversation). **148/155**, held-out 63/66. One swap each way: move-03 now passes, h-log-03 ("He had everything that was due before noon") now fails | the console's |
 | `2026-10-02-sonnet-4-5-question-not-report-head-to-head.tsv` | those two cases, 5 rounds each, without and with the sentence: **h-log-03 5/5 -> 3/5** (read as a question, `get_care_gaps`), move-03 2/5 -> 3/5. h-log-03 is held out, so the sentence was not reworded for it: it is a known cost | the console's |
 | `2026-10-02-dialects-sonnet-4-5-question-not-report.json` | the 34 dialect cases with the sentence: **33/34**, hd-ng-03 again | the console's |
@@ -89,8 +90,8 @@ runs, all 2,974 cases, 0 errored, Nova Pro under the Alexa Skill bridge's prompt
   `add_note` never for lists, music or smart home, and `notify_member` only for the circle, never email.
 - **This is not a held-out measure.** Those changes were written after reading the first run's
   failures, which came from this same test partition. It shows the fix works on the kinds of request
-  that exposed the problem. A clean measure needs MASSIVE's dev or validation partition, which is not
-  in the repo yet.
+  that exposed the problem. The clean measure is the dev partition, run 2026-10-02 without reading
+  it first: 82 of 1,734 wrote (4.7%), against 5.1% here (`2026-10-02-massive-dev-...`).
 - What is left is led by email: 37 of the 48 worst are "send an email to ..." taken as
   `notify_member`, despite "never for email". More description text is not the next step; a gate in
   front of the planner is being measured (`npm run gate:compare`).
