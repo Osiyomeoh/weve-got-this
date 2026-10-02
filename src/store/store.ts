@@ -101,11 +101,26 @@ export class NotFoundError extends Error {
   }
 }
 
+/**
+ * Now, or a millisecond after `last` if now is not later. A record is read back in the order
+ * of these times, and a transition is stored under its obligation and time: two claims of
+ * one ride in the same millisecond (two phones, or a retry) were one row in the table, so a
+ * new instance lost the first, and the history no longer started where the ride had been.
+ * Also keeps the order when another instance's clock runs ahead of this one.
+ */
+function after(last: string | undefined): string {
+  const now = Date.now();
+  const floor = last ? Date.parse(last) + 1 : now;
+  return new Date(Math.max(now, Number.isNaN(floor) ? now : floor)).toISOString();
+}
+
 export class CareStore {
   #snapshot: StoreSnapshot = emptySnapshot();
   #persistence: Persistence | undefined;
   /** Serialises writes so concurrent tool calls cannot interleave a save. */
   #writeQueue: Promise<unknown> = Promise.resolve();
+  /** Moves on each time the record is read again from the table; see #write. */
+  #generation = 0;
 
   /** This process, as a lease holder. */
   readonly #holder = randomUUID();
@@ -139,6 +154,7 @@ export class CareStore {
     const run = this.#writeQueue.then(async () => {
       if (!(await this.#persistence?.stale?.())) return false;
       this.#snapshot = (await this.#persistence!.load()) ?? emptySnapshot();
+      this.#generation++;
       return true;
     });
     this.#writeQueue = run.catch(() => undefined);
@@ -157,16 +173,23 @@ export class CareStore {
    * Run a mutation and persist, with writes serialised. A mutation that did not persist
    * does not stay in memory as if it had: the record is read back, so what this process
    * serves is what the table holds.
+   *
+   * A write is decided on the record as the caller read it ("the ride is open, so it is
+   * mine"). If the record was read again from the table while the write waited its turn,
+   * that decision may no longer hold: Funmi was given a ride Tolu had already been told
+   * was hers. So such a write is refused as a changed record, and the caller decides again.
    */
   async #write<T>(fn: () => T): Promise<T> {
+    const seen = this.#generation;
     const run = this.#writeQueue.then(async () => {
+      if (this.#generation !== seen) throw new RecordChangedError();
       const result = fn();
       try {
         await this.#persistence?.save(this.#snapshot);
       } catch (err) {
         try {
           const fresh = await this.#persistence?.load();
-          if (this.#persistence) this.#snapshot = fresh ?? emptySnapshot();
+          if (this.#persistence) { this.#snapshot = fresh ?? emptySnapshot(); this.#generation++; }
         } catch { /* the table is unreachable too: keep what we have, and report the save */ }
         throw err instanceof StaleRecordError ? new RecordChangedError() : err;
       }
@@ -248,7 +271,7 @@ export class CareStore {
       const full: CareEvent = {
         ...event,
         id: event.id ?? `evt_${randomUUID()}`,
-        recordedAt: new Date().toISOString(),
+        recordedAt: after(this.#snapshot.events.at(-1)?.recordedAt),
       };
       this.#snapshot.events.push(full);
       return full;
@@ -285,8 +308,14 @@ export class CareStore {
     >> & { clearRequest?: boolean } = {},
     note?: string,
   ): Promise<Obligation> {
+    // The obligation as the caller saw it when it decided. Two claims at once both saw the
+    // ride open; the second, run after the first, would take it from someone just told it
+    // was theirs. If it changed while this waited its turn, this is refused, not applied.
+    const seen = this.#snapshot.obligations.find((x) => x.id === id && x.householdId === householdId);
+    const was = seen && { status: seen.status, ownerId: seen.ownerId };
     return this.#write(() => {
       const o = this.getObligation(id, householdId);
+      if (was && (o.status !== was.status || o.ownerId !== was.ownerId)) throw new RecordChangedError();
       const from = o.status;
       o.status = to;
       if ('ownerId' in changes) o.ownerId = changes.ownerId ?? null;
@@ -299,7 +328,7 @@ export class CareStore {
       if (changes.declinedBy !== undefined) o.declinedBy = changes.declinedBy;
       this.#snapshot.transitions.push({
         obligationId: id, from, to, byMemberId,
-        at: new Date().toISOString(),
+        at: after(this.#snapshot.transitions.findLast((t) => t.obligationId === id)?.at),
         ...(note ? { note } : {}),
       });
       return o;

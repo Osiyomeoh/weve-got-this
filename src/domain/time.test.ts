@@ -19,6 +19,19 @@ test('winter and summer offsets are both handled', () => {
   assert.equal(toInstant('2027-01-14T10:00:00', NY), '2027-01-14T15:00:00.000Z');
 });
 
+test('the hours after a clock change keep their new offset (found by time.props)', () => {
+  // Clocks went back at 2 AM on 2 November 2025: 2 AM in Los Angeles is then PST, 10:00 UTC.
+  // It was read as 9:00 UTC (1 AM), the offset taken at 2 AM UTC, still the evening before.
+  assert.equal(toInstant('2025-11-02T02:00:00', 'America/Los_Angeles'), '2025-11-02T10:00:00.000Z');
+  // Clocks went forward at 2 AM on 8 March 2026: 4 AM in New York is EDT, 08:00 UTC.
+  assert.equal(toInstant('2026-03-08T04:00:00', NY), '2026-03-08T08:00:00.000Z');
+});
+
+test('a time the clocks skipped is read just after the change', () => {
+  // 2:30 AM never happened in New York on 8 March 2026; it is read as 3:30 AM EDT.
+  assert.equal(toInstant('2026-03-08T02:30:00', NY), '2026-03-08T07:30:00.000Z');
+});
+
 test('offsets are detected, so we know when we are guessing', () => {
   assert.equal(hasOffset('2026-09-24T14:00:00Z'), true);
   assert.equal(hasOffset('2026-09-24T10:00:00-04:00'), true);

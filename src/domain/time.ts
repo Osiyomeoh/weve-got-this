@@ -49,9 +49,17 @@ export function toInstant(iso: string, timezone: string): string | null {
   }
   const provisional = new Date(`${raw}Z`);
   if (Number.isNaN(provisional.getTime())) return null;
-  // Offset is evaluated at the provisional instant, which is within a day of the
-  // real one - close enough that it only differs across a DST boundary.
-  const offset = zoneOffsetMs(provisional, timezone);
+  // The offset at the provisional instant (the wall clock read as UTC) can be the wrong one:
+  // west of UTC that instant is hours after the real one, so in the hours after a clock
+  // change "2:00" in Los Angeles was filed as 1:00. So the offset is checked again where
+  // the time lands, and the time placed with that one when they differ.
+  const first = zoneOffsetMs(provisional, timezone);
+  const second = zoneOffsetMs(new Date(provisional.getTime() - first), timezone);
+  if (second === first) return new Date(provisional.getTime() - first).toISOString();
+  const third = zoneOffsetMs(new Date(provisional.getTime() - second), timezone);
+  // A time the clocks skipped ("2:30" on the night they go forward) has no consistent
+  // offset; it is read with the earlier one, which puts it just after the change.
+  const offset = third === second ? second : Math.min(second, third);
   return new Date(provisional.getTime() - offset).toISOString();
 }
 

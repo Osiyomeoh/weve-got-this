@@ -148,3 +148,17 @@ test('a refill asked for by the family\'s other word finds the medicine on the r
   const choice = chooseRefill('her colírio', [{ name: 'eye drops', names: { pt: 'colírio' } }, { name: 'supplement' }], []);
   assert.deepEqual(choice, { ok: true, itemName: 'eye drops' });
 });
+
+test('a dose with no medicine named is asked about, not saved as "the undefined" (found by fuzz.props)', async () => {
+  const { store, base } = await family();
+  const before = store.getCareState('h').events.length;
+  const r = await call(base, 'son', 'log_care_event', { kind: 'medication_taken', aboutMemberId: 'Mom' });
+  assert.match(r.text, /^Which medicine was it\? Mom's schedule has: "eye drops"\. Ask them, then call this again with that name\.$/);
+  assert.equal(store.getCareState('h').events.length, before, 'nothing is saved until the name is settled');
+
+  // Nobody on the schedule: the dose is still noted, in words a voice can say.
+  await store.addMember({ id: 'm_aunt', householdId: 'h', name: 'Ada', role: 'care_recipient' });
+  const aunt = await call(base, 'son', 'log_care_event', { kind: 'medication_taken', aboutMemberId: 'Ada' });
+  assert.equal(aunt.isError, false, aunt.text);
+  assert.equal(aunt.text, "Got it, I've noted the medicine.");
+});

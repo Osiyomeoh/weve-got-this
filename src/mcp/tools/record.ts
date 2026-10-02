@@ -61,7 +61,18 @@ export function registerLogCareEvent({ server, store, now, actor, state, nameOf 
       requireCap(me, subject === me.id ? 'log_own_event' : 'log_others_event');
 
       const meds = activeMedications(state(), now());
+      const whose = subject === me.id ? 'your' : nameOf(subject) ? `${nameOf(subject)}'s` : 'their';
       let medicationId: string | undefined;
+      if (kind === 'medication_taken' && !medicationName) {
+        // "He took his medicine": which one decides which dose is cleared, so ask first.
+        const scheduled = meds.filter((m) => m.forMemberId === subject);
+        if (scheduled.length > 0) {
+          return guidance(
+            `Which medicine was it? ${whose[0]!.toUpperCase() + whose.slice(1)} schedule has: `
+            + `${joinSpoken(scheduled.map((m) => `"${m.name}"`))}. Ask them, then call this again with that name.`,
+          );
+        }
+      }
       if (kind === 'medication_taken' && medicationName) {
         // By any name the family gave it: "colírio" is Mum's eye drops on the first call.
         const named = meds.filter((m) => namesMedicine(medicationName, m));
@@ -83,7 +94,7 @@ export function registerLogCareEvent({ server, store, now, actor, state, nameOf 
         const scheduled = meds.filter((m) => m.forMemberId === subject);
         if (!medicationId && !notOnSchedule && scheduled.length > 0) {
           return guidance(
-            `"${medicationName}" is not a name on ${subject === me.id ? 'your' : nameOf(subject) ? `${nameOf(subject)}'s` : 'their'} schedule, which has: `
+            `"${medicationName}" is not a name on ${whose} schedule, which has: `
             + `${joinSpoken(scheduled.map((m) => `"${m.name}"`))}. If they meant one of these, in another `
             + 'language or other words, call this again with that name exactly as written here. If it '
             + 'really is a medicine that is not on the schedule, call again with notOnSchedule: true. '
@@ -121,7 +132,7 @@ export function registerLogCareEvent({ server, store, now, actor, state, nameOf 
       const spoken = kind === 'medication_taken'
         ? (unknownMed
           ? `Got it, I've noted the ${medicationName}. That one isn't on the schedule I have, so I can't match it to a dose.`
-          : `Got it, I've logged the ${medicationName}.`)
+          : medicationName ? `Got it, I've logged the ${medicationName}.` : "Got it, I've noted the medicine.")
         : "Thanks, I've noted that.";
       if (before) {
         const tz = state().household.timezone;
