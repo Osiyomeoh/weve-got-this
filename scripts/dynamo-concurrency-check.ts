@@ -62,3 +62,12 @@ const { removed } = await a.removeHousehold('h_check');
 check(removed > 99, `a removal of ${removed} rows goes through in more than one transaction`);
 const d = await instance();
 check(d.householdCount() === 0, 'the scratch household is gone');
+
+// The loops' lease: one holder at a time, renewable, taken over once it lapses.
+check(await a.lease('check', 2_000), 'the first instance takes the lease');
+check(!(await b.lease('check', 2_000)), 'the second is refused while it is held (ConditionalCheckFailedException)');
+check(await a.lease('check', 2_000), 'the holder renews it');
+await new Promise((r) => setTimeout(r, 2_500));
+check(await b.lease('check', 2_000), 'once it lapses, the second takes it over');
+check(!(await a.lease('check', 2_000)), 'and the first no longer has it');
+check((await instance()).householdCount() === 0, 'a lease is not read as part of the record');
