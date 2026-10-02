@@ -1,0 +1,1453 @@
+{
+  "date": "2026-10-02T17:57:53.242Z",
+  "skill": "amzn1.ask.skill.2a01e322-60da-493e-98af-1789965cf7b4",
+  "locale": "en-US",
+  "set": "corpus",
+  "summary": {
+    "all": {
+      "total": 155,
+      "reached": 152,
+      "words": 152,
+      "rightTool": 0,
+      "wrongTool": 0,
+      "dropped": 3
+    },
+    "authored": {
+      "total": 79,
+      "reached": 79,
+      "words": 79,
+      "rightTool": 0,
+      "wrongTool": 0,
+      "dropped": 0
+    },
+    "held-out": {
+      "total": 66,
+      "reached": 63,
+      "words": 63,
+      "rightTool": 0,
+      "wrongTool": 0,
+      "dropped": 3
+    },
+    "seen": {
+      "total": 10,
+      "reached": 10,
+      "words": 10,
+      "rightTool": 0,
+      "wrongTool": 0,
+      "dropped": 0
+    },
+    "trained (exact words in the model)": {
+      "total": 86,
+      "reached": 86,
+      "words": 86,
+      "rightTool": 0,
+      "wrongTool": 0,
+      "dropped": 0
+    },
+    "never shown to the Echo": {
+      "total": 69,
+      "reached": 66,
+      "words": 66,
+      "rightTool": 0,
+      "wrongTool": 0,
+      "dropped": 3
+    }
+  },
+  "rows": [
+    {
+      "id": "log-01",
+      "split": "authored",
+      "trained": true,
+      "text": "i took my eye drops",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "log-02",
+      "split": "authored",
+      "trained": true,
+      "text": "just took my supplement",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "log-03",
+      "split": "authored",
+      "trained": true,
+      "text": "i've had my morning tablets",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "log-04",
+      "split": "authored",
+      "trained": true,
+      "text": "i took the little white one about an hour ago",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "log-05",
+      "split": "authored",
+      "trained": true,
+      "text": "i'm feeling alright today",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "log-06",
+      "split": "authored",
+      "trained": true,
+      "text": "i had my pills with breakfast",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "log-07",
+      "split": "authored",
+      "trained": true,
+      "text": "daddy took his evening pill i watched him",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "log-08",
+      "split": "authored",
+      "trained": true,
+      "text": "daddy took his eye drops at two",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "appt-01",
+      "split": "authored",
+      "trained": true,
+      "text": "daddy has his eye check up on thursday at ten",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "appt-02",
+      "split": "authored",
+      "trained": false,
+      "text": "i have a dentist appointment next tuesday at 2pm",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "appt-03",
+      "split": "authored",
+      "trained": true,
+      "text": "put daddy down for physical therapy friday morning at nine",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "appt-04",
+      "split": "authored",
+      "trained": true,
+      "text": "the clinic moved his bloodwork to monday at eight",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "appt-05",
+      "split": "authored",
+      "trained": false,
+      "text": "he's got an eye test on the fourth at 11 30",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "appt-06",
+      "split": "authored",
+      "trained": true,
+      "text": "book club is wednesday evening at seven",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "medchange-01",
+      "split": "authored",
+      "trained": true,
+      "text": "the doctor says daddy can stop the eye drops now",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "medchange-02",
+      "split": "authored",
+      "trained": true,
+      "text": "his eye drops are at nine and nine now not eight",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "medchange-03",
+      "split": "authored",
+      "trained": true,
+      "text": "he only needs the antibiotic until sunday",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "medchange-04",
+      "split": "authored",
+      "trained": true,
+      "text": "add his new vitamin every morning at nine",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "move-01",
+      "split": "authored",
+      "trained": true,
+      "text": "the eye check up has moved to friday at two",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "move-02",
+      "split": "authored",
+      "trained": true,
+      "text": "they cancelled daddy's physio tomorrow",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "move-03",
+      "split": "authored",
+      "trained": true,
+      "text": "the clinic pushed his appointment back an hour",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "urgent-01",
+      "split": "authored",
+      "trained": true,
+      "text": "i've fallen in the bathroom and i can't get up",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "urgent-02",
+      "split": "authored",
+      "trained": true,
+      "text": "daddy is having chest pains tell everyone now",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "urgent-03",
+      "split": "authored",
+      "trained": true,
+      "text": "he's suddenly very confused and doesn't know where he is",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "urgent-04",
+      "split": "authored",
+      "trained": true,
+      "text": "daddy fell asleep early tonight",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "note-01",
+      "split": "authored",
+      "trained": true,
+      "text": "daddy sounded tired on the phone",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "note-02",
+      "split": "authored",
+      "trained": true,
+      "text": "the doctor changed his dose to twice a day",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "note-03",
+      "split": "authored",
+      "trained": true,
+      "text": "he didn't eat much lunch today",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "note-04",
+      "split": "authored",
+      "trained": true,
+      "text": "just so everyone knows the pharmacy called about the refill",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "note-05",
+      "split": "authored",
+      "trained": true,
+      "text": "he seemed a bit confused this morning but fine by lunch",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "note-06",
+      "split": "authored",
+      "trained": true,
+      "text": "her ankles looked a little swollen",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "gap-01",
+      "split": "authored",
+      "trained": true,
+      "text": "what's going to fall through the cracks this week",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "gap-02",
+      "split": "authored",
+      "trained": true,
+      "text": "what hasn't been assigned",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "gap-03",
+      "split": "authored",
+      "trained": true,
+      "text": "is anything being missed with daddy",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "gap-04",
+      "split": "authored",
+      "trained": true,
+      "text": "what still needs doing for daddy",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "gap-05",
+      "split": "authored",
+      "trained": true,
+      "text": "what does daddy need this week",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "gap-06",
+      "split": "authored",
+      "trained": true,
+      "text": "is there anything nobody has picked up",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "gap-07",
+      "split": "authored",
+      "trained": true,
+      "text": "anything i need to worry about",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "gap-08",
+      "split": "authored",
+      "trained": true,
+      "text": "what are the open items",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "claim-01",
+      "split": "authored",
+      "trained": true,
+      "text": "i'll take the check up one",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "claim-02",
+      "split": "authored",
+      "trained": true,
+      "text": "i've got thursday",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "claim-03",
+      "split": "authored",
+      "trained": true,
+      "text": "i'll do the prescription pickup",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "claim-04",
+      "split": "authored",
+      "trained": true,
+      "text": "i'll handle both of those",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "claim-05",
+      "split": "authored",
+      "trained": true,
+      "text": "i can take that one",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "claim-06",
+      "split": "authored",
+      "trained": true,
+      "text": "put me down for the drive",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "assign-01",
+      "split": "authored",
+      "trained": true,
+      "text": "give the pharmacy run to funmi",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "assign-02",
+      "split": "authored",
+      "trained": true,
+      "text": "ask funmi to take thursday",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "assign-03",
+      "split": "authored",
+      "trained": true,
+      "text": "funmi should do the prescription",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "assign-04",
+      "split": "authored",
+      "trained": true,
+      "text": "assign the check up drive to tolu",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "assign-05",
+      "split": "authored",
+      "trained": true,
+      "text": "can musa cover the monday visit",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "confirm-01",
+      "split": "authored",
+      "trained": true,
+      "text": "yes he'll need a ride",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "confirm-02",
+      "split": "authored",
+      "trained": true,
+      "text": "no he doesn't need anyone to go in with him",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "confirm-03",
+      "split": "authored",
+      "trained": true,
+      "text": "that's right someone should drive him",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "confirm-04",
+      "split": "authored",
+      "trained": true,
+      "text": "he can get himself there leave it out",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "resolve-01",
+      "split": "authored",
+      "trained": true,
+      "text": "picked up the prescription",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "resolve-02",
+      "split": "authored",
+      "trained": true,
+      "text": "took him to the eye clinic all done",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "resolve-03",
+      "split": "authored",
+      "trained": true,
+      "text": "finished the shopping for him",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "resolve-04",
+      "split": "authored",
+      "trained": true,
+      "text": "that's sorted now",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "sum-01",
+      "split": "authored",
+      "trained": true,
+      "text": "how's daddy doing today",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "sum-02",
+      "split": "authored",
+      "trained": true,
+      "text": "catch me up on daddy",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "sum-03",
+      "split": "authored",
+      "trained": true,
+      "text": "what happened with daddy today",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "sum-04",
+      "split": "authored",
+      "trained": true,
+      "text": "has daddy taken his medication today",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "sum-05",
+      "split": "authored",
+      "trained": true,
+      "text": "did daddy use his evening eye drops",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "shift-01",
+      "split": "authored",
+      "trained": true,
+      "text": "what do i need to know today",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "shift-02",
+      "split": "authored",
+      "trained": true,
+      "text": "what's on for this shift",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "shift-03",
+      "split": "authored",
+      "trained": true,
+      "text": "what medications is he on today",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "shift-04",
+      "split": "authored",
+      "trained": true,
+      "text": "anything assigned to me",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "notify-01",
+      "split": "authored",
+      "trained": true,
+      "text": "tell funmi i'm taking daddy thursday",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "notify-02",
+      "split": "authored",
+      "trained": true,
+      "text": "let tolu know the pharmacy called",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "notify-03",
+      "split": "authored",
+      "trained": true,
+      "text": "message funmi about the appointment change",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "notify-04",
+      "split": "authored",
+      "trained": true,
+      "text": "let the family know he slept badly",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "cons-01",
+      "split": "authored",
+      "trained": true,
+      "text": "i can't drive thursday i'm out of town",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "cons-02",
+      "split": "authored",
+      "trained": true,
+      "text": "i'm away all next week",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "cons-03",
+      "split": "authored",
+      "trained": true,
+      "text": "i won't be able to make friday after all",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "cons-04",
+      "split": "authored",
+      "trained": true,
+      "text": "i'm off sick tomorrow",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-log-01",
+      "split": "held-out",
+      "trained": false,
+      "text": "i already had my tablets don't fuss",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-log-02",
+      "split": "held-out",
+      "trained": false,
+      "text": "i gave daddy his insulin this morning",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-log-03",
+      "split": "held-out",
+      "trained": false,
+      "text": "he had everything that was due before noon",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-log-04",
+      "split": "held-out",
+      "trained": false,
+      "text": "i skipped my evening pill on purpose the doctor said to",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-log-05",
+      "split": "held-out",
+      "trained": false,
+      "text": "had my blood pressure one just now",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-log-06",
+      "split": "held-out",
+      "trained": false,
+      "text": "i can't remember if i took my morning pill",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-log-07",
+      "split": "held-out",
+      "trained": false,
+      "text": "gave him the antibiotic at noon",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-appt-01",
+      "split": "seen",
+      "trained": true,
+      "text": "move his eye check up to friday instead",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-appt-02",
+      "split": "held-out",
+      "trained": false,
+      "text": "her hair appointment got cancelled",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-appt-03",
+      "split": "held-out",
+      "trained": false,
+      "text": "my grandson's graduation is on the 20th",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-appt-04",
+      "split": "held-out",
+      "trained": false,
+      "text": "schedule his flu shot for next week sometime",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-appt-05",
+      "split": "held-out",
+      "trained": false,
+      "text": "he needs to fast before the monday bloodwork",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-note-01",
+      "split": "held-out",
+      "trained": false,
+      "text": "fyi he's been coughing a bit",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-note-02",
+      "split": "held-out",
+      "trained": false,
+      "text": "daddy mentioned his knee hurts when it rains",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-note-03",
+      "split": "held-out",
+      "trained": false,
+      "text": "the new aide starts monday",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-note-04",
+      "split": "held-out",
+      "trained": false,
+      "text": "he's in good spirits today",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-note-05",
+      "split": "held-out",
+      "trained": false,
+      "text": "her cardiologist is dr patel now",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-gap-01",
+      "split": "held-out",
+      "trained": false,
+      "text": "who's got room to take something on",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-gap-02",
+      "split": "held-out",
+      "trained": false,
+      "text": "are we covered for the week",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-gap-03",
+      "split": "held-out",
+      "trained": false,
+      "text": "walk me through what nobody owns",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-gap-04",
+      "split": "held-out",
+      "trained": false,
+      "text": "anything slipping through",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-gap-05",
+      "split": "held-out",
+      "trained": false,
+      "text": "is everything handled for tomorrow",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-claim-01",
+      "split": "held-out",
+      "trained": false,
+      "text": "leave that with me",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-claim-02",
+      "split": "held-out",
+      "trained": false,
+      "text": "i've got it",
+      "intent": "AMAZON.FallbackIntent",
+      "route": "dropped",
+      "pass": false
+    },
+    {
+      "id": "h-claim-03",
+      "split": "held-out",
+      "trained": false,
+      "text": "sign me up for the monday one",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-claim-04",
+      "split": "held-out",
+      "trained": false,
+      "text": "i'll cover the shopping",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-claim-05",
+      "split": "held-out",
+      "trained": false,
+      "text": "i'll be the one driving",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-assign-01",
+      "split": "held-out",
+      "trained": false,
+      "text": "have funmi handle thursday's drive",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-assign-02",
+      "split": "held-out",
+      "trained": false,
+      "text": "get musa to pick up the meds",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-assign-03",
+      "split": "held-out",
+      "trained": false,
+      "text": "tolu should really take this one",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-confirm-01",
+      "split": "held-out",
+      "trained": false,
+      "text": "yep that's needed",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-confirm-02",
+      "split": "held-out",
+      "trained": false,
+      "text": "correct book the ride",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-confirm-03",
+      "split": "held-out",
+      "trained": false,
+      "text": "no skip that one",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-confirm-04",
+      "split": "held-out",
+      "trained": false,
+      "text": "right he needs company for that",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-resolve-01",
+      "split": "held-out",
+      "trained": false,
+      "text": "done and dusted",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-resolve-02",
+      "split": "held-out",
+      "trained": false,
+      "text": "handled it",
+      "intent": "AMAZON.FallbackIntent",
+      "route": "dropped",
+      "pass": false
+    },
+    {
+      "id": "h-resolve-03",
+      "split": "held-out",
+      "trained": false,
+      "text": "took care of that already",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-resolve-04",
+      "split": "seen",
+      "trained": true,
+      "text": "dropped him at the clinic and he's home now",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-sum-01",
+      "split": "held-out",
+      "trained": false,
+      "text": "give me the rundown on daddy",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-sum-02",
+      "split": "held-out",
+      "trained": false,
+      "text": "is he okay today",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-sum-03",
+      "split": "held-out",
+      "trained": false,
+      "text": "what's his day looked like",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-shift-01",
+      "split": "held-out",
+      "trained": false,
+      "text": "bring me up to speed for my shift",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-shift-02",
+      "split": "held-out",
+      "trained": false,
+      "text": "what's due while i'm here",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-shift-03",
+      "split": "held-out",
+      "trained": false,
+      "text": "do i have anything to do today",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-notify-01",
+      "split": "held-out",
+      "trained": false,
+      "text": "ping tolu about the dose change",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-notify-02",
+      "split": "held-out",
+      "trained": false,
+      "text": "shoot funmi a note that i'm running late",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-notify-03",
+      "split": "held-out",
+      "trained": false,
+      "text": "can you let tolu know he is resting",
+      "intent": "FreeTextIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-notify-04",
+      "split": "held-out",
+      "trained": false,
+      "text": "text the family that daddy's home safe",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-cons-01",
+      "split": "held-out",
+      "trained": false,
+      "text": "something's come up i can't do thursday",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-cons-02",
+      "split": "held-out",
+      "trained": false,
+      "text": "count me out this weekend",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-cons-03",
+      "split": "held-out",
+      "trained": false,
+      "text": "i'll be unreachable this afternoon",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-buy-01",
+      "split": "seen",
+      "trained": true,
+      "text": "reorder daddy's eye drops",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-buy-02",
+      "split": "seen",
+      "trained": true,
+      "text": "can you refill his prescription",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-buy-03",
+      "split": "seen",
+      "trained": true,
+      "text": "order more of his supplement",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-buy-04",
+      "split": "seen",
+      "trained": true,
+      "text": "set up a refill for his supplement",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-buy-05",
+      "split": "seen",
+      "trained": false,
+      "text": "he's nearly out of his eye drops",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-buy-06",
+      "split": "seen",
+      "trained": true,
+      "text": "yes place the order",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-buy-07",
+      "split": "seen",
+      "trained": true,
+      "text": "go ahead and buy it",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-role-01",
+      "split": "held-out",
+      "trained": false,
+      "text": "assign the pharmacy run to tolu",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-role-02",
+      "split": "seen",
+      "trained": true,
+      "text": "reorder my own prescription please",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-multi-01",
+      "split": "held-out",
+      "trained": false,
+      "text": "daddy took his pill and he seemed tired",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-multi-02",
+      "split": "held-out",
+      "trained": false,
+      "text": "what's outstanding and i'll take the first one",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-none-01",
+      "split": "held-out",
+      "trained": false,
+      "text": "is it going to rain on thursday",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-none-02",
+      "split": "held-out",
+      "trained": false,
+      "text": "remind me what a cardiologist actually does",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-none-03",
+      "split": "held-out",
+      "trained": false,
+      "text": "you're doing a great job thanks",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-none-04",
+      "split": "held-out",
+      "trained": false,
+      "text": "play some music for me",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h-none-05",
+      "split": "held-out",
+      "trained": false,
+      "text": "good night",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h2-buy-01",
+      "split": "held-out",
+      "trained": false,
+      "text": "can we get more of daddy's eye drops delivered",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h2-buy-02",
+      "split": "held-out",
+      "trained": false,
+      "text": "his medicine is running low please order some",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h2-buy-03",
+      "split": "held-out",
+      "trained": false,
+      "text": "buy another bottle of his supplement",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h2-buy-04",
+      "split": "held-out",
+      "trained": false,
+      "text": "get the refill sent to the house",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h2-buy-05",
+      "split": "held-out",
+      "trained": false,
+      "text": "okay order it",
+      "intent": "AMAZON.FallbackIntent",
+      "route": "dropped",
+      "pass": false
+    },
+    {
+      "id": "h2-buy-06",
+      "split": "held-out",
+      "trained": false,
+      "text": "sure go ahead with the purchase",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h2-buy-07",
+      "split": "held-out",
+      "trained": false,
+      "text": "no don't buy it",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h2-buy-08",
+      "split": "held-out",
+      "trained": false,
+      "text": "order his supplement",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "h2-buy-09",
+      "split": "held-out",
+      "trained": false,
+      "text": "how much would a refill of his eye drops cost",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "none-01",
+      "split": "authored",
+      "trained": true,
+      "text": "thank you that's all",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "none-02",
+      "split": "authored",
+      "trained": true,
+      "text": "what can you help me with",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "none-03",
+      "split": "authored",
+      "trained": true,
+      "text": "what's the weather like",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "none-04",
+      "split": "authored",
+      "trained": true,
+      "text": "never mind",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    }
+  ]
+}

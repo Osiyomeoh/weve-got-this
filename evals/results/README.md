@@ -38,6 +38,21 @@ the model chose, and whether that passed.
 | `2026-10-02-languages-handoff-sonnet-4-5-question-not-report.json`, `2026-10-02-languages-named-sonnet-4-5-question-not-report.json` | with the sentence: handoff **11/11** (first call 3/11 with the English name, 11/11 named); named part 1 **7/12** on this run | the chat channel's |
 | `2026-10-02-languages-named-ask-question-not-report-head-to-head.json` | named part 1, 3 runs per side: **29/36 without, 28/36 with**; Pidgin and Igbo fail every run ("his day went well"), as before. The 7/12 above was an outlier | the chat channel's |
 
+**The Echo's ear** (`scripts/evals-echo.ts`): before any planner runs, Alexa's own language model
+for the skill picks an intent. Each case is sent to `ask smapi profile-nlu` as the speech recogniser
+writes it; nothing is called on CareCircle. "Reached" means the sentence itself got to the planner
+(or, for a case that is not care, that it did not). The recogniser's own errors are not measured.
+
+| File | Interaction model | Reached |
+|---|---|---|
+| `2026-10-02-echo-nlu-corpus.json` | the bridge's default: one intent per tool, plus a catch-all | **121/155**; held-out **36/66** (5 to the wrong tool's intent, 29 dropped by Alexa) |
+| `2026-10-02-echo-nlu-dialects.json` | the same | **23/34** |
+| `2026-10-02-echo-nlu-corpus-words-only.json` | the catch-all only (`toolIntents: false`): every request reaches the planner as words | **152/155**; held-out **63/66**, wrong tool 0. The 3 misses are short replies that need the conversation ("i've got it", "handled it", "okay order it") |
+| `2026-10-02-echo-nlu-dialects-words-only.json` | the same | **31/34**; the 3 misses are the Chinese cases, which an en-US skill does not take |
+
+Setting Alexa's fallback sensitivity to LOW changed no score in either set. The catch-all was
+trained without held-out cases, and none was looked at to write it.
+
 Part 2 (the two-language handoff) in the last two files was graded by a rubric that turned out to
 be too lenient: it passed a son's answer that spoke only of the dose with no record and never
 mentioned the one his mother had logged. The trace showed why (`get_care_gaps` spoke only the

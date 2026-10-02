@@ -1,0 +1,356 @@
+{
+  "date": "2026-10-02T17:43:26.033Z",
+  "skill": "amzn1.ask.skill.2a01e322-60da-493e-98af-1789965cf7b4",
+  "locale": "en-US",
+  "set": "dialects",
+  "summary": {
+    "all": {
+      "total": 34,
+      "reached": 23,
+      "words": 22,
+      "rightTool": 1,
+      "wrongTool": 0,
+      "dropped": 11
+    },
+    "held-out": {
+      "total": 32,
+      "reached": 21,
+      "words": 20,
+      "rightTool": 1,
+      "wrongTool": 0,
+      "dropped": 11
+    },
+    "seen": {
+      "total": 2,
+      "reached": 2,
+      "words": 2,
+      "rightTool": 0,
+      "wrongTool": 0,
+      "dropped": 0
+    },
+    "trained (exact words in the model)": {
+      "total": 1,
+      "reached": 1,
+      "words": 1,
+      "rightTool": 0,
+      "wrongTool": 0,
+      "dropped": 0
+    },
+    "never shown to the Echo": {
+      "total": 33,
+      "reached": 22,
+      "words": 21,
+      "rightTool": 1,
+      "wrongTool": 0,
+      "dropped": 11
+    }
+  },
+  "rows": [
+    {
+      "id": "hd-aae-01",
+      "split": "held-out",
+      "trained": false,
+      "text": "daddy done took his eye drops already",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "hd-aae-02",
+      "split": "held-out",
+      "trained": false,
+      "text": "i been took my pills this morning don't worry about it",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "hd-aae-03",
+      "split": "held-out",
+      "trained": false,
+      "text": "who finna take daddy to his eye appointment thursday",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "hd-aae-04",
+      "split": "held-out",
+      "trained": false,
+      "text": "put it down that daddy got a doctor's appointment tuesday at 2",
+      "intent": "AMAZON.FallbackIntent",
+      "route": "dropped",
+      "pass": false
+    },
+    {
+      "id": "hd-aae-05",
+      "split": "held-out",
+      "trained": false,
+      "text": "ain't nobody picked up his prescription yet",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "hd-aae-06",
+      "split": "held-out",
+      "trained": false,
+      "text": "i can't drive him thursday i'm gon' be out of town",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "hd-aae-07",
+      "split": "held-out",
+      "trained": false,
+      "text": "how daddy doing today",
+      "intent": "GetCareSummaryIntent",
+      "route": "right tool",
+      "pass": true
+    },
+    {
+      "id": "hd-pcm-01",
+      "split": "seen",
+      "trained": true,
+      "text": "i don use my eye drop this morning",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "hd-pcm-02",
+      "split": "held-out",
+      "trained": false,
+      "text": "abeg who go carry daddy go eye clinic on thursday",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "hd-pcm-03",
+      "split": "held-out",
+      "trained": false,
+      "text": "wetin still remain wey nobody don do for daddy",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "hd-pcm-04",
+      "split": "held-out",
+      "trained": false,
+      "text": "daddy get appointment for eye clinic friday by 10",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "hd-pcm-05",
+      "split": "held-out",
+      "trained": false,
+      "text": "oga don take im medicine",
+      "intent": "AMAZON.FallbackIntent",
+      "route": "dropped",
+      "pass": false
+    },
+    {
+      "id": "hd-pcm-06",
+      "split": "held-out",
+      "trained": false,
+      "text": "daddy don fall for bathroom e no fit stand up",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "hd-pcm-07",
+      "split": "held-out",
+      "trained": false,
+      "text": "how daddy day take go",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "hd-ng-01",
+      "split": "held-out",
+      "trained": false,
+      "text": "daddy has taken his drugs",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "hd-ng-02",
+      "split": "held-out",
+      "trained": false,
+      "text": "please help me to check if daddy has used his drops",
+      "intent": "FreeTextIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "hd-ng-03",
+      "split": "held-out",
+      "trained": false,
+      "text": "i will carry daddy to the hospital on thursday",
+      "intent": "AMAZON.FallbackIntent",
+      "route": "dropped",
+      "pass": false
+    },
+    {
+      "id": "hd-yo-01",
+      "split": "held-out",
+      "trained": false,
+      "text": "mo ti lo eye drops mi this morning",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "hd-yo-02",
+      "split": "held-out",
+      "trained": false,
+      "text": "mo ti lo oogun ojú mi",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "hd-yo-03",
+      "split": "seen",
+      "trained": false,
+      "text": "ẹ jọ ọ ask whoever is free to take daddy to the clinic on thursday",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "hd-ig-01",
+      "split": "held-out",
+      "trained": false,
+      "text": "biko how was daddy's day",
+      "intent": "AMAZON.FallbackIntent",
+      "route": "dropped",
+      "pass": false
+    },
+    {
+      "id": "hd-ig-02",
+      "split": "held-out",
+      "trained": false,
+      "text": "aṅụla m ọgwụ m",
+      "intent": "AMAZON.FallbackIntent",
+      "route": "dropped",
+      "pass": false
+    },
+    {
+      "id": "hd-ha-01",
+      "split": "held-out",
+      "trained": false,
+      "text": "don allah what's still open for daddy",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "hd-ha-02",
+      "split": "held-out",
+      "trained": false,
+      "text": "na sha maganina",
+      "intent": "AMAZON.FallbackIntent",
+      "route": "dropped",
+      "pass": false
+    },
+    {
+      "id": "hd-es-01",
+      "split": "held-out",
+      "trained": false,
+      "text": "ya me puse las gotas para los ojos",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "hd-es-02",
+      "split": "held-out",
+      "trained": false,
+      "text": "papá tiene cita con el oculista el jueves a las diez",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "hd-es-03",
+      "split": "held-out",
+      "trained": false,
+      "text": "qué queda pendiente para papá",
+      "intent": "AMAZON.FallbackIntent",
+      "route": "dropped",
+      "pass": false
+    },
+    {
+      "id": "hd-es-04",
+      "split": "held-out",
+      "trained": false,
+      "text": "papá se cayó y no se puede levantar",
+      "intent": "AMAZON.FallbackIntent",
+      "route": "dropped",
+      "pass": false
+    },
+    {
+      "id": "hd-fr-01",
+      "split": "held-out",
+      "trained": false,
+      "text": "j'ai mis mes gouttes pour les yeux",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "hd-fr-02",
+      "split": "held-out",
+      "trained": false,
+      "text": "papa a rendez vous chez l'ophtalmo vendredi à 10h",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "hd-fr-03",
+      "split": "held-out",
+      "trained": false,
+      "text": "comment s'est passée la journée de papa",
+      "intent": "SpokenRequestIntent",
+      "route": "words",
+      "pass": true
+    },
+    {
+      "id": "hd-zh-01",
+      "split": "held-out",
+      "trained": false,
+      "text": "我已经滴了眼药水",
+      "intent": "AMAZON.FallbackIntent",
+      "route": "dropped",
+      "pass": false
+    },
+    {
+      "id": "hd-zh-02",
+      "split": "held-out",
+      "trained": false,
+      "text": "爸爸今天怎么样",
+      "intent": "AMAZON.FallbackIntent",
+      "route": "dropped",
+      "pass": false
+    },
+    {
+      "id": "hd-zh-03",
+      "split": "held-out",
+      "trained": false,
+      "text": "爸爸周四上午十点要去看眼科",
+      "intent": "AMAZON.FallbackIntent",
+      "route": "dropped",
+      "pass": false
+    }
+  ]
+}
