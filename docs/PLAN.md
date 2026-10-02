@@ -26,6 +26,8 @@ A 10 requires all of:
 - [ ] **Measured tool-selection accuracy** published in the README - an eval harness
       over ~150 real utterances. Nobody else will have a number.
 - [ ] **Hosted on Bedrock AgentCore Runtime** - not a laptop, not a bare container
+      (2026-10-02: the planner is built for it - `src/strands/runtime.ts`, `Dockerfile.agentcore`,
+      `infra/deploy-agentcore.sh` - **NOT YET DEPLOYED**. The MCP server stays on App Runner.)
 - [ ] Multi-service AWS pipeline: AgentCore + Strands + Bedrock + SNS
 - [ ] >40 tests, typed strictly, CI green on every push
 - [ ] Adversarial tests: credential swap mid-session, cross-household access,
@@ -71,8 +73,9 @@ The rubric names as creative: *agentic workflow orchestrating across services*,
 The rubric is explicit. *Obvious: single Bedrock call.* **That is what we have today.**
 *Creative: multi-service pipeline (Bedrock + AgentCore + Strands), agent orchestration.*
 
-- [ ] MCP server on **AgentCore Runtime**
-- [ ] Simulator agent on **Strands Agents SDK**
+- [ ] MCP server on **AgentCore Runtime** - decided against: the server stays on App Runner and
+      the agent goes on AgentCore (see HANDOFF)
+- [x] Simulator agent on **Strands Agents SDK** - `src/strands/`, `CARECIRCLE_PROVIDER=strands` (2026-10-02)
 - [ ] **SNS/SES** for real notification delivery
 - [ ] Architecture diagram + written integration notes in the feedback field
 - [ ] Fallback hedge: **Kiro Crew** qualifies on its own as a development tool

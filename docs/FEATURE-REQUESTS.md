@@ -288,4 +288,66 @@ day, and the fixes are small.
   the applied-vs-default quota and tells the developer which case they're in, so the app
   explains the failure instead of advising a wait that will never end.
 
-_AgentCore / Strands hosting notes to follow as we build that layer out._
+## Strands Agents (TypeScript SDK)
+
+### Let an after-model hook replace the reply, not only retry it
+- **Urgency:** important
+- **What:** A writable result on `AfterModelCallEvent`: "this is the message the turn ends
+  with", alongside the existing `retry` flag.
+- **Why it matters:** CareCircle never lets a reply say a person missed, skipped or forgot
+  something (`src/strands/no-blame.ts`). When a model blames twice, the safe answer is to end
+  the turn on what the tools said. In 1.19.0 `stopData` is read-only and `retry` is the only
+  lever, so a guardrail that wants to substitute a reply cannot say so directly.
+- **Instead:** We set `retry`, then cancel the next model call from `BeforeModelCallEvent`
+  with our text, which the loop treats as the model's reply. It works, and it is tested, but
+  it is two hooks and a flag carried between them to express one decision.
+
+### Feedback on a retry, without editing the history
+- **Urgency:** nice-to-have
+- **What:** A way to attach a one-off note to a retried model call ("your reply said X; answer
+  again from the tool results") that the model sees once and the conversation never keeps.
+- **Why it matters:** `retry` repeats the same request. A retry that tells the model nothing
+  usually gets the same reply back.
+- **Instead:** The plugin appends the note to the last message in `agent.messages` and puts
+  the original back after the call, so the next turn never sees it. Tests check the history
+  is clean afterwards (`src/strands/host.test.ts`).
+
+## Bedrock AgentCore
+
+### Say how long a runtime session's state lives, next to the session header
+- **Urgency:** important
+- **What:** One page that says, for `x-amzn-bedrock-agentcore-runtime-session-id`, how long
+  a session's microVM and its in-process state live, and what happens to a turn in flight
+  when it is reclaimed.
+- **Why it matters:** On the bridge, the session id was the hashed user id, so one
+  microVM served a user for hours, through four deploys of new code. A care conversation
+  also has to be short-lived on purpose (yesterday's
+  "no record yet" is not true tonight), and the record itself must never live in the
+  container. We had to decide both without knowing the platform's own limits.
+- **Instead:** `src/strands/runtime.ts` keeps a conversation per session and speaker, drops
+  it after 30 minutes idle or 4 hours old, reads the care record fresh from DynamoDB before
+  every turn, and answers `/ping` with `HealthyBusy` while a turn runs.
+
+### Memory that can be told what not to replay
+- **Urgency:** important
+- **What:** A per-event or per-namespace way to keep AgentCore Memory from replaying an
+  agent's own earlier answers about facts that change.
+- **Why it matters:** On the Alexa Skill bridge, a fresh microVM answered "who is covering
+  the eye clinic appointment" with no tool call at all, from history rehydrated from
+  AgentCore Memory. That history keeps the questions and answers but not the tool calls
+  behind them, so the model read an old answer as a fact. A prompt rule ("call the tool
+  again") did not stop it. For a care record, a stale answer is a wrong answer.
+- **Instead:** We turned replay off on the bridge, and the CareCircle runtime does not use
+  AgentCore Memory: the care record is the memory, and every turn reads it fresh.
+
+## Amazon Nova on Bedrock
+
+### Keep inline reasoning out of the reply text
+- **Urgency:** important
+- **What:** Return Nova's `<thinking>` text as a reasoning content block, as Converse does
+  for models with reasoning, never inline in the text block.
+- **Why it matters:** On a speaker, the text block is what gets read aloud. Nova Lite, run
+  through our AgentCore container locally, answered with its reasoning first, in tags,
+  about the family by name.
+- **Instead:** `src/domain/speakable.ts` cuts reasoning tags (closed or left open) from
+  every reply on both planner loops, with tests.

@@ -379,6 +379,20 @@ saved us hours - each one hit while building CareCircle this period.
 - **App Runner + CodeBuild + ECR** build and serve the MCP server at a public URL.
 - **SNS** delivers `notify_member` messages for real (record-only fallback otherwise).
 - **CloudWatch** budget alarm keeps the deployment alive to judging without runaway cost.
+- **Strands Agents (TypeScript SDK)** runs the same planner as an agent over the CareCircle
+  MCP tools (`src/strands/`), with a plugin, `NoBlame`, that stops any reply saying someone
+  missed, skipped or forgot something before it is spoken. Same-day tool selection on Sonnet
+  4.5: Strands 149/155, the hand-written loop 150/155
+  (`evals/results/2026-10-02-strands-vs-console-sonnet-4-5.json`). Under 22 leading
+  questions, read by hand: Nova Pro accused someone once on the hand-written loop and never
+  with NoBlame; Nova Lite 3 times and once (a phrasing the word list misses); Sonnet never on
+  either (`npm run evals:blame`).
+- **Bedrock AgentCore Runtime** hosts the open-source Alexa Skill bridge our Echo talks
+  through ([alexa-skill-mcp-bridge](https://github.com/KayLerch/alexa-skill-mcp-bridge), its
+  code, deployed in our account). CareCircle's own planner is built for AgentCore Runtime
+  (`src/strands/runtime.ts`, `Dockerfile.agentcore`, `infra/deploy-agentcore.sh`) but is
+  **NOT YET DEPLOYED**. AgentCore Memory is **not used, on purpose**: the care record is the
+  memory, and replayed history let a model answer from an old reply.
 
 Why this shape: it is a genuine **multi-service pipeline** (planner → engine → store →
 delivery → observability), not a single Bedrock call.

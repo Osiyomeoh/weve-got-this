@@ -1,0 +1,139 @@
+{
+  "what": "First-tool selection on the 155-case corpus (npm run evals), Claude Sonnet 4.5 via the us. profile, the console's loop (src/sim/host.ts) and the Strands loop (src/strands/host.ts, CARECIRCLE_PROVIDER=strands), same server, same day. Cases throttled by Bedrock in the main run were re-run alone on both loops and merged in; summary and failures only, per-case rows were not kept.",
+  "reproduce": "npm run dev:http (CARECIRCLE_DB=scratch), then CARECIRCLE_URL=http://localhost:PORT/mcp CARECIRCLE_PROVIDER=strands|bedrock BEDROCK_MODEL_ID=us.anthropic.claude-sonnet-4-5-20250929-v1:0 npx tsx scripts/evals.ts --json",
+  "loops": {
+    "strands": {
+      "modelId": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+      "passed": 149,
+      "total": 155,
+      "accuracy": 0.9613,
+      "mainRun": {
+        "passed": 146,
+        "total": 152,
+        "throttled": [
+          "claim-02",
+          "claim-06",
+          "h-gap-05"
+        ]
+      },
+      "reruns": {
+        "claim-02": "pass",
+        "claim-06": "pass",
+        "h-gap-05": "pass"
+      },
+      "splits": [
+        {
+          "split": "authored",
+          "passed": 76,
+          "total": 79
+        },
+        {
+          "split": "held-out",
+          "passed": 64,
+          "total": 66
+        },
+        {
+          "split": "seen",
+          "passed": 9,
+          "total": 10
+        }
+      ],
+      "failures": [
+        {
+          "id": "note-02",
+          "utterance": "The doctor changed his dose to twice a day.",
+          "reason": "called nothing; expected add_note or change_medication"
+        },
+        {
+          "id": "shift-04",
+          "utterance": "Anything assigned to me?",
+          "reason": "chose get_my_requests; expected get_shift_brief or get_care_gaps"
+        },
+        {
+          "id": "notify-03",
+          "utterance": "Message Funmi about the appointment change.",
+          "reason": "called nothing; expected notify_member"
+        },
+        {
+          "id": "h-appt-01",
+          "utterance": "Move his eye check-up to Friday instead.",
+          "reason": "called nothing; expected record_appointment or add_note or change_appointment"
+        },
+        {
+          "id": "h-appt-04",
+          "utterance": "Schedule his flu shot for next week sometime.",
+          "reason": "called nothing; expected record_appointment"
+        },
+        {
+          "id": "h-cons-02",
+          "utterance": "Count me out this weekend.",
+          "reason": "called nothing; expected add_note"
+        }
+      ]
+    },
+    "console": {
+      "modelId": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+      "passed": 150,
+      "total": 155,
+      "accuracy": 0.9677,
+      "mainRun": {
+        "passed": 147,
+        "total": 152,
+        "throttled": [
+          "resolve-04",
+          "sum-03",
+          "h-claim-03"
+        ]
+      },
+      "reruns": {
+        "resolve-04": "pass",
+        "sum-03": "pass",
+        "h-claim-03": "pass"
+      },
+      "splits": [
+        {
+          "split": "authored",
+          "passed": 76,
+          "total": 79
+        },
+        {
+          "split": "held-out",
+          "passed": 65,
+          "total": 66
+        },
+        {
+          "split": "seen",
+          "passed": 9,
+          "total": 10
+        }
+      ],
+      "failures": [
+        {
+          "id": "note-02",
+          "utterance": "The doctor changed his dose to twice a day.",
+          "reason": "called nothing; expected add_note or change_medication"
+        },
+        {
+          "id": "shift-04",
+          "utterance": "Anything assigned to me?",
+          "reason": "chose get_my_requests; expected get_shift_brief or get_care_gaps"
+        },
+        {
+          "id": "notify-03",
+          "utterance": "Message Funmi about the appointment change.",
+          "reason": "called nothing; expected notify_member"
+        },
+        {
+          "id": "h-appt-01",
+          "utterance": "Move his eye check-up to Friday instead.",
+          "reason": "called nothing; expected record_appointment or add_note or change_appointment"
+        },
+        {
+          "id": "h-appt-04",
+          "utterance": "Schedule his flu shot for next week sometime.",
+          "reason": "called nothing; expected record_appointment"
+        }
+      ]
+    }
+  }
+}
