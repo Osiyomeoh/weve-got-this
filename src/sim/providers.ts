@@ -241,12 +241,12 @@ export class GeminiProvider implements ModelProvider {
 /**
  * Build a provider from the environment.
  *
- * Bedrock unless `CARECIRCLE_PROVIDER=gemini` (another model) or `strands` (the same
- * Bedrock model run by a Strands Agent), so the submission path is what runs by default
- * and an alternative planner is always a deliberate choice.
+ * `CARECIRCLE_PROVIDER` picks: `bedrock` (the hand-written loop), `strands` (the same
+ * Bedrock model run by a Strands Agent) or `gemini` (another model). Unset, each caller
+ * says what it runs by default, so an alternative planner is always a deliberate choice.
  */
-export function providerFromEnv(): ModelProvider {
-  const name = (process.env['CARECIRCLE_PROVIDER'] ?? 'bedrock').toLowerCase();
+export function providerFromEnv(fallback: 'bedrock' | 'strands' = 'bedrock'): ModelProvider {
+  const name = (process.env['CARECIRCLE_PROVIDER'] || fallback).toLowerCase();
   // The same Bedrock model, with the turn run by a Strands Agent (src/strands).
   if (name === 'strands') return new StrandsProvider(bedrockModel());
   if (name === 'gemini') {

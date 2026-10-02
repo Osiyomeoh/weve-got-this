@@ -294,8 +294,9 @@ the ordering inspectable (every gap carries its `score` and a plain-language
 The planner that turns what a person says into tool calls runs two ways, over the same
 server, prompt and tools: a hand-written loop (`src/sim/host.ts`), and a **Strands Agents**
 agent (`src/strands/host.ts`, TypeScript SDK 1.19) that reaches the tools through Strands'
-own MCP client. `CARECIRCLE_PROVIDER=strands` picks the Strands one for the evals and the
-Telegram chat; the browser console keeps the hand-written loop.
+own MCP client. The family's Telegram chat runs on the Strands one by default
+(`CARECIRCLE_PROVIDER=bedrock` puts the hand-written loop back); the evals use it with
+`CARECIRCLE_PROVIDER=strands`; the browser console keeps the hand-written loop.
 
 What Strands adds is a place to enforce a rule rather than ask for it. **`NoBlame`**
 (`src/strands/no-blame.ts`) is a Strands plugin that reads every finished reply before

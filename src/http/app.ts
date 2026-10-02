@@ -163,9 +163,11 @@ const tgMemberByChat = ((): Map<string, string> => {
 })();
 const tgBotToken = process.env['TELEGRAM_BOT_TOKEN'] ?? '';
 // Talking to CareCircle in Telegram, not only answering its asks. On whenever the bot
-// can reply at all; TELEGRAM_CHAT=off keeps the door to yes/no only.
+// can reply at all; TELEGRAM_CHAT=off keeps the door to yes/no only. The family's chat is
+// run by the Strands planner, whose NoBlame check stands between the model and the family;
+// CARECIRCLE_PROVIDER=bedrock puts the hand-written loop back.
 const tgChat = tgBotToken && process.env['TELEGRAM_CHAT'] !== 'off'
-  ? createTelegramChat({ store, provider: providerFromEnv(), notifier: messenger, ...(now ? { now } : {}) })
+  ? createTelegramChat({ store, provider: providerFromEnv('strands'), notifier: messenger, ...(now ? { now } : {}) })
   : undefined;
 app.post(
   '/telegram/webhook',

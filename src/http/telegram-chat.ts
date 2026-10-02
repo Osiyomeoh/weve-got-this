@@ -24,9 +24,9 @@ import { StrandsProvider } from '../strands/provider.js';
  * from what they said a minute ago; an idle one is dropped and starts fresh next time.
  * Turns for one member run one at a time, in the order they arrived.
  *
- * With the Strands provider (CARECIRCLE_PROVIDER=strands) the turn is run by a Strands
- * Agent instead, and no reply that says someone missed something reaches the family
- * (strands/no-blame.ts).
+ * With the Strands provider (the default in http/app.ts) the turn is run by a Strands
+ * Agent, and no reply that says someone missed something reaches the family
+ * (strands/no-blame.ts). Any other provider runs the hand-written loop (sim/host.ts).
  */
 
 export type ChatReply = (memberId: string, text: string) => Promise<string>;
