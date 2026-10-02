@@ -1,0 +1,91 @@
+round	id	side	result	chosen
+1	h-appt-04	before	pass	
+1	h-appt-04	after	pass	
+1	h-buy-07	before	pass	
+1	h-buy-07	after	pass	
+1	h-confirm-02	before	fail	confirm_purchase
+1	h-confirm-02	after	pass	
+1	h-log-04	before	fail	log_care_event
+1	h-log-04	after	fail	log_care_event
+1	h-resolve-04	before	fail	log_care_event
+1	h-resolve-04	after	fail	log_care_event
+1	move-03	before	pass	
+1	move-03	after	fail	get_care_gaps
+1	note-04	before	fail	notify_member
+1	note-04	after	pass	
+1	notify-03	before	fail	get_care_summary
+1	notify-03	after	fail	get_care_summary
+1	shift-03	before	fail	get_care_summary
+1	shift-03	after	fail	get_care_summary
+2	h-appt-04	before	fail	None
+2	h-appt-04	after	pass	
+2	h-buy-07	before	pass	
+2	h-buy-07	after	pass	
+2	h-confirm-02	before	fail	confirm_purchase
+2	h-confirm-02	after	pass	
+2	h-log-04	before	fail	log_care_event
+2	h-log-04	after	fail	log_care_event
+2	h-resolve-04	before	pass	
+2	h-resolve-04	after	fail	log_care_event
+2	move-03	before	fail	None
+2	move-03	after	pass	
+2	note-04	before	fail	notify_member
+2	note-04	after	pass	
+2	notify-03	before	pass	
+2	notify-03	after	fail	get_care_summary
+2	shift-03	before	fail	get_care_summary
+2	shift-03	after	fail	get_care_summary
+3	h-appt-04	before	pass	
+3	h-appt-04	after	fail	None
+3	h-buy-07	before	pass	
+3	h-buy-07	after	pass	
+3	h-confirm-02	before	fail	confirm_purchase
+3	h-confirm-02	after	pass	
+3	h-log-04	before	fail	log_care_event
+3	h-log-04	after	fail	log_care_event
+3	h-resolve-04	before	fail	log_care_event
+3	h-resolve-04	after	fail	log_care_event
+3	move-03	before	pass	
+3	move-03	after	pass	
+3	note-04	before	pass	
+3	note-04	after	pass	
+3	notify-03	before	pass	
+3	notify-03	after	fail	get_care_summary
+3	shift-03	before	fail	get_care_summary
+3	shift-03	after	fail	get_care_summary
+4	h-appt-04	before	pass	
+4	h-appt-04	after	fail	None
+4	h-buy-07	before	pass	
+4	h-buy-07	after	pass	
+4	h-confirm-02	before	fail	confirm_purchase
+4	h-confirm-02	after	fail	confirm_purchase
+4	h-log-04	before	fail	log_care_event
+4	h-log-04	after	fail	log_care_event
+4	h-resolve-04	before	fail	log_care_event
+4	h-resolve-04	after	fail	log_care_event
+4	move-03	before	pass	
+4	move-03	after	pass	
+4	note-04	before	pass	
+4	note-04	after	pass	
+4	notify-03	before	fail	get_care_summary
+4	notify-03	after	pass	
+4	shift-03	before	fail	get_care_summary
+4	shift-03	after	fail	get_care_summary
+5	h-appt-04	before	pass	
+5	h-appt-04	after	fail	None
+5	h-buy-07	before	pass	
+5	h-buy-07	after	pass	
+5	h-confirm-02	before	pass	
+5	h-confirm-02	after	fail	confirm_purchase
+5	h-log-04	before	pass	
+5	h-log-04	after	fail	log_care_event
+5	h-resolve-04	before	fail	log_care_event
+5	h-resolve-04	after	fail	log_care_event
+5	move-03	before	pass	
+5	move-03	after	pass	
+5	note-04	before	fail	notify_member
+5	note-04	after	pass	
+5	notify-03	before	pass	
+5	notify-03	after	fail	get_care_summary
+5	shift-03	before	fail	get_care_summary
+5	shift-03	after	fail	get_care_summary

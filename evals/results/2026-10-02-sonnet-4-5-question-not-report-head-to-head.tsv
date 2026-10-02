@@ -1,0 +1,21 @@
+round	id	side	result	chosen
+1	h-log-03	before	pass	
+1	h-log-03	after	fail	get_care_gaps
+1	move-03	before	fail	None
+1	move-03	after	pass	
+2	h-log-03	before	pass	
+2	h-log-03	after	pass	
+2	move-03	before	pass	
+2	move-03	after	fail	None
+3	h-log-03	before	pass	
+3	h-log-03	after	fail	get_care_gaps
+3	move-03	before	fail	None
+3	move-03	after	pass	
+4	h-log-03	before	pass	
+4	h-log-03	after	pass	
+4	move-03	before	fail	None
+4	move-03	after	fail	None
+5	h-log-03	before	pass	
+5	h-log-03	after	pass	
+5	move-03	before	pass	
+5	move-03	after	pass	

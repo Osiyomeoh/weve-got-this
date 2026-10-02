@@ -24,7 +24,9 @@ export function registerLogCareEvent({ server, store, now, actor, state, nameOf 
     title: 'Log something that happened',
     description:
       'Record that something happened - a medication taken, a meal eaten, a check-in, '
-      + 'how someone is feeling. Use this for things that ALREADY happened. For something '
+      + 'how someone is feeling. Use this for things that ALREADY happened. A question about '
+      + 'whether something happened ("did he use his drops?") is not a report that it did: '
+      + 'answer it, never log it. For something '
       + 'scheduled in the future use record_appointment instead; for an observation or '
       + 'concern with no action attached use add_note. When what happened is that a task '
       + 'or errand got done - a ride given, a pickup made, a job finished - that closes '
