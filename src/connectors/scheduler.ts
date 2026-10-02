@@ -118,6 +118,8 @@ export function startConnectorSync(deps: Omit<ConnectorSyncDeps, 'householdId'> 
   let running = false;
   const tick = async (): Promise<void> => {
     if (running) return; // never overlap passes
+    // One instance syncs at a time, or two would both see an item as new.
+    if (!(await deps.store.lease('connectors', 3 * ms).catch(() => false))) return;
     running = true;
     try {
       // Another instance, or a script, may have written since the last pass.

@@ -306,6 +306,33 @@ test('attack: a refresh token cannot be used as an access token', () => {
   assert.equal(resolver.resolve(fake as never), null);
 });
 
+test('attack: an authorization code cannot be used as an access token', async () => {
+  const { challenge } = makePkce();
+  const code = await getCode(challenge);
+  const resolver = oauthResolver(SECRET);
+  assert.equal(resolver.resolve({ header: () => `Bearer ${code}` } as never), null);
+});
+
+test('a code issued by one instance is redeemed by another sharing the secret', async () => {
+  // More than one instance behind the load balancer: the consent page and the token
+  // exchange may land on different processes, so the code carries what it needs, signed.
+  const { verifier, challenge } = makePkce();
+  const code = await getCode(challenge);
+  const store2 = new CareStore();
+  await seedDemoHousehold(store2);
+  const other = createCareCircleApp({ store: store2, tokens: new Map(Object.entries(DEMO_TOKENS)) });
+  const s2 = await new Promise<Server>((resolve) => { const s = other.listen(0, () => resolve(s)); });
+  try {
+    const a = s2.address();
+    const res = await fetch(`http://localhost:${typeof a === 'object' && a ? a.port : 0}/oauth/token`, {
+      method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ grant_type: 'authorization_code', code, code_verifier: verifier, redirect_uri: REDIRECT }).toString(),
+    });
+    assert.equal(res.status, 200);
+    assert.equal(verifyToken(((await res.json()) as { access_token: string }).access_token, SECRET)?.sub, 'm_renee');
+  } finally { s2.close(); }
+});
+
 test('production wiring: the entrypoint resolver honours OAuth tokens', () => {
   // The entrypoint (src/http.ts) builds its own resolver and passes it in, so a
   // composition that lived only in createCareCircleApp was skipped in production

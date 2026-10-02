@@ -1,6 +1,6 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import {
-  DynamoDBDocumentClient, GetCommand, ScanCommand, TransactWriteCommand,
+  DynamoDBDocumentClient, GetCommand, PutCommand, ScanCommand, TransactWriteCommand,
   type TransactWriteCommandInput,
 } from '@aws-sdk/lib-dynamodb';
 import { StaleRecordError, type Persistence, type StoreSnapshot } from './store.js';
@@ -152,6 +152,27 @@ export class DynamoPersistence implements Persistence {
   /** Whether another process has written since this one last read or wrote. */
   async stale(): Promise<boolean> {
     return (await this.#currentVersion()) !== this.#version;
+  }
+
+  /**
+   * A lease is one item under META, so the record's scan never reads it. Taken when it is
+   * free, lapsed, or already ours; one conditional put, so two instances cannot both win.
+   */
+  async lease(name: string, holder: string, ttlMs: number): Promise<boolean> {
+    const now = Date.now();
+    try {
+      await this.#doc.send(new PutCommand({
+        TableName: this.#table,
+        Item: { pk: VERSION_KEY.pk, sk: `LEASE#${name}`, holder, until: now + ttlMs },
+        ConditionExpression: 'attribute_not_exists(pk) OR holder = :me OR #until < :now',
+        ExpressionAttributeNames: { '#until': 'until' },
+        ExpressionAttributeValues: { ':me': holder, ':now': now },
+      }));
+      return true;
+    } catch (err) {
+      if ((err as Error).name === 'ConditionalCheckFailedException') return false;
+      throw err;
+    }
   }
 
   async load(): Promise<StoreSnapshot | null> {

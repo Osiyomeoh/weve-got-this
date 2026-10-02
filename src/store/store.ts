@@ -31,6 +31,11 @@ export interface Persistence {
    * only one process can write (a JSON file on one machine).
    */
   stale?(): Promise<boolean>;
+  /**
+   * Hold the named lease for `ttlMs`, or renew it: true if this holder has it now. Absent
+   * when only one process can run (then every holder has it).
+   */
+  lease?(name: string, holder: string, ttlMs: number): Promise<boolean>;
 }
 
 /** From persistence: another process wrote first, so this save was refused whole. */
@@ -102,8 +107,21 @@ export class CareStore {
   /** Serialises writes so concurrent tool calls cannot interleave a save. */
   #writeQueue: Promise<unknown> = Promise.resolve();
 
+  /** This process, as a lease holder. */
+  readonly #holder = randomUUID();
+
   constructor(persistence?: Persistence) {
     this.#persistence = persistence;
+  }
+
+  /**
+   * Whether this process is the one that should run a background job now. With more than
+   * one instance, only the holder of the lease sends reminders and asks, so a family never
+   * hears the same thing twice. A lease that is not renewed lapses after `ttlMs`, and
+   * another instance takes it over.
+   */
+  async lease(name: string, ttlMs: number): Promise<boolean> {
+    return this.#persistence?.lease ? this.#persistence.lease(name, this.#holder, ttlMs) : true;
   }
 
   async init(): Promise<void> {

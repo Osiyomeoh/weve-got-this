@@ -100,6 +100,22 @@ test('a redelivered event is acknowledged but not acted on twice', async () => {
   assert.equal(second.json.status, 'duplicate');
 });
 
+test('a redelivery that lands on another instance is not acted on twice either', async () => {
+  // A second instance has never seen the first delivery; the shared record has.
+  const body = motion('req_other_instance', 'package');
+  assert.equal((await post(body, sign(body))).json.status, 'accepted');
+  const other = createCareCircleApp({ store, tokens: new Map(Object.entries(DEMO_TOKENS)) });
+  const s2 = await new Promise<Server>((resolve) => { const s = other.listen(0, () => resolve(s)); });
+  try {
+    const a = s2.address();
+    const res = await fetch(`http://localhost:${typeof a === 'object' && a ? a.port : 0}/ring/webhook`, {
+      method: 'POST', headers: { 'content-type': 'application/json', 'x-signature': sign(body) }, body,
+    });
+    assert.equal(res.status, 200);
+    assert.equal(((await res.json()) as { status: string }).status, 'duplicate');
+  } finally { s2.close(); }
+});
+
 test('an event Ring sends that we do not act on is still acknowledged', async () => {
   const body = JSON.stringify({
     data: { type: 'device_online', id: 'evt_x', attributes: {} },

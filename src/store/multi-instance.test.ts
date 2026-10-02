@@ -173,3 +173,33 @@ test('over HTTP, every request reads the record fresh', async () => {
     assert.match((out.content as { text: string }[])[0]!.text, /Daddy sounded tired on the phone/);
   } finally { await client.close(); }
 });
+
+test('only one instance holds the loops\' lease, and another takes it when it lapses', async () => {
+  // Two instances both running reminders would tell the family everything twice.
+  const table = fakeTable();
+  const a = await instance(table);
+  const b = await instance(table);
+  assert.equal(await a.lease('loops', 60_000), true);
+  assert.equal(await b.lease('loops', 60_000), false, 'the second instance stays quiet');
+  assert.equal(await a.lease('loops', 60_000), true, 'the holder renews it');
+
+  const row = table.rows.get('META|LEASE#loops')!;
+  row['until'] = Date.now() - 1; // the holder stopped renewing
+  assert.equal(await b.lease('loops', 60_000), true, 'a lapsed lease is taken over');
+  assert.equal(await a.lease('loops', 60_000), false);
+});
+
+test('a lease is not part of the care record', async () => {
+  const table = fakeTable();
+  const a = await instance(table);
+  await family(a);
+  await a.lease('loops', 60_000);
+  const b = await instance(table);
+  assert.deepEqual(b.getCareState('h').members.map((m) => m.id).sort(), ['m_dad', 'm_funmi', 'm_tolu']);
+  await b.appendEvent(note('after the lease') as never);
+  assert.ok(table.rows.has('META|LEASE#loops'), 'a save does not remove it');
+});
+
+test('one process on its own always holds the lease', async () => {
+  assert.equal(await new CareStore().lease('loops', 1), true);
+});

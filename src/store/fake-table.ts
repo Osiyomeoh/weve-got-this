@@ -1,7 +1,7 @@
-import { GetCommand, ScanCommand, TransactWriteCommand, type DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
+import { GetCommand, PutCommand, ScanCommand, TransactWriteCommand, type DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 
 /**
- * A DynamoDB table in memory, for tests: it answers the three commands DynamoPersistence
+ * A DynamoDB table in memory, for tests: it answers the commands DynamoPersistence
  * sends, and refuses a transaction whose version condition fails the way DynamoDB does -
  * a TransactionCanceledException, with a reason per item and nothing written.
  */
@@ -30,6 +30,17 @@ export function fakeTable(): FakeTable {
         if (cmd instanceof GetCommand) {
           const item = rows.get(keyOf(cmd.input.Key ?? {}));
           return item ? { Item: structuredClone(item) } : {};
+        }
+        if (cmd instanceof PutCommand) {
+          // Only the lease's condition: free, ours, or lapsed.
+          const item = cmd.input.Item as Item;
+          const current = rows.get(keyOf(item));
+          const v = cmd.input.ExpressionAttributeValues ?? {};
+          if (current && current['holder'] !== v[':me'] && !((current['until'] as number) < v[':now'])) {
+            throw Object.assign(new Error('The conditional request failed'), { name: 'ConditionalCheckFailedException' });
+          }
+          rows.set(keyOf(item), structuredClone(item));
+          return {};
         }
         if (cmd instanceof TransactWriteCommand) {
           const ops = cmd.input.TransactItems ?? [];

@@ -111,7 +111,9 @@ export function createRingWebhook(opts: RingWebhookOptions) {
     // Ring retries anything that is not a 200, so an event we cannot act on must
     // still be acknowledged - otherwise it is redelivered forever.
     const key = ringIdempotencyKey(event);
-    if (key && !seen.admit(key)) {
+    // The set catches a redelivery to this instance; the record catches one that lands on
+    // another instance after the first was applied there.
+    if (key && (!seen.admit(key) || (await alreadyRecorded(opts.store, opts.householdId, key)))) {
       res.status(200).json({ status: 'duplicate', requestId: key });
       return;
     }
@@ -137,4 +139,13 @@ export function createRingWebhook(opts: RingWebhookOptions) {
       res.status(500).json({ error: (err as Error).message });
     }
   };
+}
+
+/** Is there already an event on the record from this Ring delivery? */
+async function alreadyRecorded(store: CareStore, householdId: string, key: string): Promise<boolean> {
+  await store.refresh().catch(() => false);
+  return store.getCareState(householdId).events.some((e) => {
+    const raw = (e.data as { raw?: { requestId?: unknown; ringEventId?: unknown } }).raw;
+    return e.source === 'ring' && (raw?.requestId === key || raw?.ringEventId === key);
+  });
 }

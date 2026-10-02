@@ -41,7 +41,12 @@ export interface TokenClaims {
   exp: number;
   iat: number;
   scope?: string;
-  typ?: 'access' | 'refresh';
+  typ?: 'access' | 'refresh' | 'code';
+  /** On a code only: who it was issued to, where it may be redeemed, and its PKCE challenge. */
+  cid?: string;
+  ru?: string;
+  ch?: string;
+  jti?: string;
 }
 
 export function signToken(claims: TokenClaims, secret: string): string {
@@ -58,7 +63,7 @@ export function signToken(claims: TokenClaims, secret: string): string {
  * The `alg` check is not ceremony: accepting whatever algorithm the token names is
  * the classic JWT forgery, and `alg: none` would make every token valid.
  */
-export function verifyToken(token: string, secret: string): TokenClaims | null {
+export function verifyToken(token: string, secret: string, now = Date.now()): TokenClaims | null {
   const parts = token.split('.');
   if (parts.length !== 3) return null;
   const [header, payload, signature] = parts as [string, string, string];
@@ -70,7 +75,7 @@ export function verifyToken(token: string, secret: string): TokenClaims | null {
     if (expected.length !== given.length) return null;
     if (!timingSafeEqual(expected, given)) return null;
     const claims = JSON.parse(unb64url(payload).toString('utf8')) as TokenClaims;
-    if (typeof claims.exp !== 'number' || claims.exp * 1000 <= Date.now()) return null;
+    if (typeof claims.exp !== 'number' || claims.exp * 1000 <= now) return null;
     return claims;
   } catch { return null; }
 }
@@ -88,14 +93,6 @@ export function pkceMatches(verifier: string, challenge: string): boolean {
 }
 
 // --- the flow ------------------------------------------------------------
-
-interface PendingCode {
-  memberId: string;
-  clientId: string;
-  redirectUri: string;
-  challenge: string;
-  expiresAt: number;
-}
 
 export interface OAuthOptions {
   /** Signing secret. Refuses to start without one. */
@@ -134,7 +131,12 @@ export function redirectAllowed(uri: string, allowed: string[]): boolean {
 }
 
 export class OAuthProvider {
-  readonly #codes = new Map<string, PendingCode>();
+  /**
+   * Codes already redeemed here, until they expire. A code is a signed token, so any
+   * instance can redeem it; this only stops a second redemption on the same instance.
+   * Across instances a replay still needs the PKCE verifier, which never leaves the client.
+   */
+  readonly #spent = new Map<string, number>();
   readonly #opts: OAuthOptions;
 
   readonly #allowed: string[];
@@ -300,14 +302,12 @@ export class OAuthProvider {
       return;
     }
 
-    const code = randomBytes(32).toString('hex');
-    this.#codes.set(code, {
-      memberId: member,
-      clientId: client_id,
-      redirectUri: redirect_uri,
-      challenge: code_challenge,
-      expiresAt: this.#now() + CODE_TTL_MS,
-    });
+    const iat = Math.floor(this.#now() / 1000);
+    const code = signToken({
+      sub: member, iss: this.#opts.issuer, aud: this.#opts.issuer, iat,
+      exp: Math.floor((this.#now() + CODE_TTL_MS) / 1000), typ: 'code',
+      cid: client_id, ru: redirect_uri, ch: code_challenge, jti: randomBytes(16).toString('hex'),
+    }, this.#opts.secret);
 
     const target = new URL(redirect_uri);
     target.searchParams.set('code', code);
@@ -342,12 +342,16 @@ export class OAuthProvider {
       return;
     }
 
-    const pending = this.#codes.get(code);
+    const now = this.#now();
+    const claims = verifyToken(code, this.#opts.secret, now);
+    const pending = claims?.typ === 'code' && claims.jti && !this.#spent.has(claims.jti)
+      ? { memberId: claims.sub, redirectUri: claims.ru, challenge: claims.ch ?? '' } : null;
     // Single use: consumed whether or not the rest validates, so a leaked code cannot
     // be retried against a guessed verifier.
-    this.#codes.delete(code);
+    for (const [jti, until] of this.#spent) if (until <= now) this.#spent.delete(jti);
+    if (claims?.jti) this.#spent.set(claims.jti, claims.exp * 1000);
 
-    if (!pending || pending.expiresAt <= this.#now()) {
+    if (!pending) {
       res.status(400).json({ error: 'invalid_grant', error_description: 'Code is unknown or expired.' });
       return;
     }
@@ -425,7 +429,7 @@ export function oauthResolver(secret: string, lookup?: IdentityLookup): Identity
       const m = /^Bearer\s+(.+)$/i.exec((req.header('authorization') ?? '').trim());
       if (!m) return null;
       const claims = verifyToken(m[1]!.trim(), secret);
-      if (!claims || claims.typ === 'refresh') return null;
+      if (!claims || claims.typ !== 'access') return null;
       return claims.sub ? (lookup?.(claims.sub) ?? claims.sub) : null;
     },
     principal() { return null; },

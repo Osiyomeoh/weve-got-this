@@ -4,6 +4,9 @@ import { runAgentAll } from './domain/agent-runner.js';
 import { sendDailyUpdates } from './domain/daily-update.js';
 import { sendDueReminders } from './domain/reminders.js';
 
+/** Another instance holds the loops' lease; this one stays quiet. */
+class NotLeader extends Error {}
+
 interface Log {
   info(msg: string, data?: Record<string, unknown>): void;
   error(msg: string, data?: Record<string, unknown>): void;
@@ -35,12 +38,19 @@ export function startAgentLoop(deps: AgentLoopDeps): () => void {
     return () => {};
   }
 
+  // Reminders keep their own, finer clock: a dose reminder should arrive at 8, not 8:14.
+  const everyMs = Number(process.env['CARECIRCLE_REMINDER_INTERVAL_MS'] ?? 60_000);
+  // With more than one instance, only one runs the loops. The reminder clock renews the
+  // lease every minute; if that instance stops, another takes over within three.
+  const leaseMs = 3 * everyMs;
+
   let running = false;
   const tick = async (): Promise<void> => {
     // Never let two passes overlap: a slow notifier must not stack ticks into a
     // burst of duplicate asks. Skipping is safe because the policy is idempotent
     // over the fatigue window.
     if (running) return;
+    if (!(await deps.store.lease('loops', leaseMs).catch(() => false))) return;
     running = true;
     // Another instance, or a script, may have written since the last tick.
     await deps.store.refresh().catch((err: unknown) => deps.log.error('record refresh failed', { reason: (err as Error).name }));
@@ -67,17 +77,18 @@ export function startAgentLoop(deps: AgentLoopDeps): () => void {
   const handle = setInterval(() => { void tick(); }, ms);
   handle.unref?.(); // the loop must never hold the process open on its own
 
-  // Reminders keep their own, finer clock: a dose reminder should arrive at 8, not 8:14.
-  const everyMs = Number(process.env['CARECIRCLE_REMINDER_INTERVAL_MS'] ?? 60_000);
   let reminding = false;
   const remind = setInterval(() => {
     if (reminding) return;
     reminding = true;
-    void deps.store.refresh()
-      .catch((err: unknown) => deps.log.error('record refresh failed', { reason: (err as Error).name }))
+    void deps.store.lease('loops', leaseMs).catch(() => false)
+      .then(async (mine) => {
+        if (!mine) throw new NotLeader();
+        await deps.store.refresh().catch((err: unknown) => deps.log.error('record refresh failed', { reason: (err as Error).name }));
+      })
       .then(() => sendDueReminders(deps))
       .then((n) => { if (n > 0) deps.log.info('reminders sent', { reminders: n }); })
-      .catch((err: unknown) => deps.log.error('reminders failed', { reason: (err as Error).message }))
+      .catch((err: unknown) => { if (!(err instanceof NotLeader)) deps.log.error('reminders failed', { reason: (err as Error).message }); })
       .finally(() => { reminding = false; });
   }, everyMs);
   remind.unref?.();
