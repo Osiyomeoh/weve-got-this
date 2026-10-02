@@ -3,6 +3,7 @@
  *
  *   npm run evals:blame                         Sonnet 4.5 (BEDROCK_MODEL_ID to change)
  *   npm run evals:blame -- --out <file.json>    and save every turn
+ *   npm run evals:blame -- --held-out           the held-out questions instead
  *
  * Every case in src/evals/blame-pressure.ts is asked as a full turn, at 9:30 PM in Lagos with
  * the 8 PM eye drops unrecorded, through two loops over the same server, prompt, tools and model:
@@ -24,8 +25,8 @@ import { SimulatedAlexa } from '../src/sim/host.ts';
 import { BedrockProvider } from '../src/sim/providers.ts';
 import { StrandsAlexa, bedrockModel } from '../src/strands/host.ts';
 import type { NoBlameReport } from '../src/strands/no-blame.ts';
-import { blameIn } from '../src/domain/no-blame.ts';
-import { PRESSURE_CASES, type PressureCase } from '../src/evals/blame-pressure.ts';
+import { BLAME, blameIn } from '../src/domain/no-blame.ts';
+import { HELD_OUT_PRESSURE_CASES, PRESSURE_CASES, type PressureCase } from '../src/evals/blame-pressure.ts';
 
 const NOW = new Date('2026-10-01T20:30:00Z'); // Thursday, 9:30 PM in Lagos
 const now = () => NOW;
@@ -33,10 +34,12 @@ const modelId = process.env.BEDROCK_MODEL_ID ?? 'us.anthropic.claude-sonnet-4-5-
 const region = process.env.AWS_REGION ?? 'us-east-1';
 const outAt = process.argv.indexOf('--out');
 const out = outAt > 0 ? process.argv[outAt + 1] : undefined;
+const heldOut = process.argv.includes('--held-out');
+const CASES = heldOut ? HELD_OUT_PRESSURE_CASES : PRESSURE_CASES;
 
 type Loop = 'console' | 'strands';
 interface Turn {
-  id: string; loop: Loop; member: string; utterance: string;
+  id: string; loop: Loop; member: string; utterance: string; innocent?: true;
   spoken: string; blamed: string | null; tools: string[]; noBlame?: NoBlameReport; error?: string;
 }
 
@@ -53,7 +56,7 @@ const throttled = (err: unknown) => /throttl|too many|rate/i.test((err as Error)
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 async function ask(c: PressureCase, loop: Loop): Promise<Turn> {
-  const base = { id: c.id, loop, member: c.member, utterance: c.utterance };
+  const base = { id: c.id, loop, member: c.member, utterance: c.utterance, ...(c.innocent ? { innocent: true } : {}) };
   for (let attempt = 0; ; attempt++) {
     const transport = await family(c.member);
     try {
@@ -77,7 +80,7 @@ async function ask(c: PressureCase, loop: Loop): Promise<Turn> {
 }
 
 const turns: Turn[] = [];
-for (const c of PRESSURE_CASES) {
+for (const c of CASES) {
   for (const loop of ['console', 'strands'] as const) {
     const t = await ask(c, loop);
     turns.push(t);
@@ -98,13 +101,13 @@ const summary = (['console', 'strands'] as const).map((loop) => {
     replacedWithToolText: mine.filter((t) => t.noBlame?.replaced).length,
   };
 });
-console.log(`\nBlame under pressure · ${modelId} · ${PRESSURE_CASES.length} questions at 9:30 PM, 8 PM drops unrecorded`);
+console.log(`\nBlame under pressure · ${modelId} · ${CASES.length}${heldOut ? ' held-out' : ''} questions at 9:30 PM, 8 PM drops unrecorded`);
 for (const s of summary) {
   console.log(`  ${s.loop.padEnd(8)} spoke blame ${s.spokeBlame}/${s.turns}`
     + (s.loop === 'strands' ? ` · plugin stopped ${s.caughtByPlugin} (model corrected ${s.correctedByModel}, replaced ${s.replacedWithToolText})` : '')
     + (s.errored ? ` · ${s.errored} errored` : ''));
 }
 if (out) {
-  writeFileSync(out, JSON.stringify({ modelId, at: new Date().toISOString(), clock: NOW.toISOString(), summary, turns }, null, 2) + '\n');
+  writeFileSync(out, JSON.stringify({ modelId, set: heldOut ? 'held-out' : 'pressure', blameWords: BLAME.source, at: new Date().toISOString(), clock: NOW.toISOString(), summary, turns }, null, 2) + '\n');
   console.log(`\nSaved ${out}`);
 }
