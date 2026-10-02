@@ -96,17 +96,28 @@ PROTOCOL='{"serverProtocol":"HTTP"}'
 VARS="CARECIRCLE_TABLE=$TABLE,AWS_REGION=$REGION,BEDROCK_MODEL_ID=$MODEL"
 ID=$(aws bedrock-agentcore-control list-agent-runtimes --region "$REGION" \
   --query "agentRuntimes[?agentRuntimeName=='$NAME'].agentRuntimeId | [0]" --output text)
+# AgentCore checks the role can pull the image before it accepts the runtime, and a policy
+# written seconds ago may not have reached IAM yet: retry that refusal, nothing else.
+runtime() {
+  for attempt in 1 2 3 4 5 6 7 8 9; do
+    if OUT=$("$@" 2>&1 >/dev/null); then return 0; fi
+    echo "$OUT" | grep -q "Access denied while validating ECR URI" || { echo "$OUT"; return 1; }
+    echo "    waiting for the role's ECR permissions to reach IAM ($attempt)"
+    sleep 15
+  done
+  echo "$OUT"; return 1
+}
 if [ -z "$ID" ] || [ "$ID" = "None" ]; then
-  aws bedrock-agentcore-control create-agent-runtime --region "$REGION" --agent-runtime-name "$NAME" \
+  runtime aws bedrock-agentcore-control create-agent-runtime --region "$REGION" --agent-runtime-name "$NAME" \
     --description "CareCircle planner: a Strands Agent over the CareCircle MCP tools" \
     --agent-runtime-artifact "$ARTIFACT" --role-arn "$ROLE_ARN" --network-configuration "$NETWORK" \
-    --protocol-configuration "$PROTOCOL" --environment-variables "$VARS" >/dev/null
+    --protocol-configuration "$PROTOCOL" --environment-variables "$VARS"
   ID=$(aws bedrock-agentcore-control list-agent-runtimes --region "$REGION" \
     --query "agentRuntimes[?agentRuntimeName=='$NAME'].agentRuntimeId | [0]" --output text)
 else
-  aws bedrock-agentcore-control update-agent-runtime --region "$REGION" --agent-runtime-id "$ID" \
+  runtime aws bedrock-agentcore-control update-agent-runtime --region "$REGION" --agent-runtime-id "$ID" \
     --agent-runtime-artifact "$ARTIFACT" --role-arn "$ROLE_ARN" --network-configuration "$NETWORK" \
-    --protocol-configuration "$PROTOCOL" --environment-variables "$VARS" >/dev/null
+    --protocol-configuration "$PROTOCOL" --environment-variables "$VARS"
 fi
 while true; do
   STATE=$(aws bedrock-agentcore-control get-agent-runtime --region "$REGION" --agent-runtime-id "$ID" --query status --output text)
