@@ -3,6 +3,8 @@ import {
   type ContentBlock, type Message, type Tool as BedrockTool,
 } from '@aws-sdk/client-bedrock-runtime';
 import { GoogleGenAI, type FunctionDeclaration } from '@google/genai';
+import { bedrockModel } from '../strands/host.js';
+import { StrandsProvider } from '../strands/provider.js';
 
 /**
  * Model providers.
@@ -239,11 +241,15 @@ export class GeminiProvider implements ModelProvider {
 /**
  * Build a provider from the environment.
  *
- * Bedrock unless `CARECIRCLE_PROVIDER=gemini`, so the submission path is what runs
- * by default and an alternative planner is always a deliberate choice.
+ * Bedrock unless `CARECIRCLE_PROVIDER=gemini` (another model) or `strands` (the same
+ * Bedrock model run by a Strands Agent), so the submission path is what runs by default
+ * and an alternative planner is always a deliberate choice.
  */
 export function providerFromEnv(): ModelProvider {
-  if ((process.env['CARECIRCLE_PROVIDER'] ?? 'bedrock').toLowerCase() === 'gemini') {
+  const name = (process.env['CARECIRCLE_PROVIDER'] ?? 'bedrock').toLowerCase();
+  // The same Bedrock model, with the turn run by a Strands Agent (src/strands).
+  if (name === 'strands') return new StrandsProvider(bedrockModel());
+  if (name === 'gemini') {
     const apiKey = process.env['GEMINI_API_KEY'] ?? process.env['GOOGLE_API_KEY'];
     return new GeminiProvider({
       modelId: process.env['GEMINI_MODEL_ID'] ?? 'gemini-3.5-flash',

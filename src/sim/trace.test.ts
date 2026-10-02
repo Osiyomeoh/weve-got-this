@@ -6,6 +6,7 @@ import { createCareCircleServer } from '../mcp/server.ts';
 import { CareStore } from '../store/store.ts';
 import { createTelegramChat } from '../http/telegram-chat.ts';
 import { traceFields } from '../obs/trace.ts';
+import { NOTHING_SAID } from '../domain/speakable.ts';
 import { SimulatedAlexa, type TurnTrace } from './host.ts';
 import type { Conversation, ModelProvider, ToolUse, TurnOutput } from './providers.ts';
 
@@ -109,4 +110,27 @@ test('the Telegram chat logs every turn without the care, and hands the full tra
   assert.ok(line, `no trace line was logged: ${written.join('')}`);
   assert.match(line, /log_care_event:ok/);
   assert.ok(!line.includes('eye drops') && !line.includes('I used'), `the care reached the log: ${line}`);
+});
+
+test("a planner's inline reasoning is not spoken", async () => {
+  const host = await hostFor(await dad(), new Scripted([
+    "<thinking>Nothing logged tonight; maybe he missed it.</thinking> There's no record of the evening eye drops yet.",
+  ]));
+  const { spoken } = await host.say('Did I use my evening drops?');
+  assert.equal(spoken, "There's no record of the evening eye drops yet.");
+});
+
+test('a turn that changed the record is never answered with silence', async () => {
+  // Seen on Nova Lite: "Did I take my evening drops?" logged a dose and then said nothing,
+  // so the person never heard that anything was written.
+  const host = await hostFor(await dad(), new Scripted([logDose('eye drops'), '<thinking>Done.</thinking>']));
+  const { spoken, toolCalls } = await host.say('Did I take my evening drops?');
+  assert.equal(spoken, toolCalls[0]!.result);
+  assert.match(spoken, /logged/);
+});
+
+test('a reply with nothing in it, and no tool to speak for it, still says something', async () => {
+  const host = await hostFor(await dad(), new Scripted(['']));
+  const { spoken } = await host.say('hello?');
+  assert.equal(spoken, NOTHING_SAID);
 });

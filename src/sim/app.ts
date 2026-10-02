@@ -29,6 +29,12 @@ const MCP_ENDPOINT = process.env['CARECIRCLE_URL'] ?? 'http://localhost:8787/mcp
 const REGION = process.env['AWS_REGION'] ?? 'us-east-1';
 const provider = providerFromEnv();
 const MODEL_ID = provider.modelId;
+// The console's own loop runs the turns here (card buttons call tools through it), and the
+// Strands provider only measures a first reply: refuse now rather than fail on a first tool.
+if (provider.name === 'strands') {
+  log.error('CARECIRCLE_PROVIDER=strands is for the evals and the Telegram chat; the console runs its own loop. Unset it here.');
+  process.exit(1);
+}
 
 const here = dirname(fileURLToPath(import.meta.url));
 

@@ -2,6 +2,7 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import type { Conversation, ModelProvider, ToolResult, ToolSpec, TurnOutput } from './providers.js';
 import { replyLanguageRule } from '../domain/language.js';
+import { NOTHING_SAID, speakable, toolAnswer } from '../domain/speakable.js';
 import type { LanguageCode } from '../domain/types.js';
 
 /**
@@ -152,6 +153,7 @@ export class SimulatedAlexa {
   /** Who the credential speaks for. Read from the server, never from the person. */
   #speaker: Speaker | null = null;
   #channel: Channel = 'voice';
+  #now: () => Date = () => new Date();
 
   private constructor(provider: ModelProvider, mcp: Client) {
     this.#provider = provider;
@@ -178,9 +180,10 @@ export class SimulatedAlexa {
    * The same planner over an MCP client that is already connected - for example one
    * joined in-process to a server bound to one member, as the Telegram chat does.
    */
-  static async over(mcp: Client, provider: ModelProvider, channel: Channel = 'voice'): Promise<SimulatedAlexa> {
+  static async over(mcp: Client, provider: ModelProvider, channel: Channel = 'voice', now?: () => Date): Promise<SimulatedAlexa> {
     const host = new SimulatedAlexa(provider, mcp);
     host.#channel = channel;
+    if (now) host.#now = now;
     await host.#loadTools();
     await host.#loadSpeaker();
     await host.#loadTimezone();
@@ -223,7 +226,7 @@ export class SimulatedAlexa {
 
   /** What the planner needs to resolve "Thursday", and who is asking. */
   #context(): { now: Date; timezone: string; speaker: Speaker | null; channel: Channel } {
-    return { now: new Date(), timezone: this.#timezone, speaker: this.#speaker, channel: this.#channel };
+    return { now: this.#now(), timezone: this.#timezone, speaker: this.#speaker, channel: this.#channel };
   }
 
   /**
@@ -270,7 +273,12 @@ export class SimulatedAlexa {
     // Friday"), so it gets a little more room than a spoken turn.
     for (let step = 0; step < (this.#channel === 'chat' ? 10 : 6); step += 1) {
       if (output.toolUses.length === 0) {
-        return finish(output.text, 'answered');
+        return finish(
+          speakable(output.text)
+            || toolAnswer(toolCalls.filter((c) => !c.isError).map((c) => c.result))
+            || NOTHING_SAID,
+          'answered',
+        );
       }
 
       const current = steps.at(-1)!;

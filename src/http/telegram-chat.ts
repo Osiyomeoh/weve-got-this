@@ -5,8 +5,10 @@ import type { Notifier } from '../notify/notifier.js';
 import type { CareStore } from '../store/store.js';
 import { log } from '../obs/log.js';
 import { traceFields } from '../obs/trace.js';
-import { SimulatedAlexa, type TurnTrace } from '../sim/host.js';
+import { SimulatedAlexa, type TurnResult, type TurnTrace } from '../sim/host.js';
 import type { ModelProvider } from '../sim/providers.js';
+import { StrandsAlexa } from '../strands/host.js';
+import { StrandsProvider } from '../strands/provider.js';
 
 /**
  * Talking to CareCircle in Telegram.
@@ -21,6 +23,10 @@ import type { ModelProvider } from '../sim/providers.js';
  * Each member keeps one conversation for a while, so "and the supplement too" follows on
  * from what they said a minute ago; an idle one is dropped and starts fresh next time.
  * Turns for one member run one at a time, in the order they arrived.
+ *
+ * With the Strands provider (CARECIRCLE_PROVIDER=strands) the turn is run by a Strands
+ * Agent instead, and no reply that says someone missed something reaches the family
+ * (strands/no-blame.ts).
  */
 
 export type ChatReply = (memberId: string, text: string) => Promise<string>;
@@ -40,7 +46,10 @@ export interface TelegramChatOptions {
   onTrace?: (memberId: string, trace: TurnTrace) => void;
 }
 
-interface Thread { host: Promise<SimulatedAlexa>; opened: number; lastUsed: number; queue: Promise<unknown> }
+/** Whichever loop runs the turn. */
+interface Planner { say(text: string): Promise<TurnResult> }
+
+interface Thread { host: Promise<Planner>; opened: number; lastUsed: number; queue: Promise<unknown> }
 
 // The planner is told the date when a thread opens, so no thread outlives a few hours:
 // a conversation that ran past midnight would resolve "tomorrow" against yesterday.
@@ -53,7 +62,7 @@ export function createTelegramChat(opts: TelegramChatOptions): ChatReply {
   const idleMs = opts.idleMs ?? 3 * 60 * 60_000;
   const threads = new Map<string, Thread>();
 
-  const open = async (memberId: string): Promise<SimulatedAlexa> => {
+  const open = async (memberId: string): Promise<Planner> => {
     const server = createCareCircleServer({
       store: opts.store, actorId: memberId,
       ...(opts.notifier ? { notifier: opts.notifier } : {}),
@@ -61,6 +70,9 @@ export function createTelegramChat(opts: TelegramChatOptions): ChatReply {
     });
     const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
     await server.connect(serverSide);
+    if (opts.provider instanceof StrandsProvider) {
+      return StrandsAlexa.over(clientSide, { model: opts.provider.model, channel: 'chat', ...(opts.now ? { now: opts.now } : {}) });
+    }
     const client = new Client({ name: 'carecircle-telegram', version: '0.1.0' });
     await client.connect(clientSide);
     return SimulatedAlexa.over(client, opts.provider, 'chat');

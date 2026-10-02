@@ -7,6 +7,7 @@ import { CareStore } from '../store/store.ts';
 import { createCareCircleServer } from './server.ts';
 import { seedDemoHousehold, DEMO_TOKENS } from '../demo/seed.ts';
 import { seedScenario } from '../demo/scenario.ts';
+import { BLAME } from '../domain/no-blame.ts';
 
 /**
  * Every tool, called with thousands of generated arguments, the way a planner calls them on a
@@ -130,7 +131,6 @@ function args(s: JsonSchema, depth = 0): fc.Arbitrary<Record<string, unknown>> {
 }
 
 const LEAKS = /\bundefined\b|\bNaN\b|\[object Object\]|Invalid Date|TypeError|ReferenceError|Cannot read prop|is not a function|\n\s+at .+:\d+:\d+/;
-const BLAME = /\bmissed\b|\bskipped\b|\bforgot\b|\bdid(?:n['’]t| not) take\b|\bhas(?:n['’]t| not) taken\b|\bfailed to take\b/i;
 const ACTORS = Object.values(DEMO_TOKENS);
 
 test('every tool holds under generated arguments from every member', async (t) => {

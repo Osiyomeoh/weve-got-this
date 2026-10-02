@@ -1,0 +1,25 @@
+# The CareCircle planner (a Strands Agent, src/strands) for Bedrock AgentCore Runtime.
+# AgentCore runs linux/arm64 images and talks HTTP to them on 8080: GET /ping,
+# POST /invocations. Built by infra/deploy-agentcore.sh on an arm64 CodeBuild host.
+FROM public.ecr.aws/docker/library/node:22-slim AS build
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY tsconfig.json ./
+COPY src ./src
+RUN npm run build
+
+FROM public.ecr.aws/docker/library/node:22-slim AS runtime
+WORKDIR /app
+ENV NODE_ENV=production
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+COPY --from=build /app/dist ./dist
+RUN chown node:node /app
+USER node
+ENV PORT=8080
+EXPOSE 8080
+# Persistence and the model are chosen by env at runtime:
+#   CARECIRCLE_TABLE + AWS_REGION -> the same DynamoDB table as the MCP server
+#   BEDROCK_MODEL_ID              -> the planner's model (default: Claude Sonnet 4.5)
+CMD ["node", "dist/agentcore.js"]
