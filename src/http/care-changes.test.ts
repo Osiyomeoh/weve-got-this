@@ -72,6 +72,30 @@ test('new times, and a last day, in the family\'s own time', async () => {
   assert.equal(detectCareGaps(store.getCareState('h'), { now: after }).filter((g) => /eye drops/.test(g.spoken)).length, 0);
 });
 
+test('a medicine entered under the wrong name is corrected, and its doses stay with it', async () => {
+  const { store, call } = await family();
+  await store.appendEvent({
+    householdId: 'h', kind: 'medication_taken', reportedBy: 'm_dad', occurredAt: '2026-09-24T07:05:00Z',
+    source: 'voice', confidence: 'reported', detail: 'took the drops', data: { medicationId: 'med_drops', aboutMemberId: 'm_dad' },
+  });
+  const r = await call('sam', 'change_medication', { medicationName: 'eye drops', newName: 'pain medication' });
+  assert.equal(r.isError, false, r.text);
+  assert.match(r.text, /Dad's "eye drops" is now called pain medication; the doses already recorded stay with it\./);
+  const meds = store.getMedications('h');
+  assert.deepEqual(meds.map((m) => [m.id, m.name, m.stoppedAt]), [['med_drops', 'pain medication', undefined]], 'renamed in place, nothing stopped');
+  assert.equal(store.getCareState('h').events.at(-1)!.data['renamedFrom'], 'eye drops');
+  const morning = detectCareGaps(store.getCareState('h'), { now: new Date('2026-09-24T09:00:00Z') });
+  assert.equal(morning.filter((g) => /pain medication/.test(g.spoken) && /8 AM/.test(g.spoken)).length, 0, 'the 8 AM dose is still on the record');
+});
+
+test('a rename onto a name already on the schedule is refused', async () => {
+  const { store, call } = await family();
+  await store.addMedication({ id: 'med_pain', householdId: 'h', name: 'pain medication', times: ['08:00'], forMemberId: 'm_dad' });
+  const r = await call('sam', 'change_medication', { medicationName: 'eye drops', newName: 'Pain medication' });
+  assert.match(r.text, /already a medication called/);
+  assert.equal(store.getMedications('h').find((m) => m.id === 'med_drops')!.name, 'eye drops');
+});
+
 test('Dad can record a change to his own medicine', async () => {
   const { call } = await family();
   const r = await call('dad', 'change_medication', { medicationName: 'eye drops', times: ['09:00'] });

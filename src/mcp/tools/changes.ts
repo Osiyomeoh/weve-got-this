@@ -40,19 +40,21 @@ export function registerChangeMedication({ server, store, now, actor, state }: T
       'Change a medication that is already on the schedule, or stop it - when the doctor or '
       + 'the family changes the treatment. New dose times ("she takes it at 9 now"), a last '
       + 'day ("only until the 7th", "for two more weeks"), or stop it now ("the doctor stopped '
-      + 'the eye drops"). The record keeps what it was; it is just no longer expected. For a '
-      + 'new medication use add_medication.',
+      + 'the eye drops"), or correct its name when it was entered wrong ("it\'s not eye '
+      + 'drops, it\'s the pain tablets"). The record keeps what it was; it is just no longer '
+      + 'expected. For a new medication use add_medication.',
     inputSchema: {
       medicationName: z.string().describe('The medication as they said it (e.g. "eye drops").'),
       forMemberId: z.string().optional().describe('Who takes it: their name as the family says it (e.g. "Dad"), or their id. Needed when two people take a medication with that name.'),
       times: z.array(z.string()).optional().describe('New due times, 24-hour "HH:MM", e.g. ["09:00","21:00"].'),
       until: z.string().optional().describe('The last day it is taken, "YYYY-MM-DD" in the household\'s time. Work it out from what they said against today\'s date.'),
       stopNow: z.boolean().optional().describe('True when it has been stopped as of now.'),
+      newName: z.string().optional().describe('Its correct name, when the one on the record is wrong. The doses already recorded stay with it.'),
       alsoCalled: ALSO_CALLED,
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
     outputSchema: OUT.change_medication,
-  }, async ({ medicationName, forMemberId, times, until, stopNow, alsoCalled }) => {
+  }, async ({ medicationName, forMemberId, times, until, stopNow, newName, alsoCalled }) => {
     try {
       const me = actor();
       const s = state();
@@ -81,31 +83,41 @@ export function registerChangeMedication({ server, store, now, actor, state }: T
       if (me.role === 'helper') return guidance('A change to a medication needs someone in the family to make it. Ask them to.');
 
       const names = namesFrom(alsoCalled);
-      if (!times?.length && !until && !stopNow && !names) return guidance('Ask what has changed: new times, a last day, or stopping it.');
+      const rename = newName?.trim();
+      if (!times?.length && !until && !stopNow && !names && !rename) return guidance('Ask what has changed: new times, a last day, stopping it, or its name.');
+      if (rename && s.medications.some((m) => m.id !== med.id && m.forMemberId === med.forMemberId
+        && isActiveMedication(m, now(), tz) && m.name.toLowerCase() === rename.toLowerCase())) {
+        return guidance(`There's already a medication called "${rename}" on the schedule for them. Ask whether they meant to stop this one instead.`);
+      }
       if (times?.length && !times.every((t) => HHMM.test(t))) return guidance('I need the new times as 24-hour "HH:MM", like ["09:00","21:00"].');
       if (until && !DATE.test(until)) return guidance('I need the last day as a date, like "2026-10-07". Ask which day they meant.');
       if (until && until < localParts(now(), tz).date) return guidance('That last day has already passed. If it has stopped, say so and I will stop it now.');
 
-      const changes: Partial<Pick<MedicationSchedule, 'times' | 'until' | 'stoppedAt' | 'names'>> = {};
+      const changes: Partial<Pick<MedicationSchedule, 'name' | 'times' | 'until' | 'stoppedAt' | 'names'>> = {};
+      if (rename && rename !== med.name) changes.name = rename;
       if (times?.length) changes.times = times;
       if (until) changes.until = until;
       if (stopNow) changes.stoppedAt = now().toISOString();
       if (names) changes.names = names;
+
+      const was = med.name;
       await store.updateMedication(med.id, me.householdId, changes);
 
-      const whose = `${called(s.members.find((m) => m.id === med.forMemberId) ?? me)}'s ${med.name}`;
+      const owner = called(s.members.find((m) => m.id === med.forMemberId) ?? me);
+      const whose = `${owner}'s ${changes.name ?? was}`;
       const said = stopNow
         ? `I've stopped ${whose}. I won't expect it any more, and the record keeps that it was taken until today.`
         : [
           times?.length ? `${whose} ${times.length === 1 ? 'is' : 'are'} now at ${joinSpoken(times.map(spokenClock))}.` : '',
           until ? `The last day is ${spokenDate(until, tz)}; after that I won't expect it.` : '',
+          changes.name ? `${owner}'s "${was}" is now called ${changes.name}; the doses already recorded stay with it.` : '',
           names ? `${whose} can also be called ${joinSpoken(Object.entries(names).map(([code, n]) => `"${n}" in ${LANGUAGES[code as LanguageCode].name}`))}.` : '',
         ].filter(Boolean).join(' ');
       const event = await store.appendEvent({
         householdId: me.householdId, kind: 'medication_changed', reportedBy: me.id,
         occurredAt: now().toISOString(), source: 'voice', confidence: 'reported',
         detail: said,
-        data: { medicationId: med.id, forMemberId: med.forMemberId, ...changes },
+        data: { medicationId: med.id, forMemberId: med.forMemberId, ...changes, ...(changes.name ? { renamedFrom: was } : {}) },
       });
       return reply(`Done. ${said}`, { medicationId: med.id, eventId: event.id });
     } catch (err) { return guidance(describeError(err)); }

@@ -303,11 +303,13 @@ export class CareStore {
   }
 
   /**
-   * Change a medication's times, course end, or stop it. It is never deleted: the record
-   * keeps it. `names` adds to the names it already has in other languages.
+   * Change a medication's name, times, course end, or stop it. It is never deleted: the
+   * record keeps it, and doses stay with it by id. `names` adds to the names it already has
+   * in other languages.
    */
   updateMedication(
-    id: string, householdId: string, changes: Partial<Pick<MedicationSchedule, 'times' | 'until' | 'stoppedAt' | 'names'>>,
+    id: string, householdId: string,
+    changes: Partial<Pick<MedicationSchedule, 'name' | 'times' | 'until' | 'stoppedAt' | 'names'>>,
   ): Promise<MedicationSchedule> {
     return this.#write(() => {
       const m = this.#snapshot.medications.find((x) => x.id === id && x.householdId === householdId);
