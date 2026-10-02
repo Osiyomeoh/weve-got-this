@@ -1,8 +1,13 @@
-# MASSIVE (US English, test partition)
+# MASSIVE (US English, test and dev partitions)
 
 `en-US.test.jsonl` is the US English **test** partition of the MASSIVE dataset, 2,974
-utterances, each kept with its id, scenario, intent and text (slot annotations and worker ids
-are dropped).
+utterances, and `en-US.dev.jsonl` its **dev** partition, 2,033 utterances, each kept with its id,
+scenario, intent and text (slot annotations and worker ids are dropped). Both were checked
+line for line against Amazon's release 1.1.
+
+The test partition's failures were read before the tool descriptions were changed on
+2026-09-24, so it no longer measures anything held out. The dev partition was added on
+2026-10-02, after those changes, and no failure from it has been used to change CareCircle.
 
 > MASSIVE: A 1M-Example Multilingual Natural Language Understanding Dataset with 51
 > Typologically-Diverse Languages. FitzGerald et al., 2022. Copyright Amazon.com Inc. or its

@@ -1,8 +1,13 @@
 /**
- * Run CareCircle against outside data: Amazon's MASSIVE, US English test partition.
+ * Run CareCircle against outside data: Amazon's MASSIVE, US English.
  *
  *   npm run evals:massive
  *   EVALS_SYSTEM_PROMPT_FILE=evals/results/alexa-bridge-system-prompt.txt npm run evals:massive
+ *   MASSIVE_SET=en-US.dev npm run evals:massive
+ *
+ * MASSIVE_SET picks the file in evals/massive (default en-US.test). The test partition's
+ * failures were read before the 2026-09-24 description changes; the dev partition's were not,
+ * so it is the held-out measure.
  *
  * A full run takes hours under Bedrock's per-minute quotas, so every answer is saved to
  * evals-massive-progress.jsonl as it lands, and a rerun picks up where the last one stopped.
@@ -19,11 +24,13 @@ import { providerFromEnv } from '../src/sim/providers.ts';
 const endpoint = process.env.CARECIRCLE_URL ?? 'http://localhost:8787/mcp';
 const provider = providerFromEnv();
 const promptFile = process.env.EVALS_SYSTEM_PROMPT_FILE;
-const cases = loadMassive(new URL('../evals/massive/en-US.test.jsonl', import.meta.url).pathname);
+const set = process.env.MASSIVE_SET ?? 'en-US.test';
+const cases = loadMassive(new URL(`../evals/massive/${set}.jsonl`, import.meta.url).pathname);
 const limit = Number(process.env.EVALS_LIMIT ?? 0);
 const chosenCases = limit > 0 ? cases.slice(0, limit) : cases;
 
-const PROGRESS = 'evals-massive-progress.jsonl';
+const suffix = set === 'en-US.test' ? '' : `-${set}`;
+const PROGRESS = `evals-massive${suffix}-progress.jsonl`;
 type Saved = Omit<CaseResult, 'case'> & { id: string };
 const saved = new Map<string, Saved>();
 if (existsSync(PROGRESS)) {
@@ -54,7 +61,7 @@ process.stdout.write('\r' + ' '.repeat(60) + '\r');
 const s = summariseMassive(results);
 const pct = (n: number, d: number) => (d ? `${((n / d) * 100).toFixed(1)}%` : 'n/a');
 
-console.log(`\nCareCircle on Amazon MASSIVE (en-US test) · ${provider.modelId} · prompt: ${promptFile ?? 'console'}`);
+console.log(`\nCareCircle on Amazon MASSIVE (${set}) · ${provider.modelId} · prompt: ${promptFile ?? 'console'}`);
 console.log(`  ${s.total} scored, ${s.errored} errored\n`);
 console.log(`  Not CareCircle's business: ${s.notOurs.total}`);
 console.log(`    left alone        ${s.notOurs.leftAlone}  (${pct(s.notOurs.leftAlone, s.notOurs.total)})`);
@@ -66,8 +73,8 @@ if (s.harms.length) {
   for (const h of s.harms) console.log(`    ${h.tool.padEnd(20)} ${h.intent.padEnd(28)} "${h.utterance}"`);
 }
 
-writeFileSync('evals-massive-results.json', JSON.stringify({
+writeFileSync(`evals-massive${suffix}-results.json`, JSON.stringify({
   provider: provider.name, modelId: provider.modelId, at: new Date().toISOString(),
-  systemPrompt: promptFile ?? 'console', dataset: 'MASSIVE 1.1 en-US test (CC BY 4.0, Amazon)', ...s,
+  systemPrompt: promptFile ?? 'console', dataset: `MASSIVE 1.1 ${set} (CC BY 4.0, Amazon)`, ...s,
   results: results.map((r) => ({ id: r.case.id, utterance: r.case.utterance, intent: r.case.note, chosen: r.chosen, pass: r.pass, errored: r.errored ?? false })),
 }, null, 2));
