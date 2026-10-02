@@ -29,6 +29,7 @@ the model chose, and whether that passed.
 
 | `2026-10-02-claude-sonnet-4-5-rename.json` | 155 cases after `newName` was added to `change_medication` (Sonnet 4.5 via the `us.` profile, not `global.`): **148/155**, held-out 64/66 (was 147, 61/66). Summary and failures only; per-case rows were not kept | the console's |
 | `2026-10-02-dialects-sonnet-4-5-rename.json` | the 34 dialect cases after that change: **33/34**; the miss is hd-ng-03 again, the case already shown to be within chance | the console's |
+| `2026-10-02-action-guard-nova-pro-alexa-bridge-prompt.json` | The action guard (`src/mcp/guard.ts`, Nova Micro, threshold 0.5 fixed beforehand), every row kept. Of the 129 MASSIVE requests that were nobody's care, re-planned by Nova Pro: 81 drew a write, **23 landed** (the server turned the rest back), and the guard held back **4 of 23**. Of 141 care cases, 61 writes landed and it held back **0**. It scores almost every call 0.95, so it is not a working filter: **not wired into the server**. Not held out (MASSIVE test failures were read before). Its re-plan also shows the bridge prompt gives no date, so the planner guesses past ones | the Alexa bridge's |
 
 Part 2 (the two-language handoff) in the last two files was graded by a rubric that turned out to
 be too lenient: it passed a son's answer that spoke only of the dose with no record and never

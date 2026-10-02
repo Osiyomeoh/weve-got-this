@@ -1,6 +1,6 @@
 {
-  "built": "2026-10-02T10:29:08.174Z",
-  "tests": 577,
+  "built": "2026-10-02T10:32:28.971Z",
+  "tests": 579,
   "selection": [
     {
       "file": "2026-10-02-claude-sonnet-4-5-rename.json",
@@ -72,5 +72,15 @@
     "harms": 129,
     "care": 180
   },
-  "actionGuard": null
+  "actionGuard": {
+    "file": "2026-10-02-action-guard-nova-pro-alexa-bridge-prompt.json",
+    "threshold": 0.5,
+    "harms": 129,
+    "harmsWrote": 81,
+    "harmsLanded": 23,
+    "harmsHeld": 4,
+    "care": 141,
+    "careLanded": 61,
+    "careHeld": 0
+  }
 }

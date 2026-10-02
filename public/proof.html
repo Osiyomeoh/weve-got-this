@@ -140,8 +140,8 @@
   let gates = `<div class="card"><b>A gate on the words alone was tried and dropped.</b>
     <p style="margin:6px 0">Asked whether each request was about care, Nova Micro stopped ${W.harmsStopped} of ${W.harms} harmful writes, and turned away ${W.careBlocked} of ${W.care} real care requests (${pct(W.careBlocked, W.care)}), like “That's sorted now”. Those only mean something next to what is on the board.</p>
     <div class="src">${esc(W.file)}</div></div>`;
-  if (G) gates += `<div class="card"><b>The action guard: a second look at each write, with the call and the care record as evidence.</b>
-    <p style="margin:6px 0">Of ${G.harms} of those harmful requests re-planned, ${G.harmsWrote} drew a write and ${G.harmsLanded} would have landed; the server already turns the rest back with a question. The guard held back <b>${G.harmsHeld} of ${G.harmsLanded}</b>. Of ${G.careLanded} real care writes, it would have asked about <b>${G.careHeld}</b> first. A held write is a question to the family, never a refusal. Threshold ${G.threshold}, fixed before the run.</p>
+  if (G) gates += `<div class="card"><b>A second look at each write, with the call and the care record as evidence, was also tried, and is not in use.</b>
+    <p style="margin:6px 0">Of ${G.harms} of those requests re-planned, ${G.harmsWrote} drew a write and ${G.harmsLanded} would have landed; the server already turns the rest back with a question. The guard held back only <b>${G.harmsHeld} of ${G.harmsLanded}</b>, and none of ${G.careLanded} real care writes: it judged nearly every call to belong. Threshold ${G.threshold}, fixed before the run. What stands between a stray request and the record today is the tool descriptions and the server's own checks.</p>
     <div class="src">${esc(G.file)}</div></div>`;
   $('gates').innerHTML = gates;
 
