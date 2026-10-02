@@ -263,8 +263,9 @@ graceful shutdown, DynamoDB persistence, App Runner deployment), runtime onboard
 - **The same corpus on Amazon's own models**: **Nova Pro 94.4%** (91.0% held-out); Nova 2
   Lite 83.3% (77.6% held-out), mostly checking the board before acting.
 - **Under a prompt we didn't write.** Real Alexa+ won't use our planner prompt, so we also
-  ran the corpus under the system prompt of an Alexa Skill bridge (a Strands agent on
-  AgentCore that stands in for the Alexa+ orchestrator): Nova Pro **93.1%**, 91.0% held-out,
+  ran the corpus under the system prompt of the open-source
+  [alexa-skill-mcp-bridge](https://github.com/KayLerch/alexa-skill-mcp-bridge) (a Strands agent on AgentCore that stands in for the
+  Alexa+ orchestrator; its code, not ours, deployed to our AWS account): Nova Pro **93.1%**, 91.0% held-out,
   the same held-out score as under our own prompt. That run found the one weak spot shared by
   both prompts ("took him to the clinic, all done" logged as an event instead of closing the
   task); sharpening two descriptions lifted every Nova run by 3-4 cases.

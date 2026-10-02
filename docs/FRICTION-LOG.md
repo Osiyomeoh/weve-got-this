@@ -703,8 +703,8 @@ Template:
 
 ### MCP / Alexa+ planning - a model reads a UTC timestamp as the family's local time
 - **Task attempted:** Put the server in front of a real Alexa Skill before Alexa+ add-ons
-  open, using an Alexa Skill bridge (a Strands agent on Bedrock AgentCore that stands in for
-  the Alexa+ orchestrator; its default model, Amazon Nova 2 Lite, chose the tools on this run),
+  open, using the open-source [alexa-skill-mcp-bridge](https://github.com/KayLerch/alexa-skill-mcp-bridge) (a Strands agent on Bedrock
+  AgentCore that stands in for the Alexa+ orchestrator; its default model, Amazon Nova 2 Lite, chose the tools on this run),
   and replay the demo family's three scenes.
 - **Steps taken:** Tolu asked Funmi to take Daddy to his eye check-up (10 AM, Lagos). As
   Funmi: "what have I been asked to do?"

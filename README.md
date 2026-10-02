@@ -576,7 +576,8 @@ larger corpus would harden next.
 
 **On Amazon Nova, and under a prompt we didn't write.** These runs are the 144 cases and 25
 tools from before the care-change tools (2026-09-23); Nova has not yet been re-run on the 155. The last row swaps our planner prompt for the system prompt of
-an Alexa Skill bridge (a Strands agent that stands in for the Alexa+ orchestrator), because
+the open-source [alexa-skill-mcp-bridge](https://github.com/KayLerch/alexa-skill-mcp-bridge) (a Strands agent that stands in for the Alexa+
+orchestrator; its code, not ours), because
 real Alexa+ will not use our prompt either:
 
 | Planner, on Amazon Bedrock | All 144 | Held-out, never tuned against (67) |
