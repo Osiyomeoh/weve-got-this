@@ -25,9 +25,10 @@ A 10 requires all of:
 - [ ] Deterministic domain logic, not model narration ✅ **done**
 - [ ] **Measured tool-selection accuracy** published in the README - an eval harness
       over ~150 real utterances. Nobody else will have a number.
-- [ ] **Hosted on Bedrock AgentCore Runtime** - not a laptop, not a bare container
-      (2026-10-02: the planner is built for it - `src/strands/runtime.ts`, `Dockerfile.agentcore`,
-      `infra/deploy-agentcore.sh` - **NOT YET DEPLOYED**. The MCP server stays on App Runner.)
+- [x] **Hosted on Bedrock AgentCore Runtime** - not a laptop, not a bare container
+      (2026-10-02: the planner runs there as `carecircle_planner` - `src/strands/runtime.ts`,
+      `Dockerfile.agentcore`, `infra/deploy-agentcore.sh`. Not yet on a family's path; the MCP
+      server stays on App Runner.)
 - [ ] Multi-service AWS pipeline: AgentCore + Strands + Bedrock + SNS
 - [ ] >40 tests, typed strictly, CI green on every push
 - [ ] Adversarial tests: credential swap mid-session, cross-household access,

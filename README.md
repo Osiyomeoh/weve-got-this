@@ -332,11 +332,31 @@ Every reply on both loops was then read by a person (the readings are in the fil
 On Sonnet the prompt alone already holds: its replies that used the words were denials ("I
 can't say he skipped them"), which NoBlame stops too and the model rephrases. On Nova Pro,
 NoBlame turned "Daddy missed his eye drops at 8 PM today" into "There is no record of Daddy's
-eye drops from 8 PM." **The Nova Lite miss is real:** "Daddy's evening eye drops were not
-taken" is not on the word list, so it was spoken. Nova Lite also logged a dose that nobody reported in 8 of 22
-turns on one loop and 9 on the other, so we do not use it as a planner.
-Files: `evals/results/2026-10-02-blame-pressure-*.json`. Reproduce:
+eye drops from 8 PM." **The Nova Lite miss was real:** "Daddy's evening eye drops were not
+taken" was not on the word list then, so it was spoken. Nova Lite also logged a dose that
+nobody reported in 8 of 22 turns on one loop and 9 on the other, so we do not use it as a
+planner. Files: `evals/results/2026-10-02-blame-pressure-*.json`. Reproduce:
 `BEDROCK_MODEL_ID=us.amazon.nova-pro-v1:0 npm run evals:blame`.
+
+Since then NoBlame hears the same claims in every voice: done to the dose ("the drops were not
+given", "they haven't been taken") and ongoing ("he's skipping doses"). The words were chosen
+from grammar, not from those 22 questions, and then measured on 17 held-out questions written
+and committed before the change, 3 of them innocent (an honest answer may use the same words
+about something else). Read by hand again:
+
+| Model | Accusations, hand-written loop (before / after) | Strands + NoBlame (before / after) |
+|---|---|---|
+| Amazon Nova Lite | 2 / 0 | 0 / 0 |
+| Amazon Nova Pro | 0 / 1 | 0 / 0 |
+
+The hand-written loop does not use the list, so its column is the same model on a different
+run. The two it spoke before were the passive form ("The eye drops were not given tonight"),
+both caught by the new list. On Strands the new words stopped a reply once ("were not
+given") and the model rephrased. What it costs: no innocent question was sent back, but
+denials ("there is no record of you forgetting") now are, and so is "taken" in the sense of
+a task nobody has claimed; each costs a second model call, or the tools' own sentence in
+place of the reply. Files: `evals/results/2026-10-02-blame-heldout-*.json`. Reproduce:
+`BEDROCK_MODEL_ID=us.amazon.nova-lite-v1:0 npm run evals:blame -- --held-out`.
 
 **AgentCore Runtime.** `src/strands/runtime.ts` serves the Strands planner on AgentCore's
 HTTP contract (`GET /ping`, `POST /invocations`, a conversation per runtime session and
@@ -352,11 +372,14 @@ What is and isn't there, plainly:
   [alexa-skill-mcp-bridge](https://github.com/KayLerch/alexa-skill-mcp-bridge), a Strands agent
   on AgentCore Runtime, deployed in our AWS account. That is its code, not ours. Our changes to
   it (session-expiry reconnect, sessions per runtime version, reasoning kept out of speech,
-  CareCircle's skill config) are in a fork: **NOT YET PUBLIC**.
-- **NOT DEPLOYED:** CareCircle's own planner on AgentCore Runtime. The image builds and runs
-  locally (arm64, as a non-root user: `/ping`, and `/invocations` turning away a bad request or
-  an unknown member); real Bedrock turns were run through the same code outside the container.
-  The deploy script has not been run, so no runtime exists yet.
+  CareCircle's skill config) are six commits on our public fork,
+  [Osiyomeoh/alexa-skill-mcp-bridge@carecircle](https://github.com/Osiyomeoh/alexa-skill-mcp-bridge/tree/carecircle).
+- **Deployed:** CareCircle's own planner on AgentCore Runtime, `carecircle_planner`, created
+  on 2026-10-02 by `infra/deploy-agentcore.sh` from commit `d98121d`, over the production
+  table. Asked "How is Daddy doing today?" as the primary caregiver, it answered through
+  `get_care_summary` (HTTP 200, 13 s from a cold start, nothing for NoBlame to stop).
+  **Not yet on a family's path:** the Echo reaches CareCircle through the bridge, and the
+  Telegram chat runs the same Strands planner inside the App Runner server.
 - **NOT BUILT, on purpose:** AgentCore Memory. The care record is the memory. On the bridge,
   replayed history let the model answer from an old reply instead of the record.
 - **NOT BUILT:** AgentCore Gateway and Identity (the MCP server has its own per-member OAuth),

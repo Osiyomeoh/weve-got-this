@@ -385,13 +385,18 @@ saved us hours - each one hit while building CareCircle this period.
   4.5: Strands 149/155, the hand-written loop 150/155
   (`evals/results/2026-10-02-strands-vs-console-sonnet-4-5.json`). Under 22 leading
   questions, read by hand: Nova Pro accused someone once on the hand-written loop and never
-  with NoBlame; Nova Lite 3 times and once (a phrasing the word list misses); Sonnet never on
-  either (`npm run evals:blame`).
+  with NoBlame; Nova Lite 3 times and once (a passive phrasing the word list then missed);
+  Sonnet never on either (`npm run evals:blame`). The list now hears passive and ongoing
+  forms; on 17 held-out questions written before that change, NoBlame let no accusation
+  through on Nova Lite or Nova Pro (`npm run evals:blame -- --held-out`). The family's
+  Telegram chat runs on this planner.
 - **Bedrock AgentCore Runtime** hosts the open-source Alexa Skill bridge our Echo talks
   through ([alexa-skill-mcp-bridge](https://github.com/KayLerch/alexa-skill-mcp-bridge), its
-  code, deployed in our account). CareCircle's own planner is built for AgentCore Runtime
-  (`src/strands/runtime.ts`, `Dockerfile.agentcore`, `infra/deploy-agentcore.sh`) but is
-  **NOT YET DEPLOYED**. AgentCore Memory is **not used, on purpose**: the care record is the
+  code, deployed in our account; our six changes to it are public on
+  [our fork](https://github.com/Osiyomeoh/alexa-skill-mcp-bridge/tree/carecircle)). CareCircle's own planner is deployed on AgentCore Runtime
+  too (`carecircle_planner`; `src/strands/runtime.ts`, `Dockerfile.agentcore`,
+  `infra/deploy-agentcore.sh`), over the production table, and answered a test turn through the
+  real tools. It is **not yet on a family's path**: the Echo goes through the bridge. AgentCore Memory is **not used, on purpose**: the care record is the
   memory, and replayed history let a model answer from an old reply.
 
 Why this shape: it is a genuine **multi-service pipeline** (planner → engine → store →
