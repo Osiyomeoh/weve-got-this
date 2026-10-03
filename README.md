@@ -103,13 +103,23 @@ work.
 The demo family (Daddy, his children Tolu and Funmi, Kunle in London, and Musa the
 driver) is fictional and modelled on mine. No real names or medical details are used.
 
-**And it is real - not a mockup.** Live MCP server you can hit right now, **575 tests**
-(including property-based proofs of the risk model), **94.8%** measured tool-selection
-accuracy on Amazon Bedrock (147/155; 94.0% on held-out phrasings never tuned against),
+**And it is real - not a mockup.** Live MCP server you can hit right now, **657 tests**
+(including property-based proofs of the risk model), **95.5%** measured tool-selection
+accuracy on Amazon Bedrock (148/155; 63/66 on held-out phrasings never tuned against),
 **94.4% on Amazon Nova Pro** (on the earlier 144 cases), and an append-only care record that
-keeps who said what. On Amazon's own MASSIVE test set, 2,974 everyday Alexa requests, it leaves
-**87.6%** of the ones that are not about care alone (up from 76.6%; not held out, see
-`evals/results/README.md`).
+keeps who said what. On Amazon's MASSIVE everyday Alexa requests it leaves **87.3%** of the ones
+that are not about care alone on the dev set, held out and never read before the run (82 of
+1,734 wrote, 4.7%); 87.6% on the test set, which was not held out. Every number, with the file
+it came from: [/proof](https://krqi2tpsif.us-east-1.awsapprunner.com/proof.html).
+
+### Judge links
+
+- Live console, your own private copy of the demo family: https://krqi2tpsif.us-east-1.awsapprunner.com/console.html
+- Every measured number, with the file it came from: https://krqi2tpsif.us-east-1.awsapprunner.com/proof.html
+- Live MCP endpoint (OAuth 2.1; 401 without a token): https://ypq2dfq2p7.us-east-1.awsapprunner.com/mcp
+- Friction log, dated while building: [`docs/FRICTION-LOG.md`](docs/FRICTION-LOG.md)
+- Product feedback per tool: [`docs/PRODUCT-FEEDBACK.md`](docs/PRODUCT-FEEDBACK.md) · feature requests: [`docs/FEATURE-REQUESTS.md`](docs/FEATURE-REQUESTS.md)
+- The Alexa Skill bridge fork it was tested through on a real Echo: [Osiyomeoh/alexa-skill-mcp-bridge@carecircle](https://github.com/Osiyomeoh/alexa-skill-mcp-bridge/tree/carecircle)
 
 ### Try it live in your browser - no clone, no keys
 
@@ -625,6 +635,8 @@ descriptions alone, so we measure it rather than assert it:
 npm run demo:reset && npm run dev   # in one shell
 npm run evals                       # in another
 ```
+
+**Latest: 148/155 (95.5%), held-out 63/66, 2026-10-02** (`evals/results/2026-10-02-claude-sonnet-4-5-question-not-report.json`), after `log_care_event` learned that a question is not a report. The run below is the one written up in detail.
 
 **Result: 94.8% first-tool accuracy (147 / 155, 0 errored) - Claude Sonnet 4.5 on Amazon
 Bedrock, 2026-09-23, with 28 tools.** That is one run, and every case of it is in
