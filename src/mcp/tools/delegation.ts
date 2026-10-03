@@ -175,7 +175,7 @@ export function registerRespondToRequest({ server, store, now, actor, state, nam
           ...(note ? { detail: note } : {}),
           data: { obligationId, accepted: true },
         });
-        return reply(`Thanks - ${o.what} is yours now.`, {
+        return reply(`Thanks, that's yours now: ${asTask(o.what)}.`, {
           obligationId, ownerId: me.id, status: 'ASSIGNED',
         });
       }

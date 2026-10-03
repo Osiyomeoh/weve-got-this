@@ -11,7 +11,7 @@ import { require as requireCap } from '../../domain/auth.js';
 import { describeConnections } from '../../domain/connections.js';
 import { detectCareGaps, pendingProposals } from '../../domain/gaps.js';
 import { asReadBy } from '../../domain/language.js';
-import { clockTime, isLocalToday } from '../../domain/local-time.js';
+import { asTask, clockTime, dueSpoken, isLocalToday } from '../../domain/local-time.js';
 import { explainProvenance } from '../../domain/provenance.js';
 import { OUT } from '../output-schemas.js';
 import { countPhrase, joinSpoken, sentence, speakGaps } from '../text.js';
@@ -193,6 +193,12 @@ export function registerGetShiftBrief({ server, actor, state, now }: ToolContext
       const coming = upcomingAppointments(s, now(), 2)
         .filter((a) => me.role !== 'care_recipient' || a.forMemberId === me.id);
       const recentNote = [...s.events].reverse().find((e) => e.kind === 'note_added');
+      // A helper cannot read the care gaps, so this is where they hear what they were asked.
+      const asked = s.obligations.filter((o) => o.status === 'REQUESTED' && o.request?.askedOfId === me.id);
+      const askedLine = (o: (typeof asked)[number]) => {
+        const due = dueSpoken(o.dueAt, tz, now());
+        return `${s.members.find((m) => m.id === o.request!.askedById)?.name ?? 'Someone'} asked if you can ${asTask(o.what)}${due ? ` ${due}` : ''}`;
+      };
 
       const parts: string[] = [];
       parts.push(meds.length > 0 ? `Medications today: ${joinSpoken(meds)}.` : 'No medications scheduled.');
@@ -202,6 +208,7 @@ export function registerGetShiftBrief({ server, actor, state, now }: ToolContext
       parts.push(mine.length > 0
         ? `You have ${countPhrase(mine.length, 'thing')}: ${joinSpoken(mine.map((o) => o.what))}.`
         : 'Nothing is assigned to you right now.');
+      if (asked.length > 0) parts.push(`${joinSpoken(asked.map(askedLine))}. You haven't answered yet.`);
       if (coming.length > 0) parts.push(`Coming up: ${joinSpoken(coming.map((a) => sayAppointment(a, s, now())))}.`);
       if (recentNote?.detail) parts.push(`Latest note: ${recentNote.detail}`);
       return reply(parts.join(' '), {

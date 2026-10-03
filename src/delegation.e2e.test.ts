@@ -143,6 +143,16 @@ test('the whole loop: ask, decline, ask the next person, accept', async () => {
     'an accepted request should stop being a care gap');
 });
 
+test('paid help hears what they were asked in their shift brief', async () => {
+  // Musa cannot read the care gaps, so "yes, I can take him" only lands if his brief says what he was asked.
+  const renee = await openSession('renee-token');
+  const id = await theRide('renee-token', renee);
+  await call('renee-token', renee, 'request_owner', { obligationId: id, assigneeName: 'Musa' });
+  const aide = await openSession('aide-token');
+  const brief = spoken(await call('aide-token', aide, 'get_shift_brief'));
+  assert.match(brief, /Funmi asked if you can .*eye check-up.*You haven't answered yet/i);
+});
+
 test('only the person asked can answer for themselves', async () => {
   const renee = await openSession('renee-token');
   const david = await openSession('david-token');
