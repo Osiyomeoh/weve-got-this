@@ -25,7 +25,7 @@ interface AndroidBridge { notify(title: string, body: string): void; }
 declare global { interface Window { AndroidBridge?: AndroidBridge } }
 
 const ACCENT: Record<string, string> = {
-  HIGH: '#ff6b6b', MEDIUM: '#ffc234', LOW: '#7cf0c8',
+  HIGH: '#ff6b6b', MEDIUM: '#ffc234', LOW: '#5aa9ff',
 };
 
 /** Seeded demo household, shown only when the live board can't be reached (dead
@@ -68,7 +68,7 @@ function Keys({ glyphs, label }: { glyphs: string[]; label: string }) {
       {glyphs.map((g) => (
         <kbd
           key={g}
-          className="rounded-lg border-2 border-white/60 bg-white/15 px-3 py-1 text-[1.25vw] font-semibold leading-none text-white"
+          className="rounded-lg border-2 border-white/60 bg-white/15 px-[0.7vw] py-[0.5vh] text-[1.15vw] font-semibold leading-none text-white"
         >
           {g}
         </kbd>
@@ -191,132 +191,168 @@ export default function AmbientTV() {
   const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   const day = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
+  const owned = (state?.obligations ?? []).filter((o) => o.status === 'ASSIGNED');
+
   return (
-    <div className="relative h-screen overflow-hidden bg-[#05070d] text-white">
-      {/* Ambient cinematic backdrop - warm dusk glows drifting behind the clock. */}
+    <div className="relative h-screen overflow-hidden bg-[#03050a] text-white">
+      {/* Ambient light, the Echo Show way: slow colour, nothing to read in it. */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-40 -top-40 h-[70vh] w-[70vh] rounded-full bg-[radial-gradient(circle,#2a3a6a_0%,transparent_65%)] blur-3xl animate-drift-slow" />
-        <div className="absolute -bottom-52 right-[-10rem] h-[80vh] w-[80vh] rounded-full bg-[radial-gradient(circle,#6a3a52_0%,transparent_65%)] blur-3xl animate-drift-slower" />
-        <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_50%_10%,transparent_0%,#04060c_85%)]" />
+        <div className="absolute -left-[15vw] -top-[20vh] h-[80vh] w-[80vh] rounded-full bg-[#1b4dff]/25 blur-[12vw] animate-drift-slow" />
+        <div className="absolute -bottom-[30vh] right-[-10vw] h-[85vh] w-[85vh] rounded-full bg-[#00e0c6]/[0.12] blur-[12vw] animate-drift-slower" />
+        <div className="absolute right-[20vw] top-[10vh] h-[50vh] w-[50vh] rounded-full bg-[#8b5cf6]/[0.12] blur-[10vw] animate-drift-slow" />
+        <div className="absolute inset-0 bg-[radial-gradient(130%_100%_at_30%_20%,transparent_0%,#03050a_80%)]" />
       </div>
 
-      {/* Ambient home content - the clock is the "channel". */}
-      <div className="relative flex h-full flex-col items-center justify-center">
-        <div className="text-[15vw] font-semibold leading-none tracking-tight tabular-nums drop-shadow-[0_6px_40px_rgba(0,0,0,0.6)]">
-          {time}
+      {/* Top bar */}
+      <div className="absolute inset-x-[4vw] top-[4vh] flex items-center justify-between">
+        <div className="flex items-center gap-[0.9vw]">
+          <span className="h-[2vw] w-[2vw] rounded-full bg-[conic-gradient(from_200deg,#00e0c6,#3b82f6,#8b5cf6,#00e0c6)] p-[0.22vw]">
+            <span className="block h-full w-full rounded-full bg-[#03050a]" />
+          </span>
+          <span className="text-[1.5vw] font-semibold tracking-tight">CareCircle</span>
         </div>
-        <div className="mt-2 text-[3vw] font-light text-white/70">{day}</div>
-        <div className="mt-10 flex items-center gap-3 text-[1.4vw] uppercase tracking-[0.35em] text-white/40">
-          <span className={`h-2.5 w-2.5 rounded-full ${online ? 'bg-confirmed' : 'bg-sevHigh'}`} />
+        <div className="flex items-center gap-[0.7vw] text-[1.1vw] text-white/55">
+          <span className={`h-[0.6vw] w-[0.6vw] rounded-full ${online ? 'bg-confirmed' : 'bg-sevHigh'} animate-beat`} />
           Daddy's care circle
         </div>
-
-        {/*
-          The remote, drawn.
-
-          This was one line of 35%-opacity prose next to the clock, and the first
-          person to sit in front of it said they could not see a remote. They were
-          right: at ten feet, white-on-dark at a third opacity is not text, and the
-          eye is on the notification at the top of the screen anyway. An affordance
-          nobody can find is an affordance that does not exist - the same lesson as
-          the pace that synthesised nothing and the mic that never let go.
-
-          So: real contrast, key caps rather than a sentence, and it stays up while
-          you are steering so BACK is discoverable too.
-        */}
-        {!claimed && gaps.length > 0 && (
-          <div className="mt-8 flex items-center gap-4 rounded-2xl border border-white/25 bg-white/10 px-6 py-3">
-            {steering ? (
-              <>
-                <Keys glyphs={['◀', '▶']} label="choose" />
-                <Keys glyphs={['OK']} label="take it on" />
-                <Keys glyphs={['BACK']} label="the clock" />
-              </>
-            ) : (
-              <>
-                <Keys glyphs={['◀', '▲', '▼', '▶']} label="on your remote to start" />
-              </>
-            )}
-          </div>
-        )}
-        {claimed && (
-          <div className="mt-6 rounded-full border border-white/20 bg-white/10 px-6 py-3 text-[1.4vw] text-white/90">
-            {claimed}
-          </div>
-        )}
       </div>
 
-      {/* The notification - slides in from the top like a TV OS alert. */}
-      <div
-        className={`absolute left-1/2 top-[6vh] w-[52vw] max-w-[900px] -translate-x-1/2 transition-all duration-700 ease-out
-          ${show && current ? 'translate-y-0 opacity-100' : '-translate-y-24 opacity-0'}`}
-      >
+      <div className="relative grid h-full grid-cols-[1.15fr_1fr] gap-[4vw] px-[4vw] pb-[9vh] pt-[14vh]">
+        {/* Clock, bottom-left, the way an Echo Show sits at rest. */}
+        <div className="flex flex-col justify-end">
+          <div className="text-[11vw] font-extralight leading-[0.9] tracking-[-0.03em] tabular-nums drop-shadow-[0_6px_40px_rgba(0,0,0,0.6)]">
+            {time}
+          </div>
+          <div className="mt-[1.5vh] text-[2.3vw] font-light text-white/65">{day}</div>
+
+          {/*
+            The remote, drawn. One line of faint prose used to be here, and the first
+            person in front of it couldn't find a remote: real contrast, key caps, and
+            it stays while you steer so BACK is discoverable too.
+          */}
+          <div className="mt-[4vh] min-h-[5vh]">
+            {claimed ? (
+              <div className="inline-block rounded-full border border-white/20 bg-white/10 px-[1.6vw] py-[1vh] text-[1.4vw] text-white/90">{claimed}</div>
+            ) : gaps.length > 0 && (
+              <div className="inline-flex items-center gap-[1.4vw] rounded-2xl border border-white/20 bg-white/[0.07] px-[1.4vw] py-[1.2vh] backdrop-blur-xl">
+                {steering ? (
+                  <>
+                    <Keys glyphs={['◀', '▶']} label="choose" />
+                    <Keys glyphs={['OK']} label="take it on" />
+                    <Keys glyphs={['BACK']} label="the clock" />
+                  </>
+                ) : (
+                  <Keys glyphs={['◀', '▲', '▼', '▶']} label="on your remote to start" />
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Widgets, right: what needs someone, and who has what. */}
+        <div className="flex min-h-0 flex-col justify-end gap-[2.2vh]">
+          <div className="rounded-[1.6vw] border border-white/10 bg-white/[0.06] p-[1.6vw] backdrop-blur-2xl">
+            <div className="flex items-baseline justify-between">
+              <div className="text-[1vw] font-medium uppercase tracking-[0.22em] text-white/50">Needs someone</div>
+              <div className="text-[2.2vw] font-light tabular-nums">{gaps.length}</div>
+            </div>
+            <div className="mt-[1.2vh] space-y-[1vh]">
+              {gaps.length === 0 && <div className="text-[1.4vw] font-light text-white/70">Everything has an owner.</div>}
+              {gaps.slice(0, 3).map((g, i) => {
+                const on = i === index && (steering || show);
+                return (
+                  <div key={g.obligationId ?? g.spoken}
+                    className={`flex items-center gap-[1vw] rounded-[1vw] px-[1vw] py-[1.1vh] transition-all duration-300 ${on ? 'bg-white/[0.1]' : ''} ${steering && i === index ? 'ring-[0.25vw] ring-white' : ''}`}>
+                    <span className="h-[2.6vw] w-[0.3vw] shrink-0 rounded-full" style={{ background: ACCENT[g.severity] }} />
+                    <span className="text-[1.45vw] leading-snug text-white/90">{alertText(g.spoken)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {owned.length > 0 && (
+            <div className="rounded-[1.6vw] border border-white/10 bg-white/[0.06] p-[1.6vw] backdrop-blur-2xl">
+              <div className="text-[1vw] font-medium uppercase tracking-[0.22em] text-white/50">Taken care of</div>
+              <div className="mt-[1.2vh] space-y-[1.2vh]">
+                {owned.slice(0, 3).map((o) => (
+                  <div key={o.id} className="flex items-center gap-[1vw]">
+                    <span className={`flex h-[2.6vw] w-[2.6vw] shrink-0 items-center justify-center rounded-full text-[1.2vw] font-semibold text-[#03050a] ${AVATAR[MEMBERS.find((m) => m.label === o.owner)?.id ?? ''] ?? 'bg-confirmed'}`}>
+                      {(o.owner ?? '?')[0]}
+                    </span>
+                    <span className="text-[1.35vw] leading-snug text-white/85"><b className="font-medium text-white">{o.owner ?? 'Someone'}</b> · {o.what}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* The notification: slides in from the top like a TV OS alert. */}
+      <div className={`absolute left-1/2 top-[4vh] w-[50vw] max-w-[1100px] -translate-x-1/2 transition-all duration-700 ease-out
+          ${show && current && !steering ? 'translate-y-0 opacity-100' : steering && current ? 'translate-y-0 opacity-100' : '-translate-y-24 opacity-0'}`}>
         {current && (
-          <div
-            className={`flex items-center gap-5 rounded-[1.6rem] bg-white/10 p-5 backdrop-blur-2xl transition-all duration-200
+          <div className={`flex items-center gap-[1.3vw] rounded-[1.6vw] bg-[#0d1424]/80 p-[1.2vw] backdrop-blur-2xl transition-all duration-200
               ${steering
-                ? 'border-4 border-white shadow-[0_0_0_10px_rgba(255,255,255,0.12),0_30px_80px_rgba(0,0,0,0.55)] scale-[1.03]'
-                : 'border border-white/15 shadow-[0_30px_80px_rgba(0,0,0,0.55)]'}`}
-          >
-            <div
-              className="flex h-[4.5vw] max-h-20 min-h-14 w-[4.5vw] min-w-14 max-w-20 items-center justify-center rounded-2xl text-[2.4vw]"
-              style={{ background: `${ACCENT[current.severity]}22`, color: ACCENT[current.severity] }}
-            >
+                ? 'border-[0.25vw] border-white shadow-[0_0_0_0.7vw_rgba(255,255,255,0.12),0_30px_80px_rgba(0,0,0,0.55)] scale-[1.03]'
+                : 'border border-white/15 shadow-[0_30px_80px_rgba(0,0,0,0.55)]'}`}>
+            <div className="flex h-[4vw] w-[4vw] shrink-0 items-center justify-center rounded-[1vw] text-[2vw]"
+              style={{ background: `${ACCENT[current.severity]}22`, color: ACCENT[current.severity] }}>
               ♥
             </div>
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-3 text-[1.1vw] uppercase tracking-[0.2em] text-white/50">
+              <div className="flex items-center gap-[0.7vw] text-[0.95vw] uppercase tracking-[0.2em] text-white/50">
                 CareCircle
-                <span className="h-1.5 w-1.5 rounded-full" style={{ background: ACCENT[current.severity] }} />
+                <span className="h-[0.4vw] w-[0.4vw] rounded-full" style={{ background: ACCENT[current.severity] }} />
                 <span style={{ color: ACCENT[current.severity] }}>needs an owner</span>
               </div>
-              <div className="mt-1 text-[1.9vw] font-medium leading-snug">{alertText(current.spoken)}</div>
+              <div className="mt-[0.4vh] text-[1.7vw] font-medium leading-snug">{alertText(current.spoken)}</div>
             </div>
             <div className="shrink-0 text-right">
-              {/* Focus is never carried by colour or a glow alone: at ten feet, and
-                  for a colour-blind viewer, the word SELECTED and the position are
-                  what actually communicate. */}
+              {/* Focus is never colour alone: the word SELECTED and the position carry it. */}
               {steering && (
-                <div className="mb-1 text-[0.95vw] font-semibold uppercase tracking-[0.2em] text-white">
+                <div className="mb-[0.5vh] text-[0.9vw] font-semibold uppercase tracking-[0.2em] text-white">
                   ▶ Selected · {index + 1} of {gaps.length}
                 </div>
               )}
-              <div className="rounded-full border border-white/20 px-4 py-2 text-[1vw] uppercase tracking-wider text-white/60">
-                {steering ? 'OK to take it on' : 'Say “I’ll take it”'}
+              <div className="rounded-full border border-white/20 px-[1vw] py-[0.8vh] text-[0.95vw] text-white/70">
+                {steering ? 'OK to take it on' : 'Say “Alexa, I’ll take it”'}
               </div>
             </div>
           </div>
         )}
       </div>
-      {/* Who is taking this on. A remote carries no identity, so the set asks
-          rather than assuming whoever is nearest it. */}
+
+      {/* The Alexa+ light along the bottom edge: present, quiet. */}
+      <div aria-hidden className="absolute inset-x-0 bottom-0 h-[0.5vh] opacity-60 animate-sweep-slow"
+        style={{ background: 'linear-gradient(90deg,#3b82f6,#00e0c6,#8b5cf6,#3b82f6)', backgroundSize: '200% 100%' }} />
+
+      {/* Who is taking this on. A remote carries no identity, so the set asks. */}
       {nav.mode === 'identifying' && current && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#05070d]/85 backdrop-blur-xl">
-          <div className="max-w-[70vw] text-center text-[2vw] font-light leading-snug text-white/80">
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#03050a]/85 backdrop-blur-2xl">
+          <div className="max-w-[70vw] text-center text-[2.2vw] font-light leading-snug text-white/85">
             {alertText(current.spoken)}
           </div>
-          <div className="mt-8 text-[1.3vw] uppercase tracking-[0.3em] text-white/45">
-            Who is taking this on?
-          </div>
-          <div className="mt-8 flex flex-wrap items-stretch justify-center gap-5">
+          <div className="mt-[4vh] text-[1.2vw] uppercase tracking-[0.3em] text-white/45">Who is taking this on?</div>
+          <div className="mt-[4vh] flex flex-wrap items-stretch justify-center gap-[1.4vw]">
             {CHOOSERS.map((m, i) => {
               const on = i === nav.member;
               return (
-                <div
-                  key={m.id}
-                  className={`w-[16vw] rounded-2xl px-6 py-5 text-left transition-all duration-150
-                    ${on ? 'border-4 border-white bg-white/15 scale-105' : 'border border-white/15 bg-white/5'}`}
-                >
-                  <div className="text-[1.8vw] font-medium text-white">{m.label}</div>
-                  <div className="mt-1 text-[0.95vw] text-white/50">{m.sub}</div>
-                  <div className={`mt-2 text-[0.9vw] font-semibold uppercase tracking-[0.2em] ${on ? 'text-white' : 'text-transparent'}`}>
-                    ▶ Selected
-                  </div>
+                <div key={m.id}
+                  className={`flex w-[14vw] flex-col items-center rounded-[1.4vw] px-[1vw] py-[2.4vh] text-center transition-all duration-150
+                    ${on ? 'scale-105 border-[0.25vw] border-white bg-white/15' : 'border border-white/15 bg-white/5'}`}>
+                  <span className={`flex h-[5vw] w-[5vw] items-center justify-center rounded-full text-[2.2vw] font-semibold text-[#03050a] ${AVATAR[m.id] ?? 'bg-white'} ${on ? '' : 'opacity-70'}`}>
+                    {m.label[0]}
+                  </span>
+                  <div className="mt-[1.4vh] text-[1.6vw] font-medium text-white">{m.label}</div>
+                  <div className="mt-[0.4vh] text-[0.9vw] text-white/50">{m.sub}</div>
+                  <div className={`mt-[1vh] text-[0.85vw] font-semibold uppercase tracking-[0.2em] ${on ? 'text-white' : 'text-transparent'}`}>▶ Selected</div>
                 </div>
               );
             })}
           </div>
-          <div className="mt-10 text-[1.05vw] text-white/40">
+          <div className="mt-[5vh] text-[1.05vw] text-white/45">
             {claiming ?? 'Left and right to choose · OK to confirm · Back to cancel'}
           </div>
         </div>
@@ -324,3 +360,8 @@ export default function AmbientTV() {
     </div>
   );
 }
+
+/** Same colours as the console, so a person is the same colour on every screen. */
+const AVATAR: Record<string, string> = {
+  m_margaret: 'bg-[#ffd27a]', m_david: 'bg-[#7cf0c8]', m_renee: 'bg-[#f5a3d0]', m_aide: 'bg-[#9cc3ff]', m_kunle: 'bg-[#c5a8ff]',
+};

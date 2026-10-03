@@ -167,7 +167,7 @@ function Evidence({ figure, of, source, href, mechanism }: {
   figure: string; of: string; source: string; href: string; mechanism: string;
 }) {
   return (
-    <div className="glass flex flex-col rounded-2xl p-6">
+    <div className="glass flex flex-col rounded-3xl p-6">
       <div className="text-4xl font-semibold tracking-tight text-ink md:text-5xl">{figure}</div>
       <div className="mt-3 text-[0.9375rem] leading-relaxed text-[#c3cad9]">{of}</div>
       <a
@@ -186,7 +186,7 @@ function Evidence({ figure, of, source, href, mechanism }: {
 
 function Step({ n, name, body }: { n: string; name: string; body: string }) {
   return (
-    <div className="glass rounded-2xl p-6">
+    <div className="glass rounded-3xl p-6">
       <div className="text-[0.75rem] tracking-[0.2em] text-muted">{n}</div>
       <div className="mt-3 text-lg font-semibold text-ink">{name}</div>
       <p className="mt-2 text-[0.875rem] leading-relaxed text-[#c3cad9]">{body}</p>
@@ -207,6 +207,11 @@ export default function Hero() {
           viewport, and h-screen silently cut the surface chips off the bottom.
           svh rather than vh so mobile browser chrome does not make it jump. */}
       <div className="relative min-h-[100svh] w-full overflow-hidden">
+        {/* The same ambient light as the console and the TV, so the three read as one product. */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -left-40 -top-40 h-[36rem] w-[36rem] rounded-full bg-[#1b4dff]/20 blur-[120px]" />
+          <div className="absolute -bottom-48 left-1/3 h-[32rem] w-[32rem] rounded-full bg-[#00e0c6]/10 blur-[120px]" />
+        </div>
         <div className="absolute inset-0 md:left-[42%]">
           <Canvas camera={{ position: [0, 3.5, 9.5], fov: 50 }} dpr={[1, 2]}>
             <fog attach="fog" args={['#07090f', 8, 22]} />
@@ -224,14 +229,17 @@ export default function Hero() {
           <div className="flex items-start justify-between gap-6">
             <div className="flex items-center gap-5">
               <div className="flex items-center gap-3">
-                <span className="h-3 w-3 rounded-full bg-core shadow-[0_0_18px_#7cf0c8]" />
-                <b className="text-lg tracking-wide">CareCircle</b>
+                <span className="h-7 w-7 shrink-0 rounded-full bg-[conic-gradient(from_200deg,#00e0c6,#3b82f6,#8b5cf6,#00e0c6)] p-[3px] shadow-[0_0_24px_rgba(0,224,198,0.35)]">
+                  <span className="block h-full w-full rounded-full bg-bg" />
+                </span>
+                <b className="text-lg tracking-tight">CareCircle</b>
+                <span className="hidden whitespace-nowrap rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 text-[0.6875rem] sm:inline font-medium text-white/70">for Alexa+</span>
               </div>
               <a href="/docs.html" className="hidden text-[0.8125rem] font-medium text-muted transition hover:text-ink sm:inline">
                 Developer docs
               </a>
             </div>
-            <div className="glass flex items-center gap-2.5 rounded-full px-3.5 py-2 text-[0.8125rem] text-muted">
+            <div className="glass flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-full px-3.5 py-2 text-[0.8125rem] text-muted">
               <span className={`h-2 w-2 rounded-full ${online ? 'bg-confirmed' : 'bg-sevHigh'} animate-beat`} />
               {online ? <span><b className="text-ink">{gaps}</b> open · <b className="text-ink">{owned}</b> owned</span>
                 : <span>care board offline</span>}
@@ -252,10 +260,10 @@ export default function Hero() {
               and never turns a missing record into an accusation.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
-              <Link to="/console" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-core to-[#57c6ff] px-5 py-3 text-[0.9375rem] font-semibold text-[#04120d] shadow-glow transition hover:-translate-y-0.5">
+              <Link to="/console" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#00e0c6] to-[#3b82f6] px-6 py-3 text-[0.9375rem] font-semibold text-[#03050a] shadow-[0_10px_40px_rgba(0,224,198,0.3)] transition hover:-translate-y-0.5">
                 Open the live demo →
               </Link>
-              <a href="#problem" className="glass inline-flex items-center gap-2 rounded-xl px-5 py-3 text-[0.9375rem] font-medium text-ink transition hover:-translate-y-0.5">
+              <a href="#problem" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-3 text-[0.9375rem] font-medium text-ink backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-white/10">
                 See how it works
               </a>
             </div>
@@ -263,15 +271,17 @@ export default function Hero() {
 
           <div className="flex flex-wrap gap-2.5">
             {SURFACES.map((s) => (
-              <div key={s.key} className="glass flex items-center gap-2.5 rounded-xl px-3 py-2 text-[0.8125rem]">
+              <div key={s.key} className="flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 px-3.5 py-2 text-[0.8125rem] backdrop-blur-xl">
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: s.color }} />
                 <span className="text-muted">{s.name}</span>
                 <span className="font-semibold text-ink">{s.sub}</span>
-                <span className={`ml-1 rounded-md border border-line px-1.5 py-0.5 text-[0.625rem] uppercase tracking-wider ${s.status === 'live' ? 'text-core' : 'text-muted'}`}>{s.status}</span>
+                <span className={`ml-1 rounded-full border border-line px-1.5 py-0.5 text-[0.625rem] uppercase tracking-wider ${s.status === 'live' ? 'text-core' : 'text-muted'}`}>{s.status}</span>
               </div>
             ))}
           </div>
         </div>
+        <div aria-hidden className="absolute inset-x-0 bottom-0 h-1 opacity-70 animate-sweep-slow"
+          style={{ background: 'linear-gradient(90deg,#3b82f6,#00e0c6,#8b5cf6,#3b82f6)', backgroundSize: '200% 100%' }} />
       </div>
 
       {/* ---------- 2. The problem, with its evidence ---------- */}
@@ -479,7 +489,7 @@ export default function Hero() {
           </>}
         >
           <div className="mt-12 grid gap-5 md:grid-cols-3">
-            <div className="glass rounded-2xl p-6">
+            <div className="glass rounded-3xl p-6">
               <div className="text-lg font-semibold text-ink">The Care Board, as an MCP App</div>
               <p className="mt-3 text-[0.875rem] leading-relaxed text-[#c3cad9]">
                 A ranked list with state does not survive being spoken. So the gaps also ship as an
@@ -488,7 +498,7 @@ export default function Hero() {
                 authorisation path.
               </p>
             </div>
-            <div className="glass rounded-2xl p-6">
+            <div className="glass rounded-3xl p-6">
               <div className="text-lg font-semibold text-ink">Confirmation that survives a voice turn</div>
               <p className="mt-3 text-[0.875rem] leading-relaxed text-[#c3cad9]">
                 MCP elicitation expects an answer inside the same call that raised it; an Alexa turn
@@ -497,7 +507,7 @@ export default function Hero() {
                 between turns with nothing parked.
               </p>
             </div>
-            <div className="glass rounded-2xl p-6">
+            <div className="glass rounded-3xl p-6">
               <div className="text-lg font-semibold text-ink">Everything that got in the way</div>
               <p className="mt-3 text-[0.875rem] leading-relaxed text-[#c3cad9]">
                 Fifteen logged pieces of friction, written in the moment - the ones we worked
