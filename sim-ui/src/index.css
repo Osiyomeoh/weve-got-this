@@ -7,7 +7,7 @@
 html, body, #root { height: 100%; }
 body {
   margin: 0;
-  background: #07090f;
+  background: #04060b;
   color: #eef2fb;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -53,12 +53,12 @@ body {
   }
   .prov-dot { @apply w-2.5 h-2.5 rounded-full; }
   .btn-primary {
-    @apply rounded-lg bg-gradient-to-r from-core to-[#57c6ff] px-3 py-1.5 text-[13px]
-           font-semibold text-[#04120d] transition hover:-translate-y-px;
+    @apply rounded-full bg-gradient-to-r from-[#00e0c6] to-[#3b82f6] px-4 py-2 text-[13px]
+           font-semibold text-[#04060b] transition hover:brightness-110;
   }
   .btn-ghost {
-    @apply rounded-lg border border-line px-3 py-1.5 text-[13px] text-muted
-           transition hover:text-ink;
+    @apply rounded-full border border-white/10 px-4 py-2 text-[13px] text-muted
+           transition hover:border-white/25 hover:text-ink;
   }
 }
 

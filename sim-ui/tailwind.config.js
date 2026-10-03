@@ -42,6 +42,8 @@ export default {
         // The orb at rest: alive enough to look tappable, slow enough to ignore.
         breath: { '0%,100%': { transform: 'scale(1)', opacity: '0.85' }, '50%': { transform: 'scale(1.05)', opacity: '1' } },
         // A ring leaving the orb while it listens.
+        // The Alexa+ light moving along the bottom of the screen.
+        sweep: { '0%': { backgroundPosition: '0% 0' }, '100%': { backgroundPosition: '200% 0' } },
         ripple: { '0%': { transform: 'scale(0.85)', opacity: '0.55' }, '100%': { transform: 'scale(1.9)', opacity: '0' } },
       },
       animation: {
@@ -52,6 +54,8 @@ export default {
         'drift-slower': 'driftSlower 34s ease-in-out infinite',
         breath: 'breath 3.4s ease-in-out infinite',
         ripple: 'ripple 1.8s ease-out infinite',
+        sweep: 'sweep 1.1s linear infinite',
+        'sweep-slow': 'sweep 3s linear infinite',
       },
     },
   },
