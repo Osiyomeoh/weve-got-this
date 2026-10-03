@@ -1,5 +1,5 @@
 {
-  "built": "2026-10-02T22:55:51.899Z",
+  "built": "2026-10-03T04:53:40.143Z",
   "tests": 657,
   "selection": [
     {
@@ -69,7 +69,8 @@
       "leftAlone": 1514,
       "readInstead": 138,
       "wrote": 82,
-      "worst": 24
+      "worst": 24,
+      "landed": 26
     }
   },
   "wordGate": {

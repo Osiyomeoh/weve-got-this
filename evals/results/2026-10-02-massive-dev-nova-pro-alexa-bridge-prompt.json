@@ -16776,5 +16776,12 @@
       "pass": false,
       "errored": false
     }
-  ]
+  ],
+  "landed": {
+    "total": 26,
+    "byTool": {
+      "add_note": 22,
+      "log_care_event": 4
+    }
+  }
 }

@@ -51,7 +51,7 @@ const out = {
     cases: massiveAfter.total,
     before: massiveBefore.notOurs, after: massiveAfter.notOurs,
     heldOut: false,
-    dev: massiveDevFile ? { file: massiveDevFile, cases: read(massiveDevFile).total, ...read(massiveDevFile).notOurs } : null,
+    dev: massiveDevFile ? { file: massiveDevFile, cases: read(massiveDevFile).total, ...read(massiveDevFile).notOurs, landed: read(massiveDevFile).landed?.total ?? null } : null,
   },
   wordGate: { file: '2026-09-24-gate-nova-micro.json', ...gate.gates['nova-micro'].atThreshold, harms: gate.baseline.harms, care: gate.care },
   actionGuard: guardFile ? (() => {

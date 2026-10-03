@@ -137,7 +137,7 @@
     ${bar('before', M.before.leftAlone, M.before.total)}${bar('after', M.after.leftAlone, M.after.total)}
     <div class="src">${M.files.map(esc).join(' · ')}</div>`;
   if (M.dev) $('massiveDev').innerHTML = `<b>Held out: MASSIVE's dev set, never read before the run.</b>
-    <p style="margin:6px 0">Of ${M.dev.total.toLocaleString()} requests that were not about care (${M.dev.cases.toLocaleString()} in all), ${M.dev.leftAlone.toLocaleString()} were left alone (${pct(M.dev.leftAlone, M.dev.total)}) and <b>${M.dev.wrote} wrote</b> (${(100 * M.dev.wrote / M.dev.total).toFixed(1)}%), ${M.dev.worst} of them a log or a message. Close to the test set's numbers above, which were not held out.</p>
+    <p style="margin:6px 0">Of ${M.dev.total.toLocaleString()} requests that were not about care (${M.dev.cases.toLocaleString()} in all), ${M.dev.leftAlone.toLocaleString()} were left alone (${pct(M.dev.leftAlone, M.dev.total)}) and <b>${M.dev.wrote} wrote</b> (${(100 * M.dev.wrote / M.dev.total).toFixed(1)}%), ${M.dev.worst} of them a log or a message.${M.dev.landed != null ? ` Run against the record, <b>${M.dev.landed} of those ${M.dev.wrote}</b> (${(100 * M.dev.landed / M.dev.total).toFixed(1)}% of the requests) would have changed it or reached anyone; the server turned the rest back, like a message to someone not in the circle.` : ''} Close to the test set's numbers above, which were not held out${d.actionGuard ? `; there, ${d.actionGuard.harmsLanded} of ${M.after.wrote} landed` : ''}.</p>
     <div class="src">${esc(M.dev.file)}</div>`;
   else $('massiveDev').remove();
 

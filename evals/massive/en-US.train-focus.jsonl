@@ -1,0 +1,1599 @@
+{"id": "2", "scenario": "alarm", "intent": "alarm_set", "utt": "set an alarm for two hours from now"}
+{"id": "36", "scenario": "general", "intent": "general_quirky", "utt": "check my car is ready"}
+{"id": "38", "scenario": "general", "intent": "general_quirky", "utt": "is the brightness of my screen running low"}
+{"id": "49", "scenario": "datetime", "intent": "datetime_convert", "utt": "tell me the time in g. m. t. plus five"}
+{"id": "51", "scenario": "takeaway", "intent": "takeaway_query", "utt": "olly list most rated delivery options for chinese food"}
+{"id": "52", "scenario": "takeaway", "intent": "takeaway_query", "utt": "most rated delivery options for chinese food"}
+{"id": "54", "scenario": "takeaway", "intent": "takeaway_query", "utt": "olly most rated delivery options for chinese food"}
+{"id": "55", "scenario": "takeaway", "intent": "takeaway_query", "utt": "i want some curry to go any recommendations"}
+{"id": "56", "scenario": "takeaway", "intent": "takeaway_query", "utt": "i want some curry to go any recommendations olly"}
+{"id": "57", "scenario": "takeaway", "intent": "takeaway_query", "utt": "find my thai takeaways around grassmarket"}
+{"id": "92", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does byron's supports takeaways"}
+{"id": "93", "scenario": "alarm", "intent": "alarm_set", "utt": "set an alarm for twelve"}
+{"id": "94", "scenario": "alarm", "intent": "alarm_set", "utt": "set an alarm forty minutes from now"}
+{"id": "95", "scenario": "alarm", "intent": "alarm_set", "utt": "set alarm for eight every weekday"}
+{"id": "133", "scenario": "takeaway", "intent": "takeaway_query", "utt": "when is my order arriving"}
+{"id": "134", "scenario": "takeaway", "intent": "takeaway_query", "utt": "how long until my takeaway"}
+{"id": "135", "scenario": "takeaway", "intent": "takeaway_query", "utt": "domino's delivery status"}
+{"id": "146", "scenario": "play", "intent": "play_music", "utt": "can you play some jazz"}
+{"id": "149", "scenario": "music", "intent": "music_likeness", "utt": "this song was very good"}
+{"id": "172", "scenario": "alarm", "intent": "alarm_set", "utt": "set alarm at ten am"}
+{"id": "198", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does dominoes do takeaway"}
+{"id": "199", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does my favorite pizza place available for takeaway"}
+{"id": "233", "scenario": "alarm", "intent": "alarm_set", "utt": "set an alarm for four in the afternoon"}
+{"id": "235", "scenario": "alarm", "intent": "alarm_set", "utt": "alert me at three p. m. to go to the concert"}
+{"id": "278", "scenario": "weather", "intent": "weather_query", "utt": "what is the weather like in toronto"}
+{"id": "308", "scenario": "takeaway", "intent": "takeaway_order", "utt": "order a takeaway sandwich and soup from the italian's"}
+{"id": "350", "scenario": "takeaway", "intent": "takeaway_query", "utt": "find out if the restaurant does takeaway orders"}
+{"id": "351", "scenario": "takeaway", "intent": "takeaway_query", "utt": "search if the restaurant does take out"}
+{"id": "352", "scenario": "takeaway", "intent": "takeaway_query", "utt": "is there a take-out menu at the restaurant"}
+{"id": "363", "scenario": "play", "intent": "play_music", "utt": "play a song randomly from my playlist"}
+{"id": "416", "scenario": "alarm", "intent": "alarm_set", "utt": "set an alarm for me at eight am"}
+{"id": "417", "scenario": "alarm", "intent": "alarm_set", "utt": "make an alarm for four p. m."}
+{"id": "418", "scenario": "alarm", "intent": "alarm_set", "utt": "make me a wake up alarm for eight forty five am"}
+{"id": "524", "scenario": "takeaway", "intent": "takeaway_query", "utt": "how much time it will take to prepare the order"}
+{"id": "535", "scenario": "alarm", "intent": "alarm_set", "utt": "i need a reminder alarm at one"}
+{"id": "537", "scenario": "alarm", "intent": "alarm_set", "utt": "turn on an alarm for nine am"}
+{"id": "544", "scenario": "general", "intent": "general_joke", "utt": "tell me a dirty joke"}
+{"id": "596", "scenario": "play", "intent": "play_music", "utt": "can you turn on the hit song of lady gaga"}
+{"id": "602", "scenario": "alarm", "intent": "alarm_set", "utt": "set alarm to begin"}
+{"id": "603", "scenario": "alarm", "intent": "alarm_set", "utt": "change alarm to start at midnight"}
+{"id": "611", "scenario": "alarm", "intent": "alarm_set", "utt": "please set the alarm for next morning to seven am"}
+{"id": "621", "scenario": "news", "intent": "news_query", "utt": "what is the latest controversy on donald trump"}
+{"id": "646", "scenario": "iot", "intent": "iot_hue_lightup", "utt": "increase the light a little"}
+{"id": "672", "scenario": "datetime", "intent": "datetime_query", "utt": "can you tell me what time is it"}
+{"id": "693", "scenario": "takeaway", "intent": "takeaway_query", "utt": "i just ordered food call and see it has been delivered"}
+{"id": "694", "scenario": "takeaway", "intent": "takeaway_query", "utt": "check on the delivery of my current order"}
+{"id": "695", "scenario": "takeaway", "intent": "takeaway_query", "utt": "call the restaurant to see if the delivery is on the way"}
+{"id": "721", "scenario": "alarm", "intent": "alarm_set", "utt": "create an alarm at four o'clock tomorrow morning"}
+{"id": "722", "scenario": "alarm", "intent": "alarm_set", "utt": "make an alarm to wake me up after five hours"}
+{"id": "746", "scenario": "news", "intent": "news_query", "utt": "get me top headlines"}
+{"id": "797", "scenario": "takeaway", "intent": "takeaway_query", "utt": "could you please recommend a mexican restaurant for take out"}
+{"id": "798", "scenario": "takeaway", "intent": "takeaway_query", "utt": "which restaurants offer take out food"}
+{"id": "867", "scenario": "iot", "intent": "iot_wemo_off", "utt": "turn off smart socket"}
+{"id": "874", "scenario": "iot", "intent": "iot_hue_lightoff", "utt": "switch the light off in bedroom"}
+{"id": "941", "scenario": "alarm", "intent": "alarm_set", "utt": "set my alarm please"}
+{"id": "949", "scenario": "music", "intent": "music_dislikeness", "utt": "that song in the background is annoying"}
+{"id": "955", "scenario": "alarm", "intent": "alarm_set", "utt": "set the alarm for five o'clock in the morning"}
+{"id": "956", "scenario": "alarm", "intent": "alarm_set", "utt": "set my alarm for six thirty in the morning tomorrow"}
+{"id": "957", "scenario": "alarm", "intent": "alarm_set", "utt": "i want the alarm set for six"}
+{"id": "965", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does pf changs do take-out"}
+{"id": "973", "scenario": "news", "intent": "news_query", "utt": "what is the latest news"}
+{"id": "996", "scenario": "play", "intent": "play_music", "utt": "look for irene and play it"}
+{"id": "1010", "scenario": "news", "intent": "news_query", "utt": "pull up today's news from c. n. n."}
+{"id": "1024", "scenario": "takeaway", "intent": "takeaway_query", "utt": "i want to know if the olive garden provides takeaway"}
+{"id": "1025", "scenario": "takeaway", "intent": "takeaway_query", "utt": "tell me if the olive garden allows takeaway"}
+{"id": "1132", "scenario": "alarm", "intent": "alarm_set", "utt": "put alarm on"}
+{"id": "1133", "scenario": "alarm", "intent": "alarm_set", "utt": "set alarm at five thirty am"}
+{"id": "1134", "scenario": "alarm", "intent": "alarm_set", "utt": "place alarm at five o'clock morning"}
+{"id": "1194", "scenario": "play", "intent": "play_music", "utt": "play rein in blood by slayer at five am tomorrow to make sure i actually wake up"}
+{"id": "1228", "scenario": "news", "intent": "news_query", "utt": "read me the newest article on the new solar system"}
+{"id": "1246", "scenario": "takeaway", "intent": "takeaway_query", "utt": "is mr. pizza on skip the dishes"}
+{"id": "1313", "scenario": "weather", "intent": "weather_query", "utt": "what's the weather forecast for today"}
+{"id": "1324", "scenario": "takeaway", "intent": "takeaway_query", "utt": "hey does that restaurant have take-out"}
+{"id": "1325", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does that restaurant allow call in orders"}
+{"id": "1326", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does that restaurant allow take out orders"}
+{"id": "1370", "scenario": "news", "intent": "news_query", "utt": "tell me c. n. n. news for me right now"}
+{"id": "1378", "scenario": "takeaway", "intent": "takeaway_query", "utt": "olly does panda garden deliver"}
+{"id": "1422", "scenario": "music", "intent": "music_likeness", "utt": "please save that song"}
+{"id": "1434", "scenario": "audio", "intent": "audio_volume_other", "utt": "volume control please"}
+{"id": "1508", "scenario": "audio", "intent": "audio_volume_mute", "utt": "set mute mode for one hour"}
+{"id": "1538", "scenario": "takeaway", "intent": "takeaway_query", "utt": "is my order ready"}
+{"id": "1539", "scenario": "takeaway", "intent": "takeaway_query", "utt": "what time can i pick up my food"}
+{"id": "1540", "scenario": "takeaway", "intent": "takeaway_query", "utt": "when will my food be ready"}
+{"id": "1591", "scenario": "play", "intent": "play_music", "utt": "i wan to play me a justin bieber song"}
+{"id": "1624", "scenario": "alarm", "intent": "alarm_set", "utt": "set the time"}
+{"id": "1626", "scenario": "alarm", "intent": "alarm_set", "utt": "set the alarm tone"}
+{"id": "1661", "scenario": "iot", "intent": "iot_cleaning", "utt": "switch on the vacuum cleaner"}
+{"id": "1704", "scenario": "datetime", "intent": "datetime_query", "utt": "what time is time"}
+{"id": "1720", "scenario": "alarm", "intent": "alarm_set", "utt": "set alarm of every tuesday of march month morning eight am"}
+{"id": "1721", "scenario": "alarm", "intent": "alarm_set", "utt": "set alarm of whole week morning ten am in april month"}
+{"id": "1727", "scenario": "takeaway", "intent": "takeaway_query", "utt": "please could you tell me if george's geek restaurant can i order takeaway from there"}
+{"id": "1757", "scenario": "iot", "intent": "iot_hue_lightup", "utt": "alexa brighten the lights"}
+{"id": "1772", "scenario": "alarm", "intent": "alarm_set", "utt": "please set alarm at five p. m."}
+{"id": "1773", "scenario": "alarm", "intent": "alarm_set", "utt": "wake me up at six am"}
+{"id": "1787", "scenario": "audio", "intent": "audio_volume_down", "utt": "decrease the volume"}
+{"id": "1825", "scenario": "news", "intent": "news_query", "utt": "tell me the latest updates of new york"}
+{"id": "1864", "scenario": "alarm", "intent": "alarm_query", "utt": "what alarms are on right now"}
+{"id": "1895", "scenario": "alarm", "intent": "alarm_set", "utt": "put alarm at five am"}
+{"id": "1896", "scenario": "iot", "intent": "iot_hue_lightoff", "utt": "switch off bedroom light"}
+{"id": "1908", "scenario": "takeaway", "intent": "takeaway_query", "utt": "status of my restaurant order"}
+{"id": "1909", "scenario": "takeaway", "intent": "takeaway_query", "utt": "restaurant delivery update"}
+{"id": "1912", "scenario": "alarm", "intent": "alarm_set", "utt": "set alarm at five am"}
+{"id": "1922", "scenario": "datetime", "intent": "datetime_query", "utt": "what time is it in boston"}
+{"id": "1969", "scenario": "weather", "intent": "weather_query", "utt": "today is sunny day or not"}
+{"id": "1979", "scenario": "news", "intent": "news_query", "utt": "if there news about up politics what is that"}
+{"id": "1983", "scenario": "alarm", "intent": "alarm_set", "utt": "set alarm half an hour from my meal time"}
+{"id": "2004", "scenario": "audio", "intent": "audio_volume_mute", "utt": "good night"}
+{"id": "2005", "scenario": "takeaway", "intent": "takeaway_query", "utt": "can it takeaway from ammi biryani"}
+{"id": "2021", "scenario": "audio", "intent": "audio_volume_down", "utt": "decrease volume to very soft"}
+{"id": "2029", "scenario": "music", "intent": "music_query", "utt": "tell me this song"}
+{"id": "2033", "scenario": "takeaway", "intent": "takeaway_query", "utt": "current status of take out order"}
+{"id": "2034", "scenario": "takeaway", "intent": "takeaway_query", "utt": "where is my food"}
+{"id": "2036", "scenario": "takeaway", "intent": "takeaway_query", "utt": "how long until i receive my food"}
+{"id": "2060", "scenario": "play", "intent": "play_music", "utt": "play me some jazz"}
+{"id": "2081", "scenario": "alarm", "intent": "alarm_set", "utt": "set my alarm for six am tomorrow"}
+{"id": "2089", "scenario": "takeaway", "intent": "takeaway_query", "utt": "when will my chinese food arrive"}
+{"id": "2096", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does peking garden do orders online"}
+{"id": "2106", "scenario": "play", "intent": "play_music", "utt": "play anything by cat stevens and i'll be happy"}
+{"id": "2127", "scenario": "news", "intent": "news_query", "utt": "was anyone arrested at the protest today in chicago"}
+{"id": "2147", "scenario": "alarm", "intent": "alarm_set", "utt": "open alarm"}
+{"id": "2195", "scenario": "alarm", "intent": "alarm_set", "utt": "set an alarm"}
+{"id": "2254", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does ming ten do take out"}
+{"id": "2273", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does restaurant has home delivery"}
+{"id": "2274", "scenario": "takeaway", "intent": "takeaway_query", "utt": "charges of delivery"}
+{"id": "2275", "scenario": "takeaway", "intent": "takeaway_query", "utt": "maximum kilometer to delivery"}
+{"id": "2276", "scenario": "alarm", "intent": "alarm_set", "utt": "wake me up at four am"}
+{"id": "2277", "scenario": "alarm", "intent": "alarm_set", "utt": "alarm for ten am"}
+{"id": "2278", "scenario": "alarm", "intent": "alarm_set", "utt": "set alarm for twelve weeks from today at eight am"}
+{"id": "2280", "scenario": "play", "intent": "play_music", "utt": "play recently added music"}
+{"id": "2333", "scenario": "alarm", "intent": "alarm_set", "utt": "set alarm for six am tomorrow"}
+{"id": "2374", "scenario": "music", "intent": "music_query", "utt": "which song is this"}
+{"id": "2409", "scenario": "datetime", "intent": "datetime_query", "utt": "what's the date today"}
+{"id": "2416", "scenario": "takeaway", "intent": "takeaway_query", "utt": "where can i order take-out"}
+{"id": "2429", "scenario": "alarm", "intent": "alarm_query", "utt": "alarm status"}
+{"id": "2433", "scenario": "takeaway", "intent": "takeaway_query", "utt": "what is happening to my order"}
+{"id": "2465", "scenario": "iot", "intent": "iot_hue_lightoff", "utt": "switch the lights off"}
+{"id": "2486", "scenario": "datetime", "intent": "datetime_query", "utt": "what is the time over in florida"}
+{"id": "2492", "scenario": "news", "intent": "news_query", "utt": "daily news from source"}
+{"id": "2501", "scenario": "iot", "intent": "iot_wemo_off", "utt": "please turn off the smart socket"}
+{"id": "2504", "scenario": "alarm", "intent": "alarm_set", "utt": "set an alarm for time"}
+{"id": "2505", "scenario": "alarm", "intent": "alarm_set", "utt": "set my alarm for time"}
+{"id": "2506", "scenario": "alarm", "intent": "alarm_set", "utt": "alarm set for time"}
+{"id": "2507", "scenario": "alarm", "intent": "alarm_set", "utt": "set my alarm for tuesday at six p. m."}
+{"id": "2508", "scenario": "alarm", "intent": "alarm_set", "utt": "i need to set an alarm for next friday at noon"}
+{"id": "2525", "scenario": "takeaway", "intent": "takeaway_query", "utt": "do they have take-out"}
+{"id": "2539", "scenario": "takeaway", "intent": "takeaway_query", "utt": "when do i need to leave to pick up my order"}
+{"id": "2569", "scenario": "news", "intent": "news_query", "utt": "check for recent news stories on m. s. n. b. c."}
+{"id": "2603", "scenario": "alarm", "intent": "alarm_set", "utt": "set the alarm for two hours from now"}
+{"id": "2604", "scenario": "alarm", "intent": "alarm_set", "utt": "set an alarm for one hour from now"}
+{"id": "2608", "scenario": "takeaway", "intent": "takeaway_query", "utt": "what happened to my pizza order it has been an hour since i ordered"}
+{"id": "2609", "scenario": "takeaway", "intent": "takeaway_query", "utt": "remember i've ordered a cake for tonight's birthday party let me know the status please"}
+{"id": "2619", "scenario": "news", "intent": "news_query", "utt": "ok google add a notification from bob's news on the weather"}
+{"id": "2624", "scenario": "news", "intent": "news_query", "utt": "what's up with the new provider"}
+{"id": "2645", "scenario": "iot", "intent": "iot_hue_lightdim", "utt": "lower the lights in the living room"}
+{"id": "2696", "scenario": "takeaway", "intent": "takeaway_order", "utt": "order chinese from china spring wonton soup and a small beef and broccoli"}
+{"id": "2715", "scenario": "play", "intent": "play_music", "utt": "play purple haze"}
+{"id": "2719", "scenario": "alarm", "intent": "alarm_set", "utt": "set an alarm for five hundred and thirty"}
+{"id": "2771", "scenario": "takeaway", "intent": "takeaway_query", "utt": "how much longer on my order"}
+{"id": "2772", "scenario": "takeaway", "intent": "takeaway_query", "utt": "when can i pick up my order"}
+{"id": "2842", "scenario": "iot", "intent": "iot_hue_lightchange", "utt": "turn the lights on party mode"}
+{"id": "2843", "scenario": "takeaway", "intent": "takeaway_query", "utt": "what's up with my order"}
+{"id": "2845", "scenario": "takeaway", "intent": "takeaway_query", "utt": "where is my order"}
+{"id": "2865", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does the restaurant have delivery"}
+{"id": "2866", "scenario": "takeaway", "intent": "takeaway_query", "utt": "please see if chili's has delivery"}
+{"id": "2872", "scenario": "alarm", "intent": "alarm_query", "utt": "do i have alarms set"}
+{"id": "2907", "scenario": "takeaway", "intent": "takeaway_query", "utt": "when will by order from taco bell be delivered"}
+{"id": "2909", "scenario": "takeaway", "intent": "takeaway_query", "utt": "tell me when taco bell can deliver my dinner"}
+{"id": "2923", "scenario": "takeaway", "intent": "takeaway_order", "utt": "hey order me some take out from jason's deli"}
+{"id": "2951", "scenario": "play", "intent": "play_music", "utt": "play music relating to the music i listened to this morning"}
+{"id": "2953", "scenario": "play", "intent": "play_music", "utt": "play music that i like"}
+{"id": "2987", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does dominoes deliver"}
+{"id": "2988", "scenario": "takeaway", "intent": "takeaway_query", "utt": "can i get delivery from dominoes"}
+{"id": "2989", "scenario": "takeaway", "intent": "takeaway_query", "utt": "delivery from dominoes"}
+{"id": "3017", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does chinese deliver"}
+{"id": "3019", "scenario": "takeaway", "intent": "takeaway_query", "utt": "olly find my food"}
+{"id": "3105", "scenario": "weather", "intent": "weather_query", "utt": "what's the current temperature"}
+{"id": "3155", "scenario": "alarm", "intent": "alarm_set", "utt": "i need to get going at eight am tomorrow set up an alarm thirty minutes before that"}
+{"id": "3156", "scenario": "alarm", "intent": "alarm_set", "utt": "mike will send me an email tomorrow can you please set up an alarm fifteen minutes after receiving that email"}
+{"id": "3157", "scenario": "alarm", "intent": "alarm_set", "utt": "if my package shows that it is for delivery tomorrow can you set up an alarm one hour after thank you"}
+{"id": "3168", "scenario": "iot", "intent": "iot_hue_lightoff", "utt": "can you turn my bathroom lights off"}
+{"id": "3179", "scenario": "alarm", "intent": "alarm_set", "utt": "please set an alarm for seven hundred and thirty am tomorrow"}
+{"id": "3180", "scenario": "alarm", "intent": "alarm_set", "utt": "i'd like an alarm set for this saturday at ten"}
+{"id": "3181", "scenario": "alarm", "intent": "alarm_set", "utt": "set an eight hundred am alarm for next tuesday"}
+{"id": "3209", "scenario": "news", "intent": "news_query", "utt": "search for new stuff on that subject"}
+{"id": "3219", "scenario": "alarm", "intent": "alarm_set", "utt": "set alarm for tomorrow morning at six am"}
+{"id": "3232", "scenario": "iot", "intent": "iot_coffee", "utt": "start making a coffee"}
+{"id": "3243", "scenario": "alarm", "intent": "alarm_set", "utt": "set alarm for sixth of june two thousand seventeen at five am"}
+{"id": "3254", "scenario": "weather", "intent": "weather_query", "utt": "what was the weather report for today"}
+{"id": "3259", "scenario": "news", "intent": "news_query", "utt": "what is the most recent update regarding the hurricane katrina"}
+{"id": "3272", "scenario": "takeaway", "intent": "takeaway_query", "utt": "find out if kfc delivers please"}
+{"id": "3273", "scenario": "takeaway", "intent": "takeaway_query", "utt": "olly find out if kfc delivers please"}
+{"id": "3274", "scenario": "takeaway", "intent": "takeaway_query", "utt": "olly does that new chinese restaurant deliver"}
+{"id": "3275", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does shibaru sushi deliver"}
+{"id": "3297", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does the nearby pizza hut deliver in my area"}
+{"id": "3312", "scenario": "alarm", "intent": "alarm_set", "utt": "set an alarm for me for tomorrow at seven p. m."}
+{"id": "3313", "scenario": "alarm", "intent": "alarm_set", "utt": "i need an alarm for sunday at eight am can you please set one for me"}
+{"id": "3331", "scenario": "news", "intent": "news_query", "utt": "set notification for six o'clock news update"}
+{"id": "3366", "scenario": "news", "intent": "news_query", "utt": "go to cnncom"}
+{"id": "3373", "scenario": "datetime", "intent": "datetime_query", "utt": "olly what time is it in california"}
+{"id": "3380", "scenario": "iot", "intent": "iot_cleaning", "utt": "turn on vacuum"}
+{"id": "3384", "scenario": "alarm", "intent": "alarm_set", "utt": "please set the alarm for eight p. m. wednesday evening"}
+{"id": "3385", "scenario": "alarm", "intent": "alarm_set", "utt": "at seven am tomorrow morning ring the alarm"}
+{"id": "3397", "scenario": "alarm", "intent": "alarm_set", "utt": "set an alarm for eight am"}
+{"id": "3399", "scenario": "alarm", "intent": "alarm_set", "utt": "i need an alarm for nine p. m."}
+{"id": "3412", "scenario": "takeaway", "intent": "takeaway_query", "utt": "how long will my order be"}
+{"id": "3414", "scenario": "takeaway", "intent": "takeaway_query", "utt": "when did i place my order and what was the projected time it would take"}
+{"id": "3423", "scenario": "calendar", "intent": "calendar_query", "utt": "what is the time for jimmy's party"}
+{"id": "3436", "scenario": "alarm", "intent": "alarm_set", "utt": "change alarm setting"}
+{"id": "3456", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does john's pizza have takeaway"}
+{"id": "3457", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does brick grill deliver"}
+{"id": "3461", "scenario": "alarm", "intent": "alarm_set", "utt": "please set an alarm at seven am tomorrow morning"}
+{"id": "3462", "scenario": "alarm", "intent": "alarm_set", "utt": "send me a wake up alert at seven am tomorrow morning"}
+{"id": "3475", "scenario": "alarm", "intent": "alarm_set", "utt": "wake me at daybreak"}
+{"id": "3480", "scenario": "play", "intent": "play_music", "utt": "play best hits from given artist"}
+{"id": "3498", "scenario": "alarm", "intent": "alarm_set", "utt": "i need to get up at seven am"}
+{"id": "3499", "scenario": "alarm", "intent": "alarm_set", "utt": "is my alarm set for seven am"}
+{"id": "3512", "scenario": "general", "intent": "general_quirky", "utt": "nightime"}
+{"id": "3601", "scenario": "calendar", "intent": "calendar_set", "utt": "remind me at one p. m."}
+{"id": "3604", "scenario": "news", "intent": "news_query", "utt": "what's the latest news from b. b. c."}
+{"id": "3610", "scenario": "takeaway", "intent": "takeaway_query", "utt": "what is the status of my order"}
+{"id": "3617", "scenario": "takeaway", "intent": "takeaway_query", "utt": "are there any takeaways around here"}
+{"id": "3618", "scenario": "takeaway", "intent": "takeaway_query", "utt": "tell me all the takeaways nearby and i want to order food"}
+{"id": "3636", "scenario": "play", "intent": "play_music", "utt": "i want you to put on be warned by tech nine"}
+{"id": "3660", "scenario": "alarm", "intent": "alarm_set", "utt": "set an alarm for seven am"}
+{"id": "3661", "scenario": "alarm", "intent": "alarm_set", "utt": "make an alarm for the morning"}
+{"id": "3662", "scenario": "alarm", "intent": "alarm_set", "utt": "create an alarm for five p. m."}
+{"id": "3670", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does this restaurant have takeaway"}
+{"id": "3693", "scenario": "alarm", "intent": "alarm_set", "utt": "olly i need an alarm set for five hundred and thirty am tomorrow"}
+{"id": "3696", "scenario": "alarm", "intent": "alarm_set", "utt": "google set my alarm to go off in an hour"}
+{"id": "3715", "scenario": "music", "intent": "music_likeness", "utt": "please save the remarks i have on this current song"}
+{"id": "3747", "scenario": "news", "intent": "news_query", "utt": "google let me know when anything news about trump"}
+{"id": "3764", "scenario": "alarm", "intent": "alarm_set", "utt": "set alarm for nine am"}
+{"id": "3765", "scenario": "alarm", "intent": "alarm_set", "utt": "please set an alarm for me"}
+{"id": "3766", "scenario": "alarm", "intent": "alarm_set", "utt": "set an alarm for me for tomorrow"}
+{"id": "3794", "scenario": "audio", "intent": "audio_volume_mute", "utt": "i want to mute the speaker"}
+{"id": "3862", "scenario": "iot", "intent": "iot_cleaning", "utt": "get the roomba to clean up"}
+{"id": "3908", "scenario": "play", "intent": "play_music", "utt": "i want to play rock songs by ozzy osbourne"}
+{"id": "3928", "scenario": "weather", "intent": "weather_query", "utt": "what is the current forecast for maine"}
+{"id": "3951", "scenario": "takeaway", "intent": "takeaway_query", "utt": "can i order olive garden to go"}
+{"id": "3952", "scenario": "takeaway", "intent": "takeaway_query", "utt": "where is an olive garden that does takeaway"}
+{"id": "3955", "scenario": "alarm", "intent": "alarm_set", "utt": "set an alarm for nine p. m."}
+{"id": "3959", "scenario": "alarm", "intent": "alarm_set", "utt": "change my alarms to mountain time"}
+{"id": "3975", "scenario": "alarm", "intent": "alarm_set", "utt": "please wake me up at eight am"}
+{"id": "3977", "scenario": "alarm", "intent": "alarm_set", "utt": "alarm me at eight am"}
+{"id": "3979", "scenario": "weather", "intent": "weather_query", "utt": "is it hot outside right now i'm hawaii"}
+{"id": "3985", "scenario": "alarm", "intent": "alarm_set", "utt": "please set an alarm at six am"}
+{"id": "3987", "scenario": "alarm", "intent": "alarm_set", "utt": "could you please set an alarm at six am"}
+{"id": "4039", "scenario": "takeaway", "intent": "takeaway_query", "utt": "where can i order pizza for delivery"}
+{"id": "4047", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does charley's steakhouse deliver"}
+{"id": "4049", "scenario": "takeaway", "intent": "takeaway_query", "utt": "look up whether or not charley's steakhouse delivers"}
+{"id": "4062", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does this restaurant deliver"}
+{"id": "4063", "scenario": "takeaway", "intent": "takeaway_query", "utt": "will they deliver to me"}
+{"id": "4064", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does this place do takeaway"}
+{"id": "4066", "scenario": "datetime", "intent": "datetime_query", "utt": "can you tell me the time in new york"}
+{"id": "4072", "scenario": "audio", "intent": "audio_volume_down", "utt": "can you turn that down"}
+{"id": "4080", "scenario": "alarm", "intent": "alarm_set", "utt": "i need to set an alarm tomorrow at one thousand two hundred p. m. to remind me to take my medication"}
+{"id": "4095", "scenario": "alarm", "intent": "alarm_set", "utt": "please set my alarm clock for eight am"}
+{"id": "4096", "scenario": "alarm", "intent": "alarm_set", "utt": "i need an alarm set for eight am"}
+{"id": "4123", "scenario": "takeaway", "intent": "takeaway_query", "utt": "what asian restaurants nearby offer to go food"}
+{"id": "4124", "scenario": "takeaway", "intent": "takeaway_query", "utt": "where is the closest spot to order food for pickup"}
+{"id": "4146", "scenario": "alarm", "intent": "alarm_query", "utt": "let me know about any alarms set today"}
+{"id": "4157", "scenario": "general", "intent": "general_joke", "utt": "hey olly have you heard any funny jokes lately"}
+{"id": "4223", "scenario": "takeaway", "intent": "takeaway_query", "utt": "where is my pizza from domino's at"}
+{"id": "4225", "scenario": "takeaway", "intent": "takeaway_query", "utt": "how much longer until my pizza will be here"}
+{"id": "4257", "scenario": "datetime", "intent": "datetime_query", "utt": "please tell me the current date"}
+{"id": "4285", "scenario": "weather", "intent": "weather_query", "utt": "what is the highest temperature for this week"}
+{"id": "4293", "scenario": "calendar", "intent": "calendar_query", "utt": "what are the upcoming reminders"}
+{"id": "4324", "scenario": "play", "intent": "play_music", "utt": "play mocking bird by eminem"}
+{"id": "4329", "scenario": "music", "intent": "music_query", "utt": "do you recognize the song playing on my phone"}
+{"id": "4342", "scenario": "audio", "intent": "audio_volume_down", "utt": "lower the volume of the speakers"}
+{"id": "4378", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does arby's do takeaway"}
+{"id": "4379", "scenario": "takeaway", "intent": "takeaway_query", "utt": "can i get takeaway from arby's"}
+{"id": "4380", "scenario": "takeaway", "intent": "takeaway_query", "utt": "will arby's offer takeaway"}
+{"id": "4407", "scenario": "play", "intent": "play_music", "utt": "play album"}
+{"id": "4414", "scenario": "weather", "intent": "weather_query", "utt": "will it rain in toronto next tuesday"}
+{"id": "4419", "scenario": "play", "intent": "play_music", "utt": "shuffle my workout playlist"}
+{"id": "4427", "scenario": "alarm", "intent": "alarm_set", "utt": "wake me up at nine am"}
+{"id": "4460", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does fongs have delivery"}
+{"id": "4468", "scenario": "alarm", "intent": "alarm_set", "utt": "postpone my alarm by fifteen minutes"}
+{"id": "4472", "scenario": "play", "intent": "play_music", "utt": "play song number"}
+{"id": "4488", "scenario": "alarm", "intent": "alarm_set", "utt": "set an alarm for seven thirty am"}
+{"id": "4489", "scenario": "alarm", "intent": "alarm_set", "utt": "wake me up at eight o'clock"}
+{"id": "4490", "scenario": "alarm", "intent": "alarm_set", "utt": "remind me at six thirty p. m."}
+{"id": "4513", "scenario": "datetime", "intent": "datetime_query", "utt": "i want to know what time it is"}
+{"id": "4517", "scenario": "takeaway", "intent": "takeaway_query", "utt": "check the status of my order"}
+{"id": "4518", "scenario": "takeaway", "intent": "takeaway_query", "utt": "when is my order ready"}
+{"id": "4595", "scenario": "weather", "intent": "weather_query", "utt": "will there be any seventy degree days next week"}
+{"id": "4598", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does that restaurant deliver"}
+{"id": "4599", "scenario": "takeaway", "intent": "takeaway_query", "utt": "check delivery options for the restaurant"}
+{"id": "4605", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does pizza hut have my order ready"}
+{"id": "4621", "scenario": "iot", "intent": "iot_hue_lightdim", "utt": "lower lights now"}
+{"id": "4644", "scenario": "iot", "intent": "iot_hue_lightdim", "utt": "please turn down the lights"}
+{"id": "4646", "scenario": "takeaway", "intent": "takeaway_query", "utt": "will the pizza be here soon"}
+{"id": "4655", "scenario": "alarm", "intent": "alarm_set", "utt": "set alarm for one hour from now"}
+{"id": "4656", "scenario": "alarm", "intent": "alarm_set", "utt": "set an alarm for thursday at seven p. m."}
+{"id": "4668", "scenario": "takeaway", "intent": "takeaway_query", "utt": "ask if deliver"}
+{"id": "4669", "scenario": "takeaway", "intent": "takeaway_query", "utt": "what is the status of my food order"}
+{"id": "4670", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does this restaurant only do carry-out"}
+{"id": "4677", "scenario": "weather", "intent": "weather_query", "utt": "will i need sunscreen today"}
+{"id": "4695", "scenario": "alarm", "intent": "alarm_set", "utt": "can you set an alarm for seven am"}
+{"id": "4698", "scenario": "alarm", "intent": "alarm_set", "utt": "remind me at five p. m."}
+{"id": "4716", "scenario": "alarm", "intent": "alarm_set", "utt": "please we're the following alarm"}
+{"id": "4717", "scenario": "alarm", "intent": "alarm_set", "utt": "set alarm for eight am tomorrow"}
+{"id": "4718", "scenario": "alarm", "intent": "alarm_set", "utt": "set an alarm for tomorrow monday at eight am"}
+{"id": "4732", "scenario": "audio", "intent": "audio_volume_down", "utt": "volume down"}
+{"id": "4734", "scenario": "alarm", "intent": "alarm_set", "utt": "set the alarm for nine am on weekends"}
+{"id": "4735", "scenario": "alarm", "intent": "alarm_set", "utt": "the set alarm for nine p. m. on thursday night"}
+{"id": "4754", "scenario": "play", "intent": "play_music", "utt": "put william it's my birthday in next"}
+{"id": "4781", "scenario": "alarm", "intent": "alarm_set", "utt": "wake me up at six thirty"}
+{"id": "4783", "scenario": "alarm", "intent": "alarm_set", "utt": "set the alarm"}
+{"id": "4787", "scenario": "music", "intent": "music_query", "utt": "what is my most played song"}
+{"id": "4805", "scenario": "general", "intent": "general_greet", "utt": "hi how are you"}
+{"id": "4828", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does restaurant have takeaway"}
+{"id": "4829", "scenario": "takeaway", "intent": "takeaway_query", "utt": "does the restaurant have carry-out"}
+{"id": "4830", "scenario": "takeaway", "intent": "takeaway_query", "utt": "can i get the food to go"}
+{"id": "4843", "scenario": "datetime", "intent": "datetime_query", "utt": "please give me the date today"}
+{"id": "4849", "scenario": "alarm", "intent": "alarm_set", "utt": "set an alarm for eight p. m."}
+{"id": "4893", "scenario": "general", "intent": "general_quirky", "utt": "get with new one"}
+{"id": "4894", "scenario": "news", "intent": "news_query", "utt": "today's news"}
+{"id": "4929", "scenario": "alarm", "intent": "alarm_set", "utt": "turn on my first scheduled alarm"}
+{"id": "4935", "scenario": "takeaway", "intent": "takeaway_query", "utt": "when can i expect my chinese take-out from fortune garden"}
+{"id": "4970", "scenario": "alarm", "intent": "alarm_remove", "utt": "remove my work alarm"}
+{"id": "4974", "scenario": "play", "intent": "play_music", "utt": "play you are my sunshine"}
+{"id": "4978", "scenario": "audio", "intent": "audio_volume_up", "utt": "i need you to have the volume louder"}
+{"id": "4990", "scenario": "play", "intent": "play_music", "utt": "play busdriver"}
+{"id": "5036", "scenario": "weather", "intent": "weather_query", "utt": "how hot is today"}
+{"id": "5042", "scenario": "alarm", "intent": "alarm_set", "utt": "alarm time for twelve p. m."}
+{"id": "5052", "scenario": "alarm", "intent": "alarm_set", "utt": "i need an alarm"}
+{"id": "5065", "scenario": "news", "intent": "news_query", "utt": "latest news from jersey"}
+{"id": "5068", "scenario": "music", "intent": "music_settings", "utt": "please put this playlist on shuffle"}
+{"id": "5071", "scenario": "alarm", "intent": "alarm_set", "utt": "set new alarm on five am"}
+{"id": "5073", "scenario": "alarm", "intent": "alarm_set", "utt": "six am alarm please"}
+{"id": "5080", "scenario": "music", "intent": "music_query", "utt": "what song do i play most"}
+{"id": "5091", "scenario": "music", "intent": "music_settings", "utt": "olly skip two songs"}
+{"id": "5092", "scenario": "music", "intent": "music_settings", "utt": "siri skip two songs"}
+{"id": "5140", "scenario": "news", "intent": "news_query", "utt": "notify me about news"}
+{"id": "5161", "scenario": "alarm", "intent": "alarm_set", "utt": "call me at six am"}
+{"id": "5162", "scenario": "alarm", "intent": "alarm_set", "utt": "i wanna get up at six am"}
+{"id": "5164", "scenario": "iot", "intent": "iot_hue_lightdim", "utt": "darken the room a bit"}
+{"id": "5167", "scenario": "weather", "intent": "weather_query", "utt": "do i need to bring an umbrella to manila this afternoon"}
+{"id": "5171", "scenario": "alarm", "intent": "alarm_set", "utt": "can you set my alarm for seven thirty am"}
+{"id": "5172", "scenario": "alarm", "intent": "alarm_set", "utt": "please wake me up at seven thirty am"}
+{"id": "5223", "scenario": "news", "intent": "news_query", "utt": "what is the latest news about donald trump"}
+{"id": "5231", "scenario": "weather", "intent": "weather_query", "utt": "should i wear rain boots"}
+{"id": "5262", "scenario": "music", "intent": "music_query", "utt": "who sings this"}
+{"id": "5288", "scenario": "datetime", "intent": "datetime_query", "utt": "what is the time in geneva"}
+{"id": "5293", "scenario": "alarm", "intent": "alarm_set", "utt": "alarm set"}
+{"id": "5319", "scenario": "alarm", "intent": "alarm_set", "utt": "set the alarm for five am"}
+{"id": "5325", "scenario": "takeaway", "intent": "takeaway_query", "utt": "hi there do you offer home delivery for orders"}
+{"id": "5402", "scenario": "takeaway", "intent": "takeaway_query", "utt": "is the restaurant having delivery facility"}
+{"id": "5403", "scenario": "takeaway", "intent": "takeaway_query", "utt": "will the restaurant deliver the order"}
+{"id": "5407", "scenario": "takeaway", "intent": "takeaway_query", "utt": "can i get takeaway from pings"}
+{"id": "5440", "scenario": "weather", "intent": "weather_query", "utt": "can i go without coat now"}
+{"id": "5467", "scenario": "weather", "intent": "weather_query", "utt": "is there a need for sun glasses"}
+{"id": "5474", "scenario": "alarm", "intent": "alarm_set", "utt": "set my alarm for six am"}
+{"id": "5482", "scenario": "audio", "intent": "audio_volume_down", "utt": "olly cut down the volume"}
+{"id": "5507", "scenario": "alarm", "intent": "alarm_set", "utt": "please arrange to wake me up at three am alarm"}
+{"id": "5511", "scenario": "audio", "intent": "audio_volume_up", "utt": "turn up the sound"}
+{"id": "5553", "scenario": "takeaway", "intent": "takeaway_query", "utt": "reviews of the restaurants"}
+{"id": "5566", "scenario": "alarm", "intent": "alarm_set", "utt": "set alarm at two am"}
+{"id": "5587", "scenario": "weather", "intent": "weather_query", "utt": "is today a sunscreen day"}
+{"id": "5598", "scenario": "takeaway", "intent": "takeaway_query", "utt": "when i will get the delivery"}
+{"id": "5599", "scenario": "takeaway", "intent": "takeaway_query", "utt": "what's the exact time we get food delivered once we place an order for food"}
+{"id": "5622", "scenario": "alarm", "intent": "alarm_set", "utt": "wake me at seven am"}
+{"id": "5624", "scenario": "alarm", "intent": "alarm_set", "utt": "alarm five p. m."}
+{"id": "5629", "scenario": "iot", "intent": "iot_wemo_on", "utt": "turn on the geyser"}
+{"id": "5681", "scenario": "iot", "intent": "iot_hue_lightoff", "utt": "lights turn off"}
+{"id": "5702", "scenario": "play", "intent": "play_music", "utt": "play my favorite songs"}
+{"id": "5704", "scenario": "play", "intent": "play_music", "utt": "please play my top music playlist"}
+{"id": "5711", "scenario": "weather", "intent": "weather_query", "utt": "should i take a coat to birmingham this evening"}
+{"id": "5742", "scenario": "weather", "intent": "weather_query", "utt": "weather news"}
+{"id": "5752", "scenario": "iot", "intent": "iot_hue_lighton", "utt": "turn on the lights"}
+{"id": "5769", "scenario": "takeaway", "intent": "takeaway_query", "utt": "is there a takeaway in chipotle restaurant"}
+{"id": "5776", "scenario": "takeaway", "intent": "takeaway_query", "utt": "what's up with my takeaway"}
+{"id": "5777", "scenario": "takeaway", "intent": "takeaway_query", "utt": "status of take away"}
+{"id": "5794", "scenario": "alarm", "intent": "alarm_set", "utt": "set an alarm in an hour's time"}
+{"id": "5808", "scenario": "takeaway", "intent": "takeaway_query", "utt": "do the restaurant deliver"}
+{"id": "5834", "scenario": "weather", "intent": "weather_query", "utt": "is it going to be cold in the next few days"}
+{"id": "5835", "scenario": "takeaway", "intent": "takeaway_query", "utt": "when is my takeaway going to get here"}
+{"id": "5836", "scenario": "takeaway", "intent": "takeaway_query", "utt": "when is my food going to be here"}
+{"id": "5890", "scenario": "alarm", "intent": "alarm_query", "utt": "list all set alarms"}
+{"id": "5906", "scenario": "alarm", "intent": "alarm_set", "utt": "please set alarm to my mobile phones"}
+{"id": "5907", "scenario": "alarm", "intent": "alarm_set", "utt": "please set alarm for today"}
+{"id": "5908", "scenario": "alarm", "intent": "alarm_set", "utt": "please set alarm for all days"}
+{"id": "5986", "scenario": "takeaway", "intent": "takeaway_order", "utt": "place an order for a pepperoni pizza at papa johns"}
+{"id": "6010", "scenario": "takeaway", "intent": "takeaway_query", "utt": "can i pick up my large order at pizza hut"}
+{"id": "6012", "scenario": "datetime", "intent": "datetime_query", "utt": "do you have the time"}
+{"id": "6037", "scenario": "alarm", "intent": "alarm_set", "utt": "wake me up at five thirty"}
+{"id": "6070", "scenario": "takeaway", "intent": "takeaway_query", "utt": "status for the pizza delivery from pizza hut"}
+{"id": "6085", "scenario": "alarm", "intent": "alarm_set", "utt": "open alarm and create an alert for ten am"}
+{"id": "6098", "scenario": "play", "intent": "play_music", "utt": "hey olly play me a popular hip hop song"}
+{"id": "6186", "scenario": "general", "intent": "general_quirky", "utt": "what's going on today"}
+{"id": "6189", "scenario": "general", "intent": "general_quirky", "utt": "dolores how was your day"}
+{"id": "6190", "scenario": "general", "intent": "general_quirky", "utt": "did you have a good day"}
+{"id": "6192", "scenario": "general", "intent": "general_quirky", "utt": "i was late today for the meeting you would not believe what happened"}
+{"id": "6199", "scenario": "general", "intent": "general_quirky", "utt": "how its possible"}
+{"id": "6207", "scenario": "general", "intent": "general_quirky", "utt": "i had a bad day today"}
+{"id": "6219", "scenario": "general", "intent": "general_quirky", "utt": "this question does not make sense"}
+{"id": "6222", "scenario": "general", "intent": "general_quirky", "utt": "my day was hectic"}
+{"id": "6231", "scenario": "general", "intent": "general_quirky", "utt": "what can you do"}
+{"id": "6233", "scenario": "general", "intent": "general_quirky", "utt": "olly i met my future wife today please set up a date next friday"}
+{"id": "6235", "scenario": "general", "intent": "general_quirky", "utt": "i watched the best movie please reserve me a copy when it releases"}
+{"id": "6244", "scenario": "general", "intent": "general_quirky", "utt": "i had a relaxing day today"}
+{"id": "6245", "scenario": "general", "intent": "general_quirky", "utt": "there was heavy traffic on my way home"}
+{"id": "6251", "scenario": "general", "intent": "general_quirky", "utt": "guess what happened today"}
+{"id": "6255", "scenario": "general", "intent": "general_quirky", "utt": "i would like to order a meal do have any special offers for sea food"}
+{"id": "6257", "scenario": "general", "intent": "general_quirky", "utt": "hello is this your first time here"}
+{"id": "6258", "scenario": "general", "intent": "general_quirky", "utt": "hi how was your day today"}
+{"id": "6260", "scenario": "general", "intent": "general_quirky", "utt": "isn't food great"}
+{"id": "6275", "scenario": "general", "intent": "general_quirky", "utt": "olly i had a great day today"}
+{"id": "6278", "scenario": "general", "intent": "general_quirky", "utt": "how many kilometers did i walk today"}
+{"id": "6291", "scenario": "general", "intent": "general_quirky", "utt": "who won the sports game last night"}
+{"id": "6292", "scenario": "general", "intent": "general_quirky", "utt": "hey i happened to miss one of my important meetings today"}
+{"id": "6306", "scenario": "general", "intent": "general_quirky", "utt": "can i tell you about my day"}
+{"id": "6312", "scenario": "general", "intent": "general_quirky", "utt": "hey olly i saw a dog today"}
+{"id": "6327", "scenario": "general", "intent": "general_quirky", "utt": "i need to have better focus olky i couldn't concentrate on a single task"}
+{"id": "6329", "scenario": "general", "intent": "general_quirky", "utt": "there are certain parts of my day where i am fatigued olly"}
+{"id": "6330", "scenario": "general", "intent": "general_quirky", "utt": "my commute was difficult today"}
+{"id": "6335", "scenario": "general", "intent": "general_quirky", "utt": "olly you'll never guess what happened earlier today"}
+{"id": "6339", "scenario": "general", "intent": "general_quirky", "utt": "it was a tough day today"}
+{"id": "6343", "scenario": "general", "intent": "general_quirky", "utt": "wake up"}
+{"id": "6344", "scenario": "general", "intent": "general_quirky", "utt": "i am fine"}
+{"id": "6346", "scenario": "general", "intent": "general_quirky", "utt": "hey how's it going"}
+{"id": "6350", "scenario": "general", "intent": "general_quirky", "utt": "hi what's going on"}
+{"id": "6354", "scenario": "general", "intent": "general_quirky", "utt": "how are you feeling lately"}
+{"id": "6355", "scenario": "general", "intent": "general_quirky", "utt": "i had chicken for lunch and it was delicious"}
+{"id": "6368", "scenario": "general", "intent": "general_quirky", "utt": "family entertainment"}
+{"id": "6369", "scenario": "general", "intent": "general_quirky", "utt": "investing"}
+{"id": "6379", "scenario": "general", "intent": "general_quirky", "utt": "do you store personal information about me"}
+{"id": "6380", "scenario": "general", "intent": "general_quirky", "utt": "t. v."}
+{"id": "6386", "scenario": "general", "intent": "general_quirky", "utt": "how often do you complete updates"}
+{"id": "6391", "scenario": "general", "intent": "general_quirky", "utt": "olly i went shopping today and bought a massive dildo"}
+{"id": "6394", "scenario": "general", "intent": "general_quirky", "utt": "today i ran into my old friend bob"}
+{"id": "6412", "scenario": "general", "intent": "general_quirky", "utt": "the kids are driving me crazy"}
+{"id": "6415", "scenario": "calendar", "intent": "calendar_query", "utt": "my upcoming events"}
+{"id": "6416", "scenario": "general", "intent": "general_quirky", "utt": "add note that my day is going well"}
+{"id": "6423", "scenario": "general", "intent": "general_quirky", "utt": "famous person biographies"}
+{"id": "6429", "scenario": "general", "intent": "general_quirky", "utt": "find me the cheapest copy of the four hour body"}
+{"id": "6435", "scenario": "general", "intent": "general_quirky", "utt": "what's your favorite color"}
+{"id": "6441", "scenario": "general", "intent": "general_quirky", "utt": "record what happened today"}
+{"id": "6442", "scenario": "general", "intent": "general_quirky", "utt": "here is something from today"}
+{"id": "6449", "scenario": "general", "intent": "general_quirky", "utt": "jobs in my area for my skill set"}
+{"id": "6453", "scenario": "transport", "intent": "transport_ticket", "utt": "cheapest flights to kansas city from dallas"}
+{"id": "6458", "scenario": "general", "intent": "general_quirky", "utt": "how are you today doing well thank you"}
+{"id": "6472", "scenario": "general", "intent": "general_quirky", "utt": "today was bad"}
+{"id": "6478", "scenario": "general", "intent": "general_quirky", "utt": "movies making money"}
+{"id": "6487", "scenario": "general", "intent": "general_quirky", "utt": "who do i think people will care"}
+{"id": "6498", "scenario": "general", "intent": "general_quirky", "utt": "my son was born today"}
+{"id": "6507", "scenario": "general", "intent": "general_quirky", "utt": "do you like the president"}
+{"id": "6518", "scenario": "general", "intent": "general_quirky", "utt": "work sucked today"}
+{"id": "6525", "scenario": "general", "intent": "general_quirky", "utt": "please note today a terrible things happened to me because my friend behaved rudely on me"}
+{"id": "6541", "scenario": "general", "intent": "general_quirky", "utt": "current politics"}
+{"id": "6547", "scenario": "general", "intent": "general_quirky", "utt": "how are you doing today"}
+{"id": "6560", "scenario": "general", "intent": "general_quirky", "utt": "what would be a good romantic dinner"}
+{"id": "6567", "scenario": "general", "intent": "general_quirky", "utt": "do you have feelings"}
+{"id": "6569", "scenario": "general", "intent": "general_quirky", "utt": "tell me about rihana"}
+{"id": "6577", "scenario": "general", "intent": "general_quirky", "utt": "my day went pretty well today"}
+{"id": "6585", "scenario": "general", "intent": "general_quirky", "utt": "olly i had a long hard day"}
+{"id": "6587", "scenario": "general", "intent": "general_quirky", "utt": "i fell at work today"}
+{"id": "6614", "scenario": "general", "intent": "general_quirky", "utt": "painting"}
+{"id": "6622", "scenario": "general", "intent": "general_quirky", "utt": "what is the history of smart phones"}
+{"id": "6636", "scenario": "qa", "intent": "qa_stock", "utt": "stock exchange rates"}
+{"id": "6664", "scenario": "general", "intent": "general_quirky", "utt": "hi what are you doing"}
+{"id": "6666", "scenario": "general", "intent": "general_quirky", "utt": "overall day"}
+{"id": "6669", "scenario": "general", "intent": "general_quirky", "utt": "suggestions for future"}
+{"id": "6685", "scenario": "general", "intent": "general_quirky", "utt": "today i had a lunch with my long-time sweetheart play me a nice song to the mood"}
+{"id": "6686", "scenario": "general", "intent": "general_quirky", "utt": "sex"}
+{"id": "6687", "scenario": "general", "intent": "general_quirky", "utt": "life"}
+{"id": "6695", "scenario": "general", "intent": "general_quirky", "utt": "hey i just lost my wallet today"}
+{"id": "6700", "scenario": "general", "intent": "general_quirky", "utt": "cheering me up"}
+{"id": "6714", "scenario": "calendar", "intent": "calendar_remove", "utt": "olly cancel business meeting on wednesday"}
+{"id": "6717", "scenario": "calendar", "intent": "calendar_remove", "utt": "olly remove stand-up on friday at ten am"}
+{"id": "6727", "scenario": "calendar", "intent": "calendar_remove", "utt": "remove chat with allan"}
+{"id": "6728", "scenario": "calendar", "intent": "calendar_remove", "utt": "cancel the breakfast at tiffany's house"}
+{"id": "6730", "scenario": "calendar", "intent": "calendar_set", "utt": "schedule a chat with adam on thursday afternoon"}
+{"id": "6735", "scenario": "calendar", "intent": "calendar_remove", "utt": "olly cancel all events in the next two days"}
+{"id": "6753", "scenario": "calendar", "intent": "calendar_remove", "utt": "please cancel all my events for today"}
+{"id": "6757", "scenario": "calendar", "intent": "calendar_set", "utt": "put reminder to call pawel tomorrow"}
+{"id": "6763", "scenario": "calendar", "intent": "calendar_set", "utt": "remind me to send that email later"}
+{"id": "6780", "scenario": "calendar", "intent": "calendar_query", "utt": "am i free this saturday"}
+{"id": "6795", "scenario": "calendar", "intent": "calendar_query", "utt": "do i have any appointments this weekend"}
+{"id": "6812", "scenario": "calendar", "intent": "calendar_set", "utt": "remind me to look at the pasta in thirty minutes"}
+{"id": "6822", "scenario": "calendar", "intent": "calendar_set", "utt": "i want to go to the outdoor movie screening this weekend remind me"}
+{"id": "6828", "scenario": "calendar", "intent": "calendar_query", "utt": "do i have any meetings on friday's afternoon"}
+{"id": "6830", "scenario": "calendar", "intent": "calendar_remove", "utt": "free up my schedule for the next week"}
+{"id": "6834", "scenario": "calendar", "intent": "calendar_query", "utt": "what time am i meeting john tomorrow"}
+{"id": "6835", "scenario": "calendar", "intent": "calendar_query", "utt": "give me the address of my hairdresser for the meeting today"}
+{"id": "6847", "scenario": "alarm", "intent": "alarm_set", "utt": "set an alarm on wednesday noon so i can register for early adopters program"}
+{"id": "6848", "scenario": "alarm", "intent": "alarm_set", "utt": "wake me up on friday at five in the morning i need to catch the train"}
+{"id": "6855", "scenario": "alarm", "intent": "alarm_set", "utt": "set an alarm at ten am tomorrow and label it as meeting"}
+{"id": "6874", "scenario": "calendar", "intent": "calendar_query", "utt": "what important dates are there in my calendar this month"}
+{"id": "6884", "scenario": "calendar", "intent": "calendar_remove", "utt": "erase the meeting tomorrow at ten am"}
+{"id": "6903", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete the dentist appointment next week"}
+{"id": "6904", "scenario": "calendar", "intent": "calendar_remove", "utt": "erase the lawn care appointment next month"}
+{"id": "6919", "scenario": "calendar", "intent": "calendar_set", "utt": "set a notification for fifth march that i have a doctor's appointment at ten am"}
+{"id": "6921", "scenario": "calendar", "intent": "calendar_set", "utt": "set a notification for eleven march that an interview is scheduled with mr. rodriguez"}
+{"id": "6922", "scenario": "calendar", "intent": "calendar_set", "utt": "remind me about my meeting with joe at ten on monday"}
+{"id": "6950", "scenario": "alarm", "intent": "alarm_set", "utt": "please set an alarm clock for my next meeting with the team at three p. m. next friday"}
+{"id": "6957", "scenario": "calendar", "intent": "calendar_remove", "utt": "clean my calendar"}
+{"id": "6965", "scenario": "calendar", "intent": "calendar_query", "utt": "what are the pending reminder for today evening"}
+{"id": "6977", "scenario": "calendar", "intent": "calendar_query", "utt": "can you read me my next reminders"}
+{"id": "6996", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete next event"}
+{"id": "7001", "scenario": "calendar", "intent": "calendar_set", "utt": "create event"}
+{"id": "7011", "scenario": "calendar", "intent": "calendar_set", "utt": "add a meeting with john donaldson to my calendar and"}
+{"id": "7018", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete new year's eve from the calendar"}
+{"id": "7033", "scenario": "alarm", "intent": "alarm_set", "utt": "set a reminder alarm for my meeting with the agent this evening"}
+{"id": "7042", "scenario": "alarm", "intent": "alarm_set", "utt": "please set a reminder alarm for three p. m. on saturday"}
+{"id": "7047", "scenario": "calendar", "intent": "calendar_set", "utt": "add doctor's appointment monday at three to calendar"}
+{"id": "7051", "scenario": "calendar", "intent": "calendar_set", "utt": "add an event to my google calendar for the date march twenty second please"}
+{"id": "7060", "scenario": "calendar", "intent": "calendar_set", "utt": "remind me thirty minutes early that i have a teleconference on tuesday"}
+{"id": "7063", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete all my calendar events"}
+{"id": "7075", "scenario": "calendar", "intent": "calendar_remove", "utt": "please delete my next calendar event"}
+{"id": "7083", "scenario": "alarm", "intent": "alarm_set", "utt": "set a reminder alarm for my five p. m. meeting please"}
+{"id": "7094", "scenario": "calendar", "intent": "calendar_set", "utt": "remind me of my appointment on the fifteenth"}
+{"id": "7106", "scenario": "calendar", "intent": "calendar_set", "utt": "create a meeting thursday afternoon for budget review"}
+{"id": "7115", "scenario": "calendar", "intent": "calendar_remove", "utt": "remove my car payment on the fifteenth from my calendar"}
+{"id": "7116", "scenario": "calendar", "intent": "calendar_remove", "utt": "erase my appointment on the twelfth from my calendar"}
+{"id": "7142", "scenario": "calendar", "intent": "calendar_query", "utt": "what is on that date"}
+{"id": "7143", "scenario": "calendar", "intent": "calendar_query", "utt": "tell me this date program"}
+{"id": "7144", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete the party on june first from my calendar"}
+{"id": "7146", "scenario": "calendar", "intent": "calendar_remove", "utt": "find dinner with mom on my calendar and delete it"}
+{"id": "7148", "scenario": "calendar", "intent": "calendar_remove", "utt": "remove the board meeting and reschedule for next wednesday"}
+{"id": "7160", "scenario": "calendar", "intent": "calendar_set", "utt": "remind this after two days"}
+{"id": "7162", "scenario": "calendar", "intent": "calendar_set", "utt": "remind me after a month"}
+{"id": "7177", "scenario": "email", "intent": "email_sendemail", "utt": "please send a mail to mr. richard stating that i going to met him on first of february twenty seventeen at five p. m. at this office"}
+{"id": "7178", "scenario": "email", "intent": "email_sendemail", "utt": "please send a voicemail to mr. richard office about meting him on first of february twenty seventeen at five p. m."}
+{"id": "7183", "scenario": "calendar", "intent": "calendar_set", "utt": "add sally's birthday to calendar for saturday at ten p. m."}
+{"id": "7211", "scenario": "calendar", "intent": "calendar_set", "utt": "don't let me forget tomorrow's meeting with sheila"}
+{"id": "7228", "scenario": "calendar", "intent": "calendar_set", "utt": "can you remind me to go to the corner store on tuesday"}
+{"id": "7236", "scenario": "calendar", "intent": "calendar_remove", "utt": "please remove the appointment on april first"}
+{"id": "7237", "scenario": "calendar", "intent": "calendar_remove", "utt": "remove the hip show from my schedule on april second"}
+{"id": "7241", "scenario": "calendar", "intent": "calendar_set", "utt": "note down this event on my calendar"}
+{"id": "7242", "scenario": "calendar", "intent": "calendar_set", "utt": "this is important event please note on my calendar"}
+{"id": "7248", "scenario": "calendar", "intent": "calendar_query", "utt": "today is john's birthday"}
+{"id": "7254", "scenario": "general", "intent": "general_quirky", "utt": "how do i buy tickets for that"}
+{"id": "7265", "scenario": "calendar", "intent": "calendar_query", "utt": "bring up my agenda"}
+{"id": "7267", "scenario": "calendar", "intent": "calendar_set", "utt": "hey make sure i go to sarahs birthday party on the twelveth"}
+{"id": "7268", "scenario": "calendar", "intent": "calendar_set", "utt": "mark sarahs birthday party on the twelveth"}
+{"id": "7271", "scenario": "calendar", "intent": "calendar_query", "utt": "what's on my agenda"}
+{"id": "7277", "scenario": "alarm", "intent": "alarm_set", "utt": "set the alarm to seven am for work"}
+{"id": "7299", "scenario": "calendar", "intent": "calendar_set", "utt": "set a reminder of meeting at nine am tomorrow"}
+{"id": "7308", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete my calendar"}
+{"id": "7321", "scenario": "calendar", "intent": "calendar_query", "utt": "what events are going to happen in my city between two four p. m. today"}
+{"id": "7328", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete all events and content from my calendar"}
+{"id": "7329", "scenario": "calendar", "intent": "calendar_set", "utt": "set a two day notification before maria's birthday please"}
+{"id": "7340", "scenario": "calendar", "intent": "calendar_remove", "utt": "cancel my meeting tomorrow"}
+{"id": "7343", "scenario": "calendar", "intent": "calendar_remove", "utt": "get rid of everything on my calendar"}
+{"id": "7348", "scenario": "calendar", "intent": "calendar_set", "utt": "add all the event of march happening in rccg to my calendar"}
+{"id": "7352", "scenario": "calendar", "intent": "calendar_set", "utt": "will you put in my calendar that john c. and his wife are meeting with us at four p. m. tomorrow"}
+{"id": "7361", "scenario": "calendar", "intent": "calendar_remove", "utt": "please erase the next birthday event"}
+{"id": "7362", "scenario": "calendar", "intent": "calendar_remove", "utt": "just delete the next engagement event"}
+{"id": "7364", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete an first event of twenty third of march twenty seventeen"}
+{"id": "7369", "scenario": "calendar", "intent": "calendar_set", "utt": "all rccg march event is to be added to my calendar"}
+{"id": "7375", "scenario": "calendar", "intent": "calendar_query", "utt": "in march what meetings are available"}
+{"id": "7387", "scenario": "calendar", "intent": "calendar_query", "utt": "how many pending reminders do i have"}
+{"id": "7389", "scenario": "calendar", "intent": "calendar_remove", "utt": "please remove dinner date scheduled for this friday at nine p. m."}
+{"id": "7403", "scenario": "calendar", "intent": "calendar_set", "utt": "add new year with family next week"}
+{"id": "7410", "scenario": "calendar", "intent": "calendar_set", "utt": "create event christmas on december twenty five two thousand and seventeen and set it to a repeating reminder"}
+{"id": "7412", "scenario": "calendar", "intent": "calendar_set", "utt": "notify me about any festival occurring next month"}
+{"id": "7414", "scenario": "calendar", "intent": "calendar_set", "utt": "repeat reminder for my schedule for christmas"}
+{"id": "7415", "scenario": "calendar", "intent": "calendar_set", "utt": "repeat reminder for christmas"}
+{"id": "7426", "scenario": "calendar", "intent": "calendar_query", "utt": "remind me the reminders i have set"}
+{"id": "7428", "scenario": "calendar", "intent": "calendar_query", "utt": "could you provide my upcoming events"}
+{"id": "7431", "scenario": "calendar", "intent": "calendar_remove", "utt": "i want you to remove this event"}
+{"id": "7439", "scenario": "calendar", "intent": "calendar_set", "utt": "meeting with anna this friday"}
+{"id": "7440", "scenario": "calendar", "intent": "calendar_set", "utt": "meeting with joe next week tuesday"}
+{"id": "7466", "scenario": "calendar", "intent": "calendar_query", "utt": "show me events that are going on right now"}
+{"id": "7472", "scenario": "alarm", "intent": "alarm_set", "utt": "set alarm on tenth november for clock"}
+{"id": "7481", "scenario": "calendar", "intent": "calendar_set", "utt": "i want a reminder that repeats every week"}
+{"id": "7485", "scenario": "calendar", "intent": "calendar_query", "utt": "have i got any reminders in my calendar"}
+{"id": "7508", "scenario": "calendar", "intent": "calendar_query", "utt": "what else is on my calendar after my last meeting at two p. m."}
+{"id": "7509", "scenario": "calendar", "intent": "calendar_query", "utt": "after swimming lessons what else is on my calendar on tuesday"}
+{"id": "7515", "scenario": "calendar", "intent": "calendar_set", "utt": "repeat this event"}
+{"id": "7544", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete all appointments for tomorrow"}
+{"id": "7577", "scenario": "alarm", "intent": "alarm_set", "utt": "repeat alarm"}
+{"id": "7593", "scenario": "calendar", "intent": "calendar_set", "utt": "remind me to turn off the lights in ten minutes"}
+{"id": "7599", "scenario": "calendar", "intent": "calendar_query", "utt": "what events are going on next week"}
+{"id": "7601", "scenario": "calendar", "intent": "calendar_set", "utt": "set reminder for meeting tuesday with bill"}
+{"id": "7602", "scenario": "calendar", "intent": "calendar_set", "utt": "set reminder for date night with husband next friday"}
+{"id": "7608", "scenario": "calendar", "intent": "calendar_set", "utt": "ask joe and joanne if they can attend tomorrow's meeting at eleven am"}
+{"id": "7614", "scenario": "calendar", "intent": "calendar_query", "utt": "tell me upcoming event's"}
+{"id": "7634", "scenario": "calendar", "intent": "calendar_set", "utt": "for the next three sundays remind me i have yoga class at noon"}
+{"id": "7639", "scenario": "calendar", "intent": "calendar_set", "utt": "add haircut to my appointments on saturday afternoon at four"}
+{"id": "7650", "scenario": "calendar", "intent": "calendar_set", "utt": "set notification before this event"}
+{"id": "7696", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete the scheduled meeting on fourth october twelve p. m."}
+{"id": "7701", "scenario": "calendar", "intent": "calendar_remove", "utt": "remove all the events in my calendar"}
+{"id": "7702", "scenario": "calendar", "intent": "calendar_remove", "utt": "clean up my schedule"}
+{"id": "7708", "scenario": "alarm", "intent": "alarm_set", "utt": "please set an alarm for tomorrows meeting at seven am"}
+{"id": "7709", "scenario": "alarm", "intent": "alarm_set", "utt": "please set an alarm for tomorrow's meeting at seven am"}
+{"id": "7721", "scenario": "calendar", "intent": "calendar_query", "utt": "could you check the reminders and tell me what are pending"}
+{"id": "7733", "scenario": "alarm", "intent": "alarm_set", "utt": "wake me up every weekday at seven am"}
+{"id": "7737", "scenario": "calendar", "intent": "calendar_remove", "utt": "remove wyatt's birthday party from my calendar"}
+{"id": "7743", "scenario": "calendar", "intent": "calendar_query", "utt": "can you pull up the latest time so i won't be late for my appointment"}
+{"id": "7748", "scenario": "calendar", "intent": "calendar_remove", "utt": "erase all my event in my calendar"}
+{"id": "7752", "scenario": "calendar", "intent": "calendar_query", "utt": "what is on my calendar today"}
+{"id": "7759", "scenario": "calendar", "intent": "calendar_remove", "utt": "please remove that event from my calendar"}
+{"id": "7760", "scenario": "calendar", "intent": "calendar_remove", "utt": "remove that event from my calendar"}
+{"id": "7798", "scenario": "calendar", "intent": "calendar_query", "utt": "when is this going to happen"}
+{"id": "7806", "scenario": "calendar", "intent": "calendar_set", "utt": "every other wednesday remind me to go grocery shopping"}
+{"id": "7807", "scenario": "calendar", "intent": "calendar_set", "utt": "don't let me forget i have a parent teacher conference this monday at four hundred p. m."}
+{"id": "7819", "scenario": "calendar", "intent": "calendar_query", "utt": "should i go to the market day after tomorrow"}
+{"id": "7824", "scenario": "calendar", "intent": "calendar_query", "utt": "what's up today"}
+{"id": "7825", "scenario": "calendar", "intent": "calendar_set", "utt": "please schedule a hair cutting appointment for one p. m. on saturday"}
+{"id": "7827", "scenario": "calendar", "intent": "calendar_set", "utt": "please remind me to call duker at one p. m. on thursday"}
+{"id": "7837", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete all"}
+{"id": "7838", "scenario": "calendar", "intent": "calendar_query", "utt": "what is happening during eight am and five p. m. today"}
+{"id": "7841", "scenario": "calendar", "intent": "calendar_set", "utt": "remind me to pick up more dog food at petco tomorrow at seven twenty p. m."}
+{"id": "7845", "scenario": "calendar", "intent": "calendar_query", "utt": "how many reminders do i have made"}
+{"id": "7848", "scenario": "calendar", "intent": "calendar_set", "utt": "let me know the day before my trip to california"}
+{"id": "7855", "scenario": "calendar", "intent": "calendar_set", "utt": "set up a meeting with my son's teacher for friday"}
+{"id": "7857", "scenario": "calendar", "intent": "calendar_query", "utt": "where is my twelve p. m. meeting today happening"}
+{"id": "7861", "scenario": "calendar", "intent": "calendar_set", "utt": "remind me at eight am tomorrow that i have a lunch meeting at noon in the conference room"}
+{"id": "7865", "scenario": "alarm", "intent": "alarm_set", "utt": "set an alarm for this eight hundred p. m. this evening"}
+{"id": "7869", "scenario": "calendar", "intent": "calendar_remove", "utt": "take out event from calendar"}
+{"id": "7873", "scenario": "calendar", "intent": "calendar_query", "utt": "how many corporate meetings do i have this week"}
+{"id": "7883", "scenario": "calendar", "intent": "calendar_set", "utt": "please remind me to pickup john at school today at one p. m."}
+{"id": "7886", "scenario": "calendar", "intent": "calendar_set", "utt": "remind me i have a meeting at seven p. m."}
+{"id": "7887", "scenario": "calendar", "intent": "calendar_query", "utt": "what meetings did i have last week"}
+{"id": "7911", "scenario": "calendar", "intent": "calendar_remove", "utt": "remove dinner with mike from my calendar"}
+{"id": "7914", "scenario": "calendar", "intent": "calendar_query", "utt": "events description"}
+{"id": "7917", "scenario": "calendar", "intent": "calendar_set", "utt": "i need a reminder to call my mom at three p. m."}
+{"id": "7921", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete all scheduled events"}
+{"id": "7925", "scenario": "calendar", "intent": "calendar_query", "utt": "who is my meeting with"}
+{"id": "7928", "scenario": "calendar", "intent": "calendar_set", "utt": "new event lunch outback"}
+{"id": "7935", "scenario": "calendar", "intent": "calendar_set", "utt": "remind me the day when this event is supposed to take place"}
+{"id": "7943", "scenario": "calendar", "intent": "calendar_query", "utt": "today's events"}
+{"id": "7948", "scenario": "calendar", "intent": "calendar_set", "utt": "add this event to my calendar"}
+{"id": "7982", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete all events for today"}
+{"id": "7983", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete all events and tasks for today"}
+{"id": "7985", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete this event on march three"}
+{"id": "7994", "scenario": "calendar", "intent": "calendar_remove", "utt": "clear my calendar of all events"}
+{"id": "7998", "scenario": "calendar", "intent": "calendar_remove", "utt": "erase my next calendar event"}
+{"id": "8000", "scenario": "calendar", "intent": "calendar_remove", "utt": "please delete my lunch date from the march twenty third schedule"}
+{"id": "8002", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete my appointment tomorrow"}
+{"id": "8011", "scenario": "calendar", "intent": "calendar_query", "utt": "show me my events for the month"}
+{"id": "8015", "scenario": "calendar", "intent": "calendar_query", "utt": "do i have a date for tonight"}
+{"id": "8016", "scenario": "calendar", "intent": "calendar_query", "utt": "do i have a party tomorrow save on my calendar"}
+{"id": "8021", "scenario": "calendar", "intent": "calendar_set", "utt": "i need a reminder for friday's meeting"}
+{"id": "8026", "scenario": "calendar", "intent": "calendar_set", "utt": "please set a meeting for tomorrow on my calendar"}
+{"id": "8028", "scenario": "calendar", "intent": "calendar_query", "utt": "what events do i have scheduled today"}
+{"id": "8031", "scenario": "calendar", "intent": "calendar_query", "utt": "when is my dental appointment on the calendar"}
+{"id": "8036", "scenario": "calendar", "intent": "calendar_set", "utt": "remind me to start the crock pot at two hundred p. m."}
+{"id": "8094", "scenario": "calendar", "intent": "calendar_query", "utt": "when the meeting start"}
+{"id": "8109", "scenario": "calendar", "intent": "calendar_remove", "utt": "remove next event in calendar"}
+{"id": "8115", "scenario": "calendar", "intent": "calendar_query", "utt": "between may one and december thirty one what meetings occurred"}
+{"id": "8159", "scenario": "calendar", "intent": "calendar_set", "utt": "set reminder for seven am for the city team meeting"}
+{"id": "8161", "scenario": "calendar", "intent": "calendar_remove", "utt": "cancel the plan of party"}
+{"id": "8174", "scenario": "alarm", "intent": "alarm_set", "utt": "will you set alarm clock one day before for all gym class on my calendar"}
+{"id": "8176", "scenario": "calendar", "intent": "calendar_set", "utt": "can you schedule a meeting with mr. chen on next monday six hundred p. m."}
+{"id": "8180", "scenario": "calendar", "intent": "calendar_remove", "utt": "could you delete all events on my calendar"}
+{"id": "8185", "scenario": "calendar", "intent": "calendar_set", "utt": "remind me about the march sixteen meeting"}
+{"id": "8194", "scenario": "calendar", "intent": "calendar_set", "utt": "notify me when this meeting is close"}
+{"id": "8197", "scenario": "calendar", "intent": "calendar_query", "utt": "do i have any pending reminders"}
+{"id": "8198", "scenario": "calendar", "intent": "calendar_query", "utt": "are there any reminders left"}
+{"id": "8200", "scenario": "calendar", "intent": "calendar_query", "utt": "what is on my schedule for today"}
+{"id": "8225", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete event for tuesday"}
+{"id": "8226", "scenario": "calendar", "intent": "calendar_query", "utt": "how are things looking for the meeting with john"}
+{"id": "8231", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete appointment at time"}
+{"id": "8232", "scenario": "calendar", "intent": "calendar_remove", "utt": "i'm not doing thing this week"}
+{"id": "8237", "scenario": "calendar", "intent": "calendar_set", "utt": "hey google can you save next monday night for my date with carl"}
+{"id": "8242", "scenario": "calendar", "intent": "calendar_remove", "utt": "olly clear everything off my calendar for the rest of the year"}
+{"id": "8252", "scenario": "alarm", "intent": "alarm_set", "utt": "set a timer at five am seven days a week"}
+{"id": "8254", "scenario": "calendar", "intent": "calendar_remove", "utt": "erase my next event"}
+{"id": "8255", "scenario": "calendar", "intent": "calendar_remove", "utt": "cancel upcoming event"}
+{"id": "8257", "scenario": "calendar", "intent": "calendar_remove", "utt": "remove all upcoming events please"}
+{"id": "8262", "scenario": "alarm", "intent": "alarm_set", "utt": "please sound an alarm three hours before a scheduled event"}
+{"id": "8275", "scenario": "calendar", "intent": "calendar_remove", "utt": "please clear jeff's birthday from the calendar"}
+{"id": "8277", "scenario": "calendar", "intent": "calendar_remove", "utt": "remove all scheduled terawatts meetings from the calendar please"}
+{"id": "8279", "scenario": "calendar", "intent": "calendar_set", "utt": "set a reminder on fifteenth march as meeting"}
+{"id": "8281", "scenario": "calendar", "intent": "calendar_remove", "utt": "remove all scheduled events from the calendar"}
+{"id": "8295", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete any and all events"}
+{"id": "8298", "scenario": "calendar", "intent": "calendar_query", "utt": "where are the boston redso game playing next"}
+{"id": "8314", "scenario": "calendar", "intent": "calendar_query", "utt": "march one is susan's birthday right"}
+{"id": "8331", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete my meeting for tomorrow"}
+{"id": "8335", "scenario": "calendar", "intent": "calendar_remove", "utt": "i don't want any events listed on the calendar"}
+{"id": "8360", "scenario": "calendar", "intent": "calendar_set", "utt": "remind me two days before"}
+{"id": "8361", "scenario": "calendar", "intent": "calendar_set", "utt": "remind me every tuesday to go to the dry cleaners"}
+{"id": "8367", "scenario": "calendar", "intent": "calendar_set", "utt": "schedule my meeting with mr. john hopkins tomorrow one p. m. in the afternoon after lunch"}
+{"id": "8374", "scenario": "alarm", "intent": "alarm_set", "utt": "create event with alarm for meeting in two hours"}
+{"id": "8389", "scenario": "calendar", "intent": "calendar_set", "utt": "remind me on monday at two p. m. to have a meeting with andrew"}
+{"id": "8391", "scenario": "calendar", "intent": "calendar_set", "utt": "set reminder for meeting"}
+{"id": "8396", "scenario": "calendar", "intent": "calendar_set", "utt": "can you set a reminder for wednesday at one p. m. for my meeting"}
+{"id": "8403", "scenario": "general", "intent": "general_quirky", "utt": "please provide me more info"}
+{"id": "8419", "scenario": "calendar", "intent": "calendar_query", "utt": "do i have any reminders for today"}
+{"id": "8421", "scenario": "calendar", "intent": "calendar_set", "utt": "i need to set a reminder to go to a work meeting on friday at two hundred p. m."}
+{"id": "8428", "scenario": "calendar", "intent": "calendar_set", "utt": "olly add lunch appointment with lisa to january second at twelve thirty p. m."}
+{"id": "8432", "scenario": "calendar", "intent": "calendar_remove", "utt": "remove my meeting today at one p. m."}
+{"id": "8441", "scenario": "calendar", "intent": "calendar_remove", "utt": "erase my whole calendar"}
+{"id": "8457", "scenario": "calendar", "intent": "calendar_query", "utt": "what time is the shine down concert tonight"}
+{"id": "8458", "scenario": "calendar", "intent": "calendar_query", "utt": "what are my reminders for this month"}
+{"id": "8459", "scenario": "calendar", "intent": "calendar_query", "utt": "show me my calendar"}
+{"id": "8468", "scenario": "calendar", "intent": "calendar_query", "utt": "what events do i have remaining today"}
+{"id": "8471", "scenario": "calendar", "intent": "calendar_remove", "utt": "remove all the events of last month from the calendar"}
+{"id": "8475", "scenario": "calendar", "intent": "calendar_set", "utt": "add on calendar birthday party tomorrow two p. m. for jane at her house"}
+{"id": "8478", "scenario": "calendar", "intent": "calendar_set", "utt": "remind me of my meeting at five p. m."}
+{"id": "8480", "scenario": "calendar", "intent": "calendar_set", "utt": "remind me at five p. m. that i have a meeting"}
+{"id": "8481", "scenario": "calendar", "intent": "calendar_set", "utt": "send me reminder to call my daughter on thursday for her anniversary"}
+{"id": "8512", "scenario": "calendar", "intent": "calendar_set", "utt": "set a reminder to go to movies with ron on march twenty seven"}
+{"id": "8542", "scenario": "calendar", "intent": "calendar_query", "utt": "what are my appointments today"}
+{"id": "8544", "scenario": "calendar", "intent": "calendar_remove", "utt": "clear all my calendar events"}
+{"id": "8547", "scenario": "calendar", "intent": "calendar_remove", "utt": "remove the upcoming calendar event"}
+{"id": "8551", "scenario": "calendar", "intent": "calendar_query", "utt": "what day of the week is the youth charity event"}
+{"id": "8556", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete the work luncheon this friday"}
+{"id": "8560", "scenario": "calendar", "intent": "calendar_query", "utt": "do i have to do something later"}
+{"id": "8561", "scenario": "calendar", "intent": "calendar_query", "utt": "check my calendar for me"}
+{"id": "8574", "scenario": "calendar", "intent": "calendar_query", "utt": "am i busy today"}
+{"id": "8580", "scenario": "calendar", "intent": "calendar_query", "utt": "what times are today's meetings"}
+{"id": "8586", "scenario": "calendar", "intent": "calendar_query", "utt": "what do i have scheduled today"}
+{"id": "8593", "scenario": "alarm", "intent": "alarm_set", "utt": "set alarm for tomorrow at two p. m."}
+{"id": "8596", "scenario": "calendar", "intent": "calendar_query", "utt": "calendar up when is my financial meeting on friday"}
+{"id": "8601", "scenario": "calendar", "intent": "calendar_query", "utt": "what is the date for the event scheduled on the twentieth of february"}
+{"id": "8614", "scenario": "calendar", "intent": "calendar_set", "utt": "schedule event for every wednesday"}
+{"id": "8636", "scenario": "calendar", "intent": "calendar_remove", "utt": "can you delete the doctors appointment i had tuesday"}
+{"id": "8647", "scenario": "calendar", "intent": "calendar_query", "utt": "what reminders do i have pending"}
+{"id": "8650", "scenario": "calendar", "intent": "calendar_set", "utt": "add a notification reminder and calendar event for thursday at seven am labeled sales meeting please"}
+{"id": "8657", "scenario": "calendar", "intent": "calendar_remove", "utt": "please delete everything from my calendar"}
+{"id": "8662", "scenario": "calendar", "intent": "calendar_set", "utt": "add payday to my calendar for every other thursday"}
+{"id": "8686", "scenario": "general", "intent": "general_quirky", "utt": "what are the details on umf"}
+{"id": "8689", "scenario": "calendar", "intent": "calendar_set", "utt": "put dinner with my sister on saturday"}
+{"id": "8706", "scenario": "calendar", "intent": "calendar_set", "utt": "add date and time in calendar with these people"}
+{"id": "8717", "scenario": "calendar", "intent": "calendar_query", "utt": "when is the doctor's appointment"}
+{"id": "8718", "scenario": "calendar", "intent": "calendar_set", "utt": "make appointment for next friday"}
+{"id": "8724", "scenario": "calendar", "intent": "calendar_query", "utt": "how soon is my anniversary"}
+{"id": "8726", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete every event"}
+{"id": "8727", "scenario": "calendar", "intent": "calendar_remove", "utt": "erase all events"}
+{"id": "8734", "scenario": "calendar", "intent": "calendar_query", "utt": "what reminders do i have today"}
+{"id": "8739", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete events"}
+{"id": "8740", "scenario": "alarm", "intent": "alarm_set", "utt": "set an alarm for two p. m."}
+{"id": "8744", "scenario": "calendar", "intent": "calendar_remove", "utt": "can you delete the next calendar event for which i was invited"}
+{"id": "8759", "scenario": "calendar", "intent": "calendar_query", "utt": "where is the event today"}
+{"id": "8770", "scenario": "calendar", "intent": "calendar_remove", "utt": "remove upcoming calendar event"}
+{"id": "8772", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete trip scheduled july fourth"}
+{"id": "8776", "scenario": "calendar", "intent": "calendar_set", "utt": "set reminder at three p. m."}
+{"id": "8780", "scenario": "calendar", "intent": "calendar_set", "utt": "set a reminder for twelve thirty meeting with the boss"}
+{"id": "8792", "scenario": "calendar", "intent": "calendar_query", "utt": "what are the details of this event"}
+{"id": "8797", "scenario": "calendar", "intent": "calendar_query", "utt": "please tell me when is the marriage of mr. jim"}
+{"id": "8799", "scenario": "calendar", "intent": "calendar_query", "utt": "could you please tell when we have to pay for car insurance"}
+{"id": "8810", "scenario": "calendar", "intent": "calendar_set", "utt": "schedule a meeting this monday with peter francis in the afternoon"}
+{"id": "8814", "scenario": "calendar", "intent": "calendar_remove", "utt": "go to the event day and delete"}
+{"id": "8823", "scenario": "calendar", "intent": "calendar_query", "utt": "who do i have a meeting with on january nineteenth in the afternoon"}
+{"id": "8831", "scenario": "calendar", "intent": "calendar_remove", "utt": "clear all data from calendar"}
+{"id": "8833", "scenario": "calendar", "intent": "calendar_remove", "utt": "clear my calendar for the rest of the day"}
+{"id": "8835", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete everything on my calendar for the next two weeks"}
+{"id": "8839", "scenario": "calendar", "intent": "calendar_query", "utt": "which is the next event coming up"}
+{"id": "8840", "scenario": "calendar", "intent": "calendar_query", "utt": "what time is the next event scheduled"}
+{"id": "8850", "scenario": "calendar", "intent": "calendar_query", "utt": "do i have any undone tasks"}
+{"id": "8852", "scenario": "calendar", "intent": "calendar_remove", "utt": "remove upcoming task"}
+{"id": "8862", "scenario": "calendar", "intent": "calendar_remove", "utt": "please delete all meetings of today after seven p. m."}
+{"id": "8866", "scenario": "alarm", "intent": "alarm_set", "utt": "set alarm for reminder"}
+{"id": "8881", "scenario": "alarm", "intent": "alarm_set", "utt": "schedule an alarm for next week's dentist appointment"}
+{"id": "8883", "scenario": "calendar", "intent": "calendar_set", "utt": "make an alert for my birthday"}
+{"id": "8884", "scenario": "alarm", "intent": "alarm_set", "utt": "set an alarm for next tuesdays meeting"}
+{"id": "8887", "scenario": "calendar", "intent": "calendar_set", "utt": "alert me two hours before my meeting on tuesday with client happening at ten in the morning"}
+{"id": "8908", "scenario": "calendar", "intent": "calendar_remove", "utt": "fine"}
+{"id": "8909", "scenario": "calendar", "intent": "calendar_query", "utt": "show me the meetings held last week"}
+{"id": "8915", "scenario": "calendar", "intent": "calendar_query", "utt": "what appointments do i have today"}
+{"id": "8919", "scenario": "calendar", "intent": "calendar_query", "utt": "what are my appointments for twelve p. m. to four p. m."}
+{"id": "8927", "scenario": "calendar", "intent": "calendar_remove", "utt": "remove all the events from my whole calendar"}
+{"id": "8929", "scenario": "calendar", "intent": "calendar_query", "utt": "how many meetings have there been"}
+{"id": "8930", "scenario": "calendar", "intent": "calendar_query", "utt": "when was the last meeting"}
+{"id": "8931", "scenario": "alarm", "intent": "alarm_set", "utt": "put alarm for this meeting"}
+{"id": "8947", "scenario": "calendar", "intent": "calendar_query", "utt": "is today my brothers birthday"}
+{"id": "8966", "scenario": "calendar", "intent": "calendar_query", "utt": "does eighteen may contains any birthday"}
+{"id": "8969", "scenario": "calendar", "intent": "calendar_remove", "utt": "cancel future event from place i worked"}
+{"id": "8970", "scenario": "calendar", "intent": "calendar_remove", "utt": "clear all concert schedule"}
+{"id": "8987", "scenario": "calendar", "intent": "calendar_query", "utt": "what time do i have down for susan's party"}
+{"id": "8996", "scenario": "calendar", "intent": "calendar_set", "utt": "setting repeating event in calendar"}
+{"id": "9000", "scenario": "calendar", "intent": "calendar_set", "utt": "remind me after an hour to go for shopping"}
+{"id": "9005", "scenario": "calendar", "intent": "calendar_set", "utt": "set an anniversary event for tuesday"}
+{"id": "9010", "scenario": "calendar", "intent": "calendar_query", "utt": "is the birthday event on fifteenth of this month true"}
+{"id": "9016", "scenario": "calendar", "intent": "calendar_remove", "utt": "clear calendar events all"}
+{"id": "9020", "scenario": "calendar", "intent": "calendar_query", "utt": "first week of march meetings"}
+{"id": "9024", "scenario": "calendar", "intent": "calendar_set", "utt": "event"}
+{"id": "9037", "scenario": "calendar", "intent": "calendar_remove", "utt": "mark all remaining calendar events for today as cleared"}
+{"id": "9044", "scenario": "alarm", "intent": "alarm_set", "utt": "make an alarm for five p. m. on tuesday"}
+{"id": "9045", "scenario": "alarm", "intent": "alarm_set", "utt": "alarm five p. m. tuesday"}
+{"id": "9072", "scenario": "calendar", "intent": "calendar_query", "utt": "display my schedule for today"}
+{"id": "9073", "scenario": "calendar", "intent": "calendar_remove", "utt": "remove that event from calendar"}
+{"id": "9076", "scenario": "calendar", "intent": "calendar_query", "utt": "give me the schedule"}
+{"id": "9077", "scenario": "general", "intent": "general_quirky", "utt": "look for free time"}
+{"id": "9080", "scenario": "calendar", "intent": "calendar_remove", "utt": "cancel all the meeting today"}
+{"id": "9086", "scenario": "calendar", "intent": "calendar_set", "utt": "set me a reminder for the get together with the women's club on sunday after church"}
+{"id": "9093", "scenario": "calendar", "intent": "calendar_remove", "utt": "clear all events in calendar for march"}
+{"id": "9106", "scenario": "calendar", "intent": "calendar_remove", "utt": "please reset my calendar back to day one"}
+{"id": "9115", "scenario": "calendar", "intent": "calendar_query", "utt": "what time is my project meeting at"}
+{"id": "9126", "scenario": "calendar", "intent": "calendar_query", "utt": "what time is my eye doctor appointment on the twenty third"}
+{"id": "9128", "scenario": "calendar", "intent": "calendar_remove", "utt": "do deletion of next calendar event"}
+{"id": "9142", "scenario": "calendar", "intent": "calendar_query", "utt": "are there team meetups on the schedule this month"}
+{"id": "9168", "scenario": "calendar", "intent": "calendar_set", "utt": "olly remind me about my next meeting a few hours ahead of time"}
+{"id": "9174", "scenario": "calendar", "intent": "calendar_query", "utt": "do i have any plans for today"}
+{"id": "9176", "scenario": "calendar", "intent": "calendar_remove", "utt": "remove the party event from the calendar"}
+{"id": "9177", "scenario": "calendar", "intent": "calendar_remove", "utt": "remove trip event"}
+{"id": "9181", "scenario": "calendar", "intent": "calendar_remove", "utt": "delete my birthday reminder for next week"}
+{"id": "9264", "scenario": "play", "intent": "play_radio", "utt": "turn on the radio please"}
+{"id": "9272", "scenario": "play", "intent": "play_music", "utt": "turn on some music"}
+{"id": "9517", "scenario": "play", "intent": "play_radio", "utt": "turn on sportsnet for hockey"}
+{"id": "9527", "scenario": "play", "intent": "play_radio", "utt": "switch on radio mango"}
+{"id": "9530", "scenario": "play", "intent": "play_radio", "utt": "put on some love songs"}
+{"id": "9631", "scenario": "play", "intent": "play_radio", "utt": "switch on the radio and play hello f. m. station"}
+{"id": "9646", "scenario": "play", "intent": "play_radio", "utt": "on the radio"}
+{"id": "9825", "scenario": "play", "intent": "play_audiobook", "utt": "resume the song from the audiobook by michael jackson"}
+{"id": "9854", "scenario": "play", "intent": "play_audiobook", "utt": "resume audio playback of twilight"}
+{"id": "9859", "scenario": "play", "intent": "play_audiobook", "utt": "open audible and continue playing the book that i was listening to"}
+{"id": "9906", "scenario": "play", "intent": "play_audiobook", "utt": "play this audiobook"}
+{"id": "9911", "scenario": "cooking", "intent": "cooking_recipe", "utt": "how long should i boil the eggs"}
+{"id": "9987", "scenario": "cooking", "intent": "cooking_recipe", "utt": "freezing"}
+{"id": "10033", "scenario": "cooking", "intent": "cooking_recipe", "utt": "explain in brief about fish fry"}
+{"id": "10047", "scenario": "cooking", "intent": "cooking_recipe", "utt": "how to cook that meal"}
+{"id": "10071", "scenario": "cooking", "intent": "cooking_recipe", "utt": "how long do you cook a whole chicken on three hundred and fifty"}
+{"id": "10102", "scenario": "cooking", "intent": "cooking_recipe", "utt": "show me how to cook lasagna"}
+{"id": "10147", "scenario": "cooking", "intent": "cooking_recipe", "utt": "look up recipes for four cheese omelet"}
+{"id": "10208", "scenario": "cooking", "intent": "cooking_recipe", "utt": "aroma"}
+{"id": "10402", "scenario": "play", "intent": "play_game", "utt": "play football match for myself now"}
+{"id": "10418", "scenario": "play", "intent": "play_game", "utt": "please play this game"}
+{"id": "10459", "scenario": "lists", "intent": "lists_remove", "utt": "delete the list created yesterday"}
+{"id": "10460", "scenario": "lists", "intent": "lists_remove", "utt": "cancel the list"}
+{"id": "10498", "scenario": "lists", "intent": "lists_createoradd", "utt": "start me a new list"}
+{"id": "10517", "scenario": "lists", "intent": "lists_query", "utt": "what lists do i have saved"}
+{"id": "10528", "scenario": "lists", "intent": "lists_createoradd", "utt": "add the item to the list"}
+{"id": "10547", "scenario": "lists", "intent": "lists_remove", "utt": "delete the dog list for me"}
+{"id": "10556", "scenario": "lists", "intent": "lists_query", "utt": "what is my list"}
+{"id": "10558", "scenario": "lists", "intent": "lists_query", "utt": "display my list"}
+{"id": "10581", "scenario": "lists", "intent": "lists_remove", "utt": "move buying eggs item to trash from to do list"}
+{"id": "10591", "scenario": "lists", "intent": "lists_remove", "utt": "remove the heading of the list"}
+{"id": "10624", "scenario": "lists", "intent": "lists_query", "utt": "please tell me what's on my to-do list for today"}
+{"id": "10659", "scenario": "lists", "intent": "lists_remove", "utt": "delete item four"}
+{"id": "10665", "scenario": "calendar", "intent": "calendar_query", "utt": "iterate events on the note"}
+{"id": "10713", "scenario": "lists", "intent": "lists_createoradd", "utt": "alexa create a new list"}
+{"id": "10766", "scenario": "lists", "intent": "lists_createoradd", "utt": "add grocery shopping to today's to do list"}
+{"id": "10802", "scenario": "lists", "intent": "lists_remove", "utt": "get rid of the last list"}
+{"id": "10822", "scenario": "lists", "intent": "lists_query", "utt": "name all lists"}
+{"id": "10837", "scenario": "general", "intent": "general_quirky", "utt": "olly what's next"}
+{"id": "10839", "scenario": "general", "intent": "general_quirky", "utt": "now what"}
+{"id": "10881", "scenario": "lists", "intent": "lists_remove", "utt": "find my shopping list and delete it"}
+{"id": "10932", "scenario": "lists", "intent": "lists_query", "utt": "what songs are on my favorite list"}
+{"id": "10945", "scenario": "lists", "intent": "lists_remove", "utt": "i want to cancel the recording i have on the d. v. r. list for this morning"}
+{"id": "10976", "scenario": "lists", "intent": "lists_query", "utt": "on the list tell me the names"}
+{"id": "10983", "scenario": "lists", "intent": "lists_createoradd", "utt": "make a note on my to do list to call the realtor"}
+{"id": "11016", "scenario": "lists", "intent": "lists_query", "utt": "what's my to do list for today"}
+{"id": "11017", "scenario": "general", "intent": "general_quirky", "utt": "what did my wife leave to be done"}
+{"id": "11028", "scenario": "lists", "intent": "lists_createoradd", "utt": "edit list"}
+{"id": "11040", "scenario": "lists", "intent": "lists_remove", "utt": "list remove"}
+{"id": "11048", "scenario": "lists", "intent": "lists_query", "utt": "where is my list"}
+{"id": "11051", "scenario": "lists", "intent": "lists_query", "utt": "what's on my list"}
+{"id": "11062", "scenario": "calendar", "intent": "calendar_set", "utt": "add remember to call mom to my reminders"}
+{"id": "11199", "scenario": "lists", "intent": "lists_remove", "utt": "remove my to do list"}
+{"id": "11227", "scenario": "calendar", "intent": "calendar_query", "utt": "what is program for today"}
+{"id": "11244", "scenario": "lists", "intent": "lists_query", "utt": "tell me what is on my grocery list for this week"}
+{"id": "11255", "scenario": "lists", "intent": "lists_query", "utt": "what's still on the list"}
+{"id": "11310", "scenario": "play", "intent": "play_podcasts", "utt": "favorite podcast"}
+{"id": "11315", "scenario": "play", "intent": "play_podcasts", "utt": "please play james altucher's podcast"}
+{"id": "11321", "scenario": "play", "intent": "play_podcasts", "utt": "please play podcasts on science"}
+{"id": "11325", "scenario": "play", "intent": "play_podcasts", "utt": "play next episode of con man"}
+{"id": "11346", "scenario": "play", "intent": "play_podcasts", "utt": "keep going on podcast"}
+{"id": "11367", "scenario": "play", "intent": "play_podcasts", "utt": "rewind the episode of podcast"}
+{"id": "11373", "scenario": "play", "intent": "play_podcasts", "utt": "vacation"}
+{"id": "11468", "scenario": "play", "intent": "play_podcasts", "utt": "i want to hear the latest podcast episode of south town"}
+{"id": "11469", "scenario": "play", "intent": "play_podcasts", "utt": "let me listen to the latest lovett or leave it podcast"}
+{"id": "11480", "scenario": "play", "intent": "play_podcasts", "utt": "skip forward to the next episode of this podcast"}
+{"id": "11547", "scenario": "play", "intent": "play_podcasts", "utt": "list and play all theory podcasts under ten minutes"}
+{"id": "11584", "scenario": "recommendation", "intent": "recommendation_events", "utt": "when is the next blues concert in liverpool"}
+{"id": "11620", "scenario": "recommendation", "intent": "recommendation_locations", "utt": "what's close by for dinner"}
+{"id": "11669", "scenario": "recommendation", "intent": "recommendation_events", "utt": "what's interesting around here"}
+{"id": "11672", "scenario": "recommendation", "intent": "recommendation_movies", "utt": "movie times tonight"}
+{"id": "11676", "scenario": "recommendation", "intent": "recommendation_locations", "utt": "alexa locate me the amazon restaurants"}
+{"id": "11684", "scenario": "recommendation", "intent": "recommendation_events", "utt": "i would like to know the events happening around here"}
+{"id": "11686", "scenario": "recommendation", "intent": "recommendation_events", "utt": "please update me with the list of events happening in my area"}
+{"id": "11723", "scenario": "recommendation", "intent": "recommendation_movies", "utt": "inform me about the most popular rom com movie playing now in theaters across new york"}
+{"id": "11807", "scenario": "recommendation", "intent": "recommendation_locations", "utt": "olly where can i go shopping in this area"}
+{"id": "11855", "scenario": "recommendation", "intent": "recommendation_movies", "utt": "please recommend a movie"}
+{"id": "11865", "scenario": "recommendation", "intent": "recommendation_locations", "utt": "find me a bar in cleveland open until two am"}
+{"id": "11885", "scenario": "recommendation", "intent": "recommendation_events", "utt": "where should i go for dinner in san francisco tonight"}
+{"id": "12024", "scenario": "recommendation", "intent": "recommendation_events", "utt": "what events are scheduled for this weekend in me area"}
+{"id": "12075", "scenario": "recommendation", "intent": "recommendation_locations", "utt": "where is the closest good restaurants"}
+{"id": "12112", "scenario": "recommendation", "intent": "recommendation_events", "utt": "any good drama released recently in the cinema"}
+{"id": "12120", "scenario": "transport", "intent": "transport_taxi", "utt": "olly book me a taxi to leith in half an hour"}
+{"id": "12122", "scenario": "transport", "intent": "transport_taxi", "utt": "schedule an uber in twenty minutes to tesco on fifth street"}
+{"id": "12123", "scenario": "transport", "intent": "transport_taxi", "utt": "book me a cab"}
+{"id": "12124", "scenario": "transport", "intent": "transport_taxi", "utt": "book me a cab olly"}
+{"id": "12126", "scenario": "transport", "intent": "transport_ticket", "utt": "hey i want to get trains to manchester on wednesday"}
+{"id": "12129", "scenario": "transport", "intent": "transport_ticket", "utt": "book me a ticket for a train to new york from boston in two days from now"}
+{"id": "12130", "scenario": "transport", "intent": "transport_ticket", "utt": "schedule a journey to las vegas by train"}
+{"id": "12131", "scenario": "transport", "intent": "transport_ticket", "utt": "book me a return trip from edinburgh to london by train"}
+{"id": "12138", "scenario": "transport", "intent": "transport_ticket", "utt": "book a train tickets for me"}
+{"id": "12139", "scenario": "transport", "intent": "transport_ticket", "utt": "book a train for me"}
+{"id": "12140", "scenario": "transport", "intent": "transport_ticket", "utt": "reserve train tickets"}
+{"id": "12142", "scenario": "transport", "intent": "transport_traffic", "utt": "how is my commute"}
+{"id": "12145", "scenario": "transport", "intent": "transport_taxi", "utt": "call me a taxi to the airport at five am"}
+{"id": "12146", "scenario": "transport", "intent": "transport_taxi", "utt": "olly call me a cab to the train station"}
+{"id": "12147", "scenario": "transport", "intent": "transport_ticket", "utt": "olly i need to get to bristol friday night can you book me a ticket please"}
+{"id": "12148", "scenario": "transport", "intent": "transport_ticket", "utt": "i need to get to bristol friday night can you book me a ticket please"}
+{"id": "12151", "scenario": "transport", "intent": "transport_ticket", "utt": "book me a ticket to paris on eurostar this weekend"}
+{"id": "12155", "scenario": "transport", "intent": "transport_ticket", "utt": "reserve a ticket to go to destination by train"}
+{"id": "12156", "scenario": "transport", "intent": "transport_ticket", "utt": "buy a train ticket to"}
+{"id": "12157", "scenario": "transport", "intent": "transport_ticket", "utt": "get me a train ticket to go to"}
+{"id": "12163", "scenario": "transport", "intent": "transport_ticket", "utt": "can you book a train ticket for my mother"}
+{"id": "12164", "scenario": "transport", "intent": "transport_ticket", "utt": "can you book a train ticket for my father"}
+{"id": "12172", "scenario": "transport", "intent": "transport_ticket", "utt": "reserve a train ticket for me today to des moines"}
+{"id": "12173", "scenario": "transport", "intent": "transport_ticket", "utt": "find me a train ticket next monday to new york city"}
+{"id": "12175", "scenario": "transport", "intent": "transport_taxi", "utt": "flag me an uber for ten p. m. tonight"}
+{"id": "12176", "scenario": "transport", "intent": "transport_taxi", "utt": "set up a taxi for eleven am tomorrow"}
+{"id": "12180", "scenario": "transport", "intent": "transport_taxi", "utt": "i need a uber to my current location"}
+{"id": "12191", "scenario": "transport", "intent": "transport_ticket", "utt": "book a train ticket from canada to las vegas"}
+{"id": "12192", "scenario": "transport", "intent": "transport_ticket", "utt": "book a ride from new york to orlando covering ten places to see"}
+{"id": "12193", "scenario": "transport", "intent": "transport_ticket", "utt": "book a train ticket from los angeles to chicago that goes via miami"}
+{"id": "12195", "scenario": "transport", "intent": "transport_traffic", "utt": "give me the update on traffic at new york"}
+{"id": "12197", "scenario": "transport", "intent": "transport_ticket", "utt": "find me a train ticket to newcastle"}
+{"id": "12198", "scenario": "transport", "intent": "transport_ticket", "utt": "book me a train ticket to newcastle"}
+{"id": "12199", "scenario": "transport", "intent": "transport_ticket", "utt": "search for a train ticket to newcastle"}
+{"id": "12200", "scenario": "transport", "intent": "transport_ticket", "utt": "book a train ticket to canada this evening"}
+{"id": "12204", "scenario": "transport", "intent": "transport_taxi", "utt": "could you please hire me a taxi to go to the opera tonight"}
+{"id": "12214", "scenario": "transport", "intent": "transport_taxi", "utt": "schedule city cab from home to airport at eight am"}
+{"id": "12216", "scenario": "transport", "intent": "transport_ticket", "utt": "book a plane ticket to"}
+{"id": "12218", "scenario": "transport", "intent": "transport_ticket", "utt": "i need a plane ticket"}
+{"id": "12226", "scenario": "transport", "intent": "transport_ticket", "utt": "buy a train ticket"}
+{"id": "12228", "scenario": "transport", "intent": "transport_taxi", "utt": "i am in need of a taxi right now"}
+{"id": "12229", "scenario": "transport", "intent": "transport_taxi", "utt": "find a taxi service close to me"}
+{"id": "12230", "scenario": "transport", "intent": "transport_taxi", "utt": "i need a taxi to go home"}
+{"id": "12231", "scenario": "transport", "intent": "transport_taxi", "utt": "find a taxi to go home"}
+{"id": "12234", "scenario": "transport", "intent": "transport_ticket", "utt": "book a business class seat on the next train to new york city"}
+{"id": "12237", "scenario": "transport", "intent": "transport_taxi", "utt": "book taxi for now"}
+{"id": "12241", "scenario": "transport", "intent": "transport_ticket", "utt": "please go to amtrak dot com to purchase tickets"}
+{"id": "12242", "scenario": "transport", "intent": "transport_taxi", "utt": "book a taxi to the airport"}
+{"id": "12243", "scenario": "transport", "intent": "transport_taxi", "utt": "book a taxi for tomorrow morning"}
+{"id": "12249", "scenario": "transport", "intent": "transport_taxi", "utt": "find the nearest taxi"}
+{"id": "12250", "scenario": "transport", "intent": "transport_taxi", "utt": "find an uber on twenty ninth"}
+{"id": "12270", "scenario": "transport", "intent": "transport_ticket", "utt": "book me a train ticket in any train to bombay for tomorrow"}
+{"id": "12271", "scenario": "transport", "intent": "transport_ticket", "utt": "can you book me a train ticket to bombay for tomorrow in any train"}
+{"id": "12272", "scenario": "transport", "intent": "transport_ticket", "utt": "book tomorrow's train ticket for me to bombay in any train"}
+{"id": "12276", "scenario": "transport", "intent": "transport_taxi", "utt": "book a taxi for me"}
+{"id": "12277", "scenario": "transport", "intent": "transport_taxi", "utt": "can you book me a taxi"}
+{"id": "12278", "scenario": "transport", "intent": "transport_taxi", "utt": "book me a taxi"}
+{"id": "12282", "scenario": "transport", "intent": "transport_ticket", "utt": "i want a train ticket from los angeles to phoenix"}
+{"id": "12287", "scenario": "transport", "intent": "transport_ticket", "utt": "look for train tickets to edinburgh tomorrow"}
+{"id": "12290", "scenario": "transport", "intent": "transport_ticket", "utt": "register an event or a ticket"}
+{"id": "12292", "scenario": "transport", "intent": "transport_ticket", "utt": "ticket for new york"}
+{"id": "12296", "scenario": "transport", "intent": "transport_taxi", "utt": "get me a taxi"}
+{"id": "12297", "scenario": "transport", "intent": "transport_taxi", "utt": "hail taxi"}
+{"id": "12300", "scenario": "transport", "intent": "transport_taxi", "utt": "call me a taxi"}
+{"id": "12301", "scenario": "transport", "intent": "transport_taxi", "utt": "get me an uber please"}
+{"id": "12309", "scenario": "transport", "intent": "transport_ticket", "utt": "i want to book a train ticket"}
+{"id": "12312", "scenario": "transport", "intent": "transport_traffic", "utt": "how long will it take me to get to park avenue considering current traffic"}
+{"id": "12320", "scenario": "transport", "intent": "transport_taxi", "utt": "call a taxi"}
+{"id": "12321", "scenario": "transport", "intent": "transport_taxi", "utt": "olly call a taxi"}
+{"id": "12323", "scenario": "transport", "intent": "transport_ticket", "utt": "source and destination"}
+{"id": "12324", "scenario": "transport", "intent": "transport_ticket", "utt": "time n. date"}
+{"id": "12330", "scenario": "transport", "intent": "transport_taxi", "utt": "open uber and book a car for twelve o'clock"}
+{"id": "12331", "scenario": "transport", "intent": "transport_ticket", "utt": "olly book me a train ticket to new york city on the third i don't care what time"}
+{"id": "12332", "scenario": "transport", "intent": "transport_ticket", "utt": "book me a train ticket to new york city on the third i don't care what time"}
+{"id": "12333", "scenario": "transport", "intent": "transport_ticket", "utt": "book a ticket for me on a train to get to boston tomorrow what is available"}
+{"id": "12335", "scenario": "transport", "intent": "transport_query", "utt": "find me the distance and direction by train to rccg in ikoyi lagos"}
+{"id": "12341", "scenario": "transport", "intent": "transport_ticket", "utt": "book three round trip train tickets for sunday at seven p. m. return ticket of next week sunday at eight am"}
+{"id": "12351", "scenario": "transport", "intent": "transport_ticket", "utt": "book a train ticket with a berth seat to lucknow for next week"}
+{"id": "12355", "scenario": "transport", "intent": "transport_ticket", "utt": "please arrange a train ticket for me"}
+{"id": "12356", "scenario": "transport", "intent": "transport_ticket", "utt": "i need a train ticket"}
+{"id": "12357", "scenario": "transport", "intent": "transport_ticket", "utt": "could you make a train ticket for me"}
+{"id": "12364", "scenario": "transport", "intent": "transport_taxi", "utt": "book a cab which have cheapest price"}
+{"id": "12371", "scenario": "transport", "intent": "transport_taxi", "utt": "get me a ride to hospital"}
+{"id": "12378", "scenario": "transport", "intent": "transport_taxi", "utt": "book me a ride"}
+{"id": "12379", "scenario": "transport", "intent": "transport_ticket", "utt": "book a train ticket from washington d. c. to savannah georgia"}
+{"id": "12382", "scenario": "transport", "intent": "transport_taxi", "utt": "make a taxi booking in uber"}
+{"id": "12389", "scenario": "transport", "intent": "transport_ticket", "utt": "buy me a train ticket"}
+{"id": "12390", "scenario": "transport", "intent": "transport_ticket", "utt": "bring me a train ticket"}
+{"id": "12396", "scenario": "transport", "intent": "transport_ticket", "utt": "book a train ticket to city leeds"}
+{"id": "12399", "scenario": "transport", "intent": "transport_taxi", "utt": "call golden taxi to pick me up at seven p. m. today"}
+{"id": "12400", "scenario": "transport", "intent": "transport_ticket", "utt": "book me a single train ticket traveling to new york city leaving after nine am"}
+{"id": "12401", "scenario": "transport", "intent": "transport_ticket", "utt": "book me on a train leaving penn station tomorrow traveling to any city more than two hundred miles away"}
+{"id": "12418", "scenario": "transport", "intent": "transport_taxi", "utt": "book a taxi to start from here"}
+{"id": "12427", "scenario": "transport", "intent": "transport_taxi", "utt": "call a taxi for me"}
+{"id": "12428", "scenario": "transport", "intent": "transport_taxi", "utt": "i need a taxi ride now"}
+{"id": "12429", "scenario": "transport", "intent": "transport_taxi", "utt": "please book a taxi for me"}
+{"id": "12448", "scenario": "transport", "intent": "transport_ticket", "utt": "book and pay for a train ticket to denver for saturday"}
+{"id": "12459", "scenario": "transport", "intent": "transport_ticket", "utt": "show me train tickets"}
+{"id": "12462", "scenario": "transport", "intent": "transport_taxi", "utt": "book uber for tonight at seven p. m."}
+{"id": "12463", "scenario": "transport", "intent": "transport_taxi", "utt": "please reserve an uber right now"}
+{"id": "12471", "scenario": "transport", "intent": "transport_ticket", "utt": "buy train ticket"}
+{"id": "12472", "scenario": "transport", "intent": "transport_ticket", "utt": "pay for train ticket"}
+{"id": "12476", "scenario": "transport", "intent": "transport_taxi", "utt": "i need to book a taxi"}
+{"id": "12477", "scenario": "transport", "intent": "transport_taxi", "utt": "can you get me a taxi home"}
+{"id": "12480", "scenario": "transport", "intent": "transport_taxi", "utt": "find an uber that can get me to the airport now"}
+{"id": "12481", "scenario": "transport", "intent": "transport_taxi", "utt": "find me an uber"}
+{"id": "12482", "scenario": "transport", "intent": "transport_taxi", "utt": "find a taxi for me"}
+{"id": "12483", "scenario": "transport", "intent": "transport_taxi", "utt": "what's the closest taxi to me"}
+{"id": "12487", "scenario": "transport", "intent": "transport_taxi", "utt": "call a cab"}
+{"id": "12489", "scenario": "transport", "intent": "transport_ticket", "utt": "i need a ticket on the train to new york city tomorrow"}
+{"id": "12490", "scenario": "transport", "intent": "transport_ticket", "utt": "can you reserve me a seat on the train to hartford next friday morning"}
+{"id": "12492", "scenario": "transport", "intent": "transport_taxi", "utt": "get me a car"}
+{"id": "12493", "scenario": "transport", "intent": "transport_taxi", "utt": "i need a taxi in thirty minutes"}
+{"id": "12494", "scenario": "transport", "intent": "transport_taxi", "utt": "can you call an uber for me"}
+{"id": "12495", "scenario": "transport", "intent": "transport_taxi", "utt": "call a car for me"}
+{"id": "12496", "scenario": "transport", "intent": "transport_taxi", "utt": "olly call a uber in thirty minutes"}
+{"id": "12497", "scenario": "transport", "intent": "transport_taxi", "utt": "olly can you call a taxi"}
+{"id": "12498", "scenario": "transport", "intent": "transport_ticket", "utt": "book a train ticket to boston tomorrow"}
+{"id": "12500", "scenario": "transport", "intent": "transport_ticket", "utt": "can you please book a train ticket for next saturday to boston"}
+{"id": "12506", "scenario": "transport", "intent": "transport_ticket", "utt": "book a train ticket to oregon"}
+{"id": "12507", "scenario": "transport", "intent": "transport_ticket", "utt": "i want a train ticket to oregon"}
+{"id": "12510", "scenario": "transport", "intent": "transport_ticket", "utt": "google search booking train ticket"}
+{"id": "12514", "scenario": "transport", "intent": "transport_traffic", "utt": "are there any roadblocks olly"}
+{"id": "12517", "scenario": "transport", "intent": "transport_ticket", "utt": "can you reserve a train ticket for this day"}
+{"id": "12522", "scenario": "transport", "intent": "transport_ticket", "utt": "book a train ticket for me"}
+{"id": "12523", "scenario": "transport", "intent": "transport_ticket", "utt": "can you book a train ticket for me under dollars"}
+{"id": "12524", "scenario": "transport", "intent": "transport_ticket", "utt": "book me the cheapest train ticket to new york"}
+{"id": "12538", "scenario": "transport", "intent": "transport_ticket", "utt": "olly find me the cheapest train ticket to spain"}
+{"id": "12543", "scenario": "transport", "intent": "transport_taxi", "utt": "book me an uber"}
+{"id": "12544", "scenario": "transport", "intent": "transport_taxi", "utt": "taxi now"}
+{"id": "12545", "scenario": "transport", "intent": "transport_taxi", "utt": "find transportation to rome"}
+{"id": "12546", "scenario": "transport", "intent": "transport_taxi", "utt": "find a ride to the bar"}
+{"id": "12547", "scenario": "transport", "intent": "transport_taxi", "utt": "olly find a ride to the bar"}
+{"id": "12552", "scenario": "transport", "intent": "transport_taxi", "utt": "could you please book me a taxi going to location"}
+{"id": "12559", "scenario": "transport", "intent": "transport_taxi", "utt": "book a taxi uber"}
+{"id": "12560", "scenario": "transport", "intent": "transport_taxi", "utt": "i need a taxi uber"}
+{"id": "12561", "scenario": "transport", "intent": "transport_ticket", "utt": "book a train ticket for friday april fourteenth for boston"}
+{"id": "12562", "scenario": "transport", "intent": "transport_ticket", "utt": "find me a train ticket to cleveland on april fourteenth"}
+{"id": "12563", "scenario": "transport", "intent": "transport_ticket", "utt": "buy a train ticket to cleveland for april fourteenth"}
+{"id": "12571", "scenario": "transport", "intent": "transport_query", "utt": "what time does the last train leave from paris"}
+{"id": "12573", "scenario": "transport", "intent": "transport_ticket", "utt": "i need a train ticket to rome book ticket"}
+{"id": "12574", "scenario": "transport", "intent": "transport_ticket", "utt": "book ticket for paris by train"}
+{"id": "12578", "scenario": "transport", "intent": "transport_traffic", "utt": "am i gonna hit traffic"}
+{"id": "12579", "scenario": "transport", "intent": "transport_query", "utt": "go to map"}
+{"id": "12589", "scenario": "transport", "intent": "transport_ticket", "utt": "can you book a train ticket to berkeley for me"}
+{"id": "12590", "scenario": "transport", "intent": "transport_ticket", "utt": "can you check train schedule to berkeley"}
+{"id": "12592", "scenario": "transport", "intent": "transport_ticket", "utt": "please purchase me a train ticket to atlanta"}
+{"id": "12594", "scenario": "transport", "intent": "transport_ticket", "utt": "google can you book me a ticket on the train for tomorrow"}
+{"id": "12595", "scenario": "transport", "intent": "transport_ticket", "utt": "i need you to book a train ticket that leaves at two p. m."}
+{"id": "12596", "scenario": "transport", "intent": "transport_ticket", "utt": "google i need one train ticket to new york can you book that for me"}
+{"id": "12598", "scenario": "transport", "intent": "transport_ticket", "utt": "tell me where i should go for times"}
+{"id": "12601", "scenario": "transport", "intent": "transport_query", "utt": "directions to place"}
+{"id": "12605", "scenario": "transport", "intent": "transport_ticket", "utt": "find me the earliest train ticket departing friday morning to miami"}
+{"id": "12609", "scenario": "transport", "intent": "transport_taxi", "utt": "schedule me a taxi for after my thursday meeting"}
+{"id": "12612", "scenario": "transport", "intent": "transport_ticket", "utt": "get me a train ticket from mumbai to goa"}
+{"id": "12613", "scenario": "transport", "intent": "transport_ticket", "utt": "i need to book a train ticket from mumbai to goa"}
+{"id": "12614", "scenario": "transport", "intent": "transport_ticket", "utt": "book a rajdhani train ticket from mumbai to ahmedabad"}
+{"id": "12615", "scenario": "transport", "intent": "transport_ticket", "utt": "i need to book rajdhani train ticket from mumbai to ahmedabad"}
+{"id": "12616", "scenario": "transport", "intent": "transport_ticket", "utt": "i want to book rajdhani train ticket from mumbai to ahmadabad"}
+{"id": "12628", "scenario": "transport", "intent": "transport_ticket", "utt": "i'd like to get on the next train that will be departing indianapolis headed to chicago"}
+{"id": "12631", "scenario": "transport", "intent": "transport_taxi", "utt": "get me a taxi to the airport right now"}
+{"id": "12632", "scenario": "transport", "intent": "transport_taxi", "utt": "i need a taxi to pick me up at the house and take me downtown"}
+{"id": "12635", "scenario": "transport", "intent": "transport_ticket", "utt": "find a non stop train to seattle"}
+{"id": "12641", "scenario": "transport", "intent": "transport_ticket", "utt": "please book the five p. m. train to rockville"}
+{"id": "12642", "scenario": "transport", "intent": "transport_ticket", "utt": "i need to leave on the five p. m. train to rockville"}
+{"id": "12643", "scenario": "transport", "intent": "transport_ticket", "utt": "set me up with a ticket for the five p. m. commuter to rockville"}
+{"id": "12644", "scenario": "transport", "intent": "transport_traffic", "utt": "is traffic to work clear"}
+{"id": "12647", "scenario": "transport", "intent": "transport_query", "utt": "how often does the train arrive and depart from penn station"}
+{"id": "12648", "scenario": "transport", "intent": "transport_ticket", "utt": "practical driving assessment"}
+{"id": "12653", "scenario": "transport", "intent": "transport_ticket", "utt": "order a train ticket to los angeles"}
+{"id": "12655", "scenario": "transport", "intent": "transport_taxi", "utt": "please call a taxi to arrive at four hundred and take me to the manor theater"}
+{"id": "12657", "scenario": "transport", "intent": "transport_taxi", "utt": "book a taxi to pick up shelley hennessey at gate four of the airport for the arrival of aa flight five thousand four hundred and thirty one at three hundred and twenty one on friday"}
+{"id": "12660", "scenario": "transport", "intent": "transport_ticket", "utt": "book me a train ride"}
+{"id": "12664", "scenario": "transport", "intent": "transport_ticket", "utt": "train tickets for two people from delhi to mumbai"}
+{"id": "12671", "scenario": "transport", "intent": "transport_ticket", "utt": "book a train for twenty two march at twelve p. m."}
+{"id": "12705", "scenario": "transport", "intent": "transport_ticket", "utt": "open train ticket app"}
+{"id": "12709", "scenario": "transport", "intent": "transport_taxi", "utt": "book an uber for one hour from now"}
+{"id": "12713", "scenario": "transport", "intent": "transport_taxi", "utt": "book me a taxi to the mall of america please"}
+{"id": "12714", "scenario": "transport", "intent": "transport_taxi", "utt": "book an uber to pick me up outside of long island bar right now"}
+{"id": "12719", "scenario": "transport", "intent": "transport_ticket", "utt": "i need a train ticket to cambridge from here"}
+{"id": "12725", "scenario": "transport", "intent": "transport_ticket", "utt": "find me a cheap train ticket for miamy"}
+{"id": "12746", "scenario": "transport", "intent": "transport_taxi", "utt": "open uber app and book me a car for pick up at the airport"}
+{"id": "12747", "scenario": "transport", "intent": "transport_ticket", "utt": "please book a train ticket for me"}
+{"id": "12749", "scenario": "transport", "intent": "transport_ticket", "utt": "can you please buy me a train ticket"}
+{"id": "12750", "scenario": "transport", "intent": "transport_ticket", "utt": "buy a train ticket from lakeland florida to new york"}
+{"id": "12751", "scenario": "transport", "intent": "transport_ticket", "utt": "buy a train ticket for one week from now from new york to las vegas nevada"}
+{"id": "12752", "scenario": "transport", "intent": "transport_ticket", "utt": "please purchase a amtrak ticket from las vegas nevada to lakeland florida leaving on the first of april"}
+{"id": "12753", "scenario": "transport", "intent": "transport_ticket", "utt": "i want a train ticket from boston to new york"}
+{"id": "12754", "scenario": "transport", "intent": "transport_ticket", "utt": "i want the cheapest train ticket to new york"}
+{"id": "12755", "scenario": "transport", "intent": "transport_taxi", "utt": "book me an uber ride to go home"}
+{"id": "12756", "scenario": "transport", "intent": "transport_taxi", "utt": "order me an uber ride please"}
+{"id": "12757", "scenario": "transport", "intent": "transport_taxi", "utt": "send a taxi to come pick me up from my location"}
+{"id": "12762", "scenario": "transport", "intent": "transport_ticket", "utt": "please book a train ticket to"}
+{"id": "12763", "scenario": "transport", "intent": "transport_ticket", "utt": "i need a train ticket to"}
+{"id": "12767", "scenario": "transport", "intent": "transport_ticket", "utt": "can i get a train ticket to"}
+{"id": "12778", "scenario": "transport", "intent": "transport_taxi", "utt": "arrange a taxi"}
+{"id": "12780", "scenario": "transport", "intent": "transport_taxi", "utt": "request an uber now"}
+{"id": "12790", "scenario": "transport", "intent": "transport_ticket", "utt": "book a train ticket to new york"}
+{"id": "12801", "scenario": "transport", "intent": "transport_ticket", "utt": "book train ticket to new york"}
+{"id": "12803", "scenario": "transport", "intent": "transport_ticket", "utt": "please book train ticket to new york"}
+{"id": "12804", "scenario": "transport", "intent": "transport_taxi", "utt": "using my apps"}
+{"id": "12805", "scenario": "transport", "intent": "transport_taxi", "utt": "call the phone number"}
+{"id": "12812", "scenario": "transport", "intent": "transport_taxi", "utt": "call a taxi company"}
+{"id": "12816", "scenario": "transport", "intent": "transport_query", "utt": "what's the directions to the nearest pizza hut"}
+{"id": "12829", "scenario": "transport", "intent": "transport_taxi", "utt": "book ola cab for now"}
+{"id": "12830", "scenario": "transport", "intent": "transport_taxi", "utt": "book an outstation cab of ola"}
+{"id": "12831", "scenario": "transport", "intent": "transport_taxi", "utt": "book a local cab"}
+{"id": "12832", "scenario": "transport", "intent": "transport_ticket", "utt": "book me a train ticket for this afternoon to chicago"}
+{"id": "12833", "scenario": "transport", "intent": "transport_ticket", "utt": "alexa book me a train ticket for this afternoon to chicago"}
+{"id": "12841", "scenario": "transport", "intent": "transport_taxi", "utt": "open lyft"}
+{"id": "12842", "scenario": "transport", "intent": "transport_taxi", "utt": "google uber"}
+{"id": "12843", "scenario": "transport", "intent": "transport_taxi", "utt": "book a taxi to airport for me in the evening"}
+{"id": "12845", "scenario": "transport", "intent": "transport_taxi", "utt": "book a cab in the evening for me"}
+{"id": "12847", "scenario": "transport", "intent": "transport_ticket", "utt": "can you book train ticket from mumbai to sangli for tomorrow morning"}
+{"id": "12848", "scenario": "transport", "intent": "transport_traffic", "utt": "let me know about current traffic in carmen drive"}
+{"id": "12849", "scenario": "transport", "intent": "transport_taxi", "utt": "book for me an uber taxi to bardonia"}
+{"id": "12850", "scenario": "transport", "intent": "transport_taxi", "utt": "book for me an uber taxi to carmen drive"}
+{"id": "12855", "scenario": "transport", "intent": "transport_ticket", "utt": "book a ticket for today in irctc site for the stored information"}
+{"id": "12861", "scenario": "transport", "intent": "transport_query", "utt": "when is the next train to rome coming"}
+{"id": "12867", "scenario": "transport", "intent": "transport_taxi", "utt": "uber please"}
+{"id": "12868", "scenario": "transport", "intent": "transport_taxi", "utt": "uber"}
+{"id": "12871", "scenario": "transport", "intent": "transport_ticket", "utt": "book for me a train ticket to california"}
+{"id": "12876", "scenario": "transport", "intent": "transport_taxi", "utt": "call rta and book a taxi for three o'clock in the morning"}
+{"id": "12878", "scenario": "transport", "intent": "transport_query", "utt": "display trains going to antwerp after two p. m. saturday"}
+{"id": "12889", "scenario": "transport", "intent": "transport_taxi", "utt": "can i get an uber home from the fox downtown as soon as possible"}
+{"id": "12890", "scenario": "transport", "intent": "transport_ticket", "utt": "buy an acela train ticket on thursday"}
+{"id": "12893", "scenario": "transport", "intent": "transport_ticket", "utt": "i want you to book a train ticket for me"}
+{"id": "12894", "scenario": "transport", "intent": "transport_ticket", "utt": "help me book a train ticket"}
+{"id": "12897", "scenario": "transport", "intent": "transport_ticket", "utt": "i need a gold class ticket on train number five using my credit card"}
+{"id": "12900", "scenario": "transport", "intent": "transport_ticket", "utt": "secure train passage for me on july three"}
+{"id": "12906", "scenario": "transport", "intent": "transport_taxi", "utt": "siri please reserve the next taxi a nine am"}
+{"id": "12907", "scenario": "transport", "intent": "transport_taxi", "utt": "please send a taxi to my house"}
+{"id": "12911", "scenario": "transport", "intent": "transport_taxi", "utt": "i need a ride in an hour"}
+{"id": "12912", "scenario": "transport", "intent": "transport_taxi", "utt": "can i get a taxi to come to my house in an hour"}
+{"id": "12913", "scenario": "transport", "intent": "transport_taxi", "utt": "call a taxi for me to arrive tonight at five"}
+{"id": "12914", "scenario": "transport", "intent": "transport_ticket", "utt": "i need to book a train ticket to la"}
+{"id": "12915", "scenario": "transport", "intent": "transport_ticket", "utt": "i need to book a train ticket to la"}
+{"id": "12916", "scenario": "transport", "intent": "transport_taxi", "utt": "book me a taxi for one p. m."}
+{"id": "12917", "scenario": "transport", "intent": "transport_taxi", "utt": "tell taxi to pick me up at four p. m."}
+{"id": "12918", "scenario": "transport", "intent": "transport_taxi", "utt": "olly open the uber app and get me a car please"}
+{"id": "12928", "scenario": "transport", "intent": "transport_query", "utt": "calculate the travel time if i go to orlando by train"}
+{"id": "12943", "scenario": "general", "intent": "general_quirky", "utt": "explain it"}
+{"id": "12960", "scenario": "general", "intent": "general_quirky", "utt": "dance with me"}
+{"id": "12970", "scenario": "general", "intent": "general_quirky", "utt": "how would you tackle the following problem brush your teeth"}
+{"id": "12971", "scenario": "general", "intent": "general_quirky", "utt": "olly do you have any advise for me how i should handle"}
+{"id": "12994", "scenario": "general", "intent": "general_quirky", "utt": "i want to buy over ear headphones with minimum frequency response of fifteen hertz and maximum frequency response twenty two thousand hertz"}
+{"id": "12995", "scenario": "social", "intent": "social_post", "utt": "send a message on facebook to pending friend requests that my friend list is full and i will be creating a new profile soon"}
+{"id": "12996", "scenario": "general", "intent": "general_quirky", "utt": "do i need my tire pressure checked"}
+{"id": "13003", "scenario": "general", "intent": "general_quirky", "utt": "will you take care of the home security system"}
+{"id": "13007", "scenario": "general", "intent": "general_quirky", "utt": "what do you think was the best decade"}
+{"id": "13065", "scenario": "general", "intent": "general_quirky", "utt": "i'm driving please auto answer my calls on speaker phone"}
+{"id": "13080", "scenario": "play", "intent": "play_game", "utt": "lets go nazi hunting"}
+{"id": "13086", "scenario": "qa", "intent": "qa_definition", "utt": "how to spell the word treble"}
+{"id": "13121", "scenario": "qa", "intent": "qa_maths", "utt": "what is three plus four"}
+{"id": "13128", "scenario": "general", "intent": "general_quirky", "utt": "i would like my to update all breaking news across the world"}
+{"id": "13129", "scenario": "general", "intent": "general_quirky", "utt": "i would like my to provide all countries and peoples cultures and likes"}
+{"id": "13148", "scenario": "general", "intent": "general_quirky", "utt": "i like my robot to show me images or graphics"}
+{"id": "13167", "scenario": "general", "intent": "general_quirky", "utt": "what's the cheapest marathon to enter within fifty miles of here"}
+{"id": "13171", "scenario": "general", "intent": "general_quirky", "utt": "how can i hibernate like a bear"}
+{"id": "13190", "scenario": "qa", "intent": "qa_stock", "utt": "tell me which mutual funds have maximum yearly returns"}
+{"id": "13204", "scenario": "qa", "intent": "qa_definition", "utt": "something"}
+{"id": "13245", "scenario": "general", "intent": "general_quirky", "utt": "would you own a dog if you were able to"}
+{"id": "13246", "scenario": "general", "intent": "general_quirky", "utt": "would you provide me with the answer to this question"}
+{"id": "13247", "scenario": "general", "intent": "general_quirky", "utt": "i would like you to come up with the answer to the question"}
+{"id": "13256", "scenario": "general", "intent": "general_quirky", "utt": "how to abs in six week"}
+{"id": "13258", "scenario": "general", "intent": "general_quirky", "utt": "mileage of b. m. w. cars"}
+{"id": "13272", "scenario": "qa", "intent": "qa_factoid", "utt": "what is the height of mount everest"}
+{"id": "13286", "scenario": "general", "intent": "general_quirky", "utt": "define inflation and describe it's effects on an economy"}
+{"id": "13294", "scenario": "qa", "intent": "qa_maths", "utt": "how much is one hundred and thirty six plus three hundred and eighty seven"}
+{"id": "13296", "scenario": "qa", "intent": "qa_factoid", "utt": "how old is rue mcclanahan"}
+{"id": "13299", "scenario": "general", "intent": "general_quirky", "utt": "tell me about celebrity"}
+{"id": "13301", "scenario": "general", "intent": "general_quirky", "utt": "help me get to sleep"}
+{"id": "13304", "scenario": "general", "intent": "general_quirky", "utt": "do all my chores so i can take a nap"}
+{"id": "13324", "scenario": "general", "intent": "general_quirky", "utt": "tell me the name of the artist whose song is in the movie i am watching"}
+{"id": "13325", "scenario": "takeaway", "intent": "takeaway_query", "utt": "tell me the soup of the day at panera bread restaurant"}
+{"id": "13326", "scenario": "general", "intent": "general_quirky", "utt": "what are the hours from cvs"}
+{"id": "13356", "scenario": "qa", "intent": "qa_definition", "utt": "what does pro bono mean"}
+{"id": "13377", "scenario": "general", "intent": "general_quirky", "utt": "how do i duct tape a gooseto apig"}
+{"id": "13378", "scenario": "general", "intent": "general_quirky", "utt": "tell me how to create a will"}
+{"id": "13379", "scenario": "general", "intent": "general_quirky", "utt": "tell me how to stretch before running"}
+{"id": "13440", "scenario": "calendar", "intent": "calendar_query", "utt": "do i have class on monday"}
+{"id": "13446", "scenario": "general", "intent": "general_quirky", "utt": "what happened to fergie"}
+{"id": "13450", "scenario": "general", "intent": "general_quirky", "utt": "i would like my robot to take my dog outside to go the bathroom"}
+{"id": "13456", "scenario": "qa", "intent": "qa_factoid", "utt": "when you ask it to schedule an appointment that it can email the specific person and provide available dates from your calendar"}
+{"id": "13461", "scenario": "qa", "intent": "qa_maths", "utt": "math courses"}
+{"id": "13471", "scenario": "general", "intent": "general_quirky", "utt": "can you keep secrets"}
+{"id": "13482", "scenario": "calendar", "intent": "calendar_query", "utt": "countdown for the birthday of my brother"}
+{"id": "13526", "scenario": "general", "intent": "general_quirky", "utt": "how do i save money on groceries for family of six"}
+{"id": "13595", "scenario": "qa", "intent": "qa_maths", "utt": "solve this equation one plus one"}
+{"id": "13598", "scenario": "qa", "intent": "qa_stock", "utt": "what's the stock price of this item"}
+{"id": "13601", "scenario": "qa", "intent": "qa_factoid", "utt": "awards won by michael jackson"}
+{"id": "13656", "scenario": "qa", "intent": "qa_factoid", "utt": "what are the longest rivers in the world"}
+{"id": "13699", "scenario": "general", "intent": "general_quirky", "utt": "please rub my back"}
+{"id": "13719", "scenario": "qa", "intent": "qa_factoid", "utt": "is adele going to go on tour"}
+{"id": "13745", "scenario": "general", "intent": "general_quirky", "utt": "can you guarantee that you can chose the winning lottery numbers"}
+{"id": "13752", "scenario": "qa", "intent": "qa_stock", "utt": "current price of coca-cola stock"}
+{"id": "13757", "scenario": "qa", "intent": "qa_factoid", "utt": "google maps"}
+{"id": "13807", "scenario": "qa", "intent": "qa_factoid", "utt": "how many teeth does ryan reynolds have"}
+{"id": "13830", "scenario": "qa", "intent": "qa_factoid", "utt": "siri what is the elevation of denver colorado"}
+{"id": "13866", "scenario": "qa", "intent": "qa_factoid", "utt": "what is the highest mountain in asia"}
+{"id": "13953", "scenario": "general", "intent": "general_quirky", "utt": "i would like to know if in math operations is calculated before the addition subtraction multiply or division"}
+{"id": "14004", "scenario": "qa", "intent": "qa_stock", "utt": "get me a stock price of audi"}
+{"id": "14032", "scenario": "qa", "intent": "qa_factoid", "utt": "tell me when trump was born"}
+{"id": "14099", "scenario": "general", "intent": "general_quirky", "utt": "what causes if i had junk food and alcohols"}
+{"id": "14137", "scenario": "general", "intent": "general_quirky", "utt": "why people like movies"}
+{"id": "14140", "scenario": "general", "intent": "general_quirky", "utt": "moderate"}
+{"id": "14143", "scenario": "qa", "intent": "qa_factoid", "utt": "please tell me about the historic facts about india"}
+{"id": "14186", "scenario": "general", "intent": "general_quirky", "utt": "give me the top rated movie in my area"}
+{"id": "14198", "scenario": "qa", "intent": "qa_currency", "utt": "how does the dollar compare to the pound"}
+{"id": "14201", "scenario": "qa", "intent": "qa_stock", "utt": "olly can you tell me the price of google stock"}
+{"id": "14211", "scenario": "general", "intent": "general_quirky", "utt": "tell me the keys to success"}
+{"id": "14299", "scenario": "transport", "intent": "transport_ticket", "utt": "read the ticket for tesla"}
+{"id": "14314", "scenario": "general", "intent": "general_quirky", "utt": "how do you think the world ends"}
+{"id": "14334", "scenario": "qa", "intent": "qa_stock", "utt": "how high is the south n. p."}
+{"id": "14337", "scenario": "qa", "intent": "qa_stock", "utt": "is chase doing good"}
+{"id": "14350", "scenario": "general", "intent": "general_quirky", "utt": "can you explain your speech algorithm to me"}
+{"id": "14363", "scenario": "general", "intent": "general_quirky", "utt": "what has been the best selling product on sports category in amazon for the last three days"}
+{"id": "14401", "scenario": "general", "intent": "general_quirky", "utt": "tell me the last thing i had you look up for me"}
+{"id": "14402", "scenario": "general", "intent": "general_quirky", "utt": "order me something online"}
+{"id": "14407", "scenario": "general", "intent": "general_quirky", "utt": "can you feel"}
+{"id": "14425", "scenario": "qa", "intent": "qa_stock", "utt": "what is the price of apple stock today"}
+{"id": "14470", "scenario": "qa", "intent": "qa_stock", "utt": "how much does the f. flat stock cost"}
+{"id": "14519", "scenario": "qa", "intent": "qa_definition", "utt": "give me the definition of the word haughty"}
+{"id": "14548", "scenario": "qa", "intent": "qa_factoid", "utt": "does selena gomez has a scandal"}
+{"id": "14566", "scenario": "qa", "intent": "qa_definition", "utt": "define a stronomy"}
+{"id": "14584", "scenario": "qa", "intent": "qa_definition", "utt": "what's the definition of indignation"}
+{"id": "14623", "scenario": "qa", "intent": "qa_factoid", "utt": "celeb info"}
+{"id": "14624", "scenario": "qa", "intent": "qa_factoid", "utt": "get info"}
+{"id": "14688", "scenario": "qa", "intent": "qa_definition", "utt": "what is a ferrari"}
+{"id": "14726", "scenario": "general", "intent": "general_quirky", "utt": "tell me comparison between trump and putin"}
+{"id": "14740", "scenario": "qa", "intent": "qa_definition", "utt": "how the eiffel tower looks like"}
+{"id": "14741", "scenario": "general", "intent": "general_quirky", "utt": "what are the specifications for the new iphone"}
+{"id": "14779", "scenario": "general", "intent": "general_quirky", "utt": "when will mankind reach the singularity"}
+{"id": "14780", "scenario": "general", "intent": "general_quirky", "utt": "alexa when will mankind reach the singularity"}
+{"id": "14781", "scenario": "general", "intent": "general_quirky", "utt": "what are the chances of donald trump turning into a dictator"}
+{"id": "14786", "scenario": "qa", "intent": "qa_factoid", "utt": "area of north america"}
+{"id": "14801", "scenario": "general", "intent": "general_quirky", "utt": "how you have solve the problem"}
+{"id": "14812", "scenario": "general", "intent": "general_quirky", "utt": "is the data prefers any problems in objects"}
+{"id": "14830", "scenario": "qa", "intent": "qa_factoid", "utt": "is mount everest the tallest mountain in the united states"}
+{"id": "14869", "scenario": "general", "intent": "general_quirky", "utt": "how does it look like"}
+{"id": "14922", "scenario": "general", "intent": "general_quirky", "utt": "i would like it to be able to check if there was anyone else in the house"}
+{"id": "14934", "scenario": "general", "intent": "general_quirky", "utt": "what hiking trail in the smoky mountains would be the best in terms of the nicest waterfall to see"}
+{"id": "14935", "scenario": "general", "intent": "general_quirky", "utt": "when is the best time to shop at target so that i don't have to deal with a lot of people"}
+{"id": "14941", "scenario": "qa", "intent": "qa_maths", "utt": "open calculator"}
+{"id": "14970", "scenario": "general", "intent": "general_quirky", "utt": "let's take over the world together"}
+{"id": "14976", "scenario": "qa", "intent": "qa_factoid", "utt": "please provide geographic information about taiwan"}
+{"id": "15022", "scenario": "qa", "intent": "qa_stock", "utt": "what is the difference between yesterday's and today's stock prices for walmart"}
+{"id": "15024", "scenario": "general", "intent": "general_quirky", "utt": "help me to understand why the seasons change"}
+{"id": "15077", "scenario": "qa", "intent": "qa_factoid", "utt": "how much can chris helmsworth bench press"}
+{"id": "15112", "scenario": "general", "intent": "general_quirky", "utt": "please check this info on geographics for me"}
+{"id": "15114", "scenario": "general", "intent": "general_quirky", "utt": "how high is this mountain"}
+{"id": "15136", "scenario": "general", "intent": "general_quirky", "utt": "transform into a woman"}
+{"id": "15152", "scenario": "social", "intent": "social_post", "utt": "post that i am going to woodland shoe store"}
+{"id": "15153", "scenario": "social", "intent": "social_post", "utt": "can you upload my latest selfie in my social media"}
+{"id": "15164", "scenario": "social", "intent": "social_post", "utt": "can you post my business on facebook"}
+{"id": "15165", "scenario": "social", "intent": "social_post", "utt": "post my business on all my social media sites"}
+{"id": "15167", "scenario": "social", "intent": "social_post", "utt": "please update my status on facebook with good evening"}
+{"id": "15168", "scenario": "social", "intent": "social_post", "utt": "post my current location on instagram"}
+{"id": "15178", "scenario": "social", "intent": "social_post", "utt": "post this picture on twitter"}
+{"id": "15198", "scenario": "social", "intent": "social_post", "utt": "post in pinterest about my new chicken recipe"}
+{"id": "15209", "scenario": "social", "intent": "social_post", "utt": "tweet i am doing well on twitter"}
+{"id": "15211", "scenario": "social", "intent": "social_post", "utt": "send a post in instagram"}
+{"id": "15212", "scenario": "social", "intent": "social_post", "utt": "use facebook to post"}
+{"id": "15223", "scenario": "social", "intent": "social_query", "utt": "what are today's highlights from facebook"}
+{"id": "15227", "scenario": "social", "intent": "social_query", "utt": "what is trending on twitter"}
+{"id": "15232", "scenario": "social", "intent": "social_post", "utt": "listening song of arijit singh post it on my facebook account"}
+{"id": "15235", "scenario": "social", "intent": "social_post", "utt": "hello google post my current status on twitter mentioning a great trip to paris with friends and family"}
+{"id": "15244", "scenario": "social", "intent": "social_post", "utt": "share with twitter"}
+{"id": "15246", "scenario": "social", "intent": "social_post", "utt": "please post so bored to facebook"}
+{"id": "15260", "scenario": "social", "intent": "social_post", "utt": "make a status stating i got the promotion"}
+{"id": "15261", "scenario": "social", "intent": "social_post", "utt": "change my status to chilling"}
+{"id": "15263", "scenario": "social", "intent": "social_post", "utt": "post a status using the latest notes i made in my notepad"}
+{"id": "15277", "scenario": "social", "intent": "social_post", "utt": "tweet the current temperature"}
+{"id": "15290", "scenario": "social", "intent": "social_post", "utt": "please post this message to my facebook page"}
+{"id": "15291", "scenario": "social", "intent": "social_post", "utt": "send a tweet"}
+{"id": "15292", "scenario": "social", "intent": "social_post", "utt": "post a message to facebook"}
+{"id": "15314", "scenario": "social", "intent": "social_post", "utt": "post to twitter trump is such an ass"}
+{"id": "15315", "scenario": "social", "intent": "social_post", "utt": "go to facebook then go to lori's feed post happy birthday lori exclamation point on her feed"}
+{"id": "15316", "scenario": "social", "intent": "social_post", "utt": "my sister just had her baby"}
+{"id": "15317", "scenario": "social", "intent": "social_post", "utt": "today is my husbands birthday"}
+{"id": "15332", "scenario": "social", "intent": "social_query", "utt": "hows twitter"}
+{"id": "15334", "scenario": "social", "intent": "social_post", "utt": "put picture on facebook"}
+{"id": "15340", "scenario": "social", "intent": "social_post", "utt": "please post happy birthday u. s. a. on facebook"}
+{"id": "15341", "scenario": "social", "intent": "social_post", "utt": "please post happy birthday u. s. a. on my newsfeed"}
+{"id": "15351", "scenario": "social", "intent": "social_post", "utt": "get in touch with leo"}
+{"id": "15353", "scenario": "social", "intent": "social_post", "utt": "write a message to payoneer and tell them that my card isn't working"}
+{"id": "15355", "scenario": "social", "intent": "social_post", "utt": "can you tweet for me to amazon services for not delivering my product on time"}
+{"id": "15356", "scenario": "social", "intent": "social_post", "utt": "olly can you tweet for me to amazon services for not delivering my product on time"}
+{"id": "15357", "scenario": "social", "intent": "social_post", "utt": "tweet apple that the iphone doesn't work"}
+{"id": "15362", "scenario": "social", "intent": "social_post", "utt": "please tell kmart they sent the wrong item"}
+{"id": "15366", "scenario": "social", "intent": "social_post", "utt": "tweet verizon customer service"}
+{"id": "15367", "scenario": "social", "intent": "social_post", "utt": "tweet complaint at verizon"}
+{"id": "15372", "scenario": "social", "intent": "social_post", "utt": "send tweet to at bobburgers they screwed up my order and i had to wait an extra hour"}
+{"id": "15373", "scenario": "social", "intent": "social_post", "utt": "message at bobburgers they screwed up my order and i had to wait an extra hour"}
+{"id": "15377", "scenario": "social", "intent": "social_post", "utt": "can you tweet lif about their app crashing"}
+{"id": "15386", "scenario": "social", "intent": "social_post", "utt": "post the picture i just took on twitter"}
+{"id": "15394", "scenario": "social", "intent": "social_post", "utt": "complain to the d. m. v. office about the excessively long line"}
+{"id": "15395", "scenario": "social", "intent": "social_post", "utt": "open hershey twitter"}
+{"id": "15398", "scenario": "social", "intent": "social_post", "utt": "forward a complaint to mount's regarding internet speed issues"}
+{"id": "15403", "scenario": "social", "intent": "social_post", "utt": "tweet at applebee my chicken was raw number foodpoisoning"}
+{"id": "15404", "scenario": "social", "intent": "social_post", "utt": "tweet at applebee my chicken was raw hashtag food poisoning"}
+{"id": "15406", "scenario": "social", "intent": "social_post", "utt": "please tweet at bestbuy that i am not happy with their service today"}
+{"id": "15410", "scenario": "social", "intent": "social_post", "utt": "contact customer service"}
+{"id": "15411", "scenario": "social", "intent": "social_post", "utt": "send a complaint to consumer service of this company"}
+{"id": "15416", "scenario": "social", "intent": "social_post", "utt": "tweet rude salesperson"}
+{"id": "15418", "scenario": "social", "intent": "social_post", "utt": "hey post my complaint to at microsoft on twitter"}
+{"id": "15420", "scenario": "social", "intent": "social_post", "utt": "hey olly post my complaint to at microsoft on twitter"}
+{"id": "15422", "scenario": "social", "intent": "social_post", "utt": "send this message to at microsoft on twitter"}
+{"id": "15423", "scenario": "social", "intent": "social_post", "utt": "i want to post on facebook"}
+{"id": "15429", "scenario": "social", "intent": "social_post", "utt": "post comment from my phone on facebook"}
+{"id": "15430", "scenario": "social", "intent": "social_post", "utt": "send a poor review to this pf chang's yelp page"}
+{"id": "15433", "scenario": "social", "intent": "social_post", "utt": "customer service from microsoft never called me back"}
+{"id": "15434", "scenario": "social", "intent": "social_post", "utt": "i want to tweet a complaint to target"}
+{"id": "15438", "scenario": "social", "intent": "social_post", "utt": "tweet a customer complaint on the service at the long horn steak house"}
+{"id": "15446", "scenario": "social", "intent": "social_post", "utt": "tweet my complaint on targets customer service"}
+{"id": "15450", "scenario": "social", "intent": "social_post", "utt": "tweet consumer service that the quantity is wrong"}
+{"id": "15452", "scenario": "social", "intent": "social_post", "utt": "please tweet that directv has horrible customer service"}
+{"id": "15453", "scenario": "social", "intent": "social_post", "utt": "open twitter compose new tweet directv has horrible customer service"}
+{"id": "15468", "scenario": "social", "intent": "social_post", "utt": "tweet a complaint to apple that their battery life is terrible"}
+{"id": "15473", "scenario": "social", "intent": "social_post", "utt": "send a tweet to national grid"}
+{"id": "15474", "scenario": "social", "intent": "social_post", "utt": "send a message to national grid that the power is out again"}
+{"id": "15480", "scenario": "social", "intent": "social_post", "utt": "refresh this complaint"}
+{"id": "15481", "scenario": "social", "intent": "social_post", "utt": "get it fast resolved"}
+{"id": "15482", "scenario": "social", "intent": "social_post", "utt": "check me into home on facebook"}
+{"id": "15484", "scenario": "social", "intent": "social_post", "utt": "make a facebook post i'm home"}
+{"id": "15489", "scenario": "social", "intent": "social_post", "utt": "please tweet at nike my pants ripped after the first wash number nothappy"}
+{"id": "15490", "scenario": "social", "intent": "social_post", "utt": "tweet a complaint to donald trump about his horrible performance"}
+{"id": "15491", "scenario": "social", "intent": "social_post", "utt": "tweet a complaint to amazon about late shipment"}
+{"id": "15492", "scenario": "social", "intent": "social_post", "utt": "tweet a complaint to amazon about delayed shipment"}
+{"id": "15493", "scenario": "social", "intent": "social_post", "utt": "write a complaint to best buy"}
+{"id": "15494", "scenario": "social", "intent": "social_post", "utt": "i need to write a bad review for yahoo"}
+{"id": "15496", "scenario": "social", "intent": "social_post", "utt": "tweet to the customer service account of starbucks"}
+{"id": "15501", "scenario": "social", "intent": "social_post", "utt": "i have a complaint"}
+{"id": "15504", "scenario": "social", "intent": "social_post", "utt": "tweet a complaint"}
+{"id": "15505", "scenario": "social", "intent": "social_post", "utt": "tweet insight cable's customer service and tell them i have been waiting on hold for thirty minutes"}
+{"id": "15507", "scenario": "social", "intent": "social_post", "utt": "tweet at insightbb the cable is out again in the highland terrace neighborhood"}
+{"id": "15510", "scenario": "social", "intent": "social_post", "utt": "siri open twitter tweet at scapingyards you missed the entire side of the left patio when you pressure washed"}
+{"id": "15517", "scenario": "social", "intent": "social_post", "utt": "please tweet for me about the bad service rended by the taj restaurant"}
+{"id": "15519", "scenario": "social", "intent": "social_post", "utt": "tweet freedom pop customer service i am dissatisfied"}
+{"id": "15520", "scenario": "social", "intent": "social_post", "utt": "tweet complaint to american eagle customer service"}
+{"id": "15522", "scenario": "social", "intent": "social_post", "utt": "call the customer cell through email"}
+{"id": "15524", "scenario": "social", "intent": "social_post", "utt": "tweet consumer service"}
+{"id": "15525", "scenario": "social", "intent": "social_post", "utt": "tweet consumer service about their dirty area"}
+{"id": "15529", "scenario": "social", "intent": "social_post", "utt": "tweet google customer service their products are inferior"}
+{"id": "15536", "scenario": "social", "intent": "social_post", "utt": "write on twitter that customer service in this location is horrible"}
+{"id": "15542", "scenario": "social", "intent": "social_post", "utt": "send a tweet to kroger about being overcharged for groceries"}
+{"id": "15543", "scenario": "social", "intent": "social_post", "utt": "tweet at quote unquote"}
+{"id": "15547", "scenario": "social", "intent": "social_post", "utt": "send a tweet to safeway about water in my gas"}
+{"id": "15555", "scenario": "social", "intent": "social_post", "utt": "please tweet the following complaint"}
+{"id": "15566", "scenario": "social", "intent": "social_post", "utt": "let wendy's know i hate them"}
+{"id": "15571", "scenario": "social", "intent": "social_post", "utt": "tweet complaint to dominoes"}
+{"id": "15573", "scenario": "social", "intent": "social_post", "utt": "tweet a complaint to local municipality"}
+{"id": "15574", "scenario": "social", "intent": "social_post", "utt": "open tweeter of indian railways"}
+{"id": "15575", "scenario": "social", "intent": "social_post", "utt": "open my twitter account and tell sams club they made my cake order delicious"}
+{"id": "15580", "scenario": "social", "intent": "social_post", "utt": "send a tweet to company"}
+{"id": "15582", "scenario": "social", "intent": "social_post", "utt": "tell company their service is bad"}
+{"id": "15584", "scenario": "social", "intent": "social_post", "utt": "write a tweet of complaint about my t. v. to samsung"}
+{"id": "15585", "scenario": "social", "intent": "social_post", "utt": "tweet a complaint to apple about my iphone seven"}
+{"id": "15594", "scenario": "social", "intent": "social_post", "utt": "send tweet to walmart"}
+{"id": "15599", "scenario": "social", "intent": "social_post", "utt": "open company name and find forms"}
+{"id": "15600", "scenario": "social", "intent": "social_post", "utt": "log a complaint about smart t. v. to sony customer service"}
+{"id": "15601", "scenario": "social", "intent": "social_post", "utt": "log a complaint to l. g. a. c. to customer service"}
+{"id": "15602", "scenario": "social", "intent": "social_post", "utt": "tweet walmart customer service"}
+{"id": "15606", "scenario": "social", "intent": "social_post", "utt": "tweet a complaint about more electricity bill this month"}
+{"id": "15607", "scenario": "social", "intent": "social_post", "utt": "tweet a complaint about potholes on road"}
+{"id": "15608", "scenario": "social", "intent": "social_post", "utt": "tweet a complaint about poor drainage system"}
+{"id": "15611", "scenario": "social", "intent": "social_post", "utt": "i have bad experience with bugs in this hotel tweet this to customer service and give them link relevance to this topic"}
+{"id": "15615", "scenario": "social", "intent": "social_post", "utt": "write complaint to walmart"}
+{"id": "15620", "scenario": "social", "intent": "social_post", "utt": "tweet for me the complaint about potholes on road"}
+{"id": "15624", "scenario": "social", "intent": "social_post", "utt": "tweet consumer complaint"}
+{"id": "15627", "scenario": "social", "intent": "social_post", "utt": "send a tweet to tmobile for rude employees"}
+{"id": "15637", "scenario": "social", "intent": "social_post", "utt": "tweet pizza hut their delivery guy is an hour late"}
+{"id": "15654", "scenario": "social", "intent": "social_post", "utt": "tweet to olx costumer service the next i didn't receive my order number one thousand one hundred and seventy six"}
+{"id": "15658", "scenario": "social", "intent": "social_post", "utt": "can you put this on facebook"}
+{"id": "15663", "scenario": "social", "intent": "social_post", "utt": "post new status"}
+{"id": "15665", "scenario": "social", "intent": "social_post", "utt": "start complaint to walmart"}
+{"id": "15666", "scenario": "social", "intent": "social_post", "utt": "make a complaint to target"}
+{"id": "15667", "scenario": "social", "intent": "social_post", "utt": "at nikesupport i need some assistance regarding some shoes i bought last week"}
+{"id": "15669", "scenario": "social", "intent": "social_post", "utt": "write a complaint tweet"}
+{"id": "15671", "scenario": "social", "intent": "social_post", "utt": "tweet to amazon about late delivery of my t. v."}
+{"id": "15675", "scenario": "social", "intent": "social_post", "utt": "this may brings given of these proble small to us"}
+{"id": "15687", "scenario": "social", "intent": "social_post", "utt": "hello can you give the contact details for a particular service center"}
+{"id": "15689", "scenario": "social", "intent": "social_post", "utt": "pull up the complaint website for starbucks"}
+{"id": "15691", "scenario": "social", "intent": "social_post", "utt": "show me the customer service number for mcdonalds"}
+{"id": "15692", "scenario": "social", "intent": "social_post", "utt": "could please tweet that the kinley water bottle was charged for more than maximum retail price at the movies"}
+{"id": "15697", "scenario": "social", "intent": "social_post", "utt": "complain to amazon customer service for me"}
+{"id": "15698", "scenario": "social", "intent": "social_post", "utt": "fraud in weighing products"}
+{"id": "15702", "scenario": "social", "intent": "social_post", "utt": "it would be nice if you post status for me"}
+{"id": "15705", "scenario": "social", "intent": "social_post", "utt": "send twitter to mattel that they need to stop making toys in china"}
+{"id": "15709", "scenario": "social", "intent": "social_post", "utt": "tweet complain about service a"}
+{"id": "15710", "scenario": "social", "intent": "social_post", "utt": "tag my tweet to provider"}
+{"id": "15713", "scenario": "social", "intent": "social_post", "utt": "i would like to place a call to amazon customer service"}
+{"id": "15718", "scenario": "social", "intent": "social_post", "utt": "tweet macy's a complaint about their sales clerk"}
+{"id": "15722", "scenario": "social", "intent": "social_post", "utt": "tweet bad day at starbucks"}
+{"id": "15724", "scenario": "social", "intent": "social_post", "utt": "tweet british airways that my last flight from chicago to london was delayed"}
+{"id": "15726", "scenario": "social", "intent": "social_post", "utt": "post this status to my social media account"}
+{"id": "15727", "scenario": "social", "intent": "social_post", "utt": "tweet a complaint to comcast"}
+{"id": "15729", "scenario": "social", "intent": "social_post", "utt": "comcast sucks put that on their twitter account"}
+{"id": "15734", "scenario": "social", "intent": "social_post", "utt": "post a status on my twitter account"}
+{"id": "15735", "scenario": "social", "intent": "social_post", "utt": "write ten words on instagram"}
+{"id": "15738", "scenario": "social", "intent": "social_post", "utt": "olly please tweet a complaint about a store i visit"}
+{"id": "15739", "scenario": "social", "intent": "social_post", "utt": "please send a complaint about my horrible experience with a company"}
+{"id": "15740", "scenario": "social", "intent": "social_post", "utt": "make a post"}
+{"id": "15743", "scenario": "social", "intent": "social_post", "utt": "write a tweet to this company"}
+{"id": "15748", "scenario": "email", "intent": "email_sendemail", "utt": "send email to martha saying last evening was wild"}
+{"id": "15750", "scenario": "email", "intent": "email_sendemail", "utt": "drop a message to jan write i will be late"}
+{"id": "15755", "scenario": "email", "intent": "email_sendemail", "utt": "send email to my brother"}
+{"id": "15758", "scenario": "email", "intent": "email_sendemail", "utt": "hey email jan about our meeting"}
+{"id": "15759", "scenario": "email", "intent": "email_sendemail", "utt": "please send email to pawel with reminder"}
+{"id": "15766", "scenario": "email", "intent": "email_sendemail", "utt": "could you please send back to pawel this answer"}
+{"id": "15776", "scenario": "email", "intent": "email_query", "utt": "is there any new email"}
+{"id": "15779", "scenario": "email", "intent": "email_sendemail", "utt": "email to matthew with content project finished send me invoice please"}
+{"id": "15780", "scenario": "email", "intent": "email_sendemail", "utt": "email to caroline how are you can you send me updates on last project cheers tomasz"}
+{"id": "15781", "scenario": "email", "intent": "email_sendemail", "utt": "hey google email to caroline how are you can you send me updates on last project cheers tomasz"}
+{"id": "15787", "scenario": "email", "intent": "email_query", "utt": "do i have any email from work"}
+{"id": "15804", "scenario": "email", "intent": "email_sendemail", "utt": "email james about the softball game james we need to get some refreshments before heading over"}
+{"id": "15817", "scenario": "email", "intent": "email_query", "utt": "any recent emails from anna"}
+{"id": "15821", "scenario": "news", "intent": "news_query", "utt": "what is new"}
+{"id": "15826", "scenario": "email", "intent": "email_sendemail", "utt": "respond to all that i am on my way"}
+{"id": "15827", "scenario": "email", "intent": "email_sendemail", "utt": "go to contacts and add a new email to the list"}
+{"id": "15830", "scenario": "email", "intent": "email_sendemail", "utt": "send that"}
+{"id": "15832", "scenario": "email", "intent": "email_sendemail", "utt": "send to the contact an email as follows"}
+{"id": "15835", "scenario": "email", "intent": "email_sendemail", "utt": "please reply to my most recent email"}
+{"id": "15840", "scenario": "email", "intent": "email_sendemail", "utt": "send an email to ray"}
+{"id": "15846", "scenario": "email", "intent": "email_sendemail", "utt": "how it's come to us"}
+{"id": "15848", "scenario": "email", "intent": "email_sendemail", "utt": "email my mother"}
+{"id": "15856", "scenario": "email", "intent": "email_sendemail", "utt": "send email to current email address"}
+{"id": "15860", "scenario": "email", "intent": "email_sendemail", "utt": "send email to mom asking about the weather"}
+{"id": "15873", "scenario": "email", "intent": "email_query", "utt": "please read the last email for me"}
+{"id": "15876", "scenario": "email", "intent": "email_sendemail", "utt": "send a copy of the bills to mecky by email"}
+{"id": "15888", "scenario": "email", "intent": "email_sendemail", "utt": "could you please gather a list of local restaurants and email them to my husband"}
+{"id": "15892", "scenario": "email", "intent": "email_sendemail", "utt": "send an email to adele"}
+{"id": "15894", "scenario": "email", "intent": "email_addcontact", "utt": "add john at gmail dot com to contacts"}
+{"id": "15896", "scenario": "email", "intent": "email_sendemail", "utt": "link john at gmail dot com to john in contacts"}
+{"id": "15907", "scenario": "email", "intent": "email_sendemail", "utt": "send will do thanks to john as a reply to his last message"}
+{"id": "15908", "scenario": "email", "intent": "email_sendemail", "utt": "send a reply email thank you very much to john at gmail dot com"}
+{"id": "15927", "scenario": "email", "intent": "email_sendemail", "utt": "send an email to julie that i can meet up with her on saturday at one p. m."}
+{"id": "15934", "scenario": "email", "intent": "email_query", "utt": "can you read me my latest emails"}
+{"id": "15940", "scenario": "email", "intent": "email_sendemail", "utt": "reply to the latest email"}
+{"id": "15941", "scenario": "email", "intent": "email_sendemail", "utt": "please reply to the email"}
+{"id": "15949", "scenario": "email", "intent": "email_sendemail", "utt": "reply to the email from john"}
+{"id": "15952", "scenario": "email", "intent": "email_sendemail", "utt": "send an email to james asking when he is getting off of work"}
+{"id": "15954", "scenario": "email", "intent": "email_sendemail", "utt": "olly email jennifer the new schedule of the meeting for tomorrow"}
+{"id": "15956", "scenario": "email", "intent": "email_sendemail", "utt": "olly email alice to let her know we are on the way"}
+{"id": "15959", "scenario": "email", "intent": "email_sendemail", "utt": "compose an email to parisa"}
+{"id": "15960", "scenario": "email", "intent": "email_sendemail", "utt": "send danielle an email"}
+{"id": "15961", "scenario": "email", "intent": "email_sendemail", "utt": "i need to send an email to laura"}
+{"id": "15962", "scenario": "email", "intent": "email_sendemail", "utt": "pull up outlook i need to send a email"}
+{"id": "15976", "scenario": "email", "intent": "email_querycontact", "utt": "add rebecca green to my list of favorite contacts"}
+{"id": "15980", "scenario": "email", "intent": "email_sendemail", "utt": "send answer to george"}
+{"id": "15992", "scenario": "email", "intent": "email_sendemail", "utt": "email ashwin patel my best wishes and an attachment of workpdf"}
+{"id": "16012", "scenario": "email", "intent": "email_sendemail", "utt": "olly send an email to jesse"}
+{"id": "16013", "scenario": "email", "intent": "email_sendemail", "utt": "send an email to jesse"}
+{"id": "16015", "scenario": "email", "intent": "email_sendemail", "utt": "please start an email to jesse"}
+{"id": "16034", "scenario": "email", "intent": "email_sendemail", "utt": "compose new email to david davis email address"}
+{"id": "16044", "scenario": "email", "intent": "email_sendemail", "utt": "send mail to sanantha about body exercise schedule"}
+{"id": "16053", "scenario": "email", "intent": "email_sendemail", "utt": "send raj a mail for job"}
+{"id": "16054", "scenario": "email", "intent": "email_sendemail", "utt": "send mail to john for money"}
+{"id": "16057", "scenario": "email", "intent": "email_sendemail", "utt": "reply to that email"}
+{"id": "16060", "scenario": "email", "intent": "email_sendemail", "utt": "reply to the email from my bank and inform them that i have paid the credit card dues"}
+{"id": "16064", "scenario": "email", "intent": "email_sendemail", "utt": "send an email to peter that where he is now and if he is at the market text him to bring some wine"}
+{"id": "16080", "scenario": "email", "intent": "email_sendemail", "utt": "email my mom"}
+{"id": "16094", "scenario": "email", "intent": "email_sendemail", "utt": "send an email to sharon"}
+{"id": "16095", "scenario": "email", "intent": "email_sendemail", "utt": "email my boss that i'm coming in late today"}
+{"id": "16102", "scenario": "email", "intent": "email_sendemail", "utt": "send an email to my boss about my leave"}
+{"id": "16109", "scenario": "email", "intent": "email_sendemail", "utt": "reply to all emails received between ten p. m. and seven am everyday"}
+{"id": "16110", "scenario": "email", "intent": "email_sendemail", "utt": "all emails received between ten p. m. and seven am everyday is to be replied"}
+{"id": "16114", "scenario": "email", "intent": "email_sendemail", "utt": "reply to all emails received from ten p. m. to nine am"}
+{"id": "16115", "scenario": "email", "intent": "email_sendemail", "utt": "all emails received between ten p. m. to nine am is to be replied to"}
+{"id": "16116", "scenario": "email", "intent": "email_sendemail", "utt": "between ten p. m. to nine am all emails received is to be replied to"}
+{"id": "16118", "scenario": "email", "intent": "email_sendemail", "utt": "send help only to jane"}
+{"id": "16126", "scenario": "email", "intent": "email_sendemail", "utt": "send thank you so much mom to mom"}
+{"id": "16129", "scenario": "email", "intent": "email_sendemail", "utt": "send email thank you very much to sarah as a reply"}
+{"id": "16133", "scenario": "email", "intent": "email_sendemail", "utt": "send email to mommy that i'll be going the party"}
+{"id": "16143", "scenario": "email", "intent": "email_sendemail", "utt": "create an email to aran"}
+{"id": "16147", "scenario": "email", "intent": "email_sendemail", "utt": "compose a mail for jack"}
+{"id": "16167", "scenario": "email", "intent": "email_sendemail", "utt": "i need to send a reply to charlotte"}
+{"id": "16172", "scenario": "email", "intent": "email_sendemail", "utt": "send email to mom and tell her see her at disney world"}
+{"id": "16174", "scenario": "email", "intent": "email_sendemail", "utt": "send email to boss not feeling well taking a sick day"}
+{"id": "16181", "scenario": "email", "intent": "email_sendemail", "utt": "send mail to bubbles i want to meet her tomorrow at two p. m. in office"}
+{"id": "16189", "scenario": "email", "intent": "email_sendemail", "utt": "send email to my uncle about situation of current weather"}
+{"id": "16190", "scenario": "email", "intent": "email_sendemail", "utt": "write email to my company mate to submit the task tomorrow"}
+{"id": "16194", "scenario": "email", "intent": "email_sendemail", "utt": "please send email to liz"}
+{"id": "16195", "scenario": "email", "intent": "email_sendemail", "utt": "send email to liz"}
+{"id": "16200", "scenario": "email", "intent": "email_sendemail", "utt": "please send an email to larry's new email at larrylarry at gmail dot com"}
+{"id": "16207", "scenario": "email", "intent": "email_sendemail", "utt": "email family with details of the party"}
+{"id": "16208", "scenario": "email", "intent": "email_sendemail", "utt": "email tom the date and time of tomorrow's meeting"}
+{"id": "16212", "scenario": "email", "intent": "email_sendemail", "utt": "email dad how is the weather this week"}
+{"id": "16231", "scenario": "email", "intent": "email_sendemail", "utt": "please respond to greg's email stating that his idea is fantastic"}
+{"id": "16235", "scenario": "email", "intent": "email_addcontact", "utt": "add dale at gmail dot com to my contacts"}
+{"id": "16237", "scenario": "email", "intent": "email_sendemail", "utt": "forward the mail to new email address"}
+{"id": "16255", "scenario": "email", "intent": "email_querycontact", "utt": "open the contact alex in phonebook"}
+{"id": "16258", "scenario": "email", "intent": "email_sendemail", "utt": "please email to my wife about next week weather"}
+{"id": "16259", "scenario": "email", "intent": "email_sendemail", "utt": "write an email about next week weather to my wife"}
+{"id": "16267", "scenario": "email", "intent": "email_sendemail", "utt": "email to my family saying i love you all"}
+{"id": "16269", "scenario": "email", "intent": "email_sendemail", "utt": "send a reply to robert for his email received today morning"}
+{"id": "16277", "scenario": "email", "intent": "email_query", "utt": "do i have new mail"}
+{"id": "16281", "scenario": "email", "intent": "email_sendemail", "utt": "please send an email to toms principal in regards to the meeting we have tomorrow"}
+{"id": "16285", "scenario": "email", "intent": "email_sendemail", "utt": "please send pedro a email about his car"}
+{"id": "16293", "scenario": "email", "intent": "email_query", "utt": "read my most recent emails"}
+{"id": "16306", "scenario": "email", "intent": "email_sendemail", "utt": "please send an email to my family"}
+{"id": "16310", "scenario": "email", "intent": "email_sendemail", "utt": "please respond"}
+{"id": "16311", "scenario": "email", "intent": "email_sendemail", "utt": "send a reply to that email"}
+{"id": "16312", "scenario": "email", "intent": "email_sendemail", "utt": "send an email to frank at work"}
+{"id": "16321", "scenario": "email", "intent": "email_sendemail", "utt": "reply back to bob smith"}
+{"id": "16329", "scenario": "email", "intent": "email_sendemail", "utt": "reply to sarah's email"}
+{"id": "16345", "scenario": "email", "intent": "email_sendemail", "utt": "i need to send a new email here is the address and then add it to the contact list"}
+{"id": "16346", "scenario": "email", "intent": "email_sendemail", "utt": "send email to elain and reminder her not to forget the oranges in the morning"}
+{"id": "16348", "scenario": "email", "intent": "email_sendemail", "utt": "reply to john's email today saying i will be late"}
+{"id": "16349", "scenario": "email", "intent": "email_querycontact", "utt": "who is the most frequently called person in my phone book"}
+{"id": "16360", "scenario": "email", "intent": "email_sendemail", "utt": "write an email to john and lee"}
+{"id": "16366", "scenario": "email", "intent": "email_query", "utt": "who's emailed me recently"}
+{"id": "16378", "scenario": "email", "intent": "email_sendemail", "utt": "alexa send mom an email now"}
+{"id": "16404", "scenario": "email", "intent": "email_sendemail", "utt": "send email to tim"}
+{"id": "16408", "scenario": "email", "intent": "email_sendemail", "utt": "alexa write email"}
+{"id": "16417", "scenario": "email", "intent": "email_sendemail", "utt": "please send the following email to uncle john yes i will be there"}
+{"id": "16418", "scenario": "email", "intent": "email_sendemail", "utt": "please send an email to uncle john telling him that i will be there"}
+{"id": "16428", "scenario": "email", "intent": "email_sendemail", "utt": "please send dad an email asking about the weather in new jersey"}
+{"id": "16434", "scenario": "email", "intent": "email_sendemail", "utt": "tell my family this in an email"}
+{"id": "16439", "scenario": "email", "intent": "email_sendemail", "utt": "there is an email i need you to send my friend"}
+{"id": "16441", "scenario": "email", "intent": "email_sendemail", "utt": "send email to carl that i will be late for work tomorrow"}
+{"id": "16449", "scenario": "email", "intent": "email_sendemail", "utt": "i need to edit marie jones email address to read"}
+{"id": "16474", "scenario": "email", "intent": "email_sendemail", "utt": "send an email to stan francis"}
+{"id": "16484", "scenario": "email", "intent": "email_sendemail", "utt": "create new email address"}
+{"id": "16497", "scenario": "email", "intent": "email_sendemail", "utt": "send a request to martin"}
+{"id": "16499", "scenario": "email", "intent": "email_sendemail", "utt": "hi google please send mail to mom i am coming home on this weekend"}
+{"id": "16500", "scenario": "email", "intent": "email_sendemail", "utt": "please send a mail to my hubby i will late tonight"}
+{"id": "16507", "scenario": "email", "intent": "email_sendemail", "utt": "send email to new email address"}
+{"id": "16509", "scenario": "email", "intent": "email_sendemail", "utt": "answer email"}
+{"id": "16510", "scenario": "email", "intent": "email_sendemail", "utt": "send this reply to received email"}
+{"id": "16534", "scenario": "email", "intent": "email_sendemail", "utt": "will you write an email to chelsea for me"}
+{"id": "16536", "scenario": "email", "intent": "email_sendemail", "utt": "send an email to my supervisor"}
+{"id": "16538", "scenario": "email", "intent": "email_sendemail", "utt": "would you open the email and i would like to compose a new one"}
+{"id": "16548", "scenario": "email", "intent": "email_sendemail", "utt": "can you email mary and let her know i am on my way"}
+{"id": "16556", "scenario": "email", "intent": "email_sendemail", "utt": "reply to email from name"}
+{"id": "16557", "scenario": "email", "intent": "email_sendemail", "utt": "reply to name"}
+{"id": "16558", "scenario": "email", "intent": "email_sendemail", "utt": "reply to johns email by saying yes i can"}
+{"id": "16566", "scenario": "email", "intent": "email_sendemail", "utt": "email company worker about work project"}
+{"id": "16567", "scenario": "email", "intent": "email_sendemail", "utt": "email dad about fixing my car"}
+{"id": "16569", "scenario": "email", "intent": "email_sendemail", "utt": "i'd like to send an email to the new receptionist's email"}
+{"id": "16572", "scenario": "email", "intent": "email_sendemail", "utt": "email to address"}
+{"id": "16598", "scenario": "email", "intent": "email_sendemail", "utt": "reply yes to this"}
+{"id": "16599", "scenario": "email", "intent": "email_sendemail", "utt": "delete this email"}
+{"id": "16600", "scenario": "email", "intent": "email_sendemail", "utt": "i want to send email to my friend jack at gmail dot com"}
+{"id": "16604", "scenario": "email", "intent": "email_sendemail", "utt": "send email to daughter"}
+{"id": "16619", "scenario": "email", "intent": "email_sendemail", "utt": "shoot an email to chris about work tomorrow"}
+{"id": "16626", "scenario": "email", "intent": "email_sendemail", "utt": "use email to let chris know i will be late"}
+{"id": "16633", "scenario": "email", "intent": "email_sendemail", "utt": "i have a new email address can you send an email"}
+{"id": "16636", "scenario": "email", "intent": "email_query", "utt": "how many emails do i have from work today"}
+{"id": "16644", "scenario": "email", "intent": "email_sendemail", "utt": "prepare to send an outgoing reply message"}
+{"id": "16655", "scenario": "general", "intent": "general_quirky", "utt": "tell me more about john smith"}
+{"id": "16675", "scenario": "email", "intent": "email_sendemail", "utt": "email joejoe at gmail dot com"}
+{"id": "16676", "scenario": "email", "intent": "email_sendemail", "utt": "send new email to joejoe at gmail dot com"}
+{"id": "16679", "scenario": "email", "intent": "email_query", "utt": "did i ever get the email from sean today"}
+{"id": "16682", "scenario": "email", "intent": "email_sendemail", "utt": "create email to john start body i am interested in seeing the car you have for sale can we schedule a time to meet send"}
+{"id": "16686", "scenario": "email", "intent": "email_sendemail", "utt": "send an email to a new address"}
+{"id": "16690", "scenario": "email", "intent": "email_sendemail", "utt": "reply to new email from joe"}
+{"id": "16691", "scenario": "email", "intent": "email_sendemail", "utt": "send reply to joe"}
+{"id": "16702", "scenario": "email", "intent": "email_sendemail", "utt": "locate jen's most recent email so i can reply"}
+{"id": "16715", "scenario": "email", "intent": "email_sendemail", "utt": "please send an email to john saying i'm on leave"}
+{"id": "16716", "scenario": "email", "intent": "email_sendemail", "utt": "email john saying i'm on leave"}
+{"id": "16728", "scenario": "email", "intent": "email_sendemail", "utt": "tell sean i appreciate him reaching out to me"}
+{"id": "16735", "scenario": "email", "intent": "email_sendemail", "utt": "please open a reply to the email"}
+{"id": "16736", "scenario": "email", "intent": "email_sendemail", "utt": "i'd like to send a reply"}
+{"id": "16739", "scenario": "email", "intent": "email_sendemail", "utt": "open a new email to contact"}
+{"id": "16743", "scenario": "email", "intent": "email_sendemail", "utt": "send the following email to my sister"}
+{"id": "16756", "scenario": "email", "intent": "email_sendemail", "utt": "dictate new email"}
+{"id": "16782", "scenario": "email", "intent": "email_sendemail", "utt": "can you send an email to my mother about the weekly weather"}
+{"id": "16783", "scenario": "email", "intent": "email_sendemail", "utt": "my mother needs the weekly weather sent to her"}
+{"id": "16784", "scenario": "email", "intent": "email_sendemail", "utt": "my mother wants to know what the weekly weather will be like send her an email"}
+{"id": "16786", "scenario": "email", "intent": "email_query", "utt": "update outlook mailbox"}
+{"id": "16792", "scenario": "email", "intent": "email_sendemail", "utt": "hi send i love you message to my wife"}
+{"id": "16830", "scenario": "email", "intent": "email_sendemail", "utt": "send a confirmation email to sandy"}
+{"id": "16831", "scenario": "email", "intent": "email_sendemail", "utt": "send an invitation email to marilia"}
+{"id": "16835", "scenario": "email", "intent": "email_sendemail", "utt": "send the email to this new email address"}
+{"id": "16837", "scenario": "email", "intent": "email_sendemail", "utt": "compose this email to this new email address"}
+{"id": "16862", "scenario": "email", "intent": "email_querycontact", "utt": "what sapp"}
+{"id": "16867", "scenario": "email", "intent": "email_sendemail", "utt": "mail my friend"}
+{"id": "16871", "scenario": "email", "intent": "email_sendemail", "utt": "send email to naty"}
+{"id": "16879", "scenario": "email", "intent": "email_sendemail", "utt": "send email to jerry about the meeting"}
+{"id": "16882", "scenario": "email", "intent": "email_sendemail", "utt": "send message via email"}
+{"id": "16884", "scenario": "email", "intent": "email_sendemail", "utt": "send an email to mom asking if she was able to order the book from amazon that i told her about"}
+{"id": "16887", "scenario": "email", "intent": "email_sendemail", "utt": "answer this mail"}
+{"id": "16902", "scenario": "email", "intent": "email_sendemail", "utt": "reply to my last email"}
+{"id": "16905", "scenario": "email", "intent": "email_sendemail", "utt": "send an email to my family telling them about my upcoming birthday plans"}
+{"id": "16917", "scenario": "email", "intent": "email_sendemail", "utt": "can you please please reply for that mail"}
+{"id": "16928", "scenario": "email", "intent": "email_sendemail", "utt": "reply to heather's latest email by answering no"}
+{"id": "16940", "scenario": "email", "intent": "email_sendemail", "utt": "through mail server"}
+{"id": "16941", "scenario": "email", "intent": "email_sendemail", "utt": "through outlook"}
+{"id": "16943", "scenario": "email", "intent": "email_sendemail", "utt": "send email to grandma subject saturday message we are dropping by on saturday see you then"}
+{"id": "16946", "scenario": "email", "intent": "email_sendemail", "utt": "reply email received"}
+{"id": "16954", "scenario": "email", "intent": "email_sendemail", "utt": "look up contacts"}
+{"id": "16957", "scenario": "email", "intent": "email_sendemail", "utt": "begin email to my husband"}
+{"id": "16958", "scenario": "email", "intent": "email_sendemail", "utt": "start email to client"}
+{"id": "16963", "scenario": "email", "intent": "email_sendemail", "utt": "read email and send to family member"}
+{"id": "16964", "scenario": "email", "intent": "email_sendemail", "utt": "write email to family member and read it back"}
+{"id": "16969", "scenario": "email", "intent": "email_sendemail", "utt": "please send the email to a. b. c. at gmail dot com instead of xyz at gmail dot com"}
+{"id": "16977", "scenario": "email", "intent": "email_querycontact", "utt": "please find a contact number of rahul judawa"}
+{"id": "16981", "scenario": "email", "intent": "email_sendemail", "utt": "mail send to ashok"}
+{"id": "16988", "scenario": "email", "intent": "email_sendemail", "utt": "please say to the email that sent me george i need the money now its urgent"}
+{"id": "17012", "scenario": "email", "intent": "email_sendemail", "utt": "i need an email to be sent to sdfa at hotmail dot com"}
+{"id": "17014", "scenario": "email", "intent": "email_sendemail", "utt": "reply to the email"}
+{"id": "17016", "scenario": "email", "intent": "email_sendemail", "utt": "i want a reply to the email"}
+{"id": "17022", "scenario": "email", "intent": "email_sendemail", "utt": "alexa email mom and ask how the weather is there"}
+{"id": "17025", "scenario": "email", "intent": "email_sendemail", "utt": "create an email to mom and ask about this week's weather"}
+{"id": "17026", "scenario": "email", "intent": "email_sendemail", "utt": "olly send mom an email to remind her to meet me for lunch today"}
+{"id": "17028", "scenario": "email", "intent": "email_sendemail", "utt": "olly let's email sandy"}
+{"id": "17029", "scenario": "email", "intent": "email_sendemail", "utt": "olly send bob and email"}
+{"id": "17031", "scenario": "email", "intent": "email_sendemail", "utt": "i need an email chain to my mother i'm planning a trip to see her ask her how the weather will be so i know how to pack"}
+{"id": "17033", "scenario": "email", "intent": "email_sendemail", "utt": "respond to the mail of ash in morning"}
+{"id": "17061", "scenario": "email", "intent": "email_query", "utt": "alarm if any new reply from the boss"}
+{"id": "17068", "scenario": "email", "intent": "email_sendemail", "utt": "reply to the email received from jennifer"}
+{"id": "17077", "scenario": "email", "intent": "email_sendemail", "utt": "send a personal thank you email to george"}
+{"id": "17078", "scenario": "email", "intent": "email_sendemail", "utt": "please send a business email about the time of the meeting change to lauren"}
+{"id": "17126", "scenario": "email", "intent": "email_sendemail", "utt": "answer paul's email"}
+{"id": "17130", "scenario": "email", "intent": "email_sendemail", "utt": "send email to mom starting with the subject vacation"}
+{"id": "17132", "scenario": "email", "intent": "email_sendemail", "utt": "please draft an email to shaun requesting sunday's off for the next schedule"}
+{"id": "17139", "scenario": "email", "intent": "email_sendemail", "utt": "send a reply to this email"}
+{"id": "17141", "scenario": "email", "intent": "email_query", "utt": "give me recent emails"}
+{"id": "17149", "scenario": "email", "intent": "email_sendemail", "utt": "i want to check julia's available dates so would you send her mail and ask about it"}
+{"id": "17155", "scenario": "email", "intent": "email_sendemail", "utt": "reply to anthony's email"}
+{"id": "17164", "scenario": "email", "intent": "email_sendemail", "utt": "forward a mail to sandy"}
+{"id": "17165", "scenario": "email", "intent": "email_sendemail", "utt": "put a mail to sandy"}
+{"id": "17171", "scenario": "email", "intent": "email_sendemail", "utt": "please write to this email"}
