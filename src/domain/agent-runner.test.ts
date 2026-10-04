@@ -82,3 +82,36 @@ test('the agent\'s ask tells the person how to answer, like a human ask does', a
   assert.match(messages[0]!, /Drive Margaret to cardiology/);
   assert.match(messages[0]!, /Reply "yes" or "can't"\./);
 });
+
+test('a slipped promise: the owner gets a question, keeps the work, and silence reaches the primary caregiver', async () => {
+  await store.reset();
+  await store.addHousehold({ id: HH, name: 'circle', timezone: 'America/New_York' });
+  await store.addMember({ id: 'm_david', householdId: HH, name: 'David', role: 'primary_caregiver' });
+  await store.addMember({ id: 'm_renee', householdId: HH, name: 'Renee', role: 'caregiver' });
+  const o = await store.createObligation({
+    householdId: HH, what: 'Drive Margaret to cardiology', consequence: 'medical',
+    status: 'ASSIGNED', ownerId: 'm_renee',
+    provenance: { kind: 'CONFIRMED', byMemberId: 'm_renee', at: '2026-10-12T12:00:00Z' },
+    dueAt: '2026-10-14T13:30:00Z', // 09:30 New York; DAYTIME is 10:00
+  });
+  const sent: Array<{ to: string; message: string }> = [];
+  const spy = { channel: 'spy', deliver: async (m: { to: string; message: string }) => { sent.push(m); return { delivered: true }; } };
+
+  await runAgentOnce(HH, { store, notifier: spy as never, now: () => DAYTIME });
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0]!.to, 'm_renee');
+  assert.match(sent[0]!.message, /Still on\?/);
+  assert.doesNotMatch(sent[0]!.message, /miss|fail|forgot/i, 'no record is not the same as not done');
+  const after = store.getCareState(HH).obligations.find((x) => x.id === o.id)!;
+  assert.equal(after.status, 'ASSIGNED');
+  assert.equal(after.ownerId, 'm_renee');
+
+  const later = new Date(DAYTIME.getTime() + 45 * 60_000);
+  await runAgentOnce(HH, { store, notifier: spy as never, now: () => later });
+  assert.equal(sent.length, 2);
+  assert.equal(sent[1]!.to, 'm_david');
+  assert.match(sent[1]!.message, /Renee hasn't answered/);
+
+  await runAgentOnce(HH, { store, notifier: spy as never, now: () => new Date(later.getTime() + 60 * 60_000) });
+  assert.equal(sent.length, 2, 'the primary caregiver hears once');
+});

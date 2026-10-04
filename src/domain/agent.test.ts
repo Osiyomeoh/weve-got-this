@@ -277,3 +277,67 @@ test('harm avoided is discounted by how loaded the candidate already is', () => 
   const heavy = harmAvoided(s.obligations[0]!, { ...first, load: 5 }, s, DAYTIME);
   assert.ok(light > heavy, 'asking an overloaded person was valued the same as asking a free one');
 });
+
+// --- Broken promises: work somebody took on, past its time ----------------
+
+/** Renee took the ride; it was due at 09:00 New York, and it is now 09:30 (DAYTIME is 10:00). */
+const promised = (over: Partial<Obligation> = {}) => obligation({
+  status: 'ASSIGNED', ownerId: 'm_renee', dueAt: '2026-10-14T13:00:00Z', ...over,
+});
+
+function followUpEvent(memberId: string, at: string, escalation = false): CareEvent {
+  return { ...askEvent(memberId, at), data: { obligationId: 'o1', askedOfId: memberId, followUp: true, escalation } };
+}
+
+test('a promise past its time gets the person who made it asked "still on?"', () => {
+  const { actions } = deliberate(state({ obligations: [promised()] }), opts(DAYTIME));
+  assert.equal(actions.length, 1);
+  assert.equal(actions[0]!.kind, 'CHECK_IN');
+  assert.equal(actions[0]!.memberId, 'm_renee');
+  assert.equal(actions[0]!.followUp, true);
+});
+
+test('a few minutes late is not news', () => {
+  const justDue = state({ obligations: [promised({ dueAt: new Date(DAYTIME.getTime() - 5 * 60_000).toISOString() })] });
+  assert.deepEqual(deliberate(justDue, opts(DAYTIME)).actions, []);
+});
+
+test('the owner is checked in with once, not every pass', () => {
+  const asked = state({
+    obligations: [promised()],
+    events: [followUpEvent('m_renee', new Date(DAYTIME.getTime() - 10 * 60_000).toISOString())],
+  });
+  assert.deepEqual(deliberate(asked, opts(DAYTIME)).actions, []);
+});
+
+test('silence after the check-in tells the primary caregiver, once, and moves no work', () => {
+  const silent = state({
+    obligations: [promised()],
+    events: [followUpEvent('m_renee', new Date(DAYTIME.getTime() - 40 * 60_000).toISOString())],
+  });
+  const { actions } = deliberate(silent, opts(DAYTIME));
+  assert.equal(actions.length, 1);
+  assert.equal(actions[0]!.kind, 'ESCALATE');
+  assert.equal(actions[0]!.memberId, 'm_david');
+
+  const told = state({
+    obligations: [promised()],
+    events: [
+      followUpEvent('m_renee', new Date(DAYTIME.getTime() - 40 * 60_000).toISOString()),
+      followUpEvent('m_david', new Date(DAYTIME.getTime() - 5 * 60_000).toISOString(), true),
+    ],
+  });
+  assert.deepEqual(deliberate(told, opts(DAYTIME)).actions, []);
+});
+
+test('a slipped promise does not wake anyone at night over a social visit', () => {
+  const visit = state({ obligations: [promised({ consequence: 'social', dueAt: '2026-10-14T05:00:00Z' })] });
+  const { actions, restraint } = deliberate(visit, opts(NIGHT));
+  assert.deepEqual(actions, []);
+  assert.ok(restraint.some((r) => r.obligationId === 'o1'));
+});
+
+test('done is done: resolved work is never chased', () => {
+  const resolved = state({ obligations: [promised({ status: 'RESOLVED' })] });
+  assert.deepEqual(deliberate(resolved, opts(DAYTIME)).actions, []);
+});

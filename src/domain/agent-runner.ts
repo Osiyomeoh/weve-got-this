@@ -69,9 +69,7 @@ export async function runAgentOnce(
 
     const delivery = await deps.notifier.deliver({
       to: member.id, toName: name, from: 'CareCircle',
-      message: action.kind === 'ASK'
-        ? `CareCircle noticed nobody has "${obligation.what}" yet. Can you take it on?\n\nReply "yes" or "can't".`
-        : `CareCircle couldn't find anyone for "${obligation.what}". It may need you to step in.`,
+      message: messageFor(action, obligation.what, state.members.find((m) => m.id === obligation.ownerId)),
     });
 
     await deps.store.appendEvent({
@@ -90,6 +88,7 @@ export async function runAgentOnce(
         obligationId: action.obligationId,
         askedOfId: member.id,
         escalation: action.kind === 'ESCALATE',
+        ...(action.followUp ? { followUp: true } : {}),
         delivered: delivery.delivered,
         // The arithmetic travels with the act, so an agent decision is auditable
         // from the log alone, exactly like a gap score.
@@ -102,6 +101,24 @@ export async function runAgentOnce(
   }
 
   return { householdId, at: now.toISOString(), deliberation, performed };
+}
+
+/**
+ * What the person reads. A follow-up is a question, never a verdict: nothing being
+ * recorded does not mean it did not happen, so the wording cannot say it did not.
+ */
+function messageFor(action: AgentAction, what: string, owner?: { name: string; spokenAs?: string }): string {
+  if (action.kind === 'CHECK_IN') {
+    return `"${what}" was due a little while ago and nothing's been marked yet. Still on?\n\nReply "done" if it's handled, or "can't" and I'll find someone.`;
+  }
+  if (action.kind === 'ASK') {
+    return `CareCircle noticed nobody has "${what}" yet. Can you take it on?\n\nReply "yes" or "can't".`;
+  }
+  if (action.followUp) {
+    const name = owner?.spokenAs ?? owner?.name ?? 'Whoever took it on';
+    return `"${what}" is past its time and nothing's recorded. ${name} hasn't answered my check-in. It may be fine, but you may want to call.`;
+  }
+  return `CareCircle couldn't find anyone for "${what}". It may need you to step in.`;
 }
 
 /** Run the agent over every household the store knows. */

@@ -143,7 +143,8 @@ export function pilotReport(state: CareState, window: { from: Date; to: Date }):
   }
 
   // Asks and answers. An answer belongs to the latest ask of that person for that work.
-  const asks = events.filter((e) => e.kind === 'owner_requested');
+  // Follow-ups on promised work are not asks for an owner; they are counted apart.
+  const asks = events.filter((e) => e.kind === 'owner_requested' && e.data['followUp'] !== true);
   const answers = events.filter((e) => e.kind === 'request_answered');
   const answerOf = (ask: CareEvent): CareEvent | undefined => {
     const later = asks.find((a) => a !== ask && a.data['obligationId'] === ask.data['obligationId']

@@ -50,12 +50,14 @@ import { candidatesFor, type Candidate } from './delegation.js';
 export const AGENT_ID = 'system:carecircle';
 
 export interface AgentAction {
-  kind: 'ASK' | 'ESCALATE' | 'STAND_DOWN';
+  kind: 'ASK' | 'CHECK_IN' | 'ESCALATE' | 'STAND_DOWN';
   obligationId: string;
   /** Who to ask, or who to escalate to. Absent on STAND_DOWN. */
   memberId?: string;
   /** Plain language, in the same register as `Candidate.because`. */
   because: string;
+  /** Set when the work had an owner and slipped past its time: a broken promise, not a gap. */
+  followUp?: true;
   /** The arithmetic, exposed so the decision can be audited like a gap score. */
   value: {
     harmAvoided: number;
@@ -229,6 +231,25 @@ function stalled(obligation: Obligation, now: Date): boolean {
   return waited >= 12;
 }
 
+/** Minutes past due before a promise counts as slipping: a ride five minutes late is not news. */
+const FOLLOW_UP_GRACE_MINUTES = 15;
+/** How long the owner has to answer a check-in before the primary caregiver hears. */
+const FOLLOW_UP_WAIT_MINUTES = 30;
+
+/** Work somebody took on, now past its time with nothing recorded. */
+function slipping(obligation: Obligation, now: Date): boolean {
+  if (obligation.status !== 'ASSIGNED' || !obligation.ownerId || !obligation.dueAt) return false;
+  return now.getTime() - new Date(obligation.dueAt).getTime() >= FOLLOW_UP_GRACE_MINUTES * 60_000;
+}
+
+/** The agent's own follow-ups on one piece of work, oldest first. */
+function followUpsOn(obligationId: string, state: CareState): CareState['events'] {
+  return state.events
+    .filter((e) => e.kind === 'owner_requested' && e.reportedBy === AGENT_ID
+      && e.data['followUp'] === true && e.data['obligationId'] === obligationId)
+    .sort((a, b) => a.occurredAt.localeCompare(b.occurredAt));
+}
+
 function primaryCaregiver(state: CareState): Member | undefined {
   return state.members.find((m) => m.role === 'primary_caregiver');
 }
@@ -282,6 +303,37 @@ export function deliberate(state: CareState, opts: PolicyOptions): Deliberation 
       because: `I have run out of people to ask about "${o.what}". It stays on the board.`,
       value: { harmAvoided: 0, interruptionCost: 0, net: 0 },
     });
+  }
+
+  // Work somebody promised, now past its time with nothing recorded. The owner is asked
+  // first, as a question - "still on?" - never told they failed: no record is not the
+  // same as not done. Only if they stay silent does the primary caregiver hear, once.
+  // Ownership never moves: a check-in is not a reassignment.
+  for (const o of state.obligations.filter((x) => slipping(x, opts.now))) {
+    const owner = state.members.find((m) => m.id === o.ownerId);
+    if (!owner) continue;
+    const name = owner.spokenAs ?? owner.name;
+    const done = followUpsOn(o.id, state);
+    const gain = (risk.get(o.id) ?? 0) * ASK_RELIEF;
+
+    if (done.length === 0) {
+      const cost = interruptionCost(owner.id, state, opts);
+      const value = { harmAvoided: gain, interruptionCost: cost, net: gain - cost };
+      const because = `"${o.what}" is past its time and nothing is recorded, so I checked in with ${name}, who took it on.`;
+      if (value.net > 0) actions.push({ kind: 'CHECK_IN', obligationId: o.id, memberId: owner.id, because, value, followUp: true });
+      else restraint.push({ obligationId: o.id, because: `Not checking in with ${name} yet: ${reasonForQuiet(opts)}`, value });
+      continue;
+    }
+
+    const boss = primaryCaregiver(state);
+    const escalated = done.some((e) => e.data['escalation'] === true);
+    const waited = (opts.now.getTime() - new Date(done[0]!.occurredAt).getTime()) / 60_000;
+    if (escalated || !boss || boss.id === owner.id || waited < FOLLOW_UP_WAIT_MINUTES) continue;
+    const cost = interruptionCost(boss.id, state, opts);
+    const value = { harmAvoided: gain, interruptionCost: cost, net: gain - cost };
+    const because = `${name} hasn't answered about "${o.what}", which is past its time with nothing recorded.`;
+    if (value.net > 0) actions.push({ kind: 'ESCALATE', obligationId: o.id, memberId: boss.id, because, value, followUp: true });
+    else restraint.push({ obligationId: o.id, because, value });
   }
 
   // Unowned work nobody has been asked about yet.
