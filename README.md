@@ -7,6 +7,8 @@
 **An Alexa+ add-on that hears the care work nobody mentioned, and asks the right person to
 take it on.**
 
+[![The CareCircle console: the family on the left, and on the right two pieces of Daddy's care that nobody has taken yet, each with "I'll take it"](docs/console.png)](https://krqi2tpsif.us-east-1.awsapprunner.com/console.html)
+
 > **Daddy:** "I have my eye check-up tomorrow at ten."
 >
 > **CareCircle:** "Noted - eye check-up for Daddy. Will Daddy need a ride to the eye
@@ -97,20 +99,20 @@ sister in Lagos and her brother in London answer in the family group.
 **Next: a real family, for a week.** Demos prove the mechanism; they don't prove a family
 will use it. So a real circle runs it before submission, and `npm run pilot:report` turns
 their record into numbers: doses logged and by whom, asks answered and how fast, and every
-"no record" that someone filled in later. Those numbers go here, including whatever didn't
-work.
+"no record" that someone filled in later, including whatever didn't work. The pilot has not
+reported yet, so no pilot number appears anywhere in this submission.
 
 The demo family (Daddy, his children Tolu and Funmi, Kunle in London, and Musa the
 driver) is fictional and modelled on mine. No real names or medical details are used.
 
-**And it is real - not a mockup.** Live MCP server you can hit right now, **657 tests**
-(including property-based proofs of the risk model), **95.5%** measured tool-selection
-accuracy on Amazon Bedrock (148/155; 63/66 on held-out phrasings never tuned against),
-**94.4% on Amazon Nova Pro** (on the earlier 144 cases), and an append-only care record that
-keeps who said what. On Amazon's MASSIVE everyday Alexa requests it leaves **87.3%** of the ones
-that are not about care alone on the dev set, held out and never read before the run (82 of
-1,734 wrote, 4.7%); 87.6% on the test set, which was not held out. Every number, with the file
-it came from: [/proof](https://krqi2tpsif.us-east-1.awsapprunner.com/proof.html).
+**And it is real - not a mockup.** A live MCP server you can hit right now, **659 tests**
+(`npm test`, including property-based proofs of the risk model), and one headline number:
+the planner picks the right tool **95.5%** of the time on Amazon Bedrock (148/155; 63/66 on
+held-out phrasings never tuned against;
+[`evals/results/2026-10-02-claude-sonnet-4-5-question-not-report.json`](evals/results/2026-10-02-claude-sonnet-4-5-question-not-report.json)).
+Amazon Nova Pro, and Amazon's own MASSIVE set of everyday Alexa requests (does it leave alone
+what isn't care?), are measured too. Every number, with the file it came from:
+[/proof](https://krqi2tpsif.us-east-1.awsapprunner.com/proof.html).
 
 ### Judge links
 
@@ -162,8 +164,8 @@ role/capability matrix, and how to run your own instance.
 
 > **CareCircle is a shared responsibility graph that turns everyday events into owned,
 > actionable care — while structurally refusing to turn silence into accusation.**
-> Alexa+ talks to it. Ring feeds evidence into it. Fire TV shows it. One graph,
-> three surfaces, and a trust model that is arithmetic, not a promise.
+> Alexa+ talks to it, the family's Telegram reaches whoever is abroad, Ring feeds evidence
+> into it, and Fire TV shows it. One graph, and a trust model that is arithmetic, not a promise.
 
 ## What this is *not* (scope, on purpose)
 

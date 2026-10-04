@@ -3,8 +3,7 @@
 **Primary track:** Alexa+ (MCP) · **Mini-challenges:** AWS Builder, Open Source
 
 **Tagline:** Every other assistant tells you what happened. CareCircle tells you what
-nobody has taken responsibility for - and lets you close it by voice, even buy the
-fix in place, without ever turning a guess into a fact.
+nobody has taken responsibility for - and asks the right person to take it on, by voice, without ever turning a guess into a fact.
 
 **Live MCP server (judge-usable until judging ends):** `https://ypq2dfq2p7.us-east-1.awsapprunner.com/mcp`
 · health: `/health` · spec 2025-11-25, Streamable HTTP. Demo credentials below.
@@ -13,9 +12,11 @@ fix in place, without ever turning a guess into a fact.
 
 ## The thesis
 
-**CareCircle treats the person receiving support as a first-class participant - whether
-they are 78 with mild cognitive decline, 34 with a mobility disability, or 19 with a
-communication disability - and refuses two conflations that every other system makes:**
+**Daddy is home after eye surgery. His children share his care from Lagos and London,
+and a paid driver takes him to appointments. Nobody is in charge, so the thing that fails
+is the thing nobody knew was theirs. CareCircle hears that work, asks the right person to
+take it on, and treats Daddy as a participant in his own record, not a subject of it. It
+refuses two conflations that every other system makes:**
 
 1. **An absent record is not non-compliance.** The system only knows what has been
    recorded. It says *"there's no record"*; it never says *"he missed it"*.

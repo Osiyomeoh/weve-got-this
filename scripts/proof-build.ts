@@ -69,4 +69,8 @@ const out = {
 };
 
 writeFileSync(new URL('../public/proof.json', import.meta.url), JSON.stringify(out, null, 2) + '\n');
+// The count is also written into the page itself, so it reads without JavaScript (curl, a reader).
+const page = new URL('../public/proof.html', import.meta.url);
+writeFileSync(page, readFileSync(page, 'utf8').replace(/<footer id="built">[^<]*<\/footer>/,
+  `<footer id="built">${tests ? `${tests} automated tests pass.` : ''}</footer>`));
 console.log(`public/proof.json written: corpus ${corpus}, dialects ${dialects}${guardFile ? `, guard ${guardFile}` : ''}`);
