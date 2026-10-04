@@ -5,7 +5,7 @@ version — the detailed evidence behind every "needs work" note lives in
 [FRICTION-LOG.md](FRICTION-LOG.md), written as we hit each issue, not reconstructed after.
 
 Primary track: **Alexa+** (self-hosted MCP server, spec 2025-11-25 over Streamable HTTP).
-Mini-challenge: **AWS Builder** (Bedrock + App Runner + DynamoDB + SNS + Transcribe + Polly).
+Mini-challenge: **AWS Builder** (Bedrock + Nova + Strands Agents + AgentCore Runtime + App Runner + DynamoDB + SNS + Transcribe + Polly).
 
 ---
 
@@ -197,6 +197,65 @@ type (signed with the partner key) would be the single biggest improvement.
 
 **Would you build with it again?** **Yes**, for non-security care/accessibility use cases — but
 only after a published payload schema and a synthetic-event generator land.
+
+---
+
+## Strands Agents SDK (TypeScript, 1.19.0)
+
+**Used for:** the planner that runs the family's Telegram chat by default, and the one deployed to
+AgentCore Runtime (`src/strands/`). It talks to our server through Strands' `McpClient`, the same MCP
+contract Alexa+ uses.
+
+**What worked well:** the hook points in the agent loop. `NoBlame` (`src/strands/no-blame.ts`) sits on
+the model loop and sends a finished reply that blames someone back once with a reason, then falls back
+to what the tools said, without our own loop. Swapping our hand-written loop for Strands cost almost
+nothing in accuracy: 149/155 against 150/155 on the same corpus (`evals/results/README.md`).
+
+**What needs work:** one point fewer than our own loop on the corpus (149 vs 150 of 155); we have not
+yet read which case it lost.
+
+**Onboarding:** quick to a working agent over MCP.
+
+**Would you build with it again?** Yes. The hooks are what made the no-blame guarantee one small file.
+
+---
+
+## Amazon Bedrock AgentCore Runtime
+
+**Used for:** hosting the Strands planner (`carecircle_planner`, `src/agentcore.ts`,
+`Dockerfile.agentcore`, `infra/deploy-agentcore.sh`), and the open-source Alexa Skill bridge we tested
+through on a real Echo.
+
+**What worked well:** a container in, a managed endpoint out. A cold invoke as the sibling in Lagos
+("How is Daddy doing today?") answered from `get_care_summary` in about 13 s.
+
+**What needs work:** a newly created execution role fails with "Access denied while validating ECR
+URI" until its permissions propagate; it reads as a wrong policy. Our deploy script now retries that
+error (friction log, 2026-10-02). Cold starts of ~13 s are long for a voice turn.
+
+**Onboarding:** moderate; the first deploy is mostly IAM.
+
+**Would you build with it again?** Yes, for hosting agents; we'd want the propagation case handled.
+
+---
+
+## Amazon Nova (Pro, 2 Lite, Micro)
+
+**Used for:** planner evals and the Alexa bridge's planner (Nova Pro and Nova 2 Lite), and a trial
+action guard (Nova Micro).
+
+**What worked well:** Nova Pro chooses tools close to the frontier models we measured: 94.4% on the
+earlier 144-case corpus, and it held up on Amazon's MASSIVE dev set, never read before the run: 87.3%
+of non-care requests left alone, 4.7% wrote.
+
+**What needs work:** Nova 2 Lite, the bridge's default, was our weakest planner: 81.3%, and 73.5% on held-out phrasings. As a yes/no
+guard, Nova Micro scored almost every call 0.95, so it could not separate harmful writes from fine ones;
+we did not wire it in (`evals/results/README.md`).
+
+**Onboarding:** easy through Bedrock `Converse`, the same code path as the other models.
+
+**Would you build with it again?** Yes, Nova Pro for planning; not Micro as a classifier without
+calibrated scores.
 
 ---
 

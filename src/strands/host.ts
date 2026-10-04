@@ -11,7 +11,7 @@ import {
   type Model,
 } from '@strands-agents/sdk';
 import type { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { systemPrompt, type Channel, type Speaker, type ToolCallRecord, type TraceStep, type TurnResult } from '../sim/host.js';
+import { STALE_NOTE, systemPrompt, type Channel, type Speaker, type ToolCallRecord, type TraceStep, type TurnResult } from '../sim/host.js';
 import { NOTHING_SAID, speakable, toolAnswer } from '../domain/speakable.js';
 import { NoBlame, type NoBlameReport } from './no-blame.js';
 
@@ -65,6 +65,8 @@ export class StrandsAlexa {
   readonly #modelId: string;
   /** The turn in progress, filled by the hooks. */
   #turn: Turn | null = null;
+  /** Whether this conversation has had a turn: later turns must read the record again. */
+  #spoken = false;
 
   private constructor(opts: { agent: Agent; mcp: McpClient; noBlame: NoBlame; channel: Channel; modelId: string }) {
     this.#agent = opts.agent;
@@ -139,7 +141,11 @@ export class StrandsAlexa {
     const turn: Turn = { steps: [], calls: [], started: new Map(), modelStarted: started };
     this.#turn = turn;
     try {
-      const result = await this.#agent.invoke(utterance);
+      // Others write to the record between turns (a dose said on the Echo, a yes from Musa),
+      // so every turn after the first carries the same reminder the Alexa host sends.
+      const said = this.#spoken ? `${STALE_NOTE}\n${utterance}` : utterance;
+      this.#spoken = true;
+      const result = await this.#agent.invoke(said);
       const cut = result.stopReason === 'cancelled';
       const spoken = cut
         ? "Sorry, I got stuck working that out. Could you say it another way?"

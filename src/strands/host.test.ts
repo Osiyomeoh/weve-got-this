@@ -7,6 +7,7 @@ import { seedDemoHousehold } from '../demo/seed.ts';
 import { seedScenario } from '../demo/scenario.ts';
 import { BLAME } from '../domain/no-blame.ts';
 import { StrandsAlexa } from './host.ts';
+import { STALE_NOTE } from '../sim/host.ts';
 import { ONLY_THE_RECORD } from './no-blame.ts';
 import type { Message } from '@strands-agents/sdk';
 import { ScriptedModel, textIn, type Step } from './scripted-model.ts';
@@ -198,5 +199,17 @@ test('a tool error is passed to the model as an error, and the turn goes on', as
     assert.equal(turn.toolCalls[0]?.isError, true);
     assert.ok(turn.spoken.length > 0);
     assert.doesNotMatch(turn.spoken, /undefined|\[object Object\]/);
+  } finally { await host.close(); }
+});
+
+test('every turn after the first tells the model the record may have changed', async () => {
+  const { host, model } = await planner([{ say: 'Hello.' }, { say: 'Let me check again.' }]);
+  try {
+    await host.say('Hi');
+    await host.say('Did Daddy use his drops?');
+    assert.equal(textIn(model.seen[0]?.at(-1)), 'Hi', 'the first turn is sent as said');
+    const second = textIn(model.seen[1]?.at(-1));
+    assert.ok(second.startsWith(STALE_NOTE), 'the second turn carries the reminder');
+    assert.match(second, /Did Daddy use his drops\?$/);
   } finally { await host.close(); }
 });

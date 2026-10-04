@@ -727,3 +727,34 @@ Template:
   of the same kind: given only `medicationId: "med_heart"`, the model called the eye
   drops "his heart pill". Put names next to ids in results; models read ids as words.
 - **Date:** 2026-09-23
+
+### Amazon Bedrock AgentCore Runtime - a new role's ECR access fails validation for a while
+- **Task attempted:** Deploy the Strands planner (`carecircle_planner`) to AgentCore Runtime
+  with a freshly created execution role, from `infra/deploy-agentcore.sh`.
+- **Steps taken:** Created the role and its ECR pull policy, pushed the image, then called
+  create-agent-runtime straight away.
+- **Expected:** The runtime is created, or an error says the role is still propagating.
+- **Actual:** "Access denied while validating ECR URI". The policy was right; the same call
+  succeeded unchanged a little later, once the new role's permissions had reached IAM.
+- **Severity:** minor - but it reads as a wrong policy, so the first instinct is to go and
+  edit IAM that is already correct.
+- **Workaround:** The deploy script retries create/update on that exact error (commit `d98121d`).
+- **Suggestion:** Retry the validation server-side for a short window after a role is created,
+  or say in the error that a new role can take time to propagate.
+- **Date:** 2026-10-02
+
+### Alexa Skill interaction model - one intent per tool drops the family's own words
+- **Task attempted:** Check that what a family member says on a real Echo reaches the planner
+  at all, a step the tool-selection evals never see.
+- **Steps taken:** Sent every held-out phrasing to the skill's language model with
+  `ask smapi profile-nlu` (`scripts/evals-echo.ts`), using the bridge's default interaction
+  model of one intent per MCP tool.
+- **Expected:** Each sentence reaches the planner, in words.
+- **Actual:** Only 36 of 66 held-out phrasings got through: Alexa dropped 29, and 5 landed in the
+  wrong tool's intent, which hands the planner a tool name and slots instead of the words.
+- **Severity:** major - the right tool can't be chosen for a sentence the planner never hears.
+- **Workaround:** Words only: `toolIntents: false` (a catch-all plus answer intents). Held-out
+  36 -> 63/66, corpus 121 -> 152/155, dialects 23 -> 31/34, wrong tool 5 -> 0.
+- **Suggestion:** For skills fronting an LLM planner, document a catch-all, words-only pattern as
+  the default, and make `profile-nlu` easy to run in bulk so builders measure this step.
+- **Date:** 2026-10-02

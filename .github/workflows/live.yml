@@ -1,0 +1,33 @@
+name: Live
+
+# Judges open the live links for weeks after submission. A dead link costs more
+# than any feature, so check every judge-facing URL daily; a failed run emails the owner.
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  links:
+    name: Judge links answer
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check each URL
+        run: |
+          check() { # url expected-status [curl args]
+            url=$1; want=$2; shift 2
+            got=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$@" "$url")
+            echo "$got $url"
+            [ "$got" = "$want" ]
+          }
+          ok=0
+          check https://krqi2tpsif.us-east-1.awsapprunner.com/ 200 || ok=1
+          check https://krqi2tpsif.us-east-1.awsapprunner.com/console.html 200 || ok=1
+          check https://krqi2tpsif.us-east-1.awsapprunner.com/proof.html 200 || ok=1
+          check https://ypq2dfq2p7.us-east-1.awsapprunner.com/health 200 || ok=1
+          # OAuth-protected: 401 without a token means the server is up.
+          check https://ypq2dfq2p7.us-east-1.awsapprunner.com/mcp 401 -X POST -H 'content-type: application/json' -d '{}' || ok=1
+          exit $ok

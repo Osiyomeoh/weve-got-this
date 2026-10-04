@@ -15,7 +15,15 @@ echo "Repo"
 meta=$(gh repo view "$REPO" --json visibility,licenseInfo,defaultBranchRef 2>/dev/null)
 vis=$(jq -r .visibility <<<"$meta"); lic=$(jq -r '.licenseInfo.key // empty' <<<"$meta")
 branch=$(jq -r .defaultBranchRef.name <<<"$meta")
-[ "$vis" = PUBLIC ] && ok "public" || bad "repo is $vis - must be PUBLIC"
+# The rules allow public, or private and shared with Amazon's reviewers.
+reviewers="chris-trag knmeiss giolaq anishamalde mosesroth emersonsklar"
+if [ "$vis" = PUBLIC ]; then ok "public"
+else
+  have=$( { gh api "repos/$REPO/collaborators" -q '.[].login'; gh api "repos/$REPO/invitations" -q '.[].invitee.login'; } 2>/dev/null)
+  missing=""; for u in $reviewers; do grep -qx "$u" <<<"$have" || missing="$missing $u"; done
+  [ -z "$missing" ] && ok "private, all Amazon reviewers invited" || bad "private and not shared with:$missing (or make it public)"
+  soft "private: also share with testing@devpost.com (not checkable here)"
+fi
 [ -n "$lic" ] && ok "license detected ($lic)" || bad "no license detected by GitHub"
 
 git fetch -q origin "$branch" 2>/dev/null

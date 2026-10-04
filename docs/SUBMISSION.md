@@ -251,6 +251,21 @@ published accuracy, production hardening (config validation, structured logging,
 graceful shutdown, DynamoDB persistence, App Runner deployment), runtime onboarding (create a household, add/remove members and medications), and the
 `@carecircle/care-events` open-source package.
 
+## The Alexa+ add-on contract, item by item
+
+Each thing an Alexa+ add-on's MCP server is asked for, and the file that does it (default branch).
+
+| Asked for | Where |
+|---|---|
+| Self-hosted MCP server, spec 2025-11-25 | `src/mcp/server.ts` (2026-07-28 accepted alongside) |
+| Streamable HTTP transport, sessions by `Mcp-Session-Id` | `src/http/app.ts` |
+| OAuth 2.1: protected-resource metadata, `WWW-Authenticate` on 401 | `src/http/oauth.ts`, `src/http/app.ts` |
+| Tools with output schemas and `structuredContent` | `src/mcp/server.ts`, `src/mcp/output-schemas.ts` |
+| Tool annotations (read-only / destructive hints) | `src/mcp/tools/*.ts` |
+| Resources and prompts | `src/mcp/resources.ts`, `src/mcp/prompts.ts` |
+| MCP Apps (`ui://` card for screen devices) | `src/mcp/app/protocol.ts`, `src/mcp/app/care-board.ts` |
+| Live endpoint | `https://ypq2dfq2p7.us-east-1.awsapprunner.com/mcp` (401 without a token) |
+
 ## How well it's built
 
 - MCP spec **2025-11-25** over **Streamable HTTP**; 25 tools, session-bound identity
@@ -374,11 +389,13 @@ saved us hours - each one hit while building CareCircle this period.
 ## AWS Builder mini - which services, how, why
 
 - **Bedrock (Sonnet 4.5)** is the planner that turns a spoken sentence into a tool call
-  - the reasoning core, measured at 94.8% (94.0% on unseen phrasings).
+  - the reasoning core, measured at 95.5% (148/155; 63/66 on held-out phrasings never tuned against).
 - **DynamoDB** is the durable care record (single-table, diff-based writes).
 - **App Runner + CodeBuild + ECR** build and serve the MCP server at a public URL.
 - **SNS** delivers `notify_member` messages for real (record-only fallback otherwise).
-- **CloudWatch** budget alarm keeps the deployment alive to judging without runaway cost.
+- **CloudWatch**: the deploy role may publish metrics and set a spend alarm
+  (`infra/iam-policy.json`, `infra/README.md`), so the deployment can stay up to judging
+  without runaway cost.
 - **Strands Agents (TypeScript SDK)** runs the same planner as an agent over the CareCircle
   MCP tools (`src/strands/`), with a plugin, `NoBlame`, that stops any reply saying someone
   missed, skipped or forgot something before it is spoken. Same-day tool selection on Sonnet
@@ -398,6 +415,20 @@ saved us hours - each one hit while building CareCircle this period.
   `infra/deploy-agentcore.sh`), over the production table, and answered a test turn through the
   real tools. It is **not yet on a family's path**: the Echo goes through the bridge. AgentCore Memory is **not used, on purpose**: the care record is the
   memory, and replayed history let a model answer from an old reply.
+
+**Where each service is called** (default branch, so it can be checked in a minute):
+
+| Service | File |
+|---|---|
+| Bedrock (`Converse`) | `src/sim/providers.ts` |
+| Amazon Nova (Pro, 2 Lite, Micro) | `src/sim/providers.ts`, `src/mcp/guard.ts`, `evals/results/` |
+| Strands Agents SDK | `src/strands/host.ts`, `src/strands/no-blame.ts`, `src/strands/provider.ts` |
+| AgentCore Runtime | `src/strands/runtime.ts`, `src/agentcore.ts`, `Dockerfile.agentcore`, `infra/deploy-agentcore.sh` |
+| DynamoDB | `src/store/dynamo.ts` |
+| SNS | `src/notify/notifier.ts` |
+| Transcribe | `src/sim/transcribe.ts` |
+| Polly | `src/sim/speech.ts` |
+| App Runner + CodeBuild + ECR | `infra/deploy-mcp.sh` |
 
 Why this shape: it is a genuine **multi-service pipeline** (planner → engine → store →
 delivery → observability), not a single Bedrock call.
@@ -421,10 +452,10 @@ with a provenance trust model). Details, what/how/why, and publish steps in
 
 ## Links
 
-- Code: `https://github.com/Osiyomeoh/carecircle` - **private**, which the organisers
-  confirmed on 2026-09-18 is permitted provided `@AmazonAppDev` (GitHub) and
-  `testing@devpost.com` (via the web UI - the collaborator API takes usernames only)
-  both have access. MIT.
+- Code: `https://github.com/Osiyomeoh/carecircle` - **private**, which the rules permit
+  provided Amazon's reviewers (`chris-trag`, `knmeiss`, `giolaq`, `anishamalde`,
+  `mosesroth`, `emersonsklar`) and `testing@devpost.com` (via the web UI - the
+  collaborator API takes usernames only) all have access. MIT.
 - Video: `<YouTube/Vimeo link>` (≤ 3:00)
 - Live MCP: `https://ypq2dfq2p7.us-east-1.awsapprunner.com/mcp`
 
