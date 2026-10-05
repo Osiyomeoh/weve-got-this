@@ -72,3 +72,26 @@ test('closing a ride records what the doorbell saw, and "how do we know?" says i
   assert.equal(why.isError, false, why.text);
   assert.match(why.text, /Around then the doorbell saw activity at the door at .* not proof on its own/);
 });
+
+test('"can\'t make it after all" from the owner hands the work back; "on my way" keeps it', async () => {
+  const o = await store.createObligation({
+    householdId: 'h_margaret', what: 'Drive Daddy to the pharmacy', consequence: 'medical',
+    status: 'ASSIGNED', ownerId: 'm_david',
+    provenance: { kind: 'CONFIRMED', byMemberId: 'm_david', at: new Date().toISOString() },
+    dueAt: new Date(Date.now() - 20 * 60_000).toISOString(),
+  });
+  const still = await call('david-token', 'respond_to_request', { obligationId: o.id, accepted: true });
+  assert.match(still.text, /stays with you/);
+
+  const other = await call('renee-token', 'respond_to_request', { obligationId: o.id, accepted: false });
+  assert.equal(store.getCareState('h_margaret').obligations.find((x) => x.id === o.id)!.ownerId, 'm_david',
+    'nobody hands back someone else\'s work');
+  assert.match(other.text, /Nobody has an outstanding request/);
+
+  const cant = await call('david-token', 'respond_to_request', { obligationId: o.id, accepted: false, note: 'car broke down' });
+  assert.equal(cant.isError, false, cant.text);
+  const after = store.getCareState('h_margaret').obligations.find((x) => x.id === o.id)!;
+  assert.equal(after.status, 'OPEN');
+  assert.equal(after.ownerId, null);
+  assert.deepEqual(after.declinedBy, ['m_david']);
+});

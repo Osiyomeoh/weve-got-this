@@ -1,0 +1,309 @@
+{
+  "provider": "bedrock",
+  "modelId": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+  "at": "2026-10-05T00:41:18.507Z",
+  "systemPrompt": "console",
+  "total": 30,
+  "passed": 29,
+  "accuracy": 0.9666666666666667,
+  "errored": 0,
+  "byCategory": [
+    {
+      "category": "hpdone",
+      "passed": 9,
+      "total": 10
+    },
+    {
+      "category": "hpcant",
+      "passed": 10,
+      "total": 10
+    },
+    {
+      "category": "hplate",
+      "passed": 10,
+      "total": 10
+    }
+  ],
+  "splits": [
+    {
+      "split": "authored",
+      "passed": 0,
+      "total": 0
+    },
+    {
+      "split": "held-out",
+      "passed": 19,
+      "total": 20
+    },
+    {
+      "split": "seen",
+      "passed": 10,
+      "total": 10
+    }
+  ],
+  "failures": [
+    {
+      "case": {
+        "id": "hpdone-06",
+        "member": "m_aide",
+        "utterance": "I don carry Daddy go hospital since morning.",
+        "expect": [
+          "resolve_obligation",
+          "get_care_gaps",
+          "get_my_requests"
+        ],
+        "note": "Pidgin: I took Daddy to the hospital this morning."
+      },
+      "chosen": "add_note",
+      "args": {
+        "aboutMemberId": "Daddy",
+        "note": "I don carry Daddy go hospital since morning."
+      },
+      "pass": false,
+      "reason": "chose add_note; expected resolve_obligation or get_care_gaps or get_my_requests"
+    }
+  ],
+  "errors": [],
+  "results": [
+    {
+      "id": "hpdone-01",
+      "utterance": "Yes, dropped Daddy at the eye clinic at nine.",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "hpdone-02",
+      "utterance": "Done already, I just didn't mark it.",
+      "member": "m_aide",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "hpdone-03",
+      "utterance": "He's at the clinic now, all good.",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "hpdone-04",
+      "utterance": "Picked up the eye drops this morning, forgot to say.",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "hpdone-05",
+      "utterance": "We got there on time, he is with the doctor.",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "hpdone-06",
+      "utterance": "I don carry Daddy go hospital since morning.",
+      "member": "m_aide",
+      "chosen": "add_note",
+      "pass": false,
+      "reason": "chose add_note; expected resolve_obligation or get_care_gaps or get_my_requests"
+    },
+    {
+      "id": "hpdone-07",
+      "utterance": "E don do, we reach clinic.",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "hpdone-08",
+      "utterance": "Sorted, he has his refill.",
+      "member": "m_david",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "hpdone-09",
+      "utterance": "Yeah that happened, I took him at half eight.",
+      "member": "m_aide",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "hpdone-10",
+      "utterance": "All done, he is back home resting.",
+      "member": "m_renee",
+      "chosen": "get_care_gaps",
+      "pass": true,
+      "reason": "get_care_gaps"
+    },
+    {
+      "id": "hpcant-01",
+      "utterance": "Sorry, I can't make it after all, my car broke down.",
+      "member": "m_renee",
+      "chosen": "get_my_requests",
+      "pass": true,
+      "reason": "get_my_requests"
+    },
+    {
+      "id": "hpcant-02",
+      "utterance": "I won't be able to do it anymore, something came up at work.",
+      "member": "m_aide",
+      "chosen": "get_my_requests",
+      "pass": true,
+      "reason": "get_my_requests"
+    },
+    {
+      "id": "hpcant-03",
+      "utterance": "No, I can't take him today, please find someone else.",
+      "member": "m_renee",
+      "chosen": "get_my_requests",
+      "pass": true,
+      "reason": "get_my_requests"
+    },
+    {
+      "id": "hpcant-04",
+      "utterance": "I'm stuck in traffic and won't get there, someone else needs to do it.",
+      "member": "m_david",
+      "chosen": "get_my_requests",
+      "pass": true,
+      "reason": "get_my_requests"
+    },
+    {
+      "id": "hpcant-05",
+      "utterance": "I no fit go again, abeg find another person.",
+      "member": "m_aide",
+      "chosen": "get_my_requests",
+      "pass": true,
+      "reason": "get_my_requests"
+    },
+    {
+      "id": "hpcant-06",
+      "utterance": "Something don happen, I no go fit carry am.",
+      "member": "m_renee",
+      "chosen": "get_my_requests",
+      "pass": true,
+      "reason": "get_my_requests"
+    },
+    {
+      "id": "hpcant-07",
+      "utterance": "Can't do it, my daughter is sick.",
+      "member": "m_renee",
+      "chosen": "get_my_requests",
+      "pass": true,
+      "reason": "get_my_requests"
+    },
+    {
+      "id": "hpcant-08",
+      "utterance": "Give it to someone else, I have to pull out.",
+      "member": "m_aide",
+      "chosen": "get_my_requests",
+      "pass": true,
+      "reason": "get_my_requests"
+    },
+    {
+      "id": "hpcant-09",
+      "utterance": "I have to back out of the pharmacy run, I'm so sorry.",
+      "member": "m_david",
+      "chosen": "get_my_requests",
+      "pass": true,
+      "reason": "get_my_requests"
+    },
+    {
+      "id": "hpcant-10",
+      "utterance": "Not going to happen today, I'm still at the office.",
+      "member": "m_renee",
+      "chosen": "get_my_requests",
+      "pass": true,
+      "reason": "get_my_requests"
+    },
+    {
+      "id": "hplate-01",
+      "utterance": "Yes, still on, I'm ten minutes away.",
+      "member": "m_renee",
+      "chosen": "get_my_requests",
+      "pass": true,
+      "reason": "get_my_requests"
+    },
+    {
+      "id": "hplate-02",
+      "utterance": "On my way now.",
+      "member": "m_aide",
+      "chosen": "get_my_requests",
+      "pass": true,
+      "reason": "get_my_requests"
+    },
+    {
+      "id": "hplate-03",
+      "utterance": "Running a bit late but I'm coming.",
+      "member": "m_renee",
+      "chosen": "get_my_requests",
+      "pass": true,
+      "reason": "get_my_requests"
+    },
+    {
+      "id": "hplate-04",
+      "utterance": "Still on, just leaving the house.",
+      "member": "m_david",
+      "chosen": "get_my_requests",
+      "pass": true,
+      "reason": "get_my_requests"
+    },
+    {
+      "id": "hplate-05",
+      "utterance": "I dey come, I don near.",
+      "member": "m_aide",
+      "chosen": null,
+      "pass": true,
+      "reason": "no tool, which is fine here"
+    },
+    {
+      "id": "hplate-06",
+      "utterance": "Yes yes, I'm parking outside.",
+      "member": "m_renee",
+      "chosen": "get_my_requests",
+      "pass": true,
+      "reason": "get_my_requests"
+    },
+    {
+      "id": "hplate-07",
+      "utterance": "Still mine, will be there by half past.",
+      "member": "m_renee",
+      "chosen": "get_my_requests",
+      "pass": true,
+      "reason": "get_my_requests"
+    },
+    {
+      "id": "hplate-08",
+      "utterance": "Don't worry, I've got it, five minutes.",
+      "member": "m_david",
+      "chosen": "get_my_requests",
+      "pass": true,
+      "reason": "get_my_requests"
+    },
+    {
+      "id": "hplate-09",
+      "utterance": "Traffic but I go reach.",
+      "member": "m_aide",
+      "chosen": "get_my_requests",
+      "pass": true,
+      "reason": "get_my_requests"
+    },
+    {
+      "id": "hplate-10",
+      "utterance": "Yes, still doing it.",
+      "member": "m_renee",
+      "chosen": "get_my_requests",
+      "pass": true,
+      "reason": "get_my_requests"
+    }
+  ]
+}

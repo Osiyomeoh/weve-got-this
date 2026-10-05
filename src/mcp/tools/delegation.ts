@@ -136,7 +136,9 @@ export function registerRespondToRequest({ server, store, now, actor, state, nam
       'The speaker answers something they were asked to take on - "yes, I\'ll do it", '
       + '"I can take that", "no, I can\'t", "sorry, not this week". Accepting makes them the '
       + 'owner. Declining puts it back with no owner, records that they said no, and suggests '
-      + 'who to ask next - a decline is an answer, not a failure.',
+      + 'who to ask next - a decline is an answer, not a failure. Also the answer to a '
+      + 'CareCircle check-in on work the speaker already has ("still on?"): "can\'t make it '
+      + 'after all" hands it back the same way; "on my way" keeps it theirs.',
     inputSchema: {
       obligationId: z.string().describe('Which request they are answering.'),
       accepted: z.boolean().describe('True if they said yes, false if they said no.'),
@@ -149,7 +151,15 @@ export function registerRespondToRequest({ server, store, now, actor, state, nam
       const me = actor();
       const o = obligationFrom(store, ref, me.householdId);
       const obligationId = o.id;
-      if (o.status !== 'REQUESTED' || !o.request) {
+      // The owner answering a check-in: a no hands the work back like any decline, a
+      // yes leaves it where it is. Nobody else can hand back someone else's work.
+      const owned = o.status === 'ASSIGNED' && o.ownerId === me.id;
+      if (owned && accepted) {
+        return reply(`Thanks - ${asTask(o.what)} stays with you.`, {
+          obligationId, ownerId: me.id, status: 'ASSIGNED',
+        });
+      }
+      if (!owned && (o.status !== 'REQUESTED' || !o.request)) {
         return guidance(
           `Nobody has an outstanding request for "${o.what}". `
           + 'If the speaker wants it, they can take it on with claim_obligation.',
@@ -157,9 +167,9 @@ export function registerRespondToRequest({ server, store, now, actor, state, nam
       }
       // Only the person asked can answer. Anyone else "accepting" on their behalf
       // would be the system inventing an agreement that was never given.
-      if (o.request.askedOfId !== me.id) {
+      if (!owned && o.request!.askedOfId !== me.id) {
         return guidance(
-          `That was asked of ${nameOf(o.request.askedOfId)}, so it's theirs to answer. `
+          `That was asked of ${nameOf(o.request!.askedOfId)}, so it's theirs to answer. `
           + 'The speaker can take it on themselves instead if they want it.',
         );
       }
