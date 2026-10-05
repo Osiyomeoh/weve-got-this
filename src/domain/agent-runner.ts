@@ -1,5 +1,6 @@
 import type { CareStore } from '../store/store.js';
 import type { Notifier } from '../notify/notifier.js';
+import { checkInEvidence } from './evidence.js';
 import { deliberate, AGENT_ID, type AgentAction, type Deliberation } from './agent.js';
 
 /**
@@ -69,7 +70,8 @@ export async function runAgentOnce(
 
     const delivery = await deps.notifier.deliver({
       to: member.id, toName: name, from: 'CareCircle',
-      message: messageFor(action, obligation.what, state.members.find((m) => m.id === obligation.ownerId)),
+      message: messageFor(action, obligation.what, state.members.find((m) => m.id === obligation.ownerId),
+        action.followUp ? checkInEvidence(obligation, state.events, now, state.household.timezone) : ''),
     });
 
     await deps.store.appendEvent({
@@ -107,16 +109,18 @@ export async function runAgentOnce(
  * What the person reads. A follow-up is a question, never a verdict: nothing being
  * recorded does not mean it did not happen, so the wording cannot say it did not.
  */
-function messageFor(action: AgentAction, what: string, owner?: { name: string; spokenAs?: string }): string {
+function messageFor(
+  action: AgentAction, what: string, owner?: { name: string; spokenAs?: string }, seen = '',
+): string {
   if (action.kind === 'CHECK_IN') {
-    return `"${what}" was due a little while ago and nothing's been marked yet. Still on?\n\nReply "done" if it's handled, or "can't" and I'll find someone.`;
+    return `"${what}" was due a little while ago and nothing's been marked yet.${seen} Still on?\n\nReply "done" if it's handled, or "can't" and I'll find someone.`;
   }
   if (action.kind === 'ASK') {
     return `CareCircle noticed nobody has "${what}" yet. Can you take it on?\n\nReply "yes" or "can't".`;
   }
   if (action.followUp) {
     const name = owner?.spokenAs ?? owner?.name ?? 'Whoever took it on';
-    return `"${what}" is past its time and nothing's recorded. ${name} hasn't answered my check-in. It may be fine, but you may want to call.`;
+    return `"${what}" is past its time and nothing's recorded. ${name} hasn't answered my check-in.${seen} It may be fine, but you may want to call.`;
   }
   return `CareCircle couldn't find anyone for "${what}". It may need you to step in.`;
 }

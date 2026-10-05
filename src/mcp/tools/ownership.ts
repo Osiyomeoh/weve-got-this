@@ -5,6 +5,7 @@
 import { z } from 'zod';
 import { attributionOf } from '../../domain/attribution.js';
 import { canActOn, require as requireCap } from '../../domain/auth.js';
+import { evidenceFor, evidenceLine } from '../../domain/evidence.js';
 import { detectCareGaps } from '../../domain/gaps.js';
 import { asReadBy } from '../../domain/language.js';
 import { clockTime, isLocalToday } from '../../domain/local-time.js';
@@ -226,7 +227,7 @@ export function registerConfirmProposal({ server, store, actor }: ToolContext): 
 /**
  * "Picked up the eye drops."
  */
-export function registerResolveObligation({ server, store, now, actor }: ToolContext): void {
+export function registerResolveObligation({ server, store, now, actor, state }: ToolContext): void {
   server.registerTool('resolve_obligation', {
     title: 'Mark something as done',
     description:
@@ -251,6 +252,10 @@ export function registerResolveObligation({ server, store, now, actor }: ToolCon
       if (!canActOn(me, o)) {
         return guidance(`That one isn't assigned to you, so you can't close it out.`);
       }
+      // What the devices saw around the due time travels with the verdict, so "how do
+      // we know it was done?" has more to stand on than one person's word.
+      const s = state();
+      const seen = evidenceFor(o, s.events, now());
       await store.transition(obligationId, me.householdId, 'RESOLVED', me.id, {
         resolvedAt: now().toISOString(), ...(note ? { resolutionNote: note } : {}),
       });
@@ -258,9 +263,11 @@ export function registerResolveObligation({ server, store, now, actor }: ToolCon
         householdId: me.householdId, kind: 'obligation_resolved', reportedBy: me.id,
         occurredAt: now().toISOString(), source: 'voice', confidence: 'confirmed',
         ...(note ? { detail: note } : {}),
+        ...(seen.length ? { derivedFrom: seen.map((e) => e.id) } : {}),
         data: { obligationId },
       });
-      return reply(`Marked done - ${o.what}.`, { obligationId });
+      const also = seen.length ? ` The doorbell also saw ${evidenceLine(seen[0]!, s.household.timezone)}.` : '';
+      return reply(`Marked done - ${o.what}.${also}`, { obligationId });
     } catch (err) { return guidance(describeError(err)); }
   });
 }

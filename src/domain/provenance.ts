@@ -12,6 +12,7 @@
  */
 import type { CareEvent, Obligation, Provenance } from './types.ts';
 import type { ObligationTransition } from '../store/store.ts';
+import { evidenceLine } from './evidence.js';
 
 /** How sure the record is at a given link. Deliberately not a single scalar - a chain
  *  can mix a confirmed origin with an inferred source, and flattening that loses the point. */
@@ -174,6 +175,29 @@ function currentOwnership(o: Obligation, nameOf: NameOf): ProvenanceStep {
 }
 
 /**
+ * What the devices saw around the time the work was marked done - recorded with the
+ * verdict, beside it, never as it. With no device evidence nothing is said: a person's
+ * word is the record, and saying "only" would quietly doubt them.
+ */
+function closingEvidence(o: Obligation, events: CareEvent[], timezone: string): ProvenanceStep | undefined {
+  if (o.status !== 'RESOLVED') return undefined;
+  const closed = events
+    .filter((e) => e.kind === 'obligation_resolved' && e.data['obligationId'] === o.id)
+    .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))[0];
+  const seen = (closed?.derivedFrom ?? [])
+    .map((id) => events.find((e) => e.id === id))
+    .filter((e): e is CareEvent => !!e);
+  if (!seen.length) return undefined;
+  const lines = seen.map((e) => evidenceLine(e, timezone));
+  return {
+    at: seen[0]!.occurredAt,
+    certainty: 'observed',
+    detail: `Around then the doorbell saw ${lines.length > 1 ? `${lines.slice(0, -1).join(', ')} and ${lines.at(-1)}` : lines[0]}. `
+      + 'A signal is evidence beside the record, not proof on its own.',
+  };
+}
+
+/**
  * Build the full explanation. `events` need only contain the obligation's source event;
  * anything more is ignored. `transitions` should be this obligation's history in order.
  */
@@ -182,6 +206,7 @@ export function explainProvenance(
   transitions: ObligationTransition[],
   events: CareEvent[],
   nameOf: NameOf,
+  timezone = 'America/New_York',
 ): ProvenanceExplanation {
   const chain: ProvenanceStep[] = [origin(obligation.provenance, nameOf)];
 
@@ -196,6 +221,9 @@ export function explainProvenance(
     const os = ownershipStep(t, nameOf);
     if (os) chain.push(os);
   }
+
+  const evidence = closingEvidence(obligation, events, timezone);
+  if (evidence) chain.push(evidence);
 
   chain.push(currentOwnership(obligation, nameOf));
 

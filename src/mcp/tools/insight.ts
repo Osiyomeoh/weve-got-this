@@ -43,7 +43,7 @@ export function registerGetProvenance({ server, store, actor, state, nameOf }: T
       const o = obligationFrom(store, ref, me.householdId);
       const obligationId = o.id;
       const explanation = explainProvenance(
-        o, store.getTransitions(obligationId), state().events, nameOf,
+        o, store.getTransitions(obligationId), state().events, nameOf, state().household.timezone,
       );
       return reply(explanation.spoken, {
         obligationId: explanation.obligationId,
