@@ -9,6 +9,56 @@ Mini-challenge: **AWS Builder** (Bedrock + Nova + Strands Agents + AgentCore Run
 
 ---
 
+## Alexa+ (MCP add-on)
+
+**Used for:** everything CareCircle is. The whole product is an Alexa+ add-on: a family
+member says "Daddy has his eye check-up tomorrow at ten" or "I can't do Thursday", and
+our MCP server works out who has taken responsibility for what, and who to ask next.
+We started building it for my own family, after my dad's eye surgery, and Alexa+ is
+what lets my mum ask for help without opening an app.
+
+**What worked well:** building on plain MCP was the right call, and we're grateful for
+it. We didn't have to learn a proprietary skill format. The same server answers Claude
+Desktop, our own console, and an Alexa-hosted bridge, so every test we wrote for one
+host protects all of them. The add-on design guide's line "treat your schema as a
+promise" changed how we built: every tool now returns structured results with a declared
+output schema, and that discipline caught real bugs.
+
+**What needs work:**
+- **We couldn't test against the real Alexa+ planner.** Add-ons weren't open to us, so
+  we measured our tools against stand-ins: Claude Sonnet 4.5 on Bedrock, Amazon Nova, and
+  the open-source alexa-skill-mcp-bridge running on AgentCore. We'd have loved a sandbox,
+  even a rate-limited one, where the real planner calls a developer's server. Without
+  one, every builder in this track is guessing at the most important part.
+- **The guide doesn't tell you what planners actually do.** In our testing, planners
+  sent an item's spoken description where its id belonged ("his eye check-up tomorrow
+  at 10 AM" instead of `obl_123`). They also read a UTC timestamp as the family's local
+  time, which once moved a medical appointment by an hour. A short "what to expect from
+  the planner" section would have saved us days: accept human descriptions wherever you
+  take an id, give every time in the user's local time, put names next to ids.
+- **No way to pass the date, the timezone, or who is speaking.** A care product depends
+  on all three. On a shared Echo in a family home, "I'll take him" means a different
+  person depending on who's in the kitchen. We'd welcome a standard, non-authoritative
+  speaker hint and a timezone the host promises to send.
+- **The classic Skill path loses people's words.** When we put the server behind a real
+  Alexa Skill, the interaction model let only 36 of 66 held-out phrasings reach the
+  planner as words. Alexa+ should fix this by design, which is exactly why a way to test
+  it early matters.
+
+**Onboarding (zero → hello world):** the MCP side was quick: a working tool in an
+afternoon. The Alexa side was the slow part. Not because anything was hard, but because
+we couldn't find where "hello world" ends. We were never sure our server was being seen
+the way Alexa+ will see it. A single end-to-end checklist (deploy, link the account,
+hear your tool answer) would make the first day feel finished.
+
+**Would you build with it again?** **Yes, without hesitation.** Voice is the right
+interface for care: the people doing it have their hands full, and the person being
+cared for often can't use a phone. Alexa+ on open MCP is the first time a builder can
+reach that kitchen without writing two products. Give us a way to hear the real planner
+call our server, and we'd build the next one on day one.
+
+---
+
 ## MCP TypeScript SDK (`@modelcontextprotocol/sdk`)
 
 **Used for:** the whole server — 23 tools, resources, prompts, and the Streamable HTTP

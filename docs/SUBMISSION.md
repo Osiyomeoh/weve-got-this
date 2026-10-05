@@ -10,6 +10,15 @@ nobody has taken responsibility for - and asks the right person to take it on, b
 
 ---
 
+## Built with
+
+**Alexa+ (MCP add-on)**, the track's tool and the product itself · Model Context Protocol
+(TypeScript SDK, spec 2025-11-25, Streamable HTTP) · Amazon Bedrock (Claude Sonnet 4.5,
+Amazon Nova) · Strands Agents · Amazon Bedrock AgentCore · AWS App Runner · Amazon
+DynamoDB · Amazon SNS · Amazon Transcribe · Amazon Polly · Ring · TypeScript · Node.js
+
+---
+
 ## The thesis
 
 **Daddy is home after eye surgery. His children share his care from Lagos and London,
