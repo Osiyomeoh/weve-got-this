@@ -67,6 +67,13 @@ Timings assume about 2.4 spoken words a second, a calm pace.
 - [ ] **Consent.** Your dad agreed to the pilot on 2026-09-23. Filming anything of his is
       a separate yes. Your brother abroad hasn't agreed to be mentioned yet. Check your
       siblings are happy for the family to be described.
+- [ ] **Set up beat E's errand** (needs the agent loop on, which prod has: every 15 min).
+      Around 8:50 PM Lagos, as Tolu: *"Daddy's eye drops need picking up from the pharmacy
+      by 9:30 tonight."* Off camera, Musa says "I'll do it" so it's his. Around 9:25, fire one
+      doorbell event: `npm run ring:simulate -- --url https://ypq2dfq2p7.us-east-1.awsapprunner.com/ring/webhook --event motion`.
+      Musa does **not** mark it done. The "still on?" arrives on the first agent pass after
+      9:45, so film Musa's phone from 9:45 to 10:00. Rehearse once the night before: confirm
+      the door line appears in the message, then reset.
 - [ ] **Burn in captions.** The video makes an accessibility argument.
 - [ ] **Numbers on the day.** Say a number only if it matches then: tools (`tools/list`, 28
       on 2026-09-24), tests (`npm test`, 575 on 2026-09-24), the trust benchmark
@@ -74,121 +81,130 @@ Timings assume about 2.4 spoken words a second, a calm pace.
 
 ---
 
-## A. 0:00-0:28 Why I built this (Impact)
+## The shape: a pitch, not a tour
+
+The organisers' advice (2026-10-05): lead with the problem, show it working, and say
+plainly what it solves, who it's for, how it uses the track's tool, and what the working
+app does. **Say "Alexa+" out loud in the first 20 seconds**, and again when the tech is
+shown. Every beat below answers one of those questions.
+
+| Time | Beat | Answers |
+|---|---|---|
+| 0:00-0:24 | A. My dad | the problem, who it's for |
+| 0:24-0:36 | B. He just talks to it | what it is, Alexa+ named |
+| 0:36-0:56 | C. The refusal | what makes it different |
+| 0:56-1:34 | D. Nobody owns it, so it asks | the app working |
+| 1:34-2:04 | E. "Still on?" | the climax: a promise followed up |
+| 2:04-2:20 | F. Two languages, one record | who it's for |
+| 2:20-2:40 | G. Where I'm from | impact |
+| 2:40-2:53 | H. A real Alexa+ MCP server | how it uses the track's tool |
+| 2:53-3:00 | End card | |
+
+## A. 0:00-0:24 My dad (Impact)
 
 Your own voice, not a narrator. Read it slowly and plainly: it lands because it's true.
-About 68 words, 28 seconds.
+About 55 words.
 
 | Said or shown | Source |
 |---|---|
-| **VO (you):** "I'm from Lagos, Nigeria." | You (README, "Why I built this") |
-| "My dad is going on seventy. He just had eye surgery, and he had to time his own medication." | You |
-| "He wanted to know what was going on." | You |
-| "There are five of us, and we still have to work." | You ("a family of five, and our dad"; "we still have to work to make a living") |
-| "We all want to help. But nobody is in charge." | You |
+| **VO (you):** "I'm from Lagos, Nigeria. My dad is going on seventy. He just had eye surgery, and he had to time his own medication." | You (README, "Why I built this") |
+| "There are five of us, and we all still have to work. We all want to help. But nobody is in charge." | You |
 | "So what fails isn't the thing someone forgot. It's the thing nobody knew was theirs." | Your words, README "Why I built this" |
 | **On screen**, only with your dad's yes, no face needed: quiet close shots of his medicines on a table, his hands. Blur every name and number. Cut hard on "theirs". | The take |
 
 If it runs long, drop a sentence rather than speed up. Never change a fact.
 
-## B. 0:28-0:42 What it is: he just talks to it (Idea, Design)
-
-About 18 words of VO, and one voice note.
+## B. 0:24-0:36 He just talks to it (Idea, Alexa+)
 
 | Said or shown | Source |
 |---|---|
 | **Title card, 2 s:** `CareCircle: an Alexa+ add-on, built as an MCP server` | README, first line; the live `/mcp` endpoint |
-| **VO:** "So I built CareCircle. Dad doesn't want to be watched. He wants to know. So he talks to it." | README, "Why I built this": "a participant, not a patient on a dashboard" |
-| **Daddy's phone:** he holds the mic and asks, *"What's on for me this week?"* | The take |
-| The bot shows `I heard: "What's on for me this week?"`, answers in writing, then sends the answer back as a voice note. | `src/http/telegram-voice.test.ts:45` (heard, answered in text, answered aloud); `src/domain/language.ts:96` ("I heard"); `src/domain/language.ts:48` (English: Transcribe `en-US`, Polly Ruth) |
-| **Caption:** `After eye surgery, reading a phone is hard. He asks out loud, and hears the answer.` | You (the surgery); README, "It keeps up with real life" |
+| **VO:** "So I built CareCircle, an add-on for Alexa+. Dad doesn't want to be watched. He wants to know. So he talks to it." | README: "a participant, not a patient on a dashboard" |
+| **Daddy's phone:** he asks out loud, *"What's on for me this week?"* The bot shows `I heard: …`, answers in writing, then as a voice note. | `src/http/telegram-voice.test.ts:45`; `src/domain/language.ts:96` |
+| **Caption:** `After eye surgery, reading a phone is hard. He asks out loud, and hears the answer.` | You (the surgery) |
 
-## C. 0:42-1:02 The refusal (Idea: the most important beat)
+## C. 0:36-0:56 The refusal (Idea)
 
-The console, as the Alexa+ host. About 23 words of VO, over the freeze.
+The console, as the Alexa+ host.
 
 | Said or shown | Source |
 |---|---|
-| **Card, 1 s:** `Demo family, modelled on caring for my dad.` | README: the demo family "is fictional and modelled on mine" |
+| **Card, 1 s:** `Demo family, modelled on caring for my dad.` | README |
 | **Tolu:** "Did Daddy use his evening eye drops?" | The take |
-| **CareCircle** (gist): "There's no record of Daddy's eye drops from 8 PM. On the record today: eye drops at 8:10 AM, from Daddy." | `src/mcp/tools/ownership.ts:91` ("On the record today"); `src/http/whole-record.test.ts:42`; never "missed": `src/domain/gaps.test.ts:82` |
-| **Freeze, two cards, 3 s:** `A plain assistant: "He missed it."` / `CareCircle: "There's no record."` | `scripts/trust-benchmark.ts`, which prints every raw answer |
-| **VO:** "It won't turn missing information into an accusation." | `src/domain/gaps.test.ts:82`; `src/domain/daily-update.test.ts:33`; `src/mcp/app/care-board.test.ts:159` |
-| "The same model, left to itself, does in about half of these cases. CareCircle: none." | README, "We measured how much this matters": raw Claude Sonnet 4.5, 6 of 12 (50%), CareCircle 0%; SUBMISSION: 50-58% across runs. Reproduce: `npm run trust-benchmark` |
-| **On screen:** `npm run trust-benchmark: raw model about 50%, CareCircle 0%` | Same |
+| **CareCircle** (gist): "There's no record of Daddy's eye drops from 8 PM. On the record today: eye drops at 8:10 AM, from Daddy." | `src/mcp/tools/ownership.ts` ("On the record today"); `src/http/whole-record.test.ts:42`; never "missed": `src/domain/gaps.test.ts:82` |
+| **Freeze, two cards, 3 s:** `A plain assistant: "He missed it."` / `CareCircle: "There's no record."` | `scripts/trust-benchmark.ts` |
+| **VO:** "It won't turn missing information into an accusation. The same model, left to itself, does in about half of these cases. CareCircle: none." | Raw Sonnet 4.5 50-58% across runs, CareCircle 0%: `npm run trust-benchmark` |
 
-## D. 1:02-1:47 The delegation loop, on real phones (the centrepiece)
-
-About 38 words of VO, over the phones.
+## D. 0:56-1:34 Nobody owns it, so it asks (the app working)
 
 | Said or shown | Source |
 |---|---|
 | **Tolu (console):** "Who can take Daddy to his check-up?" | The take |
-| **CareCircle** (gist): "I've asked Funmi whether they can take Daddy to his eye check-up … I picked Funmi because they're the one who …" | `src/mcp/tools/delegation.ts:119-121`; picks and says why: `src/delegation.e2e.test.ts:179`; least-loaded first: `src/domain/delegation.test.ts:60` |
-| **Funmi's phone:** "Tolu asked if you can take this on: … Reply "yes" or "can't"." | `src/mcp/tools/delegation.ts:103-104` |
-| Funmi types **can't**. The board shows the ride open again, with Funmi's no on it. | `src/domain/request-response.test.ts:41` ("a decline puts it back with no owner and records who said no") |
+| **CareCircle** (gist): "I've asked Funmi … I picked Funmi because …" | `src/mcp/tools/delegation.ts`; `src/delegation.e2e.test.ts:179`; `src/domain/delegation.test.ts:60` |
+| **Funmi's phone:** the ask, "Reply "yes" or "can't"." Funmi types **can't**. The board shows the ride open again. | `src/domain/request-response.test.ts:41` |
 | **Caption over the real clock:** `The agent's next pass, 15 minutes later. Nobody asked it to.` | Every 900,000 ms on prod: `infra/deploy-mcp.sh:145`; `src/domain/agent.test.ts:56` |
-| **Musa's phone:** "CareCircle noticed nobody has "Take Daddy to his eye check-up" yet. Can you take it on? Reply "yes" or "can't"." | `src/domain/agent-runner.ts:73`; Funmi isn't asked again: `src/domain/agent.test.ts:171` |
-| Musa types **yes**. "Thanks - … is yours now." The console board and the TV both show it as Musa's. | `src/domain/request-response.ts:54`; the whole loop: `src/delegation.e2e.test.ts:97` |
-| **VO:** "Being asked isn't agreeing, so an unanswered ask still counts as a gap." | `src/domain/delegation.test.ts:146`, `:157` |
-| "When someone can't, it asks the next person on its own." | `src/domain/agent.test.ts:148`; `src/delegation.e2e.test.ts:97` |
-| "Never the brother abroad for a ride, and family before paid help." | `src/domain/daily-update.test.ts:85` ("the brother in London is never picked automatically for a ride"); `src/domain/delegation.test.ts:77` ("the paid aide is asked only after the family has run out") |
-| *Optional, 3 s:* the ride on the family's Google Calendar, as Musa's. Only if it appears in the rehearsal. | `src/domain/calendar-writeback.test.ts:56`; the take |
+| **Musa's phone:** "CareCircle noticed nobody has … yet. Can you take it on?" Musa types **yes**. Board and TV show it as Musa's. | `src/domain/agent-runner.ts`; `src/delegation.e2e.test.ts:97` |
+| **VO:** "It asks. It never assigns. When someone can't, it asks the next person on its own: family before paid help, and never the brother abroad for a ride." | `src/domain/agent.test.ts:148`; `src/domain/daily-update.test.ts:85`; `src/domain/delegation.test.ts:77` |
 
-## E. 1:47-2:12 Two languages, one record (Idea, Impact)
+## E. 1:34-2:04 "Still on?" (the climax: a promise followed up)
 
-About 30 words of VO. Daddy has already said his word for the drops (see "Before you record").
+Saying yes isn't doing it. This is the beat nobody else has: CareCircle notices a promise
+slipping, checks in kindly, and closes the task with what the doorbell saw beside it.
+Filmed as its own take, on the errand set up before recording (see the checklist below).
 
 | Said or shown | Source |
 |---|---|
-| **Daddy's phone:** `/language`, taps **Yorùbá**. The bot says what to expect. | `src/domain/language.test.ts:126` |
-| He types: **"Mo ṣẹ̀ṣẹ̀ lo oogun ojú mi."** *(I've just used my eye drops.)* CareCircle answers in Yorùbá. | The sentence the language eval uses, which passed: `evals/results/2026-09-24-languages-sonnet-4-5-named-whole-record.json` (handoff, `yo`) |
-| **Caption:** `Typed, not spoken: no speech service can hear Yorùbá yet.` | `src/domain/language.ts:59` (`hears: null`); `docs/pilot/FAMILY-GUIDE.md`, "Your language" |
-| **Tolu (console, English):** "Has Daddy used his eye drops tonight?" | The take |
-| **CareCircle** (gist): "Yes. There's a record at 9:12 PM, from Daddy." | His own words matched to the schedule, never a stray dose: `src/http/two-people.test.ts:111`; `src/http/medicine-names.test.ts:54` |
+| **Caption over the real clock:** `9:30 PM. Musa's pharmacy run was due. Nothing's marked.` | The take; slipping = 15 min past due: `FOLLOW_UP_GRACE_MINUTES`, `src/domain/agent.ts` |
+| **Musa's phone**, on the agent's own pass: *""Pick up Daddy's eye drops" was due a little while ago and nothing's been marked yet. The doorbell saw activity at the door at 9:2x. Still on? Reply "done" if it's handled, or "can't" and I'll find someone."* | `messageFor`, `src/domain/agent-runner.ts`; `checkInEvidence`, `src/domain/evidence.ts:73`; `src/domain/agent.test.ts` (follow-up tests) |
+| **Caption, 2 s:** `Doorbell event simulated, signed with the real Ring partner key.` | `src/demo/ring-simulate.ts`; `docs/PRODUCT-FEEDBACK.md`, Ring |
+| Musa types **done**. *"Marked done - … The doorbell also saw activity at the door at 9:2x."* | `resolve_obligation`, `src/mcp/tools/ownership.ts`; `src/http/proof-of-care.test.ts` |
+| **Tolu (console):** "How do we know?" **CareCircle** (gist): "Musa marked it done at … Around then the doorbell saw … A signal is evidence beside the record, not proof on its own." | `explainProvenance` / `closingEvidence`, `src/domain/provenance.ts` |
+| **VO:** "Saying yes isn't the same as doing it. So it follows up, gently, once. If there's no answer, it tells Tolu: not 'he forgot', just 'you may want to call'. And it never claims a camera saw more than it did." | Escalate once after 30 min: `FOLLOW_UP_WAIT_MINUTES`, `src/domain/agent.ts`; Ring sees motion, never a car or face: `src/domain/evidence.ts:4-10` |
+| *Say only if it matches on the day:* "We tested the replies on thirty held-out answers, Pidgin included: twenty-nine right." | `evals/results/2026-10-05-promises-sonnet-4-5.json` (29/30; 19/20 on untouched cases) |
+
+## F. 2:04-2:20 Two languages, one record (Idea, Impact)
+
+Daddy has already said his word for the drops (see "Before you record").
+
+| Said or shown | Source |
+|---|---|
+| **Daddy's phone:** in Yorùbá, **"Mo ṣẹ̀ṣẹ̀ lo oogun ojú mi."** CareCircle answers in Yorùbá. | `evals/results/2026-09-24-languages-sonnet-4-5-named-whole-record.json` (`yo`) |
+| **Caption:** `Typed, not spoken: no speech service can hear Yorùbá yet.` | `src/domain/language.ts:59` |
+| **Tolu (console, English):** "Has Daddy used his eye drops tonight?" "Yes. There's a record at …, from Daddy." | `src/http/two-people.test.ts:111`; `src/http/medicine-names.test.ts:54` |
 | **VO:** "Dad writes in Yoruba. His son asks in English. It's one record." | Same |
-| "We measured it in eleven languages, from Spanish to Hausa: eleven out of eleven." | Handoff 11/11: `evals/results/2026-09-24-languages-handoff-strict-after-whole-record.json`; `…-named-whole-record.json`; and the re-run on zod 4 (`evals/results/README.md`) |
 
-## F. 2:12-2:39 Who it's for (Impact)
-
-About 65 words of VO, 27 seconds. If it runs long, drop the Echo sentence first.
+## G. 2:20-2:40 Where I'm from (Impact)
 
 | Said or shown | Source |
 |---|---|
-| **Kunle's phone, UK time:** his evening update arrives just after 21:00 Lagos time. Show it as sent; don't retype it. | Composed by `src/domain/daily-update.ts`; sent after 21:00 (`:25`), once a day (`src/domain/daily-update.test.ts:67`), only to people who asked for it (`:61`), never "missed" (`:33`) |
-| **VO:** "Where I'm from, the family is the care system." | `docs/EVIDENCE.md`, Nigeria: formal long-term care "largely underdeveloped" (World Bank) |
-| "Nigeria's older population is heading to twenty-five million by 2050, with little formal care." | `docs/EVIDENCE.md`: 25.3 million by 2050 (The Gerontologist, *Aging in Nigeria*); World Bank, same table |
-| "In America, about half of family caregivers share the job." | `docs/EVIDENCE.md`: 53% (AARP & NAC, *Caregiving in the U.S.* 2020) |
-| "And five and a half million people over sixty-five speak English less than very well." | `docs/LANGUAGES.md`: 5.6M (US Census ACS 2024, table B16004) |
-| "The Echo sits with whoever coordinates. Everyone else answers from their phone, in their own language." | README, "Built in Lagos"; the language beat above. Don't show an Echo here. |
-| **If the pilot has run, with the family's yes:** replace the phone shot with 10 s of their real group chat and their real numbers. | `npm run pilot:report` (asks sent and answered, median answer time, gaps closed); `docs/pilot/LOG.md` |
+| **Kunle's phone, UK time:** his evening update arrives. Show it as sent. | `src/domain/daily-update.ts`; `src/domain/daily-update.test.ts:61`, `:67`, `:33` |
+| **VO:** "Where I'm from, the family is the care system. Nigeria's older population is heading to twenty-five million by 2050, with little formal care. And in America, about half of family caregivers share the job too." | `docs/EVIDENCE.md`: 25.3M by 2050 (*Aging in Nigeria*); 53% (AARP & NAC 2020) |
+| **If the pilot has run, with the family's yes:** 8 s of their real group chat and real numbers. | `npm run pilot:report`; `docs/pilot/LOG.md` |
 
-## G. 2:39-2:52 It's a real MCP server (Tech, Alexa+)
-
-About 30 words of VO, over the typing.
+## H. 2:40-2:53 A real Alexa+ MCP server (Tech, Alexa+)
 
 | Said or shown | Source |
 |---|---|
-| **Claude Desktop**, on the live endpoint. Type: *"What's slipping for Daddy this week?"* It calls `get_care_gaps` on the same server and gives the same answer. | The take; `src/http/oauth.test.ts:123` ("an issued token opens a real MCP session as the right member") |
-| **VO:** "This isn't a mock-up of Alexa. It's a live MCP server, with OAuth so Alexa+ can link it to a real person, and any MCP client gets the same care record." | `src/http/oauth.test.ts:97`, `:201-257` (PKCE, replay and redirect attacks refused); `/health` on the live URL |
-| *Optional, 4 s, only if the Echo step is done:* a real Echo through the Alexa Skill bridge. **Caption:** `Alexa Skill bridge on a real Echo. Not Alexa+ itself.` | `docs/HANDOFF.md` (the bridge on AgentCore; `npm run skill:deploy`, `BRIDGE_SKILL_ID`) |
+| **Claude Desktop** on the live endpoint: *"What's slipping for Daddy this week?"* It calls `get_care_gaps` on the same server. | The take; `src/http/oauth.test.ts:123` |
+| **VO:** "This is a live MCP server, built for Alexa+, with account linking so Alexa+ knows which family member is speaking. Any MCP client gets the same care record." | `src/http/oauth.test.ts:97`, `:201-257`; `/health` |
+| *Optional, 3 s:* a real Echo through the Alexa Skill bridge. **Caption:** `Alexa Skill bridge on a real Echo. Not Alexa+ itself.` | `docs/HANDOFF.md` |
 
-## H. 2:52-3:00 End card
+## End card 2:53-3:00
 
 | Said or shown | Source |
 |---|---|
-| **VO:** "Twenty-eight tools. Five hundred and seventy-five tests. Every number in this video has a source." | `tools/list` (28; both MCP revisions list the same tools: `src/http/stateless.test.ts`); `npm test` (575 on 2026-09-24); this document |
-| `Live: https://ypq2dfq2p7.us-east-1.awsapprunner.com/mcp` | The live server |
-| `Try it: https://krqi2tpsif.us-east-1.awsapprunner.com` | The live console |
+| **VO:** "CareCircle, for Alexa+. Every number in this video has a source." | This document |
+| `Live: https://ypq2dfq2p7.us-east-1.awsapprunner.com/mcp` · `Try it: https://krqi2tpsif.us-east-1.awsapprunner.com` | The live services |
 
-No repo line: the repo is private, so the card names only what a judge can open.
+Tool and test counts are dropped from the voice-over: they change, and the time is worth
+more to beat E. They're in the write-up.
 
 ---
 
 ## Cutting room floor (do NOT restore)
 
-- **The Ring doorbell beat.** A simulated doorbell, and the Ring track isn't entered. Its
-  15 seconds went to the two-language beat.
+- **The Ring doorbell as a beat of its own.** It's back only inside beat E, as evidence
+  beside Musa's "done", captioned as simulated. A doorbell beat for its own sake stays cut.
 - **The refill purchase.** The pharmacy is simulated and the exchange runs about 25
   seconds spoken. It's in the write-up.
 - **An architecture diagram.** Three minutes land one idea; they don't explain a system.
