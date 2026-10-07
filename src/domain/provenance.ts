@@ -156,6 +156,13 @@ function ownershipStep(t: ObligationTransition, nameOf: NameOf): ProvenanceStep 
 }
 
 function currentOwnership(o: Obligation, nameOf: NameOf): ProvenanceStep {
+  // Finished work keeps its owner on record, but nobody "owns" it any more.
+  if (o.status === 'RESOLVED') {
+    return { certainty: 'recorded', detail: `It is resolved.` };
+  }
+  if (o.status === 'DISMISSED') {
+    return { certainty: 'recorded', detail: `It was set aside as not needed.` };
+  }
   if (o.ownerId) {
     return { certainty: 'confirmed', detail: `Right now ${nameOf(o.ownerId) ?? 'someone'} owns it.` };
   }
@@ -164,12 +171,6 @@ function currentOwnership(o: Obligation, nameOf: NameOf): ProvenanceStep {
       certainty: 'recorded',
       detail: `Right now it has been asked of someone but not yet accepted, so nobody owns it.`,
     };
-  }
-  if (o.status === 'RESOLVED') {
-    return { certainty: 'recorded', detail: `It is resolved.` };
-  }
-  if (o.status === 'DISMISSED') {
-    return { certainty: 'recorded', detail: `It was set aside as not needed.` };
   }
   return { certainty: 'recorded', detail: `Right now nobody owns it.` };
 }

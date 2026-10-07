@@ -373,7 +373,11 @@ export function deliberate(state: CareState, opts: PolicyOptions): Deliberation 
 
 /** Why the agent is staying quiet, in words rather than numbers. */
 function reasonForQuiet(opts: PolicyOptions): string {
-  return isQuietHours(opts.now, opts.timezone)
-    ? 'it is the middle of the night and this is not urgent enough to wake anyone'
-    : 'it is not yet worth interrupting somebody over';
+  if (!isQuietHours(opts.now, opts.timezone)) return 'it is not yet worth interrupting somebody over';
+  // Said as the family would say it: 9:46 pm is late in the evening, not the middle of the night.
+  const hour = localHour(opts.now, opts.timezone);
+  const when = hour >= QUIET_START_HOUR ? 'it is late in the evening'
+    : hour < 5 ? 'it is the middle of the night'
+      : 'it is early in the morning';
+  return `${when}, and this is not urgent enough to disturb anyone`;
 }

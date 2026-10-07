@@ -2,7 +2,7 @@
  * The crazy user story, executed end to end.
  *
  * One command. It seeds the exact opening state, starts the real CareCircle MCP
- * server in-process (Streamable HTTP, spec 2025-11-25), and walks all seven beats
+ * server in-process (Streamable HTTP, spec 2025-11-25), and walks every beat
  * through real MCP clients - one per member of the care circle, each on their own
  * credential. Nothing is faked or narrated by hand: every line the assistant says
  * is a real tool response, and every state change is the server's own.
@@ -14,6 +14,7 @@
  *
  * What is BUILT and exercised here: Alexa+ voice logging, appointment inference,
  * constraint discovery, the Care Gap engine, ownership, the Ring signal adapter,
+ * the agent following up a slipping promise with the door's evidence beside it,
  * the Known != Assumed trust model, and the shared record read from four roles.
  * What is deliberately NOT here: Bee (architecturally ready via the same signal
  * adapter, not integrated) and the Fire TV surface (the existing web board). The
@@ -31,6 +32,7 @@ import { FilePersistence } from '../src/store/persistence.ts';
 import { seedDemoHousehold, DEMO_TOKENS } from '../src/demo/seed.ts';
 import { seedScenario } from '../src/demo/scenario.ts';
 import { createCareCircleApp } from '../src/http/app.ts';
+import type { Notifier } from '../src/notify/notifier.ts';
 
 const HOUSEHOLD = 'h_margaret';
 const TZ = 'Africa/Lagos';
@@ -98,7 +100,10 @@ async function connect(baseUrl: string, token: string): Promise<Client> {
 async function main(): Promise<void> {
   // The story plays out in the evening - 9:10pm, past the grace on the 8pm dose, so
   // the absence beat surfaces a genuinely-overdue record rather than a premature one.
-  const clock = () => wallClockToday(21, 10, TZ);
+  // The server clock follows the beats, so a signal with no time of its own lands when
+  // the beat says it did, and the agent's pass sees the hour it really runs at.
+  let clockAt = wallClockToday(7, 42, TZ);
+  const clock = () => clockAt;
   // The scenario seeds its dated events off its own `now`; hand it a midday instant
   // so its internal date math lands squarely on today, then run the clock in the
   // evening. Both agree on the calendar day; only the time-of-day differs.
@@ -117,9 +122,28 @@ async function main(): Promise<void> {
     skipMorningEyeDrops: true,
   });
 
+  // An errand Musa promised this afternoon, due at 8pm. Part of the opening state,
+  // like the ride: the story is about what happens when a promise slips.
+  const errand = await store.createObligation({
+    householdId: HOUSEHOLD, what: "Pick up Daddy's new eye drops from the pharmacy", consequence: 'medical',
+    status: 'ASSIGNED', ownerId: 'm_aide',
+    provenance: { kind: 'CONFIRMED', byMemberId: 'm_aide', at: wallClockToday(15, 0, TZ).toISOString() },
+    dueAt: wallClockToday(20, 0, TZ).toISOString(),
+  });
+
+  // Messages the agent sends go to this terminal instead of a phone. Record-only, and
+  // honest about it: nothing here claims a phone buzzed.
+  const phone: Notifier = {
+    channel: 'none',
+    async deliver({ toName, message }) {
+      console.log(`    ${amber(`${toName}'s phone`)}: ${message.replace(/\n+/g, ' ')}`);
+      return { delivered: false, channel: 'none' };
+    },
+  };
+
   // 2. The real server, in-process. Same factory the deployed server uses.
   const tokens = new Map(Object.entries(DEMO_TOKENS));
-  const app = createCareCircleApp({ store, tokens, now: clock });
+  const app = createCareCircleApp({ store, tokens, now: clock, notifier: phone });
   const http = app.listen(0);
   await new Promise<void>((r) => http.once('listening', r));
   const { port } = http.address() as AddressInfo;
@@ -149,6 +173,7 @@ async function main(): Promise<void> {
   }));
 
   // ── Beat 2 · the constraint - work comes loose, silently ────────────────
+  clockAt = wallClockToday(9, 15, TZ);
   beat('9:15am', 'A constraint quietly orphans work nobody re-assigned');
   say('Funmi (phone)', "I can't take Daddy to his eye check-up on Thursday after all.");
   alexa(await call(funmi, 'add_note', {
@@ -161,6 +186,7 @@ async function main(): Promise<void> {
   }));
 
   // ── Beat 3 · 2:14pm - a doorbell becomes evidence, never a conclusion ────
+  clockAt = wallClockToday(14, 14, TZ);
   beat('2:14pm', 'Ring sees a delivery - evidence toward the refill, not proof');
   say('Ring doorbell', '(a package is left at Daddy\'s door)');
   alexa(await call(tolu, 'ingest_signal', {
@@ -169,6 +195,7 @@ async function main(): Promise<void> {
   }));
 
   // ── Beat 4 · 6:30pm - the question no other assistant answers ────────────
+  clockAt = wallClockToday(18, 30, TZ);
   beat('6:30pm', "What's going to fall through the cracks this week?");
   say('Tolu (driving)', "Alexa, what's going to fall through the cracks this week?");
   const gapsRes = alexa(await call(tolu, 'get_care_gaps', { withinDays: 7 }));
@@ -187,18 +214,30 @@ async function main(): Promise<void> {
     obligationId: rx.obligationId, note: 'Confirmed via the 2:14pm doorbell delivery.',
   }));
 
-  // ── Beat 5 · 8:05pm - an absence, refused the shape of an accusation ─────
+  // ── Beat 5 · 8:16pm - a promise slips, and CareCircle follows up ─────────
+  clockAt = wallClockToday(19, 58, TZ);
+  beat('7:58pm', 'Ring sees someone at the door - evidence, not a verdict');
+  say('Ring doorbell', '(motion at the front door)');
+  alexa(await call(tolu, 'ingest_signal', { source: 'ring', kind: 'motion' }));
+
+  clockAt = wallClockToday(20, 16, TZ);
+  beat('8:16pm', 'Saying yes is not doing it: the agent checks in on a slipping promise');
+  say('CareCircle', "(its own pass, every 15 minutes - nobody asked; Musa's pharmacy run was due at 8:00)");
+  alexa(await call(tolu, 'run_care_agent', {}));
+  say('Musa', 'done');
+  alexa(await call(musa, 'resolve_obligation', { obligationId: errand.id }));
+  say('Tolu', 'How do we know the drops were picked up?');
+  alexa(await call(tolu, 'get_provenance', { obligationId: errand.id }));
+
+  // ── Beat 6 · 9:10pm - an absence, refused the shape of an accusation ─────
+  clockAt = wallClockToday(21, 10, TZ);
   beat('9:10pm', 'Known != Assumed - an absence is surfaced as a question');
-  say('Ring doorbell', '(no activity at the door since afternoon)');
-  alexa(await call(tolu, 'ingest_signal', {
-    source: 'ring', kind: 'no_activity',
-    detail: 'No activity detected at the door since 2:14pm',
-  }));
   say('Tolu', 'Did Daddy use his evening eye drops?');
   const eveningRes = alexa(await call(tolu, 'get_care_gaps', {}));
   board(gapsOf(eveningRes));
 
-  // ── Beat 6 · 8:06pm - the living room already knew; the gap clears ───────
+  // ── Beat 7 · 9:12pm - the living room already knew; the gap clears ───────
+  clockAt = wallClockToday(21, 12, TZ);
   beat('9:12pm', 'The ambient board prompts a call; the gap clears everywhere');
   say('Funmi (sees the Fire TV board)', 'I just called him - he used them at 7:50 and forgot to say.');
   alexa(await call(funmi, 'log_care_event', {
@@ -214,7 +253,7 @@ async function main(): Promise<void> {
   beat('-', 'One record, four people reach it differently');
   say('Musa (driver)', 'What do I need to know for today?');
   alexa(await call(musa, 'get_shift_brief'));
-  say('Funmi (caregiver)', 'Assign the pharmacy run to Tolu.');
+  say('Funmi (caregiver)', "Put Daddy's check-up ride on Tolu's name.");
   alexa(await call(funmi, 'assign_obligation', { obligationId: ride.obligationId, assigneeName: 'Tolu' }));
 
   console.log(bold(cyan('\n  CareCircle doesn\'t just tell a family what happened.')));

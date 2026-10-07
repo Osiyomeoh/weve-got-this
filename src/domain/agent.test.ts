@@ -211,6 +211,12 @@ test('staying quiet is recorded, not just implied', () => {
   assert.match(restraint[0]!.because, /night/i);
 });
 
+test('quiet hours are named as the family would say them', () => {
+  // 9:45 pm and 7 am in New York (EDT, UTC-4).
+  assert.match(deliberate(state(), opts(new Date('2026-10-15T01:45:00Z'))).restraint[0]!.because, /late in the evening/);
+  assert.match(deliberate(state(), opts(new Date('2026-10-14T11:00:00Z'))).restraint[0]!.because, /early in the morning/);
+});
+
 test('the reason names a person and the work, not a rule number', () => {
   const { actions } = deliberate(state(), opts(DAYTIME));
   const a = actions[0]!;

@@ -67,21 +67,30 @@ Timings assume about 2.4 spoken words a second, a calm pace.
 - [ ] **Consent.** Your dad agreed to the pilot on 2026-09-23. Filming anything of his is
       a separate yes. Your brother abroad hasn't agreed to be mentioned yet. Check your
       siblings are happy for the family to be described.
-- [ ] **Set up beat E's errand** (needs the agent loop on, which prod has: every 15 min).
-      Around 8:50 PM Lagos, as Tolu: *"Daddy's eye drops need picking up from the pharmacy
-      by 9:30 tonight."* Off camera, Musa says "I'll do it" so it's his. Around 9:25, fire one
-      doorbell event: `npm run ring:simulate -- --url https://ypq2dfq2p7.us-east-1.awsapprunner.com/ring/webhook --event motion`.
-      Musa does **not** mark it done. The "still on?" arrives on the first agent pass after
-      9:45, so film Musa's phone from 9:45 to 10:00. Rehearse once the night before: confirm
-      the door line appears in the message, then reset.
+- [ ] **Set up beat E's errand, before 9 PM.** The agent stays quiet from 9 PM to 8 AM
+      (`QUIET_START_HOUR`, `src/domain/agent.ts`), so a promise due at 9:30 PM never gets a
+      "still on?". `npm run story` found this on 2026-10-07. Around 7:15 PM Lagos, as Tolu:
+      *"Daddy's new eye drops need picking up from the pharmacy by 8 tonight."* Off camera,
+      Musa says "I'll do it" so it's his. Around 7:55, fire one doorbell event:
+      `npm run ring:simulate -- --url https://ypq2dfq2p7.us-east-1.awsapprunner.com/ring/webhook --event motion`.
+      Musa does **not** mark it done. The check-in comes on the first agent pass after 8:15
+      (every 15 minutes, so by 8:30): film Musa's phone from 8:15. Then film beats C and F
+      after 9 PM. Rehearse once the night before. The exact sequence plays offline in
+      `npm run story` (the 7:58 pm and 8:16 pm beats).
 - [ ] **Burn in captions.** The video makes an accessibility argument.
 - [ ] **Numbers on the day.** Say a number only if it matches then: tools (`tools/list`, 28
-      on 2026-09-24), tests (`npm test`, 575 on 2026-09-24), the trust benchmark
+      on 2026-09-24), tests (`npm test`, 675 on 2026-10-07), the trust benchmark
       (`npm run trust-benchmark`).
 
 ---
 
 ## The shape: a pitch, not a tour
+
+**What the organisers said on 2026-10-06** (transcript: `local/qa/`, git-excluded): judges
+may score on the video alone; one slick experience beats a monolith; don't rebuild what
+Alexa or Ring already does; elderly care is popular, and they already liked a Ring +
+Alexa+ dementia project ("Wander Guard"), which watched the patient. So the difference is
+said out loud in beat E: **CareCircle watches the promises, not the patient.**
 
 The organisers' advice (2026-10-05): lead with the problem, show it working, and say
 plainly what it solves, who it's for, how it uses the track's tool, and what the working
@@ -154,12 +163,12 @@ Filmed as its own take, on the errand set up before recording (see the checklist
 
 | Said or shown | Source |
 |---|---|
-| **Caption over the real clock:** `9:30 PM. Musa's pharmacy run was due. Nothing's marked.` | The take; slipping = 15 min past due: `FOLLOW_UP_GRACE_MINUTES`, `src/domain/agent.ts` |
-| **Musa's phone**, on the agent's own pass: *""Pick up Daddy's eye drops" was due a little while ago and nothing's been marked yet. The doorbell saw activity at the door at 9:2x. Still on? Reply "done" if it's handled, or "can't" and I'll find someone."* | `messageFor`, `src/domain/agent-runner.ts`; `checkInEvidence`, `src/domain/evidence.ts:73`; `src/domain/agent.test.ts` (follow-up tests) |
+| **Caption over the real clock:** `8:16 PM. Musa's pharmacy run was due at 8. Nothing's marked.` | The take; slipping = 15 min past due: `FOLLOW_UP_GRACE_MINUTES`, `src/domain/agent.ts` |
+| **Musa's phone**, on the agent's own pass: *""Pick up Daddy's eye drops" was due a little while ago and nothing's been marked yet. The doorbell saw activity at the door at 7:5x. Still on? Reply "done" if it's handled, or "can't" and I'll find someone."* | `messageFor`, `src/domain/agent-runner.ts`; `checkInEvidence`, `src/domain/evidence.ts:73`; `src/domain/agent.test.ts` (follow-up tests) |
 | **Caption, 2 s:** `Doorbell event simulated, signed with the real Ring partner key.` | `src/demo/ring-simulate.ts`; `docs/PRODUCT-FEEDBACK.md`, Ring |
-| Musa types **done**. *"Marked done - … The doorbell also saw activity at the door at 9:2x."* | `resolve_obligation`, `src/mcp/tools/ownership.ts`; `src/http/proof-of-care.test.ts` |
+| Musa types **done**. *"Marked done - … The doorbell also saw activity at the door at 7:5x."* | `resolve_obligation`, `src/mcp/tools/ownership.ts`; `src/http/proof-of-care.test.ts` |
 | **Tolu (console):** "How do we know?" **CareCircle** (gist): "Musa marked it done at … Around then the doorbell saw … A signal is evidence beside the record, not proof on its own." | `explainProvenance` / `closingEvidence`, `src/domain/provenance.ts` |
-| **VO:** "Saying yes isn't the same as doing it. So it follows up, gently, once. If there's no answer, it tells Tolu: not 'he forgot', just 'you may want to call'. And it never claims a camera saw more than it did." | Escalate once after 30 min: `FOLLOW_UP_WAIT_MINUTES`, `src/domain/agent.ts`; Ring sees motion, never a car or face: `src/domain/evidence.ts:4-10` |
+| **VO:** "Other care tools watch the patient. CareCircle watches the promises. Saying yes isn't the same as doing it. So it follows up, gently, once. If there's no answer, it tells Tolu: not 'he forgot', just 'you may want to call'. And it never claims a camera saw more than it did." | Escalate once after 30 min: `FOLLOW_UP_WAIT_MINUTES`, `src/domain/agent.ts`; Ring sees motion, never a car or face: `src/domain/evidence.ts:4-10` |
 | *Say only if it matches on the day:* "We tested the replies on thirty held-out answers, Pidgin included: twenty-nine right." | `evals/results/2026-10-05-promises-sonnet-4-5.json` (29/30; 19/20 on untouched cases) |
 
 ## F. 2:04-2:20 Two languages, one record (Idea, Impact)
@@ -187,7 +196,7 @@ Daddy has already said his word for the drops (see "Before you record").
 |---|---|
 | **Claude Desktop** on the live endpoint: *"What's slipping for Daddy this week?"* It calls `get_care_gaps` on the same server. | The take; `src/http/oauth.test.ts:123` |
 | **VO:** "This is a live MCP server, built for Alexa+, with account linking so Alexa+ knows which family member is speaking. Any MCP client gets the same care record." | `src/http/oauth.test.ts:97`, `:201-257`; `/health` |
-| *Optional, 3 s:* a real Echo through the Alexa Skill bridge. **Caption:** `Alexa Skill bridge on a real Echo. Not Alexa+ itself.` | `docs/HANDOFF.md` |
+| **Required, 4 s:** a real Echo through the Alexa Skill bridge answering from the same server. **Caption:** `A real Echo, through the open-source alexa-skill-mcp-bridge (not ours). Alexa+ add-ons aren't open yet.` The organisers called a third-party surface "an extra flex" (office hours, 2026-10-06, 51:00). | `docs/HANDOFF.md` (the bridge on AgentCore) |
 
 ## End card 2:53-3:00
 
@@ -195,6 +204,7 @@ Daddy has already said his word for the drops (see "Before you record").
 |---|---|
 | **VO:** "CareCircle, for Alexa+. Every number in this video has a source." | This document |
 | `Live: https://ypq2dfq2p7.us-east-1.awsapprunner.com/mcp` · `Try it: https://krqi2tpsif.us-east-1.awsapprunner.com` | The live services |
+| **Small print, 2 s:** `Shown with tools we didn't build: Telegram, Claude Desktop, alexa-skill-mcp-bridge (KayLerch). Doorbell events simulated with the real Ring partner key.` | The organisers: credit what you show but didn't build (office hours, 52:30) |
 
 Tool and test counts are dropped from the voice-over: they change, and the time is worth
 more to beat E. They're in the write-up.

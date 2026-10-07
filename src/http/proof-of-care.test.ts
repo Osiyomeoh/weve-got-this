@@ -71,6 +71,8 @@ test('closing a ride records what the doorbell saw, and "how do we know?" says i
   const why = await call('david-token', 'get_provenance', { obligationId: o.id });
   assert.equal(why.isError, false, why.text);
   assert.match(why.text, /Around then the doorbell saw activity at the door at .* not proof on its own/);
+  assert.match(why.text, /It is resolved\./);
+  assert.doesNotMatch(why.text, /owns it/, 'finished work is not "owned" by anyone');
 });
 
 test('"can\'t make it after all" from the owner hands the work back; "on my way" keeps it', async () => {

@@ -558,12 +558,13 @@ git clone https://github.com/Osiyomeoh/carecircle && cd carecircle
 npm ci
 npm run lint      # eslint (typescript-eslint, strict) - 0 findings
 npm run typecheck # tsc under strict + noUncheckedIndexedAccess + exactOptionalPropertyTypes
-npm test          # 575 tests (unit, adversarial, and property-based)
+npm test          # 675 tests (unit, adversarial, and property-based)
 npm run story     # the whole one-day story, end to end, over real MCP
 ```
 
 `npm run story` is the fastest way to see it work: it seeds the demo family, starts
-the real MCP server in-process, and plays every beat through real MCP clients - **no
+the real MCP server in-process, and plays every beat through real MCP clients, including
+the agent noticing a promise slipping and asking "still on?" with what the doorbell saw - **no
 AWS, no API keys, no external services.** Deterministic, so you see exactly what the
 video shows.
 
