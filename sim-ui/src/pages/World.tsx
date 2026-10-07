@@ -12,6 +12,7 @@ import { clockText, homeToday, STORY, type ShotName } from '../world/story';
 import { SHOTS } from '../world/layout';
 import { impactOf } from '../world/impact';
 import { COUNTRIES, FAMILIES, family, setFamily, type Country } from '../world/families';
+import type { Stuck } from '../world/director';
 import type { CareCaseId } from '../lib/api';
 import type { Key } from '../lib/dpad';
 import '../world/world.css';
@@ -116,16 +117,7 @@ export default function World() {
       {view.status === 'yourTurn' && view.prompt && (view.prompt.remote
         ? <RemoteTurn who={view.prompt.who} hint={view.prompt.suggestion} onPress={director.press} />
         : <YourTurn who={view.prompt.who} suggestion={view.prompt.suggestion} onSay={director.say} />)}
-      {view.status === 'stuck' && view.stuck && (
-        <div className="world-panel">
-          <h3>That didn't land the way the scene needs</h3>
-          <p>{view.stuck.reason} The story needs <code>{view.stuck.expected.join(' or ')}</code> here. Nothing is faked: try again, or carry on as it is.</p>
-          <div className="row">
-            <button className="world-btn" onClick={() => director.decide(true)}>Try again</button>
-            <button className="world-btn ghost" onClick={() => director.decide(false)}>Carry on</button>
-          </div>
-        </div>
-      )}
+      {view.status === 'stuck' && view.stuck && <StuckPanel stuck={view.stuck} onDecide={director.decide} />}
       {view.status === 'error' && (
         <div className="world-panel">
           <h3>The server didn't answer</h3>
@@ -254,6 +246,56 @@ function CastPicker({ onChoose, onFamily }: { onChoose: (who: PersonKey | null) 
   );
 }
 
+/**
+ * When a line didn't land. If the words were the visitor's own, they can say "that's not what
+ * I meant" and, only if they tick the box, send those words so the phrasing can be taught.
+ */
+function StuckPanel({ stuck, onDecide }: { stuck: Stuck; onDecide: (again: boolean) => void }) {
+  const [open, setOpen] = useState(false);
+  const [consent, setConsent] = useState(false);
+  const [sent, setSent] = useState<'no' | 'sending' | 'yes' | 'failed'>('no');
+  const send = async () => {
+    if (!consent || !stuck.said) return;
+    setSent('sending');
+    try {
+      await api.phrasing({ said: stuck.said, meant: stuck.expected, got: stuck.got ?? [], country: family().country });
+      setSent('yes');
+    } catch {
+      setSent('failed');
+    }
+  };
+  return (
+    <div className="world-panel">
+      <h3>That didn't land the way the scene needs</h3>
+      <p>{stuck.reason} The story needs <code>{stuck.expected.join(' or ')}</code> here. Nothing is faked: try again, or carry on as it is.</p>
+      {stuck.said && !open && (
+        <button type="button" className="world-link" onClick={() => setOpen(true)}>That's not what I meant</button>
+      )}
+      {stuck.said && open && (
+        <div className="world-meant">
+          <p>You said: <q>{stuck.said}</q></p>
+          {sent === 'yes'
+            ? <p className="ok">Saved. Thank you: phrasings like yours are how Alexa learns to hear people the way they talk.</p>
+            : <>
+                <label>
+                  <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
+                  {' '}Save these words so CareCircle can learn this way of saying it. Only the sentence above, what the scene needed and what Alexa did are kept. No name, no family, nothing that identifies you.
+                </label>
+                <button type="button" className="world-btn ghost" disabled={!consent || sent === 'sending'} onClick={() => void send()}>
+                  {sent === 'sending' ? 'Saving…' : 'Save my words'}
+                </button>
+                {sent === 'failed' && <p className="world-turn-note">That didn't save. Nothing was kept.</p>}
+              </>}
+        </div>
+      )}
+      <div className="row">
+        <button className="world-btn" onClick={() => onDecide(true)}>Try again</button>
+        <button className="world-btn ghost" onClick={() => onDecide(false)}>Carry on</button>
+      </div>
+    </div>
+  );
+}
+
 /** Your line: say it your own way, type it, or speak it (Amazon Transcribe). */
 function YourTurn({ who, suggestion, onSay }: { who: PersonKey; suggestion: string; onSay: (text: string) => void }) {
   const [text, setText] = useState(suggestion);
@@ -295,6 +337,8 @@ function YourTurn({ who, suggestion, onSay }: { who: PersonKey; suggestion: stri
       <div className="row">
         <input ref={input} value={text} onChange={(e) => setText(e.target.value)} aria-label={`What ${p.name} says`} />
         <button type="button" className={`world-btn ghost${listening ? ' live' : ''}`} onClick={() => void mic()}>{listening ? 'Stop' : 'Speak'}</button>
+        <button type="button" className="world-btn ghost" disabled={text === suggestion}
+          title="Put the story's line back in the box" onClick={() => { setText(suggestion); input.current?.focus(); }}>Suggest</button>
         <button type="submit" className="world-btn">Say it</button>
       </div>
       {note && <div className="world-turn-note">{note}</div>}

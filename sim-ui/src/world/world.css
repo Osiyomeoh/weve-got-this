@@ -181,3 +181,11 @@
 .world-impact li .tick { color: #7cf0c8; }
 .world-impact li code { grid-column: 2; font-size: 11px; color: rgba(255, 255, 255, 0.4); }
 .world-impact li.yours .text b { color: #ffd27a; font-weight: 600; }
+
+/* "That's not what I meant": opt-in, and plain about what is kept. */
+.world-link { background: none; border: 0; padding: 0; margin: 4px 0 10px; color: #7cf0c8; font: inherit; font-size: 14px; text-decoration: underline; cursor: pointer; }
+.world-meant { margin: 4px 0 12px; padding: 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.06); font-size: 14px; }
+.world-meant p { margin: 0 0 8px; }
+.world-meant label { display: block; margin-bottom: 10px; line-height: 1.45; color: rgba(255, 255, 255, 0.8); }
+.world-meant .ok { color: #7cf0c8; margin: 0; }
+.world-meant .world-btn:disabled { opacity: 0.45; cursor: default; }

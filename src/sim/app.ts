@@ -425,6 +425,24 @@ app.post('/api/speak', async (req, res) => {
   }
 });
 
+/**
+ * "That's not what I meant": a phrasing Alexa took the wrong way, saved because the visitor
+ * ticked the box. It goes to the server log as one JSON line (CloudWatch on App Runner), with
+ * no visitor cookie, no IP and no family: only the words, what they meant and what happened.
+ */
+const TOOL_NAME = /^[a-z_]{1,40}$/;
+app.post('/api/phrasing', (req, res) => {
+  const { said, meant, got, country } = (req.body ?? {}) as { said?: unknown; meant?: unknown; got?: unknown; country?: unknown };
+  const tools = (v: unknown) => Array.isArray(v) && v.length <= 10 && v.every((t) => typeof t === 'string' && TOOL_NAME.test(t));
+  if (typeof said !== 'string' || !said.trim() || said.length > 500 || !tools(meant) || !tools(got)
+    || (country !== undefined && (typeof country !== 'string' || !/^[a-z]{2}$/.test(country)))) {
+    res.status(400).json({ error: 'Not a phrasing.' });
+    return;
+  }
+  console.log(JSON.stringify({ phrasing: { said: said.trim(), meant, got, country, at: new Date().toISOString() } }));
+  res.json({ ok: true });
+});
+
 // "Start over": this visitor gets a brand-new copy of the demo on their next request.
 app.post('/api/sandbox/reset', (req, res) => {
   const visitor = parseCookies(req.header('cookie'))[VISITOR_COOKIE];

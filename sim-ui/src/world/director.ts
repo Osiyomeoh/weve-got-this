@@ -26,7 +26,14 @@ export interface TraceItem { id: number; who: string; call: ToolCall; at: string
 export interface Prompt { who: PersonKey; suggestion: string; remote?: boolean }
 /** What the doorbell reported, drawn as the card a family would see: what it saw, and what it can't know. */
 export interface Evidence { at: Date; saw: string; cannot: string }
-export interface Stuck { reason: string; expected: string[] }
+export interface Stuck {
+  reason: string;
+  expected: string[];
+  /** The visitor's own words, when they played this line: what "that's not what I meant" can save. */
+  said?: string;
+  /** What Alexa did instead: the successful tool calls, by name. */
+  got?: string[];
+}
 
 export type Status = 'cast' | 'ready' | 'playing' | 'yourTurn' | 'stuck' | 'done' | 'error';
 
@@ -264,7 +271,7 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     const who = step.who;
     setTimeout(() => { if (!busy.current.has(who)) settle(who); }, 1300);
     if (!landed && step.expect) {
-      set({ status: 'stuck', stuck: { reason: called.length ? `Alexa used ${called.join(', ')}.` : 'Alexa answered without changing the record.', expected: step.expect } });
+      set({ status: 'stuck', stuck: { reason: called.length ? `Alexa used ${called.join(', ')}.` : 'Alexa answered without changing the record.', expected: step.expect, ...(played ? { said: text, got: called } : {}) } });
       const again = await new Promise<boolean>((resolve) => { retry.current = resolve; });
       retry.current = null;
       set({ status: 'playing', stuck: null });

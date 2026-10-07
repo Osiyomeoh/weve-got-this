@@ -128,6 +128,14 @@ export const api = {
     fetch('/api/transcribe', {
       method: 'POST', headers: { 'content-type': 'application/octet-stream' }, body: pcm,
     }).then(jsonOrThrow),
+  /**
+   * "That's not what I meant": the visitor's own words that Alexa took the wrong way, sent
+   * only when they tick the box. No visitor id, no family, no names beyond what they typed.
+   */
+  phrasing: (body: { said: string; meant: string[]; got: string[]; country: string }): Promise<void> =>
+    fetch('/api/phrasing', {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),
+    }).then(jsonOrThrow).then(() => undefined),
   /** Polly audio for a line, or null when the service is unavailable. */
   speak: async (text: string, rate: SpeechRate, voice?: string): Promise<Blob | null> => {
     try {
