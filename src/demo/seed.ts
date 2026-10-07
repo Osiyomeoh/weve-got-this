@@ -52,16 +52,17 @@ export async function seedDemoHousehold(
     // never a label the system may editorialise about.
     attributes: c.recipient.attributes,
   });
+  const away = c.childrenLiveIn ? { livesAway: c.childrenLiveIn } : {};
   await store.addMember({
     id: sid('m_david'), householdId: HOUSEHOLD_ID, name: 'Tolu',
-    role: 'primary_caregiver',
+    role: 'primary_caregiver', ...away,
   });
   await store.addMember({
     id: sid('m_renee'), householdId: HOUSEHOLD_ID, name: 'Funmi',
-    role: 'caregiver',
+    role: 'caregiver', ...away,
   });
   await store.addMember({
-    id: sid('m_aide'), householdId: HOUSEHOLD_ID, name: 'Musa',
+    id: sid('m_aide'), householdId: HOUSEHOLD_ID, name: c.helper ?? 'Musa',
     role: 'helper',
   });
   // A brother in London: wants to know how the day went, and can't drive anyone to a

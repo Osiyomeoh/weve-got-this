@@ -34,7 +34,20 @@ export interface Offer {
 }
 export interface Notification { from: string; to: string; message: string; at?: string }
 
+export interface BoardMember { id: string; name: string; role: string; spokenAs: string | null; livesAway?: string }
+/** One of today's scheduled doses, and the record that answers it (see src/mcp/resources.ts). */
+export interface DoseSlot {
+  medicationId: string;
+  name: string;
+  forMemberId: string;
+  time: string;
+  recorded: { at: string; saidBy: string | null; via?: string } | null;
+}
+
 export interface BoardState {
+  household?: { id: string; name: string; timezone: string };
+  members?: BoardMember[];
+  schedule?: DoseSlot[];
   gaps?: Gap[];
   obligations?: Obligation[];
   offers?: Offer[];
@@ -97,7 +110,7 @@ async function jsonOrThrow(res: Response) {
 
 /** Matches the server's RATES. `slow` is an accessibility control, not a demo toggle. */
 /** Who the family is caring for in a visitor's copy (mirrors src/demo/cases.ts). */
-export type CareCaseId = 'eyes' | 'memory' | 'wheelchair';
+export type CareCaseId = 'eyes' | 'memory' | 'wheelchair' | 'hometown';
 
 export type SpeechRate = 'slow' | 'gentle' | 'normal';
 
@@ -128,10 +141,11 @@ export const api = {
       return null;
     }
   },
-  act: (memberId: string, tool: string, args: Record<string, unknown>, storyTime?: Date): Promise<ToolCall> =>
+  /** `via: 'tv'`: a press on the Fire TV remote, so the record says it was pressed, not spoken. */
+  act: (memberId: string, tool: string, args: Record<string, unknown>, storyTime?: Date, via?: 'tv'): Promise<ToolCall> =>
     fetch('/api/act', {
       method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ memberId, tool, args, storyTime: storyTime?.toISOString() }),
+      body: JSON.stringify({ memberId, tool, args, storyTime: storyTime?.toISOString(), ...(via ? { via } : {}) }),
     }).then(jsonOrThrow),
   /** Throw away this browser's copy of the demo; the next request gets a fresh one. */
   resetSandbox: (opts: { liveMorning?: boolean; careCase?: CareCaseId } = {}): Promise<{ ok: boolean }> =>

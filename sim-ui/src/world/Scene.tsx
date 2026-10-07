@@ -9,6 +9,7 @@ import { CAR, DADDY, DEVICE, HUB, PHARMACY, ROAD_Z, SHOTS, SPOT, TOLU, type V3 }
 import { lagosHour, type ShotName, type Stage } from './story';
 import type { LookAt, Presence, WorldView } from './director';
 import { wait } from './voice';
+import { family } from './families';
 
 // The street. Two homes drawn as cutaways so you can see inside, the road between them
 // and the pharmacy, a few neighbours, and the server above it all. Furniture and people
@@ -232,6 +233,7 @@ function DaddysHouse({ view, night }: { view: WorldView; night: boolean }) {
       <Doorbell position={DEVICE.doorbell} active={view.ringActive} />
       <Echo position={DEVICE.daddyEcho} glow={view.glow.daddy} scale={1.3} />
       <FireTV position={DEVICE.daddyTv} src="/tv" frameId="world-tv" width={0.66} />
+      <CityLabel at={local(DADDY, 0, 3.1, 0)} which="home" />
       <group position={SPOT.daddyChair}>
         <PhoneBubble who="daddy" message={view.phones.daddy} listening={view.phoneListening === 'daddy'} />
       </group>
@@ -248,6 +250,7 @@ function ToluFlat({ view, night }: { view: WorldView; night: boolean }) {
   return (
     <group>
       <Room at={TOLU} w={3.6} d={3.2} floor="#8b9196" wall="#dfe7ee" low={['front', 'left']} />
+      <CityLabel at={local(TOLU, 0, 3.0, 0)} which="tolu" />
       <Window at={local(TOLU, 0.7, 0.7, -1.55)} night={night} w={1.2} />
       <Model url={MODEL.furniture('rugRectangle')} position={local(TOLU, 0, 0.04, 0.4)} />
       <Model url={MODEL.furniture('desk')} position={local(TOLU, 0, 0.04, -0.95)} />
@@ -264,6 +267,20 @@ function ToluFlat({ view, night }: { view: WorldView; night: boolean }) {
       <Character model={tolu.model} anim="sit" position={local(SPOT.toluDesk, 0, 0.1, 0)} facing={FACE.away} scale={PERSON_SCALE}
         {...alive('tolu', view.people)} typing={view.people.tolu!.look === 'laptop'} />
     </group>
+  );
+}
+
+/**
+ * When a family is not all in one city, each home says where it is. The street between them
+ * stands for the two hours of road: the world is a stage, not a map.
+ */
+function CityLabel({ at, which }: { at: V3; which: 'home' | 'tolu' }) {
+  const places = family().places;
+  if (!places) return null;
+  return (
+    <Html position={at} center pointerEvents="none" zIndexRange={[5, 0]}>
+      <div className="world-label city">{places[which]}</div>
+    </Html>
   );
 }
 

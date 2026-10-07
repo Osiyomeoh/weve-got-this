@@ -335,8 +335,8 @@ app.post('/api/setup/rebind', async (_req, res) => {
 });
 
 app.post('/api/act', async (req, res) => {
-  const { memberId, tool, args, storyTime } = req.body as {
-    memberId?: string; tool?: string; args?: Record<string, unknown>; storyTime?: string;
+  const { memberId, tool, args, storyTime, via } = req.body as {
+    memberId?: string; tool?: string; args?: Record<string, unknown>; storyTime?: string; via?: unknown;
   };
   if (!memberId || !tool) {
     res.status(400).json({ error: 'memberId and tool are required' });
@@ -346,7 +346,8 @@ app.post('/api/act', async (req, res) => {
     const ctx = await contextFor(req);
     const host = await hostFor(ctx, memberId);
     host.setStoryTime(storyTimeOf(ctx, storyTime));
-    const out = await withRetry(() => host.callToolDirect(tool, toSandbox(args ?? {}, ctx.suffix)));
+    // The Fire TV page says when a call is a press on its remote (see src/mcp/channel.ts).
+    const out = await withRetry(() => host.callToolDirect(tool, toSandbox(args ?? {}, ctx.suffix), via === 'tv' ? { via: 'tv' } : {}));
     res.json(fromSandbox(out, ctx.suffix));
   } catch (err) {
     res.status(502).json({ error: (err as Error).message });

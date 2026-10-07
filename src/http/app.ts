@@ -22,6 +22,7 @@ import { providerFromEnv } from '../sim/providers.js';
 import { OAuthProvider, oauthResolver } from './oauth.js';
 import { createSandboxRoute } from './sandbox.js';
 import { STORY_TIME_HEADER, storyAware, storyTimeFor, withStoryTime } from './story-clock.js';
+import { CHANNEL_HEADER, channelOf, withChannel } from '../mcp/channel.js';
 
 /**
  * Streamable HTTP transport (MCP spec 2025-11-25).
@@ -303,7 +304,8 @@ app.use('/mcp', (req, _res, next) => {
   const actorId = actorFor(req);
   let householdId: string | undefined;
   try { householdId = actorId ? store.getMember(actorId).householdId : undefined; } catch { /* not a member yet */ }
-  withStoryTime(storyTimeFor(householdId, req.header(STORY_TIME_HEADER) ?? undefined), next);
+  withStoryTime(storyTimeFor(householdId, req.header(STORY_TIME_HEADER) ?? undefined),
+    () => withChannel(channelOf(req.header(CHANNEL_HEADER) ?? undefined), next));
 });
 
 app.post('/mcp', async (req, res) => {

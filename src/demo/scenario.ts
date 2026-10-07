@@ -108,9 +108,11 @@ export async function seedScenario(
       data: { medicationId: sid('med_heart'), medicationName: c.medication, aboutMemberId: sid('m_margaret') },
     });
   }
+  // In a live copy the day opens at 7:42 on the eye drops, so the supplement was taken
+  // before that, with breakfast. A record later than the clock would be a record from the future.
   await store.appendEvent({
     householdId, kind: 'medication_taken', reportedBy: sid('m_margaret'),
-    occurredAt: todayAt(8, 12, now, TZ).toISOString(),
+    occurredAt: (options.skipMorningEyeDrops ? todayAt(7, 25, now, TZ) : todayAt(8, 12, now, TZ)).toISOString(),
     source: 'voice', confidence: 'reported',
     data: { medicationId: sid('med_thyroid'), medicationName: c.supplement, aboutMemberId: sid('m_margaret') },
   });

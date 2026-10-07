@@ -51,11 +51,12 @@ async function create(key = KEY, body?: object): Promise<{ status: number; json:
 }
 
 /** Open an MCP session with a bearer token and call one tool. */
-async function callTool(token: string, name: string, args: Record<string, unknown> = {}): Promise<any> {
+async function callTool(token: string, name: string, args: Record<string, unknown> = {}, extra: Record<string, string> = {}): Promise<any> {
   const headers: Record<string, string> = {
     'content-type': 'application/json',
     accept: 'application/json, text/event-stream',
     authorization: `Bearer ${token}`,
+    ...extra,
   };
   const parse = async (r: Response) => {
     const t = await r.text();
@@ -120,6 +121,37 @@ test('a copy can be of a simulated family: memory loss or a wheelchair, same ids
 
   const odd = (await create(KEY, { careCase: 'not-a-case' })).json;
   assert.equal(recipient(odd.householdId).spokenAs, 'Daddy', 'an unknown case is the real story, not an error');
+});
+
+test('a hometown copy: Mummy in Abeokuta, Bisi next door, and children who live in Lagos', async () => {
+  const c = (await create(KEY, { careCase: 'hometown', liveMorning: true })).json;
+  const members = store.getCareState(c.householdId).members;
+  const by = (id: string) => members.find((m) => m.id === `${id}${c.suffix}`)!;
+  assert.equal(by('m_margaret').spokenAs, 'Mummy');
+  assert.equal(by('m_aide').name, 'Bisi');
+  assert.equal(by('m_david').livesAway, 'Lagos');
+  assert.equal(by('m_renee').livesAway, 'Lagos');
+  assert.equal(by('m_aide').livesAway, undefined, 'the neighbour is there');
+  const gaps = await callTool(c.tokens.m_david, 'get_care_gaps');
+  assert.ok(gaps.structuredContent.gaps.some((g: { spoken: string }) => /hospital check-up/.test(g.spoken)));
+});
+
+test('a press on the Fire TV remote is still her word: recorded as pressed on the TV, reported not observed', async () => {
+  const c = (await create(KEY, { careCase: 'hometown', liveMorning: true })).json;
+  await callTool(c.tokens.m_margaret, 'log_care_event',
+    { kind: 'medication_taken', medicationName: 'blood pressure tablet' }, { 'x-carecircle-channel': 'tv' });
+  await callTool(c.tokens.m_margaret, 'log_care_event', { kind: 'check_in', detail: 'said aloud' });
+  const events = store.getCareState(c.householdId).events;
+  const pressed = events.find((e) => e.kind === 'medication_taken' && (e.data as { medicationName?: string }).medicationName === 'blood pressure tablet')!;
+  assert.equal(pressed.source, 'tv');
+  assert.equal(pressed.reportedBy, `m_margaret${c.suffix}`, 'the channel never changes who said it');
+  const spoken = events.filter((e) => e.source === 'voice' && e.reportedBy === `m_margaret${c.suffix}`);
+  assert.ok(spoken.length >= 1, 'without the header it is spoken');
+
+  const odd = await callTool(c.tokens.m_margaret, 'log_care_event', { kind: 'check_in', detail: 'x' }, { 'x-carecircle-channel': 'ring' });
+  assert.ok(!odd.isError);
+  assert.ok(!store.getCareState(c.householdId).events.some((e) => e.source === ('ring' as string) && e.reportedBy === `m_margaret${c.suffix}`),
+    'only "tv" is a channel; anything else is spoken');
 });
 
 test('"I can\'t do Thursday" from someone who was asked names the request and asks; it never answers for them', async () => {

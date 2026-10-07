@@ -15,9 +15,9 @@ import type { EntityAttributes } from '../domain/types.js';
  * the console and the world work unchanged; only names, needs and wording differ.
  */
 
-export type CareCaseId = 'eyes' | 'memory' | 'wheelchair';
+export type CareCaseId = 'eyes' | 'memory' | 'wheelchair' | 'hometown';
 
-export const CARE_CASES: readonly CareCaseId[] = ['eyes', 'memory', 'wheelchair'];
+export const CARE_CASES: readonly CareCaseId[] = ['eyes', 'memory', 'wheelchair', 'hometown'];
 
 export interface CareCase {
   household: string;
@@ -29,6 +29,14 @@ export interface CareCase {
   appointment: { kind: string; detail: string; place: string; ride: string; inferredFrom: string };
   refill: string;
   note: string;
+  /** Who helps in person (m_aide), when it is not the family's driver, Musa. */
+  helper?: string;
+  /**
+   * Where Tolu and Funmi live, when it is not near the person they care for. They can take
+   * anything on themselves, but CareCircle never picks them on its own for work that needs
+   * someone there (see delegation.ts): the people nearby are who it asks.
+   */
+  childrenLiveIn?: string;
 }
 
 export const CASES: Record<CareCaseId, CareCase> = {
@@ -71,6 +79,22 @@ export const CASES: Record<CareCaseId, CareCase> = {
     },
     refill: "Pick up Baba's blood pressure tablets refill",
     note: 'Baba asked who is taking him on Thursday.',
+  },
+  // Mummy stays in her hometown; her children work in Lagos. The family's hands near
+  // her are a neighbour's, and the house's own devices are the only witnesses.
+  hometown: {
+    household: "Mummy's care circle",
+    recipient: { name: 'Adunni', spokenAs: 'Mummy', attributes: {} },
+    medication: 'blood pressure tablet',
+    supplement: 'supplement',
+    appointment: {
+      kind: 'hospital check-up', detail: 'Check-up at the general hospital, Thursday at 10', place: 'General hospital, Abeokuta',
+      ride: 'Take Mummy to her hospital check-up', inferredFrom: 'hospital check-up appointment',
+    },
+    refill: "Pick up Mummy's blood pressure tablets refill",
+    note: 'Mummy asked who is taking her on Thursday.',
+    helper: 'Bisi',
+    childrenLiveIn: 'Lagos',
   },
 };
 

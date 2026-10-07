@@ -20,6 +20,12 @@ export interface Family {
   recipient: Pick<Person, 'name' | 'role' | 'playAs' | 'model' | 'voice' | 'fallbackPitch'> & { aid?: Person['aid'] };
   /** Tolu's role card, which names who he is to them. */
   toluRole: string;
+  /** How Tolu's day is played, when it is not from across town. */
+  toluPlayAs?: string;
+  /** Who helps in person, over CAST.musa, when it is not the family's driver. */
+  helper?: Pick<Person, 'name' | 'role' | 'playAs' | 'model' | 'voice' | 'fallbackPitch'>;
+  /** Where each home is, when the family is not all in one city. */
+  places?: { home: string; tolu: string };
   words: Words;
   /** The closing panel. */
   ending: string;
@@ -27,6 +33,11 @@ export interface Family {
 
 const EYES_RECIPIENT = { ...CAST.daddy! };
 const TOLU_ROLE = CAST.tolu!.role;
+const TOLU_PLAY_AS = CAST.tolu!.playAs;
+const MUSA = { ...CAST.musa! };
+
+/** Mummy presses OK on the remote: wake the set, open her dose, say yes. */
+const PRESS_YES = ['ok', 'ok', 'ok'] as const;
 
 export const FAMILIES: Record<CareCaseId, Family> = {
   eyes: {
@@ -91,6 +102,53 @@ export const FAMILIES: Record<CareCaseId, Family> = {
     },
     ending: 'Baba logged his own care by voice. Musa said no to a ride his car couldn\'t do, and the no moved the loop on instead of stalling it. A promise made on one phone was followed up when it slipped. And when nobody knew, it was said as a question.',
   },
+  hometown: {
+    id: 'hometown', label: 'Mummy', tagline: 'At home in Abeokuta. Her children work in Lagos. A simulated family.', simulated: true,
+    lede: 'Mummy lives in Abeokuta, where she has always lived. Her son Tolu and daughter Funmi work in Lagos, two hours away. Bisi, her neighbour, looks in. The TV is the screen she already uses every day.',
+    recipient: {
+      name: 'Mummy', role: 'At home in Abeokuta, her children in Lagos',
+      playAs: 'You don\'t talk to the speaker much. You have the TV remote in your hand every evening.',
+      model: 'character-female-c', voice: 'Danielle', fallbackPitch: 1.0,
+    },
+    toluRole: 'Her son, in Lagos, coordinating her care from two hours away',
+    toluPlayAs: 'You hold it all together from Lagos, between meetings, two hours from her door.',
+    helper: {
+      name: 'Bisi', role: 'Mummy\'s neighbour in Abeokuta',
+      playAs: 'You live next door. You\'re the one who is actually there.',
+      model: 'character-female-a', voice: 'Joanna', fallbackPitch: 1.15,
+    },
+    places: { home: 'Abeokuta', tolu: 'Lagos' },
+    words: {
+      who: 'Mummy', his: 'her', him: 'her',
+      intro: 'Mummy lives in Abeokuta. Her children work in Lagos. She doesn\'t talk to the speaker much, but she has the TV remote in her hand every day.',
+      morningPoint: 'The person cared for records her own care, on the screen she already uses. Her word, pressed, not spoken.',
+      logMorning: 'Alexa, I took my blood pressure tablet.',
+      morningSteps: [
+        { kind: 'remote', who: 'daddy', keys: [...PRESS_YES], expect: 'log_care_event', shot: 'daddyTv',
+          caption: 'Mummy\'s TV asks about her 8 o\'clock tablet. She answers with the OK button.' },
+        { kind: 'caption', text: 'In Lagos, two hours away, her children\'s record says the same thing at the same moment.', shot: 'both', ms: 3400 },
+      ],
+      refill: 'Mummy\'s blood pressure tablets refill',
+      ride: 'Mummy to her hospital check-up',
+      evening: 'blood pressure tablet', use: { present: 'take', past: 'took' },
+      handover: 'Good evening, Mummy. Your tablets.',
+      helper: { name: 'Bisi', they: 'she' },
+      toluWhere: 'In Lagos, two hours away',
+      askPoint: 'One sentence in Lagos becomes a question on the phone of the one person who is in Abeokuta.',
+      ridePoint: 'Living in Lagos is not a reason to be left out. Tolu can\'t be there tonight, but he can be there on Thursday, and he says so.',
+      rideSteps: [
+        { kind: 'line', who: 'tolu', via: 'echo', text: 'I\'ll drive down and take Mummy to her hospital check-up on Thursday.', expect: ['claim_obligation'], shot: 'tolu' },
+      ],
+      ringCaption: 'Ring sees someone at Mummy\'s door at 7:58. Nobody from the family is in Abeokuta to see it. Ring can say a person. It can\'t say who.',
+      afterDoor: 'Mummy knows Bisi came. Her children, in Lagos, only know what the record knows: someone did. Bisi goes home, and never says it\'s done.',
+      answerSteps: [
+        { kind: 'remote', who: 'daddy', keys: [...PRESS_YES], expect: 'log_care_event', shot: 'daddyTv',
+          caption: 'Mummy sees the same question on her TV, and answers it from her chair.' },
+      ],
+      answered: 'One press on a remote in Abeokuta. The question cleared for her whole family at once, in Lagos too.',
+    },
+    ending: 'Mummy logged her own care with the TV remote she already holds, twice. Her children, two hours away in Lagos, saw it the moment she pressed. Tolu took Thursday from Lagos; Bisi, next door, took tonight. A doorbell said someone came without claiming to know who, and the agent followed up when the promise slipped.',
+  },
 };
 
 let current: CareCaseId = 'eyes';
@@ -107,6 +165,7 @@ export function setFamily(id: CareCaseId): void {
   const f = FAMILIES[id];
   // Start from the real recipient each time, so an aid never carries over from another family.
   CAST.daddy = { ...EYES_RECIPIENT, aid: undefined, ...f.recipient };
-  CAST.tolu = { ...CAST.tolu!, role: f.toluRole };
+  CAST.tolu = { ...CAST.tolu!, role: f.toluRole, playAs: f.toluPlayAs ?? TOLU_PLAY_AS };
+  CAST.musa = { ...MUSA, ...f.helper };
   STORY.splice(0, STORY.length, ...storyFor(f.words));
 }

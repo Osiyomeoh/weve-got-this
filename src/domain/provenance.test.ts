@@ -122,6 +122,20 @@ test('a system-derived source event is spoken as a suggestion, never a fact', ()
   assert.doesNotMatch(e.spoken, OVERCLAIM);
 });
 
+test('a press on the TV remote, or a message, is a person\'s word: never spoken as a sensor reading', () => {
+  for (const source of ['tv', 'telegram', 'whatsapp'] as const) {
+    const said: CareEvent = {
+      id: 'e4', householdId: 'h1', kind: 'check_in', reportedBy: 'm_margaret',
+      occurredAt: '2026-03-10T15:00:00Z', recordedAt: '2026-03-10T15:00:00Z',
+      detail: 'needs a lift on Thursday', source, data: {},
+    };
+    const o = obligation({ sourceEventId: 'e4' });
+    const e = explainProvenance(o, [], [said], nameOf);
+    assert.equal(e.chain.some((s) => s.certainty === 'observed'), false, source);
+    assert.doesNotMatch(e.spoken, /signal/i, source);
+  }
+});
+
 test('ownership is taken from the obligation, not inferred from who recorded a move', () => {
   // Renee ASSIGNED it (she wrote the row), but David is the owner. The walk must not say
   // Renee owns it just because she performed the write.

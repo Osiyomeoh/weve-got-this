@@ -44,7 +44,8 @@ export interface Shot { pos: V3; look: V3 }
 export const SHOTS: Record<string, Shot> = {
   overview: { pos: [0.5, 9.5, 12], look: [0, 0.8, -1.8] },
   daddy: { pos: at(DADDY, 1.85, 1.55, -1.4), look: at(DADDY, 0.1, 0.4, 0.6) },
-  daddyTv: { pos: at(DADDY, 0.6, 1.0, 0.9), look: at(DADDY, 0, 0.6, -1.7) },
+  // In front of the chair, so whoever is sitting in it never stands between us and the screen.
+  daddyTv: { pos: at(DADDY, 0.3, 0.85, -0.45), look: at(DADDY, 0, 0.6, -1.7) },
   tolu: { pos: at(TOLU, 1.25, 1.35, -1.35), look: at(TOLU, -0.1, 0.4, -0.15) },
   musa: { pos: [5.6, 1.5, ROAD_Z + 3.6], look: [3.2, 0.45, ROAD_Z + 0.7] },
   pharmacy: { pos: [2.4, 1.8, ROAD_Z - 1.2], look: [0.3, 0.6, PHARMACY[2] - 1] },

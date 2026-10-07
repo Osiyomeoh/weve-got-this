@@ -89,3 +89,42 @@ test('a gap list that shrinks under the viewer never focuses past its end', () =
   const step = reduce(nav, 'ok', { gaps: 1, members: 4 });
   assert.equal(step.nav.gap, 0);
 });
+
+test('OK on their own dose asks them, and only a second OK says it was taken', () => {
+  const counts = { gaps: 2, members: 4, doses: 1 };
+  let nav = START;
+  nav = reduce(nav, 'down', counts).nav;          // wake, focus on the dose
+  assert.equal(nav.mode, 'browsing');
+  assert.equal(nav.gap, 0);
+  const asked = reduce(nav, 'ok', counts);
+  assert.equal(asked.nav.mode, 'confirming');
+  assert.ok(!asked.log && !asked.claim, 'one press is a question, not an answer');
+  const said = reduce(asked.nav, 'ok', counts);
+  assert.equal(said.log, true);
+  assert.equal(said.claim, undefined, 'a dose is never claimed as work');
+  assert.equal(said.nav.mode, 'ambient');
+});
+
+test('Back on a dose is "not yet": nothing is recorded, and the arrows never switch doses', () => {
+  const counts = { gaps: 1, members: 4, doses: 2 };
+  const asked = reduce({ mode: 'browsing', gap: 1, member: 0 }, 'ok', counts).nav;
+  assert.equal(asked.mode, 'confirming');
+  for (const k of ['left', 'right', 'up', 'down'] as Key[]) {
+    const s = reduce(asked, k, counts);
+    assert.deepEqual([s.nav.mode, s.nav.gap, s.log], ['confirming', 1, undefined]);
+  }
+  const back = reduce(asked, 'back', counts);
+  assert.equal(back.nav.mode, 'browsing');
+  assert.equal(back.log, undefined);
+});
+
+test('past the doses, OK on a gap still asks who', () => {
+  const counts = { gaps: 1, members: 4, doses: 1 };
+  const nav = reduce({ mode: 'browsing', gap: 1, member: 0 }, 'ok', counts).nav;
+  assert.equal(nav.mode, 'identifying');
+  assert.equal(reduce({ mode: 'browsing', gap: 1, member: 0 }, 'right', counts).nav.gap, 0, 'the list wraps over doses and gaps');
+});
+
+test('a dose alone is enough to wake the set', () => {
+  assert.equal(reduce(START, 'ok', { gaps: 0, members: 4, doses: 1 }).nav.mode, 'browsing');
+});

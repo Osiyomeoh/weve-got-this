@@ -97,6 +97,8 @@ function origin(p: Provenance, nameOf: NameOf, clock: Clock): ProvenanceStep {
   }
 }
 
+const PERSON_CHANNELS = new Set(['voice', 'tv', 'telegram', 'whatsapp', 'system']);
+
 /** The source event the obligation was raised from, if we still have it. */
 function sourceStep(event: CareEvent | undefined, nameOf: NameOf, clock: Clock): ProvenanceStep | undefined {
   if (!event) return undefined;
@@ -105,8 +107,10 @@ function sourceStep(event: CareEvent | undefined, nameOf: NameOf, clock: Clock):
   // Prefer the event's own first-class source/confidence; fall back to the legacy
   // data.source and the actor for events written before those fields existed.
   const src = event.source ?? (typeof event.data?.source === 'string' ? event.data.source : undefined);
+  // A person's word stays a person's word whichever channel carried it: spoken, pressed on
+  // the TV remote, or typed in a family chat. Only a device reports what it sensed.
   const observed = event.confidence === 'observed'
-    || (src !== undefined && src !== 'voice' && src !== 'system');
+    || (event.confidence !== 'reported' && src !== undefined && !PERSON_CHANNELS.has(src));
 
   if (observed) {
     // A sensed signal: observed, never interpreted as meaning by itself.

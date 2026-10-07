@@ -4,7 +4,8 @@
 
 import { attributionOf } from '../domain/attribution.js';
 import { capabilitiesOf } from '../domain/auth.js';
-import { detectCareGaps } from '../domain/gaps.js';
+import { activeMedications } from '../domain/care-changes.js';
+import { detectCareGaps, doseRecord } from '../domain/gaps.js';
 import { isLocalToday } from '../domain/local-time.js';
 import { CARE_BOARD_HTML } from './app/care-board.js';
 import { APP_MIME_TYPE } from './app/protocol.js';
@@ -74,6 +75,7 @@ export function registerCareStateResource({ server, now, state, nameOf }: ToolCo
           household: s.household,
           members: s.members.map((m) => ({
             id: m.id, name: m.name, role: m.role, spokenAs: m.spokenAs ?? null,
+            ...(m.livesAway ? { livesAway: m.livesAway } : {}),
           })),
           // The names this household actually uses. A voice client needs these to
           // map a transcript back onto real people and real medications - general
@@ -99,7 +101,22 @@ export function registerCareStateResource({ server, now, state, nameOf }: ToolCo
               at: e.occurredAt,
               attribution: attributionOf(e),
               saidBy: nameOf(e.reportedBy) ?? null,
+              // How it arrived when it was not spoken: 'tv' is a press on the remote.
+              ...(e.source && e.source !== 'voice' ? { via: e.source } : {}),
             })),
+          // Today's doses as scheduled, each with the record that answers it or none. A
+          // screen in their home can ask about the next one without working out the
+          // matching itself, by the same rule the gaps use.
+          schedule: activeMedications(s, now()).flatMap((m) => m.times.map((time) => {
+            const e = doseRecord(s, m.id, time, now());
+            return {
+              medicationId: m.id, name: m.name, forMemberId: m.forMemberId, time,
+              recorded: e ? {
+                at: e.occurredAt, saidBy: nameOf(e.reportedBy) ?? null,
+                ...(e.source && e.source !== 'voice' ? { via: e.source } : {}),
+              } : null,
+            };
+          })),
           gaps: detectCareGaps(s, { now: now() }),
           // Purchase offers still awaiting a decision - the in-place buy moment.
           offers: (() => {

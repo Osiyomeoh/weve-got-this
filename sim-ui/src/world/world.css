@@ -33,13 +33,14 @@
 .world-btn:focus-visible { outline: 2px solid #ffd27a; outline-offset: 2px; }
 
 .world-trace {
-  position: absolute; right: 14px; top: 92px; width: 270px; max-height: 50vh; overflow: hidden;
+  position: absolute; right: 14px; top: 92px; width: 300px; max-height: 50vh; overflow: hidden;
   background: rgba(4, 8, 16, 0.72); border: 1px solid rgba(0, 224, 198, 0.25); border-radius: 12px;
   padding: 10px 12px; font-size: 12px; backdrop-filter: blur(6px);
 }
 .world-trace-head { text-transform: uppercase; letter-spacing: 0.12em; font-size: 10px; opacity: 0.7; margin-bottom: 6px; }
-.world-trace-row { display: grid; grid-template-columns: 52px 1fr auto; gap: 8px; padding: 3px 0; align-items: baseline; }
-.world-trace-row .who { opacity: 0.75; overflow: hidden; text-overflow: ellipsis; }
+.world-trace-more { font-size: 11px; opacity: 0.5; padding-bottom: 2px; }
+.world-trace-row { display: grid; grid-template-columns: 76px 1fr auto; gap: 8px; padding: 3px 0; align-items: baseline; }
+.world-trace-row .who { opacity: 0.75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .world-trace-row code { color: #7cf0c8; overflow: hidden; text-overflow: ellipsis; }
 .world-trace-row.err code { color: #ff9b9b; }
 .world-trace-row .at { opacity: 0.55; font-variant-numeric: tabular-nums; }
@@ -136,3 +137,21 @@
 .world-family .name { font-weight: 600; }
 .world-family .tag { font-size: 12px; opacity: .7; }
 .world-family.on { border-color: #ffd27a; background: rgba(255,210,122,.12); }
+
+/* The doorbell's report, as a family would see it: what it saw, and what it can't know. */
+.world-evidence {
+  position: absolute; left: 16px; top: 96px; z-index: 6; width: min(320px, calc(100vw - 32px));
+  background: rgba(8, 14, 28, 0.88); border: 1px solid rgba(51, 182, 255, 0.55); border-radius: 14px;
+  padding: 12px 14px; color: #e8f1ff; font-size: 13px; line-height: 1.35; backdrop-filter: blur(10px);
+  animation: world-evidence-in 0.4s ease-out;
+}
+.world-evidence .head { display: flex; align-items: center; gap: 8px; font-weight: 600; color: #8fd3ff; margin-bottom: 8px; }
+.world-evidence .dot { width: 8px; height: 8px; border-radius: 50%; background: #33b6ff; box-shadow: 0 0 8px #33b6ff; }
+.world-evidence .row { display: flex; gap: 10px; padding: 3px 0; }
+.world-evidence .k { width: 76px; flex-shrink: 0; color: rgba(232, 241, 255, 0.55); }
+.world-evidence .v { flex: 1; }
+.world-evidence .foot { margin-top: 8px; font-size: 12px; color: rgba(232, 241, 255, 0.6); }
+@keyframes world-evidence-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.world-remote { flex-wrap: wrap; justify-content: center; }
+.world-remote .world-btn { min-width: 52px; }
+.world-label.city { font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; }

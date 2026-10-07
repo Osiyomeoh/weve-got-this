@@ -1,6 +1,7 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { STORY_TIME_HEADER } from '../http/story-clock.js';
+import { CHANNEL_HEADER } from '../mcp/channel.js';
 import type { Conversation, ModelProvider, ToolResult, ToolSpec, TurnOutput } from './providers.js';
 import { replyLanguageRule } from '../domain/language.js';
 import { NOTHING_SAID, speakable, toolAnswer } from '../domain/speakable.js';
@@ -179,6 +180,8 @@ export class SimulatedAlexa {
   #speaker: Speaker | null = null;
   #channel: Channel = 'voice';
   #story: { at: number; setAt: number } | null = null;
+  /** Set while a press on the TV remote is being sent, so the record says it was pressed. */
+  #pressed = false;
   #realNow: () => Date = () => new Date();
   /** The planner's clock: story time when one is set, otherwise the injected or real time. */
   #now: () => Date = () => (this.#story ? new Date(this.#story.at + (Date.now() - this.#story.setAt)) : this.#realNow());
@@ -203,9 +206,11 @@ export class SimulatedAlexa {
       requestInit: { headers: { Authorization: `Bearer ${opts.token}` } },
       fetch: (url, init) => {
         const story = host ? host.#story : null;
-        if (!story) return fetch(url, init);
+        const pressed = host ? host.#pressed : false;
+        if (!story && !pressed) return fetch(url, init);
         const headers = new Headers(init?.headers);
-        headers.set(STORY_TIME_HEADER, new Date(story.at + (Date.now() - story.setAt)).toISOString());
+        if (story) headers.set(STORY_TIME_HEADER, new Date(story.at + (Date.now() - story.setAt)).toISOString());
+        if (pressed) headers.set(CHANNEL_HEADER, 'tv');
         return fetch(url, { ...init, headers });
       },
     });
@@ -378,11 +383,15 @@ export class SimulatedAlexa {
    * The turn is still recorded in the conversation history so the model knows what
    * happened; otherwise the next spoken turn would contradict the screen.
    */
-  async callToolDirect(name: string, args: Record<string, unknown>): Promise<ToolCallRecord> {
+  async callToolDirect(name: string, args: Record<string, unknown>, opts: { via?: 'tv' } = {}): Promise<ToolCallRecord> {
     const started = Date.now();
-    const out = await this.#mcp.callTool({ name, arguments: args }) as {
-      content?: { text?: string }[]; structuredContent?: unknown; isError?: boolean;
-    };
+    this.#pressed = opts.via === 'tv';
+    let out: { content?: { text?: string }[]; structuredContent?: unknown; isError?: boolean };
+    try {
+      out = await this.#mcp.callTool({ name, arguments: args }) as typeof out;
+    } finally {
+      this.#pressed = false;
+    }
     const text = out.content?.[0]?.text ?? '';
     // The model is not consulted, but the next spoken turn must not contradict the
     // screen, so the conversation is told what happened.

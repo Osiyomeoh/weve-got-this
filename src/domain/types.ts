@@ -155,11 +155,12 @@ export type EventKind =
  * Where an observation entered the graph. This is the *channel*, distinct from the
  * actor (`reportedBy`): a person and a doorbell can both report, and the difference
  * matters when you ask "how do we know?". `bee`, `calendar` and `pharmacy` are part
- * of the vocabulary the seams will use; only `voice`, `ring`, `device` and `system`
+ * of the vocabulary the seams will use; only `voice`, `tv`, `ring`, `device` and `system`
  * have live producers today.
  */
 export type EventSource =
   | 'voice'     // a person spoke it
+  | 'tv'        // a person pressed it on the Fire TV remote
   | 'ring'      // a Ring device observed it
   | 'device'    // some other device observed it
   | 'bee'       // an ambient wearable overheard it (seam)

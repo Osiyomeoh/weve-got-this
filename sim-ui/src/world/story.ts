@@ -1,4 +1,5 @@
 import type { PersonKey } from './cast';
+import type { Key } from '../lib/dpad';
 
 // One day in the family's life, as the world plays it. Nothing here is a canned answer:
 // every line is sent to the real Alexa+ planner as that person, and every device signal
@@ -24,6 +25,11 @@ export type Step =
   | { kind: 'aside'; who: PersonKey; to: PersonKey; text: string; listener?: 'nod' | 'shake'; shot?: ShotName }
   /** Someone gets up and goes somewhere in their home. The story moves on while they walk. */
   | { kind: 'move'; who: PersonKey; to: 'home' | 'door'; ms?: number; shot?: ShotName }
+  /**
+   * Someone picks up the TV remote and presses its buttons. The TV on the wall is the real
+   * Fire TV page, so the press does whatever it does there, through the same tools.
+   */
+  | { kind: 'remote'; who: PersonKey; keys: Key[]; expect: string; caption: string; shot?: ShotName }
   | { kind: 'shot'; shot: ShotName; ms?: number };
 
 export interface Beat {
@@ -63,6 +69,22 @@ export interface Words {
   use: { present: string; past: string };
   /** What Musa hands over at the door. */
   handover: string;
+  /** Who helps in person, when it is not Musa: their name and "he"/"she". */
+  helper?: { name: string; they: string };
+  /** Where Tolu is, as the day opens on them. Default: across town. */
+  toluWhere?: string;
+  /** The ask beat's point, when the family is not all in one town. */
+  askPoint?: string;
+  /** How the morning dose gets on the record, when it is not said to the Echo. */
+  morningSteps?: Step[];
+  /** What the doorbell's card says, when there is more to say about who is not there. */
+  ringCaption?: string;
+  /** The caption as the helper drives away. */
+  afterDoor?: string;
+  /** How the evening question is answered, when it is not said to the Echo. */
+  answerSteps?: Step[];
+  /** The caption once the evening question is answered. */
+  answered?: string;
   /**
    * The moment this family's need changes the day, played right after the morning.
    * Memory loss: asking again, and the record answering the same way, calmly.
@@ -89,23 +111,29 @@ export const EYES: Words = {
 };
 
 export function storyFor(w: Words): Beat[] {
+  const helper = w.helper ?? { name: 'Musa', they: 'he' };
+  const H = helper.name;
   return [
   {
     id: 'morning', at: [7, 42], title: `${w.who}'s morning`,
     point: w.morningPoint,
     steps: [
       { kind: 'caption', text: w.intro, shot: 'daddy', ms: 3200 },
-      { kind: 'line', who: 'daddy', via: 'echo', text: w.logMorning, expect: ['log_care_event'] },
+      ...(w.morningSteps ?? [
+        { kind: 'line', who: 'daddy', via: 'echo', text: w.logMorning, expect: ['log_care_event'] } as Step,
+        // The same record, on the screen already in the room: the TV is not a second app.
+        { kind: 'caption', text: `${w.who}'s TV shows it the moment it is said. Nobody had to open anything.`, shot: 'daddyTv', ms: 3200 } as Step,
+      ]),
       ...(w.extraMorning ?? []),
     ],
   },
   {
     id: 'ask', at: [12, 30], title: 'Tolu, between meetings',
-    point: 'One sentence in one house becomes a question on someone else\'s phone across town.',
+    point: w.askPoint ?? 'One sentence in one house becomes a question on someone else\'s phone across town.',
     steps: [
-      { kind: 'caption', text: 'Across town, Tolu has ten minutes between meetings.', shot: 'tolu', ms: 2600 },
+      { kind: 'caption', text: `${w.toluWhere ?? 'Across town'}, Tolu has ten minutes between meetings.`, shot: 'tolu', ms: 2600 },
       { kind: 'line', who: 'tolu', via: 'echo', text: 'Alexa, what\'s going to fall through the cracks this week?', expect: ['get_care_gaps'] },
-      { kind: 'line', who: 'tolu', via: 'echo', text: `Ask Musa if he can pick up ${w.refill} tonight.`, expect: ['request_owner'] },
+      { kind: 'line', who: 'tolu', via: 'echo', text: `Ask ${H} if ${helper.they} can pick up ${w.refill} tonight.`, expect: ['request_owner'] },
       { kind: 'shot', shot: 'musa', ms: 1800 },
       { kind: 'line', who: 'musa', via: 'phone', text: 'Yes, I\'ll do it.', expect: ['respond_to_request'], shot: 'musa' },
     ],
@@ -130,13 +158,13 @@ export function storyFor(w: Words): Beat[] {
       { kind: 'move', who: 'daddy', to: 'door' },
       {
         kind: 'signal', source: 'ring', tool: 'ingest_signal', args: { source: 'ring', kind: 'motion' }, shot: 'door',
-        caption: `Ring sees someone at ${w.who}'s door at 7:58. It can say a person. It can't say who.`,
+        caption: w.ringCaption ?? `Ring sees someone at ${w.who}'s door at 7:58. It can say a person. It can't say who.`,
       },
       { kind: 'aside', who: 'musa', to: 'daddy', text: w.handover, shot: 'door' },
-      { kind: 'aside', who: 'daddy', to: 'musa', text: 'Thank you, Musa.', listener: 'nod' },
+      { kind: 'aside', who: 'daddy', to: 'musa', text: `Thank you, ${H}.`, listener: 'nod' },
       { kind: 'move', who: 'daddy', to: 'home' },
       { kind: 'musa', stage: 'backInCar', shot: 'overview', ms: 3000 },
-      { kind: 'caption', text: `${w.who} knows who came. The record only knows someone did. Musa drives on, and never says it's done.`, ms: 3600 },
+      { kind: 'caption', text: w.afterDoor ?? `${w.who} knows who came. The record only knows someone did. ${H} drives on, and never says it's done.`, ms: 3600 },
     ],
   },
   {
@@ -160,8 +188,10 @@ export function storyFor(w: Words): Beat[] {
       { kind: 'lapse', to: [21, 10], seconds: 2, shot: 'overview' },
       { kind: 'line', who: 'tolu', via: 'echo', text: `Did ${w.who} ${w.use.present} ${w.his} evening ${w.evening}?`, shot: 'tolu' },
       { kind: 'shot', shot: 'daddyTv', ms: 3500 },
-      { kind: 'line', who: 'daddy', via: 'echo', text: `Alexa, I ${w.use.past} my evening ${w.evening} at ten to eight.`, expect: ['log_care_event'], shot: 'daddy' },
-      { kind: 'caption', text: `One record. The question cleared for the whole family at once, on ${w.who}'s TV too.`, shot: 'both', ms: 3600 },
+      ...(w.answerSteps ?? [
+        { kind: 'line', who: 'daddy', via: 'echo', text: `Alexa, I ${w.use.past} my evening ${w.evening} at ten to eight.`, expect: ['log_care_event'], shot: 'daddy' } as Step,
+      ]),
+      { kind: 'caption', text: w.answered ?? `One record. The question cleared for the whole family at once, on ${w.who}'s TV too.`, shot: 'both', ms: 3600 },
     ],
   },
   ];

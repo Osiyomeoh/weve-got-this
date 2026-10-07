@@ -5,6 +5,7 @@
 import { activeMedications } from '../../domain/care-changes.js';
 import { careRecipients, subjectOf } from '../../domain/who.js';
 import { z } from 'zod';
+import { currentChannel } from '../channel.js';
 import { applyAppointment } from '../../domain/appointments.js';
 import { require as requireCap } from '../../domain/auth.js';
 import { orphanedBy } from '../../domain/inference.js';
@@ -116,7 +117,8 @@ export function registerLogCareEvent({ server, store, now, actor, state, nameOf 
         kind,
         reportedBy: me.id,
         occurredAt: when.at,
-        source: 'voice',
+        // Their word either way; the channel says whether it was spoken or pressed.
+        source: currentChannel() ?? 'voice',
         confidence: 'reported',
         ...(detail ? { detail } : {}),
         data: {

@@ -12,7 +12,11 @@ import { clockText, STORY, type ShotName } from '../world/story';
 import { SHOTS } from '../world/layout';
 import { FAMILIES, family, setFamily } from '../world/families';
 import type { CareCaseId } from '../lib/api';
+import type { Key } from '../lib/dpad';
 import '../world/world.css';
+
+/** How many calls the record panel shows before the oldest give way. */
+const TRACE_ROWS = 10;
 
 preloadWorld([
   ...Object.values(CAST).map((p) => MODEL.character(p.model)),
@@ -58,7 +62,7 @@ export default function World() {
         <Link to="/" className="world-brand">CareCircle</Link>
         <div className="world-clock">
           <span className="world-time">{clockText(view.clock)}</span>
-          <span className="world-place">Lagos</span>
+          <span className="world-place">{family().places ? `${family().places!.home} · ${family().places!.tolu}` : 'Lagos'}</span>
         </div>
         {view.status !== 'cast' && (
           <div className="world-beat">
@@ -75,7 +79,11 @@ export default function World() {
       {view.trace.length > 0 && (
         <aside className="world-trace" aria-label="What the server did">
           <div className="world-trace-head">On the record</div>
-          {view.trace.map((t) => (
+          {/* The newest calls are the ones the day is talking about, so the oldest give way. */}
+          {view.trace.length > TRACE_ROWS && (
+            <div className="world-trace-more">{view.trace.length - TRACE_ROWS} earlier</div>
+          )}
+          {view.trace.slice(-TRACE_ROWS).map((t) => (
             <div key={t.id} className={`world-trace-row${t.call.isError ? ' err' : ''}`}>
               <span className="who">{t.who}</span>
               <code>{t.call.name}</code>
@@ -94,7 +102,18 @@ export default function World() {
       )}
 
       {view.status === 'cast' && <CastPicker onChoose={director.choose} />}
-      {view.status === 'yourTurn' && view.prompt && <YourTurn who={view.prompt.who} suggestion={view.prompt.suggestion} onSay={director.say} />}
+      {view.evidence && view.status !== 'cast' && (
+        <aside className="world-evidence" aria-label="What the doorbell reported">
+          <div className="head"><span className="dot" />Ring · Front door · {clockText(view.evidence.at)}</div>
+          <div className="row"><span className="k">Saw</span><span className="v">{view.evidence.saw}</span></div>
+          <div className="row"><span className="k">Can't know</span><span className="v">{view.evidence.cannot}</span></div>
+          <div className="foot">On the record as evidence, never as proof.</div>
+        </aside>
+      )}
+
+      {view.status === 'yourTurn' && view.prompt && (view.prompt.remote
+        ? <RemoteTurn who={view.prompt.who} hint={view.prompt.suggestion} onPress={director.press} />
+        : <YourTurn who={view.prompt.who} suggestion={view.prompt.suggestion} onSay={director.say} />)}
       {view.status === 'stuck' && view.stuck && (
         <div className="world-panel">
           <h3>That didn't land the way the scene needs</h3>
@@ -239,5 +258,23 @@ function YourTurn({ who, suggestion, onSay }: { who: PersonKey; suggestion: stri
       </div>
       {note && <div className="world-turn-note">{note}</div>}
     </form>
+  );
+}
+
+/** Your turn is the TV remote: the same five buttons a Fire TV remote has, pressed on the TV on the wall. */
+function RemoteTurn({ who, hint, onPress }: { who: PersonKey; hint: string; onPress: (key: Key) => void }) {
+  const p = CAST[who]!;
+  const keys: { key: Key; label: string }[] = [
+    { key: 'left', label: '◀' }, { key: 'up', label: '▲' }, { key: 'ok', label: 'OK' }, { key: 'down', label: '▼' }, { key: 'right', label: '▶' }, { key: 'back', label: 'BACK' },
+  ];
+  return (
+    <div className="world-turn" style={{ borderColor: p.color }}>
+      <div className="world-turn-head"><span style={{ color: p.color }}>Your turn, {p.name}.</span> {hint} Use the remote: watch the TV on the wall.</div>
+      <div className="row world-remote" role="group" aria-label="TV remote">
+        {keys.map((k) => (
+          <button key={k.key} type="button" className={`world-btn${k.key === 'ok' ? '' : ' ghost'}`} onClick={() => onPress(k.key)} aria-label={k.key}>{k.label}</button>
+        ))}
+      </div>
+    </div>
   );
 }

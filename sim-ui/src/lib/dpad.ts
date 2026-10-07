@@ -13,19 +13,31 @@
  *   browsing - a viewer has picked up the remote and is moving between care gaps.
  *   identifying - OK was pressed, and the set is asking WHO is taking this on.
  *
- * That last step is not a confirmation dialog. A remote in a living room carries no
+ *   confirming - OK was pressed on one of their own doses, and the set asks them to
+ *                say it was taken. Back says "not yet" and changes nothing.
+ *
+ * Identifying is not a confirmation dialog. A remote in a living room carries no
  * identity: the television cannot know which of four people pressed the button, and
  * CareCircle binds identity to a credential and never infers it. Claiming work in
  * someone's name because they were nearest the remote would be exactly the kind of
  * assumption-as-fact this system exists to refuse. So the viewer says who they are,
  * and that is a deliberate act rather than a guess.
+ *
+ * A dose is different only in whose word it is. The card is addressed to the person
+ * cared for by name, on the set in their own home, and asks them one question about
+ * their own care. Pressing OK is their answer, recorded as theirs and as pressed, not
+ * spoken: for someone who cannot easily speak, or does not want to talk to a speaker,
+ * the remote they already hold every evening is enough.
  */
 
-export type Mode = 'ambient' | 'browsing' | 'identifying';
+export type Mode = 'ambient' | 'browsing' | 'identifying' | 'confirming';
 
 export interface Nav {
   mode: Mode;
-  /** Index into the gap list. Survives a trip to ambient so the remote resumes. */
+  /**
+   * Index into the list: their doses first, then the gaps. Survives a trip to ambient
+   * so the remote resumes.
+   */
   gap: number;
   /** Index into the household while identifying. */
   member: number;
@@ -36,12 +48,16 @@ export type Key = 'left' | 'right' | 'up' | 'down' | 'ok' | 'back';
 export interface Counts {
   gaps: number;
   members: number;
+  /** Their doses waiting for an answer, ahead of the gaps in the list. */
+  doses?: number;
 }
 
 export interface Step {
   nav: Nav;
   /** Set when this keypress means "claim the focused gap as the focused member". */
   claim?: boolean;
+  /** Set when this keypress means "they say they have taken the focused dose". */
+  log?: boolean;
 }
 
 export const START: Nav = { mode: 'ambient', gap: 0, member: 0 };
@@ -77,11 +93,13 @@ function wrap(i: number, delta: number, n: number): number {
 }
 
 export function reduce(nav: Nav, key: Key, counts: Counts): Step {
+  const doses = Math.max(0, counts.doses ?? 0);
+  const items = doses + Math.max(0, counts.gaps);
   // Nothing to steer. An empty board stays ambient however hard the remote is
   // pressed, rather than offering focus over a list with nothing in it.
-  if (counts.gaps <= 0) return { nav: { ...nav, mode: 'ambient' } };
+  if (items <= 0) return { nav: { ...nav, mode: 'ambient' } };
 
-  const gap = Math.min(nav.gap, counts.gaps - 1);
+  const gap = Math.min(nav.gap, items - 1);
 
   if (nav.mode === 'ambient') {
     // Any button wakes the surface. A viewer who has picked up the remote has
@@ -94,14 +112,29 @@ export function reduce(nav: Nav, key: Key, counts: Counts): Step {
   if (nav.mode === 'browsing') {
     switch (key) {
       case 'left': case 'up':
-        return { nav: { ...nav, mode: 'browsing', gap: wrap(gap, -1, counts.gaps) } };
+        return { nav: { ...nav, mode: 'browsing', gap: wrap(gap, -1, items) } };
       case 'right': case 'down':
-        return { nav: { ...nav, mode: 'browsing', gap: wrap(gap, 1, counts.gaps) } };
+        return { nav: { ...nav, mode: 'browsing', gap: wrap(gap, 1, items) } };
       case 'ok':
-        // Asking who, before doing anything in anyone's name.
+        // Their own dose: ask them. Anything else: ask who, before doing anything in anyone's name.
+        if (gap < doses) return { nav: { ...nav, gap, mode: 'confirming' } };
         return { nav: { ...nav, gap, mode: 'identifying', member: 0 } };
       case 'back':
         return { nav: { ...nav, gap, mode: 'ambient' } };
+    }
+  }
+
+  if (nav.mode === 'confirming') {
+    switch (key) {
+      case 'ok':
+        // Said, and the set goes back to being a set.
+        return { nav: { ...nav, gap, mode: 'ambient' }, log: true };
+      case 'back':
+        // "Not yet" is an answer too, and it records nothing.
+        return { nav: { ...nav, gap, mode: 'browsing' } };
+      default:
+        // One question on screen; the arrows never move it to a different dose.
+        return { nav: { ...nav, gap } };
     }
   }
 

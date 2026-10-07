@@ -5,6 +5,8 @@ import { DEVICE, HUB, SHOTS, SPOT, v3, type V3 } from './layout';
 import { lagosToday, STORY, type ShotName, type Stage, type Step } from './story';
 import { family } from './families';
 import { hush, prepare, speak, wait } from './voice';
+import { onTvDid, pressRemote } from '../lib/remote';
+import type { Key } from '../lib/dpad';
 import type { Glow, PulseSpec } from './devices';
 import type { Gesture } from './models';
 
@@ -20,7 +22,10 @@ export type LookAt = 'echo' | 'tv' | 'laptop' | 'door' | 'daddy' | 'musa' | 'tol
 export interface Presence { look: LookAt; talking: boolean; phone: boolean; gesture: Gesture | null; at: 'home' | 'door' }
 export interface PhoneMessage { from: string; text: string; key: string }
 export interface TraceItem { id: number; who: string; call: ToolCall; at: string }
-export interface Prompt { who: PersonKey; suggestion: string }
+/** `remote`: their turn is buttons on the TV remote, not words. */
+export interface Prompt { who: PersonKey; suggestion: string; remote?: boolean }
+/** What the doorbell reported, drawn as the card a family would see: what it saw, and what it can't know. */
+export interface Evidence { at: Date; saw: string; cannot: string }
 export interface Stuck { reason: string; expected: string[] }
 
 export type Status = 'cast' | 'ready' | 'playing' | 'yourTurn' | 'stuck' | 'done' | 'error';
@@ -38,6 +43,7 @@ export interface WorldView {
   pulses: PulseSpec[];
   musa: Stage;
   ringActive: boolean;
+  evidence: Evidence | null;
   hubBusy: boolean;
   prompt: Prompt | null;
   stuck: Stuck | null;
@@ -56,7 +62,7 @@ const AT_REST: Record<PersonKey, Presence> = {
 const START: WorldView = {
   status: 'cast', beat: 0, clock: lagosToday(7, 30), shot: 'overview', caption: null,
   glow: { daddy: 'idle', tolu: 'idle' }, phones: {}, phoneListening: null, trace: [], pulses: [],
-  musa: 'midday', ringActive: false, hubBusy: false, prompt: null, stuck: null, error: null, playing: null,
+  musa: 'midday', ringActive: false, evidence: null, hubBusy: false, prompt: null, stuck: null, error: null, playing: null,
   people: AT_REST,
 };
 
@@ -70,10 +76,10 @@ function deviceOf(who: PersonKey): V3 {
 /** Which person a notification is for, from the name the record gives them. */
 function personNamed(name: string): PersonKey | null {
   const n = name.toLowerCase();
-  if (n.includes('musa')) return 'musa';
+  if (n.includes('musa') || n.includes('bisi')) return 'musa';
   if (n.includes('tolu')) return 'tolu';
   // The person cared for, by what the family calls them or the name on the record.
-  if (['daddy', 'joseph', 'mama', 'grace', 'baba', 'adewale'].some((k) => n.includes(k))) return 'daddy';
+  if (['daddy', 'joseph', 'mama', 'grace', 'baba', 'adewale', 'mummy', 'adunni'].some((k) => n.includes(k))) return 'daddy';
   return null;
 }
 
@@ -91,6 +97,8 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
 
   const run = useRef(0); // bumps on restart, so a stale run stops at its next await
   const answer = useRef<((text: string) => void) | null>(null);
+  /** Stops listening for the TV, when a run is abandoned mid-press. */
+  const tvOff = useRef<(() => void) | null>(null);
   const retry = useRef<((again: boolean) => void) | null>(null);
   const seen = useRef(new Set<string>());
   const pulseId = useRef(0);
@@ -298,10 +306,62 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     if (run.current !== token) return;
     addTrace(step.source === 'ring' ? 'Ring' : 'Agent', [call]);
     set({ hubBusy: false });
+    // What a family member would see on their phone: what the doorbell saw, and what it can't know.
+    if (step.source === 'ring' && !call.isError) set({ evidence: { at: storyNow(), saw: 'A person at the front door', cannot: 'Who it was, or what they brought' } });
     await wait(2200);
     set({ ringActive: false });
     await deliver();
     await wait(1600);
+  };
+
+  /**
+   * Someone presses buttons on the TV remote. The TV is the real Fire TV page; the world only
+   * presses its buttons, and hears back the tool call the press made on this visitor's copy.
+   */
+  const remote = async (step: Extract<Step, { kind: 'remote' }>, token: number): Promise<void> => {
+    const person = CAST[step.who]!;
+    const played = viewRef.current.playing === step.who;
+    busy.current.add(step.who);
+    be(step.who, { look: 'tv', phone: false });
+    set({ caption: { who: '', text: step.caption, tone: 'narration' } });
+    tvOff.current?.();
+    const did = new Promise<{ call: ToolCall } | null>((resolve) => {
+      const off = onTvDid((_who, call) => { off(); tvOff.current = null; resolve({ call }); });
+      tvOff.current = () => { off(); resolve(null); };
+    });
+    if (played) {
+      set({ status: 'yourTurn', prompt: { who: step.who, suggestion: step.caption, remote: true } });
+    } else {
+      await wait(1400);
+      for (const key of step.keys) {
+        if (run.current !== token) { tvOff.current?.(); return; }
+        pressRemote(opts.tvFrame(), key);
+        gesture(step.who, 'nod');
+        await wait(1300);
+      }
+    }
+    const got = played ? await did : await Promise.race([did, wait(15000).then(() => null)]);
+    tvOff.current?.();
+    busy.current.delete(step.who);
+    if (run.current !== token) return;
+    if (played) set({ status: 'playing', prompt: null });
+    const call = got?.call;
+    if (call) {
+      addTrace(`${person.name} · TV remote`, [call]);
+      pulse(DEVICE.daddyTv, HUB, person.color);
+      await wait(700);
+      set({ caption: { who: 'Fire TV', text: call.isError ? call.result : `${person.name}'s own word, pressed on the remote. On the record at ${storyNow().toLocaleTimeString('en-US', { timeZone: 'Africa/Lagos', hour: 'numeric', minute: '2-digit' })}.`, tone: 'device' } });
+      await deliver();
+      await wait(2600);
+    }
+    setTimeout(() => { if (!busy.current.has(step.who)) settle(step.who); }, 800);
+    if (!call || call.isError || call.name !== step.expect) {
+      set({ status: 'stuck', stuck: { reason: call ? `The TV called ${call.name}${call.isError ? ', and it was refused' : ''}.` : 'The TV didn\'t change the record.', expected: [step.expect] } });
+      const again = await new Promise<boolean>((resolve) => { retry.current = resolve; });
+      retry.current = null;
+      set({ status: 'playing', stuck: null });
+      if (again && run.current === token) return remote(step, token);
+    }
   };
 
   const play = useCallback(async (from = viewRef.current.beat) => {
@@ -311,7 +371,7 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
       if (from === 0) await primeSeen();
       for (let b = from; b < STORY.length; b++) {
         const beat = STORY[b]!;
-        set({ beat: b });
+        set({ beat: b, evidence: null });
         // A beat that opens with a lapse runs the clock there itself; any other starts at its time,
         // even if the clock runs on later in the beat (Mama asks again at 9:05).
         if (storyNow().getTime() < lagosToday(beat.at[0], beat.at[1]).getTime() && beat.steps[0]?.kind !== 'lapse') {
@@ -348,6 +408,9 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
               be(step.who, { at: step.to, look: null });
               await wait(step.ms ?? 0);
               break;
+            case 'remote':
+              await remote(step, token);
+              break;
           }
         }
       }
@@ -363,6 +426,7 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     run.current++;
     hush();
     answer.current = null;
+    tvOff.current?.();
     retry.current?.(false);
     seen.current.clear();
     busy.current.clear();
@@ -374,9 +438,13 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
 
   const choose = useCallback((who: PersonKey | null) => set({ playing: who, status: 'ready' }), [set]);
   const say = useCallback((text: string) => answer.current?.(text), []);
+  /** The visitor's thumb on the remote, when they are the one holding it. */
+  const press = useCallback((key: Key) => pressRemote(opts.tvFrame(), key),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []);
   const decide = useCallback((again: boolean) => retry.current?.(again), []);
   const skipTo = useCallback((b: number) => {
-    run.current++; hush(); answer.current = null; retry.current?.(false); busy.current.clear();
+    run.current++; hush(); answer.current = null; tvOff.current?.(); retry.current?.(false); busy.current.clear();
     set({ people: AT_REST });
     void play(b);
   }, [play, set]);
@@ -393,7 +461,7 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { view, play, restart, choose, say, decide, skipTo, pulseDone, storyNow, look, pose };
+  return { view, play, restart, choose, say, press, decide, skipTo, pulseDone, storyNow, look, pose };
 }
 
 /** A doorbell's two notes, so the house hears someone at the door. */
