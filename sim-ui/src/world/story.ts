@@ -71,6 +71,8 @@ export interface Words {
   handover: string;
   /** Who helps in person, when it is not Musa: their name and "he"/"she". */
   helper?: { name: string; they: string };
+  /** Who coordinates, when it is not Tolu: their name and "himself"/"herself". */
+  primary?: { name: string; self: string };
   /** Where Tolu is, as the day opens on them. Default: across town. */
   toluWhere?: string;
   /** The ask beat's point, when the family is not all in one town. */
@@ -113,6 +115,7 @@ export const EYES: Words = {
 export function storyFor(w: Words): Beat[] {
   const helper = w.helper ?? { name: 'Musa', they: 'he' };
   const H = helper.name;
+  const T = w.primary?.name ?? 'Tolu';
   return [
   {
     id: 'morning', at: [7, 42], title: `${w.who}'s morning`,
@@ -128,10 +131,10 @@ export function storyFor(w: Words): Beat[] {
     ],
   },
   {
-    id: 'ask', at: [12, 30], title: 'Tolu, between meetings',
+    id: 'ask', at: [12, 30], title: `${T}, between meetings`,
     point: w.askPoint ?? 'One sentence in one house becomes a question on someone else\'s phone across town.',
     steps: [
-      { kind: 'caption', text: `${w.toluWhere ?? 'Across town'}, Tolu has ten minutes between meetings.`, shot: 'tolu', ms: 2600 },
+      { kind: 'caption', text: `${w.toluWhere ?? 'Across town'}, ${T} has ten minutes between meetings.`, shot: 'tolu', ms: 2600 },
       { kind: 'line', who: 'tolu', via: 'echo', text: 'Alexa, what\'s going to fall through the cracks this week?', expect: ['get_care_gaps'] },
       { kind: 'line', who: 'tolu', via: 'echo', text: `Ask ${H} if ${helper.they} can pick up ${w.refill} tonight.`, expect: ['request_owner'] },
       { kind: 'shot', shot: 'musa', ms: 1800 },
@@ -140,7 +143,7 @@ export function storyFor(w: Words): Beat[] {
   },
   {
     id: 'ride', at: [12, 34], title: 'Thursday\'s ride',
-    point: w.ridePoint ?? 'Work has an owner or it is a gap. Tolu takes the ride himself.',
+    point: w.ridePoint ?? `Work has an owner or it is a gap. ${T} takes the ride ${w.primary?.self ?? 'himself'}.`,
     steps: w.rideSteps ?? [
       { kind: 'line', who: 'tolu', via: 'echo', text: `I'll take ${w.ride} on Thursday.`, expect: ['claim_obligation'], shot: 'tolu' },
     ],
@@ -154,12 +157,13 @@ export function storyFor(w: Words): Beat[] {
       { kind: 'lapse', to: [19, 58], seconds: 2.5, shot: 'overview' },
       { kind: 'musa', stage: 'driving', ms: 3500 },
       { kind: 'musa', stage: 'atDoor', shot: 'door', ms: 3200 },
-      // They hear the bell and come to the door, slowly, while the doorbell reports what it saw.
-      { kind: 'move', who: 'daddy', to: 'door' },
+      // The bell: on Fire TV the door camera opens over whatever is on. They see someone, and
+      // get up and go to the door, slowly, while the doorbell reports what it saw.
       {
-        kind: 'signal', source: 'ring', tool: 'ingest_signal', args: { source: 'ring', kind: 'motion' }, shot: 'door',
-        caption: w.ringCaption ?? `Ring sees someone at ${w.who}'s door at 7:58. It can say a person. It can't say who.`,
+        kind: 'signal', source: 'ring', tool: 'ingest_signal', args: { source: 'ring', kind: 'motion' }, shot: 'daddyTv',
+        caption: w.ringCaption ?? `Ring sees someone at ${w.who}'s door at 7:58, and the live view opens over the programme on the TV. It can say a person. It can't say who.`,
       },
+      { kind: 'move', who: 'daddy', to: 'door', shot: 'door' },
       { kind: 'aside', who: 'musa', to: 'daddy', text: w.handover, shot: 'door' },
       { kind: 'aside', who: 'daddy', to: 'musa', text: `Thank you, ${H}.`, listener: 'nod' },
       { kind: 'move', who: 'daddy', to: 'home' },
@@ -168,7 +172,7 @@ export function storyFor(w: Words): Beat[] {
     ],
   },
   {
-    id: 'checkin', at: [20, 16], title: '8:16 PM. Nobody asked it to.',
+    id: 'checkin', at: [20, 16], title: 'Nobody asked it to',
     point: 'Every 15 minutes the agent looks for promises slipping. It asks. It never accuses, never reassigns.',
     steps: [
       { kind: 'lapse', to: [20, 16], seconds: 2.5, shot: 'hub' },
@@ -204,21 +208,37 @@ export function storyFor(w: Words): Beat[] {
  */
 export const STORY: Beat[] = storyFor(EYES);
 
-/** The household lives in Lagos (UTC+1, no daylight saving). */
-const LAGOS_OFFSET_H = 1;
+/**
+ * The zone the household lives in: Lagos, or Dayton for the American family. Every clock in
+ * the world is theirs, the way the server's "today" and "8 PM" are.
+ */
+let ZONE = 'Africa/Lagos';
+export function setHomeZone(zone: string): void { ZONE = zone; }
 
-/** Today's date in Lagos, at a Lagos wall-clock time. */
-export function lagosToday(hour: number, minute: number, base = new Date()): Date {
-  const ymd = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Lagos', year: 'numeric', month: '2-digit', day: '2-digit' }).format(base);
-  const [y, m, d] = ymd.split('-').map(Number);
-  return new Date(Date.UTC(y!, m! - 1, d!, hour - LAGOS_OFFSET_H, minute));
+/** The wall clock in the household's zone at an instant, as numbers. */
+function wall(at: Date): { y: number; mo: number; d: number; h: number; mi: number } {
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-US', {
+    timeZone: ZONE, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+  }).formatToParts(at).map((x) => [x.type, Number(x.value)]));
+  return { y: p.year!, mo: p.month!, d: p.day!, h: p.hour! % 24, mi: p.minute! };
+}
+
+/** Today's date in their zone, at a wall-clock time there. Daylight saving included. */
+export function homeToday(hour: number, minute: number, base = new Date()): Date {
+  const { y, mo, d } = wall(base);
+  const guess = Date.UTC(y, mo - 1, d, hour, minute);
+  // The zone's offset at that moment, read back from the wall clock, then applied once.
+  const seen = wall(new Date(guess));
+  const offset = Date.UTC(seen.y, seen.mo - 1, seen.d, seen.h, seen.mi) - guess;
+  return new Date(guess - offset);
 }
 
 export function clockText(at: Date): string {
-  return at.toLocaleTimeString('en-US', { timeZone: 'Africa/Lagos', hour: 'numeric', minute: '2-digit' });
+  return at.toLocaleTimeString('en-US', { timeZone: ZONE, hour: 'numeric', minute: '2-digit' });
 }
 
-/** Hours since Lagos midnight, as a fraction, for the sun. */
-export function lagosHour(at: Date): number {
-  return ((at.getUTCHours() + LAGOS_OFFSET_H) % 24) + at.getUTCMinutes() / 60;
+/** Hours since their midnight, as a fraction, for the sun. */
+export function homeHour(at: Date): number {
+  const { h, mi } = wall(at);
+  return h + mi / 60;
 }

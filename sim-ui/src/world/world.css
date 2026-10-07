@@ -88,8 +88,11 @@
 .world-turn-note { margin-top: 8px; font-size: 13px; color: #ffd27a; }
 
 .world-cast {
-  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 18px; padding: 24px 16px; text-align: center;
+  /* safe: on a phone the picker is taller than the screen, and plain center cuts the top off
+     where no scroll can reach it. */
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: safe center;
+  overflow-y: auto;
+  gap: 18px; padding: 72px 16px 24px; text-align: center;
   background: radial-gradient(ellipse at center, rgba(4, 6, 11, 0.55), rgba(4, 6, 11, 0.88));
 }
 .world-cast h1 { margin: 0; font-size: clamp(26px, 4vw, 40px); }
@@ -155,3 +158,12 @@
 .world-remote { flex-wrap: wrap; justify-content: center; }
 .world-remote .world-btn { min-width: 52px; }
 .world-label.city { font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* Country, then family. */
+.world-countries { display: inline-flex; gap: 4px; padding: 4px; margin: 2px auto 10px; border-radius: 999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); }
+.world-country { padding: 6px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; color: rgba(255,255,255,.7); background: transparent; border: 0; cursor: pointer; }
+.world-country.on { background: #ffd27a; color: #1a1205; }
+
+/* While the picker is up, the scene's floating labels would read through its glass and land
+   on the tabs. The picker is the only thing to read. */
+.world:has(.world-cast) .world-label { visibility: hidden; }

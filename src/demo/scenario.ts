@@ -11,8 +11,6 @@ import { CASES, type CareCaseId } from './cases.js';
  * narrator says Thursday is the kind of detail a judge notices and nobody forgives.
  */
 
-const TZ = 'Africa/Lagos';
-
 /**
  * A local wall-clock time on the day `date` falls on *in the timezone*. The day is the
  * zone's, not UTC's: between midnight and 1 AM in Lagos it is still yesterday in UTC, and
@@ -95,6 +93,7 @@ export async function seedScenario(
 ): Promise<{ checkUpAt: Date; rideObligationId: string }> {
   const now = options.now ?? new Date();
   const c = CASES[options.careCase ?? 'eyes'];
+  const TZ = c.timezone ?? 'Africa/Lagos';
   const sid = (id: string): string => `${id}${options.suffix ?? ''}`;
   const checkUpAt = nextWeekdayAt(4, 10, 0, now, TZ); // 4 = Thursday
 

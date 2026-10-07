@@ -131,6 +131,36 @@ Evidence is only worth citing if the system answers it.
 
 ---
 
+## 7. The family that isn't in the same city (researched 2026-10-07)
+
+The world's families are built on these. Each scene answers one of them.
+
+| Figure | Provenance | Scene that answers it |
+|---|---|---|
+| **63 million** Americans are family caregivers, nearly **50% more than in 2015** | PRIMARY — [AARP & NAC, Caregiving in the US 2025](https://www.aarp.org/pri/topics/ltss/family-caregiving/caregiving-in-the-us-2025/) | All of it |
+| **7 in 10** family caregivers are employed | PRIMARY — AARP & NAC 2025 (same page) | Tolu or Sarah, between meetings |
+| Only **22%** of caregivers doing complex medical tasks received any training | PRIMARY — AARP & NAC 2025 | The record answers "did she?", nobody has to remember |
+| About **10–11%** of caregivers live an hour or more away; one peer-reviewed sample puts it at **13.2%** | SECONDARY — [ASA *Generations* summary of the 2025 data](https://generations.asaging.org/the-new-face-of-family-caregiving/); [AARP 2020 tip sheet](https://employerportal.aarp.org/resource/tips-for-being-a-long-distance-caregiver/); *The Gerontologist*, doi 10.1093/geront/gnag150 | Mummy in Abeokuta; Mom in Dayton |
+| **76%** of family caregivers say they do not get consistent help from other family members | SECONDARY — National Family Caregivers Association survey, as cited by [Univ. of Kentucky HR](https://hr.uky.edu/news/2025-10-15/adult-siblings-fighting-over-caregiving-how-split-burden-wisely) | The sibling nearby is not the only name on the record |
+| Nearly **12 million** unpaid dementia caregivers gave **19.2 billion hours** of care in 2024; **59%** report high or very high emotional stress | PRIMARY — [Alzheimer's Association, 2025 Facts and Figures](https://www.alz.org/FACTS/) | Mama asks again, and the record answers calmly |
+| About **28%** of adults 65+ report a fall each year; fewer than half tell their doctor | PRIMARY — CDC (2018 data), via [NSC Injury Facts](https://injuryfacts.nsc.org/home-and-community/safety-topics/older-adult-falls/) | Not yet a scene: the house can say *activity*, never *a fall*, and we will not pretend otherwise |
+| In Nigeria, emigration of adult children leaves parents without the person who took them to hospital and watched their medication; money sent home does not replace presence | SECONDARY — [Arise News](https://www.arise.tv/rising-emigration-puts-nigerias-ageing-parents-at-risk-as-families-seek-care-alternatives/), [Guardian Nigeria](https://guardian.ng/?p=2888255); qualitative study of 58 left-behind parents in southeast Nigeria ([Springer](https://link.springer.com/10.1007/s12062-023-09435-4)) | Mummy, and the neighbour who is actually there |
+
+**What the devices really do on a Fire TV (so the world shows nothing invented).**
+Ring doorbell presses show as a small **picture-in-picture** feed in the top-right corner
+while the programme keeps playing ([Ring support](https://ring.com/support/articles/k9l04/Viewing-Your-Cameras-on-Fire-TV-with-Alexa),
+US and Canada). Alexa's answers show in a strip along the bottom without stopping playback,
+and Alexa notifications and reminders take priority while you watch ([Amazon help](https://digprjsurvey.amazon.com/csad/help/node/TKJlykVDNHBOxKS6It),
+[Les Alexiens](https://www.lesalexiens.fr/actualites/fire-tv-affichage-des-reponses-alexa-et-notifications-ring/)).
+Alexa+ is included on compatible US Fire TV devices ([Amazon](https://aboutamazon.com/news/devices/alexa-plus-fire-tv-free-ai)).
+CareCircle's card over a programme is drawn in that style; it is our page, labelled as a
+simulation, not a claim about an Amazon API.
+
+**What we could not read.** Reddit blocks automated readers, so r/AgingParents and
+r/caregivers were not read directly. The sibling and distance pain points above come from
+the surveys and from caregiver writing on AgingCare, PBS/Family Caregiver Alliance and
+WebMD instead.
+
 ## Honest limits
 
 - Several cost figures are US-centric. We cite them as directional evidence that

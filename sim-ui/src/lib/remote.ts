@@ -40,3 +40,23 @@ export function onTvDid(handler: (who: string, call: ToolCall) => void): () => v
   window.addEventListener('message', listen);
   return () => window.removeEventListener('message', listen);
 }
+
+// The doorbell. On Fire TV a Ring press opens its live view over whatever is playing, so when
+// the doorbell in the world reports someone, the world tells the set in the house.
+const RING = 'carecircle-ring';
+
+/** The world's side: someone is at the door this TV belongs to. */
+export function ringTv(frame: Window | null | undefined): void {
+  frame?.postMessage({ type: RING }, window.location.origin);
+}
+
+/** The TV's side: hear the doorbell. Returns an unsubscribe. */
+export function onRing(handler: () => void): () => void {
+  if (typeof window === 'undefined' || window.parent === window) return () => undefined;
+  const listen = (e: MessageEvent) => {
+    if (e.origin !== window.location.origin || e.data?.type !== RING) return;
+    handler();
+  };
+  window.addEventListener('message', listen);
+  return () => window.removeEventListener('message', listen);
+}

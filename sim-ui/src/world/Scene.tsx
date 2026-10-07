@@ -6,7 +6,7 @@ import { CAST, type PersonKey } from './cast';
 import { Character, Model, MODEL, type Anim } from './models';
 import { Doorbell, Echo, FireTV, Hub, Pulse, type PulseSpec } from './devices';
 import { CAR, DADDY, DEVICE, HUB, PHARMACY, ROAD_Z, SHOTS, SPOT, TOLU, type V3 } from './layout';
-import { lagosHour, type ShotName, type Stage } from './story';
+import { homeHour, type ShotName, type Stage } from './story';
 import type { LookAt, Presence, WorldView } from './director';
 import { wait } from './voice';
 import { family } from './families';
@@ -20,7 +20,7 @@ const PERSON_SCALE = 1.3;
 const FACE = { away: Math.PI, toward: 0, left: -Math.PI / 2, right: Math.PI / 2 };
 
 export function Scene({ view, onPulseDone }: { view: WorldView; onPulseDone: (id: number) => void }) {
-  const hour = lagosHour(view.clock);
+  const hour = homeHour(view.clock);
   return (
     <>
       <Daylight hour={hour} />

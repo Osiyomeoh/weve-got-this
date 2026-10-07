@@ -2,10 +2,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, type BoardState, type ToolCall } from '../lib/api';
 import { ALEXA_VOICE, CAST, type PersonKey } from './cast';
 import { DEVICE, HUB, SHOTS, SPOT, v3, type V3 } from './layout';
-import { lagosToday, STORY, type ShotName, type Stage, type Step } from './story';
+import { clockText, homeToday, STORY, type ShotName, type Stage, type Step } from './story';
 import { family } from './families';
 import { hush, prepare, speak, wait } from './voice';
-import { onTvDid, pressRemote } from '../lib/remote';
+import { onTvDid, pressRemote, ringTv } from '../lib/remote';
 import type { Key } from '../lib/dpad';
 import type { Glow, PulseSpec } from './devices';
 import type { Gesture } from './models';
@@ -60,7 +60,7 @@ const AT_REST: Record<PersonKey, Presence> = {
 };
 
 const START: WorldView = {
-  status: 'cast', beat: 0, clock: lagosToday(7, 30), shot: 'overview', caption: null,
+  status: 'cast', beat: 0, clock: homeToday(7, 30), shot: 'overview', caption: null,
   glow: { daddy: 'idle', tolu: 'idle' }, phones: {}, phoneListening: null, trace: [], pulses: [],
   musa: 'midday', ringActive: false, evidence: null, hubBusy: false, prompt: null, stuck: null, error: null, playing: null,
   people: AT_REST,
@@ -172,7 +172,7 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
 
   const lapse = async (to: [number, number], seconds: number, token: number) => {
     const from = storyNow().getTime();
-    const target = lagosToday(to[0], to[1]).getTime();
+    const target = homeToday(to[0], to[1]).getTime();
     if (target <= from) return;
     const start = performance.now();
     while (true) {
@@ -297,6 +297,8 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
       if (!opts.muted) chime();
       set({ ringActive: true });
       pulse(DEVICE.doorbell, HUB, '#33b6ff');
+      // And on the set in the house, the live view opens over whatever is on.
+      ringTv(opts.tvFrame());
     }
     set({ hubBusy: true });
     await wait(900);
@@ -350,7 +352,7 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
       addTrace(`${person.name} · TV remote`, [call]);
       pulse(DEVICE.daddyTv, HUB, person.color);
       await wait(700);
-      set({ caption: { who: 'Fire TV', text: call.isError ? call.result : `${person.name}'s own word, pressed on the remote. On the record at ${storyNow().toLocaleTimeString('en-US', { timeZone: 'Africa/Lagos', hour: 'numeric', minute: '2-digit' })}.`, tone: 'device' } });
+      set({ caption: { who: 'Fire TV', text: call.isError ? call.result : `${person.name}'s own word, pressed on the remote. On the record at ${clockText(storyNow())}.`, tone: 'device' } });
       await deliver();
       await wait(2600);
     }
@@ -374,8 +376,8 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
         set({ beat: b, evidence: null });
         // A beat that opens with a lapse runs the clock there itself; any other starts at its time,
         // even if the clock runs on later in the beat (Mama asks again at 9:05).
-        if (storyNow().getTime() < lagosToday(beat.at[0], beat.at[1]).getTime() && beat.steps[0]?.kind !== 'lapse') {
-          setClock(lagosToday(beat.at[0], beat.at[1]));
+        if (storyNow().getTime() < homeToday(beat.at[0], beat.at[1]).getTime() && beat.steps[0]?.kind !== 'lapse') {
+          setClock(homeToday(beat.at[0], beat.at[1]));
         }
         for (const step of beat.steps) {
           if (run.current !== token) return;
@@ -432,11 +434,17 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     busy.current.clear();
     lastNotice.current = {};
     await api.resetSandbox({ liveMorning: true, careCase: family().id }).catch(() => undefined);
-    clock.current = { at: START.clock.getTime(), setAt: Date.now() };
-    setView((v) => ({ ...START, playing: v.playing, status: 'ready' }));
+    // The day opens at 7:30 in their home, wherever that is.
+    const dawn = homeToday(7, 30);
+    clock.current = { at: dawn.getTime(), setAt: Date.now() };
+    setView((v) => ({ ...START, clock: dawn, playing: v.playing, status: 'ready' }));
   }, []);
 
   const choose = useCallback((who: PersonKey | null) => set({ playing: who, status: 'ready' }), [set]);
+  /** Another family was chosen: their morning, in their zone. */
+  const reclock = useCallback(() => setClock(homeToday(7, 30)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []);
   const say = useCallback((text: string) => answer.current?.(text), []);
   /** The visitor's thumb on the remote, when they are the one holding it. */
   const press = useCallback((key: Key) => pressRemote(opts.tvFrame(), key),
@@ -461,7 +469,7 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { view, play, restart, choose, say, press, decide, skipTo, pulseDone, storyNow, look, pose };
+  return { view, play, restart, choose, reclock, say, press, decide, skipTo, pulseDone, storyNow, look, pose };
 }
 
 /** A doorbell's two notes, so the house hears someone at the door. */

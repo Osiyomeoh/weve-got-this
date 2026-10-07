@@ -136,6 +136,26 @@ test('a hometown copy: Mummy in Abeokuta, Bisi next door, and children who live 
   assert.ok(gaps.structuredContent.gaps.some((g: { spoken: string }) => /hospital check-up/.test(g.spoken)));
 });
 
+test('an American copy: Mom in Dayton on Eastern time, Mike nearby, Sarah in Chicago, Jen and Tom further still', async () => {
+  const c = (await create(KEY, { careCase: 'us', liveMorning: true })).json;
+  const s = store.getCareState(c.householdId);
+  const by = (id: string) => s.members.find((m) => m.id === `${id}${c.suffix}`)!;
+  assert.equal(s.household.timezone, 'America/New_York');
+  assert.equal(by('m_margaret').spokenAs, 'Mom');
+  assert.deepEqual([by('m_david').name, by('m_david').livesAway], ['Sarah', 'Chicago']);
+  assert.deepEqual([by('m_renee').name, by('m_renee').livesAway], ['Jen', 'Seattle']);
+  assert.deepEqual([by('m_kunle').name, by('m_kunle').livesAway], ['Tom', 'Phoenix']);
+  assert.equal(by('m_aide').name, 'Mike');
+  assert.equal(by('m_aide').livesAway, undefined, 'her son is fifteen minutes away');
+  // Thursday at ten is ten in Dayton, not in Lagos.
+  const ride = s.obligations.find((o) => /cardiology/.test(o.what))!;
+  const local = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', weekday: 'long', hour: 'numeric', hour12: false })
+    .format(new Date(ride.dueAt!));
+  assert.equal(local.replace(',', ''), 'Thursday 10');
+  const gaps = await callTool(c.tokens.m_david, 'get_care_gaps');
+  assert.ok(gaps.structuredContent.gaps.some((g: { spoken: string }) => /cardiology/.test(g.spoken)));
+});
+
 test('a press on the Fire TV remote is still her word: recorded as pressed on the TV, reported not observed', async () => {
   const c = (await create(KEY, { careCase: 'hometown', liveMorning: true })).json;
   await callTool(c.tokens.m_margaret, 'log_care_event',

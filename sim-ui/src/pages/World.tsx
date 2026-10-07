@@ -8,9 +8,9 @@ import { CAST, PLAYABLE, type PersonKey } from '../world/cast';
 import { useDirector } from '../world/director';
 import { MODEL, preloadWorld } from '../world/models';
 import { Scene } from '../world/Scene';
-import { clockText, STORY, type ShotName } from '../world/story';
+import { clockText, homeToday, STORY, type ShotName } from '../world/story';
 import { SHOTS } from '../world/layout';
-import { FAMILIES, family, setFamily } from '../world/families';
+import { COUNTRIES, FAMILIES, family, setFamily, type Country } from '../world/families';
 import type { CareCaseId } from '../lib/api';
 import type { Key } from '../lib/dpad';
 import '../world/world.css';
@@ -20,7 +20,8 @@ const TRACE_ROWS = 10;
 
 preloadWorld([
   ...Object.values(CAST).map((p) => MODEL.character(p.model)),
-  ...Object.values(FAMILIES).map((f) => MODEL.character(f.recipient.model)),
+  ...Object.values(FAMILIES).flatMap((f) => [f.recipient.model, f.tolu?.model, f.helper?.model])
+    .filter((m): m is string => !!m).map((m) => MODEL.character(m)),
   MODEL.character('aid-sunglasses'), MODEL.character('wheelchair'), MODEL.car('sedan'),
 ]);
 
@@ -101,7 +102,7 @@ export default function World() {
         </div>
       )}
 
-      {view.status === 'cast' && <CastPicker onChoose={director.choose} />}
+      {view.status === 'cast' && <CastPicker onChoose={director.choose} onFamily={director.reclock} />}
       {view.evidence && view.status !== 'cast' && (
         <aside className="world-evidence" aria-label="What the doorbell reported">
           <div className="head"><span className="dot" />Ring · Front door · {clockText(view.evidence.at)}</div>
@@ -149,7 +150,7 @@ export default function World() {
             {STORY.map((b, i) => (
               <button key={b.id} className={`world-chip${i === view.beat ? ' on' : ''}${i < view.beat ? ' past' : ''}`}
                 onClick={() => director.skipTo(i)} title={b.point}>
-                {clockText(new Date(Date.UTC(2000, 0, 1, b.at[0] - 1, b.at[1])))} · {b.title}
+                {clockText(homeToday(b.at[0], b.at[1]))} · {b.title}
               </button>
             ))}
           </nav>
@@ -167,10 +168,13 @@ function ExposeForChecking() {
   return null;
 }
 
-function CastPicker({ onChoose }: { onChoose: (who: PersonKey | null) => void }) {
+function CastPicker({ onChoose, onFamily }: { onChoose: (who: PersonKey | null) => void; onFamily: () => void }) {
   const [which, setWhich] = useState<CareCaseId>(family().id);
-  const pick = (id: CareCaseId) => { setFamily(id); setWhich(id); };
+  const pick = (id: CareCaseId) => { setFamily(id); setWhich(id); onFamily(); };
   const f = FAMILIES[which];
+  // Country first, then the family: the same coordination, in a home the visitor knows.
+  const country = f.country;
+  const goTo = (c: Country) => { if (c !== country) pick(Object.values(FAMILIES).find((x) => x.country === c)!.id); };
   const choose = async (who: PersonKey | null) => {
     // A fresh copy of the family for every visit: nothing anyone else did is in it.
     await api.resetSandbox({ liveMorning: true, careCase: which }).catch(() => undefined);
@@ -179,8 +183,16 @@ function CastPicker({ onChoose }: { onChoose: (who: PersonKey | null) => void })
   return (
     <div className="world-cast">
       <h1>Who are you in this family?</h1>
+      <div className="world-countries" role="tablist" aria-label="Which country">
+        {(Object.keys(COUNTRIES) as Country[]).map((c) => (
+          <button key={c} role="tab" aria-selected={c === country}
+            className={`world-country${c === country ? ' on' : ''}`} onClick={() => goTo(c)}>
+            {COUNTRIES[c].label}
+          </button>
+        ))}
+      </div>
       <div className="world-families" role="tablist" aria-label="Which family">
-        {Object.values(FAMILIES).map((x) => (
+        {Object.values(FAMILIES).filter((x) => x.country === country).map((x) => (
           <button key={x.id} role="tab" aria-selected={x.id === which}
             className={`world-family${x.id === which ? ' on' : ''}`} onClick={() => pick(x.id)}>
             <span className="name">{x.label}</span>

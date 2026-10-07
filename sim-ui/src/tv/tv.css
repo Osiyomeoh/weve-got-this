@@ -1,0 +1,40 @@
+/* What is playing on the set: drawn, never borrowed. Every show here is made of shapes. */
+
+.tv-show { position: absolute; inset: 0; overflow: hidden; }
+.tv-push { position: absolute; inset: 0; animation: tv-push 28s ease-in-out infinite alternate; transform-origin: 50% 60%; }
+@keyframes tv-push { from { transform: scale(1); } to { transform: scale(1.07) translateX(-1.5%); } }
+
+.tv-bob { animation: tv-bob 3.6s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
+.tv-bob.late { animation-delay: -1.7s; animation-duration: 4.4s; }
+@keyframes tv-bob { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-0.6%) rotate(-0.6deg); } }
+
+.tv-talk { animation: tv-talk 0.32s steps(2) infinite; transform-box: fill-box; transform-origin: 50% 50%; }
+@keyframes tv-talk { 0% { transform: scaleY(0.25); } 100% { transform: scaleY(1); } }
+
+.tv-ticker { display: inline-block; white-space: nowrap; padding-left: 100%; animation: tv-ticker 38s linear infinite; }
+@keyframes tv-ticker { to { transform: translateX(-100%); } }
+
+.tv-beam { position: absolute; bottom: -10%; width: 22vw; height: 130%; transform-origin: 50% 100%;
+  background: linear-gradient(to top, rgba(255,240,200,0.32), rgba(255,240,200,0) 85%);
+  filter: blur(1.2vw); mix-blend-mode: screen; animation: tv-beam 7s ease-in-out infinite alternate; }
+@keyframes tv-beam { from { transform: rotate(-24deg); } to { transform: rotate(24deg); } }
+
+.tv-flicker { animation: tv-flicker 5s ease-in-out infinite; }
+@keyframes tv-flicker { 0%,100% { opacity: 0.85; } 45% { opacity: 1; } 55% { opacity: 0.75; } }
+
+.tv-sub { animation: tv-sub 0.35s ease-out both; }
+@keyframes tv-sub { from { opacity: 0; transform: translateY(0.4vh); } to { opacity: 1; transform: none; } }
+
+/* The doorbell's live view: someone walks up and stops. */
+.tv-walk { animation: tv-walk 2.6s ease-out both; }
+@keyframes tv-walk { from { transform: translateX(70%) scale(0.8); opacity: 0; } 30% { opacity: 1; } to { transform: none; opacity: 1; } }
+.tv-pip { animation: tv-pip 0.45s cubic-bezier(.2,.9,.3,1.2) both; }
+@keyframes tv-pip { from { opacity: 0; transform: translateX(20%) scale(0.92); } to { opacity: 1; transform: none; } }
+.tv-grain { background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 3px); animation: tv-grain 0.25s steps(3) infinite; }
+@keyframes tv-grain { 0% { transform: translateY(0); } 100% { transform: translateY(3px); } }
+
+/* Alexa's light, along the top of whatever she is saying. */
+.tv-alexa-bar { background: linear-gradient(90deg,#1f6bff,#00d2ff,#6a5cff,#1f6bff); background-size: 200% 100%; animation: tv-alexa 2.4s linear infinite; }
+@keyframes tv-alexa { to { background-position: -200% 0; } }
+.tv-rise { animation: tv-rise 0.5s cubic-bezier(.2,.9,.3,1) both; }
+@keyframes tv-rise { from { opacity: 0; transform: translateY(40%); } to { opacity: 1; transform: none; } }

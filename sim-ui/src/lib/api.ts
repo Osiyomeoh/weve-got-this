@@ -110,7 +110,7 @@ async function jsonOrThrow(res: Response) {
 
 /** Matches the server's RATES. `slow` is an accessibility control, not a demo toggle. */
 /** Who the family is caring for in a visitor's copy (mirrors src/demo/cases.ts). */
-export type CareCaseId = 'eyes' | 'memory' | 'wheelchair' | 'hometown';
+export type CareCaseId = 'eyes' | 'memory' | 'wheelchair' | 'hometown' | 'us';
 
 export type SpeechRate = 'slow' | 'gentle' | 'normal';
 

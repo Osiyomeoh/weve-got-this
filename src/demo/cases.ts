@@ -15,9 +15,9 @@ import type { EntityAttributes } from '../domain/types.js';
  * the console and the world work unchanged; only names, needs and wording differ.
  */
 
-export type CareCaseId = 'eyes' | 'memory' | 'wheelchair' | 'hometown';
+export type CareCaseId = 'eyes' | 'memory' | 'wheelchair' | 'hometown' | 'us';
 
-export const CARE_CASES: readonly CareCaseId[] = ['eyes', 'memory', 'wheelchair', 'hometown'];
+export const CARE_CASES: readonly CareCaseId[] = ['eyes', 'memory', 'wheelchair', 'hometown', 'us'];
 
 export interface CareCase {
   household: string;
@@ -37,6 +37,17 @@ export interface CareCase {
    * someone there (see delegation.ts): the people nearby are who it asks.
    */
   childrenLiveIn?: string;
+  /** The household's zone, when it is not Lagos. Every "today" and "8 PM" is in it. */
+  timezone?: string;
+  /**
+   * The family's own names, when they are not Tolu, Funmi and Kunle, and where each lives.
+   * The ids stay the same (m_david, m_renee, m_kunle), so nothing downstream changes.
+   */
+  family?: {
+    primary: { name: string; livesAway?: string };
+    caregiver: { name: string; livesAway?: string };
+    away: { name: string; livesAway: string };
+  };
 }
 
 export const CASES: Record<CareCaseId, CareCase> = {
@@ -95,6 +106,28 @@ export const CASES: Record<CareCaseId, CareCase> = {
     note: 'Mummy asked who is taking her on Thursday.',
     helper: 'Bisi',
     childrenLiveIn: 'Lagos',
+  },
+  // An American family: Mom lives alone in Dayton, Ohio. Her daughter coordinates from
+  // Chicago between meetings; her son lives fifteen minutes away and is the one who ends up
+  // doing everything; another daughter is in Seattle, a brother in Phoenix.
+  us: {
+    household: "Mom's care circle",
+    recipient: { name: 'Linda', spokenAs: 'Mom', attributes: {} },
+    medication: 'blood pressure pill',
+    supplement: 'vitamin D',
+    appointment: {
+      kind: 'cardiology follow-up', detail: 'Cardiology follow-up, Thursday at 10', place: 'Heart center, Dayton',
+      ride: 'Drive Mom to her cardiology follow-up', inferredFrom: 'cardiology follow-up appointment',
+    },
+    refill: "Pick up Mom's blood pressure pills from the pharmacy",
+    note: 'Mom asked who is driving her on Thursday.',
+    helper: 'Mike',
+    timezone: 'America/New_York',
+    family: {
+      primary: { name: 'Sarah', livesAway: 'Chicago' },
+      caregiver: { name: 'Jen', livesAway: 'Seattle' },
+      away: { name: 'Tom', livesAway: 'Phoenix' },
+    },
   },
 };
 

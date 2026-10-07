@@ -3,7 +3,9 @@ import { useBoard } from '../lib/useBoard';
 import { storyNow, useNow } from '../lib/storyTime';
 import { api, MEMBERS, type BoardMember, type BoardState, type DoseSlot, type Gap, type Member } from '../lib/api';
 import { START, keyOf, reduce, type Key, type Nav } from '../lib/dpad';
-import { onRemote, reportToWorld } from '../lib/remote';
+import { onRemote, onRing, reportToWorld } from '../lib/remote';
+import { regionOf, Show } from '../tv/Show';
+import { RingPip } from '../tv/RingPip';
 
 /**
  * The Fire TV surface, designed to look like TV content - not a dashboard.
@@ -21,6 +23,13 @@ import { onRemote, reportToWorld } from '../lib/remote';
  * stroke, or with advanced Parkinson's, or simply across a room from the Echo. A
  * D-pad closes that, and the navigation logic lives in ../lib/dpad.ts so it can be
  * tested without a browser.
+ *
+ * **Watching.** In the world, and at /tv?watch, the set is doing what a set in their home
+ * mostly does: playing something. CareCircle then behaves the way Alexa and Ring behave on
+ * Fire TV today: its question rises along the bottom over the programme, which keeps
+ * playing, and a doorbell opens a live view in the corner. While they watch, the set
+ * interrupts only for what is theirs to answer, their own dose. Who drives on Thursday is
+ * the family's business, and stays on the family's phones.
  */
 
 interface AndroidBridge { notify(title: string, body: string): void; }
@@ -123,6 +132,10 @@ function Keys({ glyphs, label }: { glyphs: string[]; label: string }) {
   );
 }
 
+/** Embedded in the world, or asked for: the set is playing something. */
+const WATCHING = typeof window !== 'undefined'
+  && (window.parent !== window || new URLSearchParams(window.location.search).has('watch'));
+
 export default function AmbientTV() {
   const { state, online, refresh } = useBoard();
   // Live clock: real time, or the story's time when this TV hangs in the world.
@@ -139,18 +152,29 @@ export default function AmbientTV() {
   // about is the same thing said twice, so it waits behind the question.
   const allGaps: Gap[] = state?.gaps ?? (online ? [] : (DEMO_GAPS as Gap[]));
   const gaps = doses.length ? allGaps.filter((g) => g.kind !== 'UNCONFIRMED') : allGaps;
-  const items: Item[] = [...doses.map((dose) => ({ type: 'dose' as const, dose })), ...gaps.map((gap) => ({ type: 'gap' as const, gap }))];
+  const items: Item[] = [...doses.map((dose) => ({ type: 'dose' as const, dose })), ...(WATCHING ? [] : gaps.map((gap) => ({ type: 'gap' as const, gap })))];
+
+  // The doorbell's live view, open over the programme until it times out or they press BACK.
+  const [ring, setRing] = useState(0);
+  useEffect(() => onRing(() => setRing(Date.now())), []);
+  useEffect(() => {
+    if (!ring) return;
+    const id = setTimeout(() => setRing(0), 16000);
+    return () => clearTimeout(id);
+  }, [ring]);
 
   // ---- the remote -------------------------------------------------------------
   const [nav, setNav] = useState<Nav>(START);
   const [claiming, setClaiming] = useState<string | null>(null);
   const [claimed, setClaimed] = useState<string | null>(null);
-  const live = useRef({ nav, items, doses: doses.length, choosers, recipient });
-  live.current = { nav, items, doses: doses.length, choosers, recipient };
+  const live = useRef({ nav, items, doses: doses.length, choosers, recipient, ring });
+  live.current = { nav, items, doses: doses.length, choosers, recipient, ring };
 
   /** One button on the remote: a real one, or the world's, pressed for someone in the story. */
   const press = (key: Key) => {
-    const { nav: before, items: list, doses: n, choosers: people, recipient: them } = live.current;
+    const { nav: before, items: list, doses: n, choosers: people, recipient: them, ring: open } = live.current;
+    // BACK closes the doorbell's view first, as it does on the set.
+    if (open && key === 'back') { setRing(0); return; }
     const step = reduce(before, key, { gaps: list.length - n, doses: n, members: people.length });
     setNav(step.nav);
     const item = list[step.nav.gap];
@@ -274,6 +298,62 @@ export default function AmbientTV() {
     const how = r.via === 'tv' ? 'pressed on this TV' : r.via ? `by ${r.via}` : 'said to Alexa';
     return theirs ? `${atTime(r.at)} · ${how}` : `${atTime(r.at)} · ${r.saidBy} says so`;
   };
+
+  if (WATCHING) {
+    const hour = Math.floor(localMinutes(now, zoneName) / 60);
+    return (
+      <div className="relative h-screen overflow-hidden bg-black text-white">
+        <Show region={regionOf(zoneName)} hour={hour} raised={!!(claimed || dose)} />
+        {ring > 0 && <RingPip key={ring} dark={hour >= 18 || hour < 6} />}
+
+        {/* Alexa, along the bottom, over the programme: their question, or what their press did. */}
+        {(claimed || dose) && (
+          <div key={claimed ? 'done' : `${dose!.medicationId}-${dose!.time}`}
+            className={`tv-rise absolute inset-x-[3vw] bottom-[3vh] z-10 overflow-hidden rounded-[1.2vw] bg-[#0b1220]/88 backdrop-blur-xl transition-all duration-200
+              ${steering && !claimed ? 'border-[0.25vw] border-white shadow-[0_0_0_0.6vw_rgba(255,255,255,0.12),0_2vw_5vw_rgba(0,0,0,0.6)]' : 'border border-white/15 shadow-[0_2vw_5vw_rgba(0,0,0,0.55)]'}`}>
+            <div className="tv-alexa-bar h-[0.6vh]" />
+            {claimed ? (
+              <div className="flex items-center gap-[1.4vw] px-[2vw] py-[2.2vh]">
+                <span className="flex h-[3.4vw] w-[3.4vw] shrink-0 items-center justify-center rounded-full bg-confirmed text-[1.8vw] font-bold text-[#03050a]">✓</span>
+                <span className="text-[2vw] font-medium leading-snug">{claimed}</span>
+              </div>
+            ) : nav.mode === 'confirming' ? (
+              <div className="flex items-center gap-[2.4vw] px-[2vw] py-[2.4vh]">
+                <div className="min-w-0 flex-1">
+                  <div className="text-[1vw] uppercase tracking-[0.25em] text-white/50">CareCircle · for {recipient.spoken} · {clockOf(dose!.time)}</div>
+                  <div className="mt-[0.6vh] text-[2.6vw] font-light leading-tight">Have you taken your {dose!.name}?</div>
+                  <div className="mt-[0.8vh] text-[1vw] text-white/50">Your word, pressed on this TV. Your family sees it at once, wherever they are.</div>
+                </div>
+                <div className="flex shrink-0 items-center gap-[1.2vw]">
+                  <div className="flex flex-col items-center rounded-[1vw] border-[0.25vw] border-white bg-white/15 px-[1.8vw] py-[1.6vh]">
+                    <Keys glyphs={['OK']} label="" />
+                    <div className="mt-[0.8vh] text-[1.5vw] font-medium">Yes, I have</div>
+                  </div>
+                  <div className="flex flex-col items-center rounded-[1vw] border border-white/15 bg-white/5 px-[1.8vw] py-[1.6vh]">
+                    <Keys glyphs={['BACK']} label="" />
+                    <div className="mt-[0.8vh] text-[1.5vw] font-light text-white/80">Not yet</div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-[1.4vw] px-[2vw] py-[1.8vh]">
+                <span className="flex h-[3.4vw] w-[3.4vw] shrink-0 items-center justify-center rounded-[0.8vw] bg-[#ffd27a]/20 text-[1.8vw] text-[#ffd27a]">✚</span>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[1vw] uppercase tracking-[0.25em] text-white/50">CareCircle · via Alexa</div>
+                  <div className="mt-[0.3vh] text-[2vw] font-medium leading-snug">{recipient.spoken}, it's time for your {dose!.name}. Have you taken it?</div>
+                </div>
+                <div className="shrink-0 text-right">
+                  {steering && <div className="mb-[0.5vh] text-[0.9vw] font-semibold uppercase tracking-[0.2em]">▶ Selected</div>}
+                  <Keys glyphs={['OK']} label={steering ? 'answer' : 'to answer'} />
+                  <div className="mt-[0.6vh] text-[1vw] text-white/50">or say “Alexa, I took it”</div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="relative h-screen overflow-hidden bg-[#03050a] text-white">

@@ -42,7 +42,7 @@ export async function seedDemoHousehold(
   await store.addHousehold({
     id: HOUSEHOLD_ID,
     name: c.household,
-    timezone: 'Africa/Lagos',
+    timezone: c.timezone ?? 'Africa/Lagos',
   });
 
   await store.addMember({
@@ -53,13 +53,15 @@ export async function seedDemoHousehold(
     attributes: c.recipient.attributes,
   });
   const away = c.childrenLiveIn ? { livesAway: c.childrenLiveIn } : {};
+  const f = c.family;
+  const where = (p?: { livesAway?: string }) => (p?.livesAway ? { livesAway: p.livesAway } : away);
   await store.addMember({
-    id: sid('m_david'), householdId: HOUSEHOLD_ID, name: 'Tolu',
-    role: 'primary_caregiver', ...away,
+    id: sid('m_david'), householdId: HOUSEHOLD_ID, name: f?.primary.name ?? 'Tolu',
+    role: 'primary_caregiver', ...where(f?.primary),
   });
   await store.addMember({
-    id: sid('m_renee'), householdId: HOUSEHOLD_ID, name: 'Funmi',
-    role: 'caregiver', ...away,
+    id: sid('m_renee'), householdId: HOUSEHOLD_ID, name: f?.caregiver.name ?? 'Funmi',
+    role: 'caregiver', ...where(f?.caregiver),
   });
   await store.addMember({
     id: sid('m_aide'), householdId: HOUSEHOLD_ID, name: c.helper ?? 'Musa',
@@ -68,8 +70,8 @@ export async function seedDemoHousehold(
   // A brother in London: wants to know how the day went, and can't drive anyone to a
   // clinic in Lagos. He gets the evening update and is never picked for in-person work.
   await store.addMember({
-    id: sid('m_kunle'), householdId: HOUSEHOLD_ID, name: 'Kunle',
-    role: 'caregiver', livesAway: 'London', dailyUpdate: true,
+    id: sid('m_kunle'), householdId: HOUSEHOLD_ID, name: f?.away.name ?? 'Kunle',
+    role: 'caregiver', livesAway: f?.away.livesAway ?? 'London', dailyUpdate: true,
   });
 
   await store.addMedication({
