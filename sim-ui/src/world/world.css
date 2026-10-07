@@ -167,3 +167,17 @@
 /* While the picker is up, the scene's floating labels would read through its glass and land
    on the tabs. The picker is the only thing to read. */
 .world:has(.world-cast) .world-label { visibility: hidden; }
+
+/* What your run caught: counted, not written in advance. */
+.world-impact { margin: 0 0 14px; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 12px; }
+.world-impact .head { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #7cf0c8; margin-bottom: 8px; }
+.world-impact .head span { display: block; margin-top: 2px; letter-spacing: 0; text-transform: none; color: rgba(255, 255, 255, 0.5); }
+.world-impact ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; max-height: 40vh; overflow-y: auto; }
+@media (min-width: 900px) {
+  .world-panel:has(.world-impact) { width: min(980px, calc(100vw - 32px)); }
+  .world-impact ul { grid-template-columns: 1fr 1fr; column-gap: 22px; }
+}
+.world-impact li { display: grid; grid-template-columns: 18px 1fr; column-gap: 6px; font-size: 13.5px; line-height: 1.4; }
+.world-impact li .tick { color: #7cf0c8; }
+.world-impact li code { grid-column: 2; font-size: 11px; color: rgba(255, 255, 255, 0.4); }
+.world-impact li.yours .text b { color: #ffd27a; font-weight: 600; }

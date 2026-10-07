@@ -40,6 +40,8 @@ export interface WorldView {
   phones: Partial<Record<PersonKey, PhoneMessage>>;
   phoneListening: PersonKey | null;
   trace: TraceItem[];
+  /** Every call this run made, uncapped: what the impact panel counts. */
+  log: TraceItem[];
   pulses: PulseSpec[];
   musa: Stage;
   ringActive: boolean;
@@ -61,7 +63,7 @@ const AT_REST: Record<PersonKey, Presence> = {
 
 const START: WorldView = {
   status: 'cast', beat: 0, clock: homeToday(7, 30), shot: 'overview', caption: null,
-  glow: { daddy: 'idle', tolu: 'idle' }, phones: {}, phoneListening: null, trace: [], pulses: [],
+  glow: { daddy: 'idle', tolu: 'idle' }, phones: {}, phoneListening: null, trace: [], log: [], pulses: [],
   musa: 'midday', ringActive: false, evidence: null, hubBusy: false, prompt: null, stuck: null, error: null, playing: null,
   people: AT_REST,
 };
@@ -138,7 +140,8 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
   const addTrace = (who: string, calls: ToolCall[]) => {
     if (!calls.length) return;
     const at = storyNow().toISOString();
-    set((v) => ({ trace: [...v.trace, ...calls.map((call) => ({ id: ++traceId.current, who, call, at }))].slice(-14) }));
+    const items = calls.map((call) => ({ id: ++traceId.current, who, call, at }));
+    set((v) => ({ trace: [...v.trace, ...items].slice(-14), log: [...v.log, ...items] }));
   };
 
   /** Read the record and deliver anything new to the right phone. */

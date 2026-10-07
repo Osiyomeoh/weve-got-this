@@ -5,11 +5,12 @@ import { api } from '../lib/api';
 import { record, type Recording } from '../lib/mic';
 import { tellStoryTime } from '../lib/storyTime';
 import { CAST, PLAYABLE, type PersonKey } from '../world/cast';
-import { useDirector } from '../world/director';
+import { useDirector, type WorldView } from '../world/director';
 import { MODEL, preloadWorld } from '../world/models';
 import { Scene } from '../world/Scene';
 import { clockText, homeToday, STORY, type ShotName } from '../world/story';
 import { SHOTS } from '../world/layout';
+import { impactOf } from '../world/impact';
 import { COUNTRIES, FAMILIES, family, setFamily, type Country } from '../world/families';
 import type { CareCaseId } from '../lib/api';
 import type { Key } from '../lib/dpad';
@@ -94,7 +95,7 @@ export default function World() {
         </aside>
       )}
 
-      {view.caption && view.status !== 'cast' && (
+      {view.caption && view.status !== 'cast' && view.status !== 'done' && (
         <div className={`world-caption ${view.caption.tone}`}>
           {view.caption.who && <span className="who" style={view.caption.color ? { color: view.caption.color } : undefined}>{view.caption.who}</span>}
           {view.caption.to && <span className="to">to {view.caption.to}</span>}
@@ -136,6 +137,7 @@ export default function World() {
         <div className="world-panel">
           <h3>One day, one record</h3>
           <p>{family().ending}</p>
+          <Impact log={view.log} playing={view.playing ? CAST[view.playing]!.name : null} />
           <div className="row">
             <button className="world-btn" onClick={() => void director.restart().then(() => director.choose(null)).then(() => director.restart())}>Play as someone else</button>
             <button className="world-btn ghost" onClick={() => void director.restart()}>Watch again</button>
@@ -157,6 +159,33 @@ export default function World() {
           <button className="world-btn ghost" onClick={() => void director.restart()}>Restart</button>
         </footer>
       )}
+    </div>
+  );
+}
+
+/**
+ * What this run caught, counted from the calls the server answered in this copy. A beat that
+ * didn't land adds nothing, so two visitors can see two different lists.
+ */
+function Impact({ log, playing }: { log: WorldView['log']; playing: string | null }) {
+  const f = family();
+  const impact = impactOf(log, { recipient: f.recipient.name, his: f.words.his, playing });
+  if (!impact.lines.length) return null;
+  return (
+    <div className="world-impact" aria-label="What your run caught">
+      <div className="head">
+        What your run caught
+        <span>{impact.calls} calls to the live server{impact.errors ? `, ${impact.errors} turned back` : ''}{playing ? ` · ${impact.yourCalls} were yours` : ''}</span>
+      </div>
+      <ul>
+        {impact.lines.map((l) => (
+          <li key={l.text} className={l.yours ? 'yours' : undefined}>
+            <span className="tick">✓</span>
+            <span className="text">{l.text}{l.yours && <b> You did this.</b>}</span>
+            <code>{l.tools.join(' · ')}</code>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
