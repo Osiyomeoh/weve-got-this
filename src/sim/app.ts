@@ -11,6 +11,7 @@ import { DEMO_TOKENS } from '../demo/seed.js';
 import { buildVocabulary, correctTranscript } from './transcript.js';
 import { ensureVocabulary, hasEnoughAudio, transcribePcm, unhyphenate, SAMPLE_RATE } from './transcribe.js';
 import { isRate, synthesize } from './speech.js';
+import { STORY_TIME_HEADER } from '../http/story-clock.js';
 import {
   VisitorSandboxes, parseCookies, isVisitorId, newVisitorId, toSandbox, fromSandbox,
   VISITOR_COOKIE, LIVE_COOKIE, type SandboxGrant,
@@ -60,6 +61,16 @@ tokenFor.set(FOUNDER_ID, newFounderToken());
  */
 interface Ctx { key: string; suffix: string; token: (memberId: string) => string | undefined }
 const LIVE: Ctx = { key: 'live', suffix: '', token: (m) => tokenFor.get(m) };
+
+/**
+ * The story time a request asks for, honoured only in a visitor's own copy: the world
+ * simulation plays one evening, and the shared demo household runs on the real clock.
+ */
+function storyTimeOf(ctx: Ctx, value: unknown): Date | null {
+  if (ctx === LIVE || typeof value !== 'string') return null;
+  const at = Date.parse(value);
+  return Number.isFinite(at) ? new Date(at) : null;
+}
 
 // Per-visitor sandboxes are on when the console shares a key with the MCP server.
 const SANDBOX_KEY = process.env['CARECIRCLE_SANDBOX_KEY']?.trim() ?? '';
@@ -179,7 +190,7 @@ app.use(express.static(join(here, '../../public')));
 
 /** One spoken turn from one member's device. */
 /** Read the whole care picture from the MCP server, as a fresh short session. */
-async function readCareState(ctx: Ctx = LIVE): Promise<Record<string, unknown>> {
+async function readCareState(ctx: Ctx = LIVE, storyTime: Date | null = null): Promise<Record<string, unknown>> {
   const token = ctx.token('m_david');
   const response = await fetch(MCP_ENDPOINT, {
     method: 'POST',
@@ -187,6 +198,7 @@ async function readCareState(ctx: Ctx = LIVE): Promise<Record<string, unknown>> 
       'content-type': 'application/json',
       accept: 'application/json, text/event-stream',
       authorization: `Bearer ${token}`,
+      ...(storyTime ? { [STORY_TIME_HEADER]: storyTime.toISOString() } : {}),
     },
     body: JSON.stringify({
       jsonrpc: '2.0', id: 1, method: 'initialize',
@@ -206,6 +218,7 @@ async function readCareState(ctx: Ctx = LIVE): Promise<Record<string, unknown>> 
     accept: 'application/json, text/event-stream',
     authorization: `Bearer ${token}`,
     'mcp-session-id': sessionId,
+    ...(storyTime ? { [STORY_TIME_HEADER]: storyTime.toISOString() } : {}),
   };
   await fetch(MCP_ENDPOINT, {
     method: 'POST', headers,
@@ -245,7 +258,7 @@ async function vocabulary(): Promise<string[]> {
 }
 
 app.post('/api/say', async (req, res) => {
-  const { memberId, text } = req.body as { memberId?: string; text?: string };
+  const { memberId, text, storyTime } = req.body as { memberId?: string; text?: string; storyTime?: string };
   if (!memberId || !text) {
     res.status(400).json({ error: 'memberId and text are required' });
     return;
@@ -258,6 +271,7 @@ app.post('/api/say', async (req, res) => {
     const { text: heard, corrections } = correctTranscript(text, await vocabulary());
     const ctx = await contextFor(req);
     const host = await hostFor(ctx, memberId);
+    host.setStoryTime(storyTimeOf(ctx, storyTime));
     const turn = fromSandbox(await withRetry(() => host.say(heard)), ctx.suffix);
     // The whole trace goes back to the person who took the turn; the log gets it without the care.
     log.info('console turn', traceFields(turn.trace));
@@ -319,8 +333,8 @@ app.post('/api/setup/rebind', async (_req, res) => {
 });
 
 app.post('/api/act', async (req, res) => {
-  const { memberId, tool, args } = req.body as {
-    memberId?: string; tool?: string; args?: Record<string, unknown>;
+  const { memberId, tool, args, storyTime } = req.body as {
+    memberId?: string; tool?: string; args?: Record<string, unknown>; storyTime?: string;
   };
   if (!memberId || !tool) {
     res.status(400).json({ error: 'memberId and tool are required' });
@@ -329,6 +343,7 @@ app.post('/api/act', async (req, res) => {
   try {
     const ctx = await contextFor(req);
     const host = await hostFor(ctx, memberId);
+    host.setStoryTime(storyTimeOf(ctx, storyTime));
     const out = await withRetry(() => host.callToolDirect(tool, toSandbox(args ?? {}, ctx.suffix)));
     res.json(fromSandbox(out, ctx.suffix));
   } catch (err) {
@@ -409,7 +424,8 @@ app.post('/api/sandbox/reset', (req, res) => {
 
 app.get('/api/state', async (req, res) => {
   try {
-    res.json(await readCareState(await contextFor(req)));
+    const ctx = await contextFor(req);
+    res.json(await readCareState(ctx, storyTimeOf(ctx, req.query['storyTime'])));
   } catch (err) {
     res.status(502).json({ error: (err as Error).message });
   }

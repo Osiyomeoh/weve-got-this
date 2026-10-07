@@ -21,6 +21,7 @@ import { createTelegramChat } from './telegram-chat.js';
 import { providerFromEnv } from '../sim/providers.js';
 import { OAuthProvider, oauthResolver } from './oauth.js';
 import { createSandboxRoute } from './sandbox.js';
+import { STORY_TIME_HEADER, storyAware, storyTimeFor, withStoryTime } from './story-clock.js';
 
 /**
  * Streamable HTTP transport (MCP spec 2025-11-25).
@@ -86,6 +87,9 @@ const resolver = identity
     ? firstOf(oauthResolver(oauthSecretForAuth, lookup), demoResolver)
     : demoResolver);
 const messenger = notifier ?? new RecordOnlyNotifier();
+// What the MCP tools read as "now": the story time inside a sandbox copy that asked for
+// one (see story-clock.ts), the real time everywhere else.
+const clock = storyAware(now ?? (() => new Date()));
 const app = express();
 
 // Before anything touches the care record, make sure this process has the latest of it: another
@@ -288,8 +292,17 @@ type ConnectArg = Parameters<McpServer['connect']>[0];
 // request; `legacy: 'reject'` because 2025-era requests never reach this handler - they
 // keep the session-based path below, unchanged for every client that speaks it.
 const modern = toNodeHandler(createMcpHandler(({ authInfo }) => createCareCircleServerV2({
-  store, actorId: String(authInfo?.extra?.['actorId']), notifier: messenger, ...(now ? { now } : {}),
+  store, actorId: String(authInfo?.extra?.['actorId']), notifier: messenger, now: clock,
 }), { legacy: 'reject' }));
+
+// A sandbox copy may run on story time (see story-clock.ts). Set here, around the whole
+// request, so every tool the request reaches reads the same clock.
+app.use('/mcp', (req, _res, next) => {
+  const actorId = actorFor(req);
+  let householdId: string | undefined;
+  try { householdId = actorId ? store.getMember(actorId).householdId : undefined; } catch { /* not a member yet */ }
+  withStoryTime(storyTimeFor(householdId, req.header(STORY_TIME_HEADER) ?? undefined), next);
+});
 
 app.post('/mcp', async (req, res) => {
   const actorId = actorFor(req);
@@ -331,7 +344,7 @@ app.post('/mcp', async (req, res) => {
     return;
   }
 
-  const server = createCareCircleServer({ store, actorId, notifier: messenger, ...(now ? { now } : {}) });
+  const server = createCareCircleServer({ store, actorId, notifier: messenger, now: clock });
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: () => randomUUID(),
     enableJsonResponse: true,

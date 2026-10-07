@@ -1,5 +1,6 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import { STORY_TIME_HEADER } from '../http/story-clock.js';
 import type { Conversation, ModelProvider, ToolResult, ToolSpec, TurnOutput } from './providers.js';
 import { replyLanguageRule } from '../domain/language.js';
 import { NOTHING_SAID, speakable, toolAnswer } from '../domain/speakable.js';
@@ -156,7 +157,10 @@ export class SimulatedAlexa {
   /** Who the credential speaks for. Read from the server, never from the person. */
   #speaker: Speaker | null = null;
   #channel: Channel = 'voice';
-  #now: () => Date = () => new Date();
+  #story: { at: number; setAt: number } | null = null;
+  #realNow: () => Date = () => new Date();
+  /** The planner's clock: story time when one is set, otherwise the injected or real time. */
+  #now: () => Date = () => (this.#story ? new Date(this.#story.at + (Date.now() - this.#story.setAt)) : this.#realNow());
 
   private constructor(provider: ModelProvider, mcp: Client) {
     this.#provider = provider;
@@ -171,12 +175,31 @@ export class SimulatedAlexa {
     endpoint: string; token: string; provider: ModelProvider;
   }): Promise<SimulatedAlexa> {
     const mcp = new Client({ name: 'alexa-plus-simulator', version: '0.1.0' });
+    // The story clock rides on every request, so the server answers in story time too.
+    // It only ever believes it for a sandbox copy (see src/http/story-clock.ts).
+    let host: SimulatedAlexa | null = null;
     const transport = new StreamableHTTPClientTransport(new URL(opts.endpoint), {
       requestInit: { headers: { Authorization: `Bearer ${opts.token}` } },
+      fetch: (url, init) => {
+        const story = host ? host.#story : null;
+        if (!story) return fetch(url, init);
+        const headers = new Headers(init?.headers);
+        headers.set(STORY_TIME_HEADER, new Date(story.at + (Date.now() - story.setAt)).toISOString());
+        return fetch(url, { ...init, headers });
+      },
     });
     await mcp.connect(transport as never);
 
-    return SimulatedAlexa.over(mcp, opts.provider);
+    host = await SimulatedAlexa.over(mcp, opts.provider);
+    return host;
+  }
+
+  /**
+   * Set what time it is in the story, or null for the real time. The planner's sense of
+   * "today" and "tonight" follows it, and so does the server's, for a sandbox copy.
+   */
+  setStoryTime(at: Date | null): void {
+    this.#story = at ? { at: at.getTime(), setAt: Date.now() } : null;
   }
 
   /**
@@ -186,7 +209,7 @@ export class SimulatedAlexa {
   static async over(mcp: Client, provider: ModelProvider, channel: Channel = 'voice', now?: () => Date): Promise<SimulatedAlexa> {
     const host = new SimulatedAlexa(provider, mcp);
     host.#channel = channel;
-    if (now) host.#now = now;
+    if (now) host.#realNow = now;
     await host.#loadTools();
     await host.#loadSpeaker();
     await host.#loadTimezone();

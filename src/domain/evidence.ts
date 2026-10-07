@@ -5,9 +5,9 @@ import type { CareEvent, Obligation } from './types.js';
  *
  * Proof of care, in the only form this system can honestly offer it. A person saying
  * "done" is the verdict; what a doorbell saw near the promised time is evidence beside
- * it, never in place of it. Ring reports motion, a doorbell press, or a package - it
- * cannot see a car or a face - so evidence here is "there was activity at the door at
- * 9:04", never "Musa arrived".
+ * it, never in place of it. Ring reports motion, a doorbell press, or a package, and may
+ * classify motion as a person or a vehicle - but it never knows *who* - so evidence here
+ * is "there was activity at the door at 9:04", never "Musa arrived".
  *
  * The same selection serves three readers, so they can never disagree: closing a task
  * records it, "how do we know?" speaks it, and the agent's check-in mentions it.
