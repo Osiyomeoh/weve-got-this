@@ -98,10 +98,10 @@ export function registerRequestOwner({ server, store, now, notifier, actor, stat
         { ownerId: null, request: { askedOfId: target.memberId, askedById: me.id, askedAt: now().toISOString() } },
         `Asked ${target.name}`,
       );
+      const message = `${me.spokenAs ?? me.name} asked if you can take this on:\n\n${o.what}`
+        + `${due ? `, ${due}` : ''}\n\nReply "yes" or "can't".`;
       const delivery = await notifier.deliver({
-        to: target.memberId, toName: target.name, from: me.spokenAs ?? me.name,
-        message: `${me.spokenAs ?? me.name} asked if you can take this on:\n\n${o.what}`
-          + `${due ? `, ${due}` : ''}\n\nReply "yes" or "can't".`,
+        to: target.memberId, toName: target.name, from: me.spokenAs ?? me.name, message,
       });
       await store.appendEvent({
         householdId: me.householdId,
@@ -111,7 +111,7 @@ export function registerRequestOwner({ server, store, now, notifier, actor, stat
         source: 'voice',
         confidence: 'confirmed',
         detail: o.what,
-        data: { obligationId, askedOfId: target.memberId, delivered: delivery.delivered },
+        data: { obligationId, askedOfId: target.memberId, delivered: delivery.delivered, message },
       });
 
       // Say what is true: they were asked, and nobody owns it yet.

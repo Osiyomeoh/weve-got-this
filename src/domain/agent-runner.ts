@@ -68,11 +68,9 @@ export async function runAgentOnce(
       );
     }
 
-    const delivery = await deps.notifier.deliver({
-      to: member.id, toName: name, from: 'CareCircle',
-      message: messageFor(action, obligation.what, state.members.find((m) => m.id === obligation.ownerId),
-        action.followUp ? checkInEvidence(obligation, state.events, now, state.household.timezone) : ''),
-    });
+    const message = messageFor(action, obligation.what, state.members.find((m) => m.id === obligation.ownerId),
+      action.followUp ? checkInEvidence(obligation, state.events, now, state.household.timezone) : '');
+    const delivery = await deps.notifier.deliver({ to: member.id, toName: name, from: 'CareCircle', message });
 
     await deps.store.appendEvent({
       householdId,
@@ -92,6 +90,8 @@ export async function runAgentOnce(
         escalation: action.kind === 'ESCALATE',
         ...(action.followUp ? { followUp: true } : {}),
         delivered: delivery.delivered,
+        // What the person was actually sent, so the board can show it as they saw it.
+        message,
         // The arithmetic travels with the act, so an agent decision is auditable
         // from the log alone, exactly like a gap score.
         because: action.because,

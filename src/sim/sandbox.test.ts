@@ -53,6 +53,17 @@ test('an expiring copy is replaced, and "start over" gives a fresh one', async (
   assert.notEqual((await s.get('v')).suffix, before.suffix);
 });
 
+test('"start over" can ask for the next copy to be made differently, once', async () => {
+  const kinds: unknown[] = [];
+  const s = new VisitorSandboxes({ create: async (kind) => { kinds.push(kind); return { suffix: `~s${kinds.length}-00000000`, tokens: {}, expiresAt: Date.now() + 3600_000 }; } });
+  await s.get('v');
+  s.forget('v', { liveMorning: true });
+  await s.get('v');
+  s.forget('v');
+  await s.get('v');
+  assert.deepEqual(kinds, [{}, { liveMorning: true }, {}]);
+});
+
 test('memory is bounded: the least recently used visitor is dropped first', async () => {
   let made = 0;
   const s = new VisitorSandboxes({ limit: 2, create: async () => ({ suffix: `~s${++made}-00000000`, tokens: {}, expiresAt: Date.now() + 3600_000 }) });

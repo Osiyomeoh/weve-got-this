@@ -101,8 +101,13 @@ export function createSandboxRoute(opts: SandboxOptions) {
       await sweepSandboxes(opts.store, { ttlMs, keepAtMost: max - 1, now: at });
 
       const suffix = sandboxSuffix(at);
+      // The 3D world's day opens at 7:42 with Daddy logging his eye drops by voice, so
+      // its copy must not already hold the 8:10 dose (Alexa would call it a duplicate).
+      const liveMorning = (req.body as { liveMorning?: unknown } | undefined)?.liveMorning === true;
       await seedDemoHousehold(opts.store, { suffix });
-      await seedScenario(opts.store, `${DEMO_HOUSEHOLD_ID}${suffix}`, { suffix, now: at });
+      await seedScenario(opts.store, `${DEMO_HOUSEHOLD_ID}${suffix}`, {
+        suffix, now: at, refillDueTonight: true, skipMorningEyeDrops: liveMorning,
+      });
 
       const iat = Math.floor(at.getTime() / 1000);
       const exp = Math.floor((at.getTime() + ttlMs) / 1000);

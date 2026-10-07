@@ -66,6 +66,11 @@ export function fromSandbox<T>(value: T, suffix: string): T {
   return JSON.parse(JSON.stringify(value).split(suffix).join('')) as T;
 }
 
+/** Options for a new copy. `liveMorning`: the visitor logs Daddy's morning eye drops themselves. */
+export interface SandboxKind {
+  liveMorning?: boolean;
+}
+
 export interface SandboxGrant {
   suffix: string;
   tokens: Record<string, string>;
@@ -80,11 +85,13 @@ export interface SandboxGrant {
 export class VisitorSandboxes {
   readonly #grants = new Map<string, SandboxGrant>();
   readonly #pending = new Map<string, Promise<SandboxGrant>>();
+  /** How the next copy for a visitor should be made, set by "start over". */
+  readonly #next = new Map<string, SandboxKind>();
   readonly #limit: number;
-  readonly #create: () => Promise<SandboxGrant>;
+  readonly #create: (kind: SandboxKind) => Promise<SandboxGrant>;
   readonly #now: () => number;
 
-  constructor(opts: { create: () => Promise<SandboxGrant>; limit?: number; now?: () => number }) {
+  constructor(opts: { create: (kind: SandboxKind) => Promise<SandboxGrant>; limit?: number; now?: () => number }) {
     this.#create = opts.create;
     this.#limit = opts.limit ?? 500;
     this.#now = opts.now ?? Date.now;
@@ -101,8 +108,9 @@ export class VisitorSandboxes {
     // One creation per visitor even when the page fires several requests at once.
     const inflight = this.#pending.get(visitor);
     if (inflight) return inflight;
-    const p = this.#create()
+    const p = this.#create(this.#next.get(visitor) ?? {})
       .then((grant) => {
+        this.#next.delete(visitor);
         this.#grants.delete(visitor);
         this.#grants.set(visitor, grant);
         while (this.#grants.size > this.#limit) {
@@ -117,10 +125,18 @@ export class VisitorSandboxes {
     return p;
   }
 
-  /** "Start over": forget this visitor's copy so the next request makes a new one. */
-  forget(visitor: string): SandboxGrant | undefined {
+  /** "Start over": forget this visitor's copy so the next request makes a new one, of `kind`. */
+  forget(visitor: string, kind: SandboxKind = {}): SandboxGrant | undefined {
     const g = this.#grants.get(visitor);
     this.#grants.delete(visitor);
+    this.#next.delete(visitor);
+    if (kind.liveMorning) this.#next.set(visitor, kind);
+    // The #next map is bounded by the same visitors the grants are.
+    while (this.#next.size > this.#limit) {
+      const oldest = this.#next.keys().next().value;
+      if (oldest === undefined) break;
+      this.#next.delete(oldest);
+    }
     return g;
   }
 }

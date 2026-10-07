@@ -227,7 +227,7 @@ export function registerConfirmProposal({ server, store, actor }: ToolContext): 
 /**
  * "Picked up the eye drops."
  */
-export function registerResolveObligation({ server, store, now, actor, state }: ToolContext): void {
+export function registerResolveObligation({ server, store, now, actor, state, nameOf }: ToolContext): void {
   server.registerTool('resolve_obligation', {
     title: 'Mark something as done',
     description:
@@ -249,6 +249,16 @@ export function registerResolveObligation({ server, store, now, actor, state }: 
       requireCap(me, 'resolve_obligation');
       const o = obligationFrom(store, ref, me.householdId);
       const obligationId = o.id;
+      // Closing it again would put a second "done" on the record under someone else's name.
+      // Say who closed it and when instead; that is usually what the question was.
+      if (o.status === 'RESOLVED') {
+        const s = state();
+        const closed = [...s.events].reverse()
+          .find((e) => e.kind === 'obligation_resolved' && e.data['obligationId'] === obligationId);
+        const by = closed ? nameOf(closed.reportedBy) : undefined;
+        const at = closed ? clockTime(closed.occurredAt, s.household.timezone) : undefined;
+        return reply(`That's already done - ${by ?? 'someone'} marked "${o.what}" done${at ? ` at ${at}` : ''}.`, { obligationId });
+      }
       if (!canActOn(me, o)) {
         return guidance(`That one isn't assigned to you, so you can't close it out.`);
       }

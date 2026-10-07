@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { api, type BoardState } from './api';
+import { storyNow } from './storyTime';
 
 /** Poll the live care board; only updates when the state actually changes. */
 export function useBoard(intervalMs = 4000) {
@@ -11,7 +12,7 @@ export function useBoard(intervalMs = 4000) {
     let alive = true;
     const tick = async () => {
       try {
-        const s = await api.state();
+        const s = await api.state(storyNow());
         if (!alive) return;
         const fp = JSON.stringify([s.gaps, s.obligations, s.offers, s.notifications]);
         setOnline(true);

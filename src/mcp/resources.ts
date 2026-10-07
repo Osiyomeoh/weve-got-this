@@ -111,13 +111,16 @@ export function registerCareStateResource({ server, now, state, nameOf }: ToolCo
               .map((e) => e.data['offer'] as unknown)
               .filter((o): o is { offerId: string } => !!o && !settled.has((o as { offerId: string }).offerId));
           })(),
+          // Messages people were sent: notes passed on, and the asks and "still on?"
+          // check-ins that request someone take a piece of work (the text as sent).
           notifications: s.events
-            .filter((e) => e.kind === 'member_notified')
+            .filter((e) => e.kind === 'member_notified'
+              || (e.kind === 'owner_requested' && typeof e.data['message'] === 'string'))
             .slice(-5)
             .map((e) => ({
-              from: nameOf(e.reportedBy) ?? 'Someone',
-              to: nameOf(e.data['recipientId'] as string) ?? 'someone',
-              message: e.detail ?? '',
+              from: nameOf(e.reportedBy) ?? (e.source === 'system' ? 'CareCircle' : 'Someone'),
+              to: nameOf((e.data['recipientId'] ?? e.data['askedOfId']) as string) ?? 'someone',
+              message: e.kind === 'member_notified' ? e.detail ?? '' : e.data['message'] as string,
               at: e.occurredAt,
             })),
         }, null, 2),

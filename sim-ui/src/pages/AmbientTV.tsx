@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useBoard } from '../lib/useBoard';
+import { useNow } from '../lib/storyTime';
 import { api, MEMBERS } from '../lib/api';
 import { START, keyOf, reduce, type Nav } from '../lib/dpad';
 
@@ -86,12 +87,8 @@ export default function AmbientTV() {
   // stays alive offline.
   const gaps = state?.gaps ?? (online ? [] : DEMO_GAPS);
 
-  // Live clock.
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(id);
-  }, []);
+  // Live clock: real time, or the story's time when this TV hangs in the world.
+  const { now, inStory } = useNow();
 
   // ---- the remote -------------------------------------------------------------
   const [nav, setNav] = useState<Nav>(START);
@@ -188,8 +185,10 @@ export default function AmbientTV() {
     try { bridge.notify('CareCircle', current.spoken); } catch { /* no bridge */ }
   }, [current?.obligationId, current?.spoken]);
 
-  const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-  const day = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  // In the world the TV is in Daddy's house, so it shows his time, not the visitor's.
+  const zone = inStory ? { timeZone: 'Africa/Lagos' } : {};
+  const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', ...zone });
+  const day = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', ...zone });
 
   const owned = (state?.obligations ?? []).filter((o) => o.status === 'ASSIGNED');
 

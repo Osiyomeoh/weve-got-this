@@ -97,3 +97,55 @@ test('"can\'t make it after all" from the owner hands the work back; "on my way"
   assert.equal(after.ownerId, null);
   assert.deepEqual(after.declinedBy, ['m_david']);
 });
+
+test('closing finished work again says who closed it, and adds no second "done"', async () => {
+  const now = Date.now();
+  const o = await store.createObligation({
+    householdId: 'h_margaret', what: 'Pick up the eye drops refill', consequence: 'medical',
+    status: 'ASSIGNED', ownerId: 'm_aide',
+    provenance: { kind: 'CONFIRMED', byMemberId: 'm_david', at: new Date(now - 86_400_000).toISOString() },
+    dueAt: new Date(now - 20 * 60_000).toISOString(),
+  });
+  const first = await call('aide-token', 'resolve_obligation', { obligationId: o.id });
+  assert.equal(first.isError, false, first.text);
+
+  // Later, Tolu says "Musa says the pharmacy run is done" and the planner reaches for this tool.
+  const again = await call('david-token', 'resolve_obligation', { obligationId: o.id });
+  assert.equal(again.isError, false, again.text);
+  assert.match(again.text, /^That's already done - Musa marked "Pick up the eye drops refill" done at /);
+  const closes = store.getCareState('h_margaret').events.filter((e) => e.kind === 'obligation_resolved' && e.data['obligationId'] === o.id);
+  assert.equal(closes.length, 1);
+  assert.equal(closes[0]!.reportedBy, 'm_aide');
+});
+
+test('the agent\'s "still on?" shows on the household state as it was sent', async () => {
+  // 2 PM in Lagos, so quiet hours cannot hold the check-in back whenever the suite runs.
+  const at = new Date();
+  at.setUTCHours(13, 0, 0, 0);
+  const o = await store.createObligation({
+    householdId: 'h_margaret', what: 'Pick up the eye drops refill', consequence: 'medical',
+    status: 'ASSIGNED', ownerId: 'm_aide',
+    provenance: { kind: 'CONFIRMED', byMemberId: 'm_david', at: new Date(at.getTime() - 86_400_000).toISOString() },
+    dueAt: new Date(at.getTime() - 20 * 60_000).toISOString(),
+  });
+  const app = createCareCircleApp({ store, tokens: new Map(Object.entries(DEMO_TOKENS)), now: () => at });
+  const pinned = app.listen(0);
+  await new Promise<void>((r) => pinned.once('listening', r));
+  const c = new Client({ name: 'proof-of-care-test', version: '1' });
+  await c.connect(new StreamableHTTPClientTransport(new URL(`http://127.0.0.1:${(pinned.address() as AddressInfo).port}/mcp`), {
+    requestInit: { headers: { Authorization: 'Bearer david-token' } },
+  }));
+  try {
+    const run = await c.callTool({ name: 'run_care_agent', arguments: {} });
+    assert.notEqual(run.isError, true);
+    const res = await c.readResource({ uri: 'carecircle://household/state' });
+    const state = JSON.parse((res.contents[0] as { text: string }).text) as { notifications: { from: string; to: string; message: string }[] };
+    const checkIn = state.notifications.find((n) => n.to === 'Musa' && n.message.includes(o.what));
+    assert.ok(checkIn, JSON.stringify(state.notifications));
+    assert.equal(checkIn.from, 'CareCircle');
+    assert.match(checkIn.message, /Still on\?/);
+  } finally {
+    await c.close();
+    pinned.close();
+  }
+});

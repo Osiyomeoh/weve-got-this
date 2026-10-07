@@ -78,9 +78,10 @@ const SANDBOX_KEY = process.env['CARECIRCLE_SANDBOX_KEY']?.trim() ?? '';
 // because the Telegram scene must act on the real demo household.
 const LIVE_KEY = process.env['SIM_LIVE_KEY']?.trim() ?? '';
 const sandboxes = new VisitorSandboxes({
-  create: async (): Promise<SandboxGrant> => {
+  create: async (kind): Promise<SandboxGrant> => {
     const res = await fetch(new URL('/sandbox', MCP_ENDPOINT), {
-      method: 'POST', headers: { 'x-sandbox-key': SANDBOX_KEY },
+      method: 'POST', headers: { 'x-sandbox-key': SANDBOX_KEY, 'content-type': 'application/json' },
+      body: JSON.stringify(kind),
     });
     if (!res.ok) throw new Error(`Could not create a demo copy (${res.status})`);
     const body = await res.json() as { suffix: string; tokens: Record<string, string>; expiresAt: string };
@@ -395,14 +396,24 @@ app.post('/api/transcribe', express.raw({ type: '*/*', limit: '12mb' }), async (
  * Returns audio, or a 502 the browser treats as "use your own voice instead" -
  * losing the nicer voice is a downgrade, never a silence.
  */
+/**
+ * The voices the world's people speak in, so a visitor hears who is talking. Alexa
+ * keeps the default voice. A short allowlist, so nobody can spend Polly on any voice.
+ */
+const CHARACTER_VOICES = new Set(['Ruth', 'Gregory', 'Matthew', 'Danielle', 'Stephen', 'Joanna', 'Arthur', 'Ayanda', 'Kevin', 'Kendra']);
+
 app.post('/api/speak', async (req, res) => {
-  const { text, rate } = (req.body ?? {}) as { text?: string; rate?: string };
+  const { text, rate, voice } = (req.body ?? {}) as { text?: string; rate?: string; voice?: string };
   if (typeof text !== 'string' || !text.trim()) {
     res.status(400).json({ error: 'Nothing to say.' });
     return;
   }
+  if (voice !== undefined && !CHARACTER_VOICES.has(voice)) {
+    res.status(400).json({ error: 'Unknown voice.' });
+    return;
+  }
   try {
-    const spoken = await synthesize(text, isRate(rate) ? rate : 'normal');
+    const spoken = await synthesize(text, isRate(rate) ? rate : 'normal', voice);
     res.setHeader('content-type', spoken.contentType);
     res.setHeader('cache-control', 'no-store');
     res.setHeader('x-carecircle-voice', `${spoken.voice}/${spoken.engine}`);
@@ -416,7 +427,7 @@ app.post('/api/speak', async (req, res) => {
 app.post('/api/sandbox/reset', (req, res) => {
   const visitor = parseCookies(req.header('cookie'))[VISITOR_COOKIE];
   if (isVisitorId(visitor)) {
-    const old = sandboxes.forget(visitor);
+    const old = sandboxes.forget(visitor, { liveMorning: (req.body as { liveMorning?: unknown } | undefined)?.liveMorning === true });
     if (old) for (const k of [...hosts.keys()]) if (k.startsWith(`${visitor}${old.suffix}|`)) hosts.delete(k);
   }
   res.json({ ok: true });

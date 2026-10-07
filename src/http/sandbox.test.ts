@@ -42,8 +42,11 @@ after(() => {
   delete process.env['CARECIRCLE_SANDBOX_KEY'];
 });
 
-async function create(key = KEY): Promise<{ status: number; json: any }> {
-  const res = await fetch(`${base}/sandbox`, { method: 'POST', headers: { 'x-sandbox-key': key } });
+async function create(key = KEY, body?: object): Promise<{ status: number; json: any }> {
+  const res = await fetch(`${base}/sandbox`, {
+    method: 'POST', headers: { 'x-sandbox-key': key, 'content-type': 'application/json' },
+    body: body ? JSON.stringify(body) : undefined,
+  });
   return { status: res.status, json: await res.json() };
 }
 
@@ -89,6 +92,17 @@ test('a sandbox is a fresh copy of the demo story, reachable with its own tokens
   assert.match(gaps.content[0].text, /Take Daddy to his eye check-up/);
   assert.ok(gaps.structuredContent.gaps.every((g: { obligationId?: string }) =>
     !g.obligationId || store.getObligation(g.obligationId, json.householdId)));
+});
+
+test('a copy for the 3D world leaves the morning eye drops for the visitor to log', async () => {
+  const eyeDrops = (hh: string) => store.getCareState(hh).events
+    .filter((e) => e.kind === 'medication_taken' && (e.data as { medicationName?: string }).medicationName === 'eye drops');
+  const usual = (await create()).json;
+  assert.equal(eyeDrops(usual.householdId).length, 1, 'the console copy has the 8:10 dose');
+  const world = (await create(KEY, { liveMorning: true })).json;
+  assert.equal(eyeDrops(world.householdId).length, 0, 'the world copy does not: Daddy logs it at 7:42');
+  assert.ok(store.getCareState(world.householdId).events.some((e) => e.kind === 'medication_taken'),
+    'the supplement is still there, so the morning is not reported as missed');
 });
 
 test('one judge taking the ride does not take it for the next judge, or the real demo', async () => {

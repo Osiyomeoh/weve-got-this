@@ -32,7 +32,7 @@ export interface Offer {
   etaText: string;
   amountCents: number;
 }
-export interface Notification { from: string; to: string; message: string; }
+export interface Notification { from: string; to: string; message: string; at?: string }
 
 export interface BoardState {
   gaps?: Gap[];
@@ -99,23 +99,25 @@ async function jsonOrThrow(res: Response) {
 export type SpeechRate = 'slow' | 'gentle' | 'normal';
 
 export const api = {
-  state: (): Promise<BoardState> => fetch('/api/state').then((r) => r.json()),
+  /** `storyTime`: what time it is in the world's story (honoured only in this visitor's own copy). */
+  state: (storyTime?: Date): Promise<BoardState> =>
+    fetch(storyTime ? `/api/state?storyTime=${encodeURIComponent(storyTime.toISOString())}` : '/api/state').then((r) => r.json()),
   config: (): Promise<SimConfig> => fetch('/api/config').then((r) => r.json()),
-  say: (memberId: string, text: string): Promise<Turn> =>
+  say: (memberId: string, text: string, storyTime?: Date): Promise<Turn> =>
     fetch('/api/say', {
       method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ memberId, text }),
+      body: JSON.stringify({ memberId, text, storyTime: storyTime?.toISOString() }),
     }).then(jsonOrThrow),
   transcribe: (pcm: Blob): Promise<Transcription> =>
     fetch('/api/transcribe', {
       method: 'POST', headers: { 'content-type': 'application/octet-stream' }, body: pcm,
     }).then(jsonOrThrow),
   /** Polly audio for a line, or null when the service is unavailable. */
-  speak: async (text: string, rate: SpeechRate): Promise<Blob | null> => {
+  speak: async (text: string, rate: SpeechRate, voice?: string): Promise<Blob | null> => {
     try {
       const res = await fetch('/api/speak', {
         method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ text, rate }),
+        body: JSON.stringify({ text, rate, voice }),
       });
       if (!res.ok) return null;
       return await res.blob();
@@ -123,14 +125,16 @@ export const api = {
       return null;
     }
   },
-  act: (memberId: string, tool: string, args: Record<string, unknown>): Promise<ToolCall> =>
+  act: (memberId: string, tool: string, args: Record<string, unknown>, storyTime?: Date): Promise<ToolCall> =>
     fetch('/api/act', {
       method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ memberId, tool, args }),
+      body: JSON.stringify({ memberId, tool, args, storyTime: storyTime?.toISOString() }),
     }).then(jsonOrThrow),
   /** Throw away this browser's copy of the demo; the next request gets a fresh one. */
-  resetSandbox: (): Promise<{ ok: boolean }> =>
-    fetch('/api/sandbox/reset', { method: 'POST' }).then(jsonOrThrow),
+  resetSandbox: (opts: { liveMorning?: boolean } = {}): Promise<{ ok: boolean }> =>
+    fetch('/api/sandbox/reset', {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(opts),
+    }).then(jsonOrThrow),
   /** Reset the onboarding demo so setup starts from a blank new circle. */
   resetSetup: (): Promise<{ ok: boolean }> =>
     fetch('/api/setup/reset', { method: 'POST' }).then(jsonOrThrow),

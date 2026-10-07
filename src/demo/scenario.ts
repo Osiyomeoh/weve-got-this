@@ -69,6 +69,12 @@ export interface ScenarioOptions {
    * suffix, so a per-visitor sandbox copy of the demo gets ids of its own.
    */
   suffix?: string;
+  /**
+   * The refill is due at 8 tonight rather than the day before the check-up. A visitor's
+   * copy opens this way, so asking someone to fetch it gives a promise with a time on
+   * it, and the agent's "still on?" can follow it up that evening (the 8:16 PM scene).
+   */
+  refillDueTonight?: boolean;
 }
 
 /**
@@ -138,7 +144,9 @@ export async function seedScenario(
     consequence: 'medical',
     provenance: { kind: 'CONFIRMED', byMemberId: sid('m_renee'), at: now.toISOString() },
     ownerId: null,
-    dueAt: new Date(checkUpAt.getTime() - 86_400_000).toISOString(),
+    dueAt: options.refillDueTonight
+      ? todayAt(20, 0, now, TZ).toISOString()
+      : new Date(checkUpAt.getTime() - 86_400_000).toISOString(),
   });
 
   await store.appendEvent({
