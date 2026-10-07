@@ -108,14 +108,20 @@ export class NotFoundError extends Error {
  * new instance lost the first, and the history no longer started where the ride had been.
  * Also keeps the order when another instance's clock runs ahead of this one.
  */
-function after(last: string | undefined): string {
-  const now = Date.now();
+function after(last: string | undefined, now = Date.now()): string {
   const floor = last ? Date.parse(last) + 1 : now;
   return new Date(Math.max(now, Number.isNaN(floor) ? now : floor)).toISOString();
 }
 
 export class CareStore {
   #snapshot: StoreSnapshot = emptySnapshot();
+  /**
+   * When things happen, for the times the record keeps about the work itself (an
+   * obligation's creation, each ownership move). The app passes its story-aware clock, so
+   * a visitor's copy of the demo reads "Tolu asked at 12:30 PM" in story time. Events'
+   * `recordedAt` stays on the real clock: it is when the server heard it.
+   */
+  #now: () => Date = () => new Date();
   #persistence: Persistence | undefined;
   /** Serialises writes so concurrent tool calls cannot interleave a save. */
   #writeQueue: Promise<unknown> = Promise.resolve();
@@ -285,7 +291,7 @@ export class CareStore {
       const full: Obligation = {
         ...obligation,
         id: obligation.id ?? `obl_${randomUUID()}`,
-        createdAt: new Date().toISOString(),
+        createdAt: this.#now().toISOString(),
       };
       this.#snapshot.obligations.push(full);
       return full;
@@ -328,11 +334,16 @@ export class CareStore {
       if (changes.declinedBy !== undefined) o.declinedBy = changes.declinedBy;
       this.#snapshot.transitions.push({
         obligationId: id, from, to, byMemberId,
-        at: after(this.#snapshot.transitions.findLast((t) => t.obligationId === id)?.at),
+        at: after(this.#snapshot.transitions.findLast((t) => t.obligationId === id)?.at, this.#now().getTime()),
         ...(note ? { note } : {}),
       });
       return o;
     });
+  }
+
+  /** Use this clock for the times the record keeps about the work (see #now). */
+  useClock(now: () => Date): void {
+    this.#now = now;
   }
 
   // --- setup -------------------------------------------------------------

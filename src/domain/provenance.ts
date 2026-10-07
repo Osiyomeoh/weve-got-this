@@ -13,6 +13,7 @@
 import type { CareEvent, Obligation, Provenance } from './types.ts';
 import type { ObligationTransition } from '../store/store.ts';
 import { evidenceLine } from './evidence.js';
+import { clockTime, isLocalToday } from './local-time.js';
 
 /** How sure the record is at a given link. Deliberately not a single scalar - a chain
  *  can mix a confirmed origin with an inferred source, and flattening that loses the point. */
@@ -43,23 +44,35 @@ export interface ProvenanceExplanation {
 /** Resolve a member/device id to a spoken name, falling back to something never blank. */
 type NameOf = (id: string | null) => string | undefined;
 
-function fmt(at?: string): string | undefined {
+/** When the question is asked, and where: so something from today can be said by the clock. */
+interface Clock { now?: Date; timezone: string }
+
+/**
+ * "at 8:16 PM" for something earlier today, "on March 12" otherwise. Kept coarse on
+ * purpose: a full timestamp does not read aloud, and "on October 7" three times over says
+ * nothing when all of it happened this evening.
+ */
+function fmt(at: string | undefined, clock: Clock): { text: string; phrase: string } | undefined {
   if (!at) return undefined;
   const d = new Date(at);
   if (Number.isNaN(d.getTime())) return undefined;
-  // Kept coarse on purpose: "on 12 March" reads aloud; a full ISO timestamp does not.
-  return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+  if (clock.now && isLocalToday(at, clock.now, clock.timezone)) {
+    const text = clockTime(at, clock.timezone);
+    return { text, phrase: ` at ${text}` };
+  }
+  const text = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', timeZone: clock.timezone });
+  return { text, phrase: ` on ${text}` };
 }
 
-function origin(p: Provenance, nameOf: NameOf): ProvenanceStep {
+function origin(p: Provenance, nameOf: NameOf, clock: Clock): ProvenanceStep {
   switch (p.kind) {
     case 'CONFIRMED': {
       const who = nameOf(p.byMemberId) ?? 'someone in the circle';
-      const when = fmt(p.at);
+      const when = fmt(p.at, clock);
       return {
         ...(p.at ? { at: p.at } : {}),
         certainty: 'confirmed',
-        detail: `${who} confirmed this${when ? ` on ${when}` : ''}.`,
+        detail: `${who} confirmed this${when?.phrase ?? ''}.`,
       };
     }
     case 'INFERRED':
@@ -71,7 +84,7 @@ function origin(p: Provenance, nameOf: NameOf): ProvenanceStep {
           + `so it is still a suggestion, not a fact.`,
       };
     case 'NOT_LOGGED': {
-      const when = fmt(p.expectedAt);
+      const when = fmt(p.expectedAt, clock)?.text;
       return {
         ...(p.expectedAt ? { at: p.expectedAt } : {}),
         certainty: 'no_record',
@@ -85,11 +98,10 @@ function origin(p: Provenance, nameOf: NameOf): ProvenanceStep {
 }
 
 /** The source event the obligation was raised from, if we still have it. */
-function sourceStep(event: CareEvent | undefined, nameOf: NameOf): ProvenanceStep | undefined {
+function sourceStep(event: CareEvent | undefined, nameOf: NameOf, clock: Clock): ProvenanceStep | undefined {
   if (!event) return undefined;
   const what = event.detail ?? event.kind.replace(/_/g, ' ');
-  const when = fmt(event.occurredAt);
-  const on = when ? ` on ${when}` : '';
+  const on = fmt(event.occurredAt, clock)?.phrase ?? '';
   // Prefer the event's own first-class source/confidence; fall back to the legacy
   // data.source and the actor for events written before those fields existed.
   const src = event.source ?? (typeof event.data?.source === 'string' ? event.data.source : undefined);
@@ -125,10 +137,11 @@ function sourceStep(event: CareEvent | undefined, nameOf: NameOf): ProvenanceSte
  * who performed the write, because a decline and an assignment are different facts and the
  * transition record only tells us the status and who recorded it - never that anyone failed.
  */
-function ownershipStep(t: ObligationTransition, nameOf: NameOf): ProvenanceStep | undefined {
+function ownershipStep(
+  t: ObligationTransition, ownerId: string | null, nameOf: NameOf, clock: Clock,
+): ProvenanceStep | undefined {
   const who = nameOf(t.byMemberId) ?? 'someone';
-  const when = fmt(t.at);
-  const on = when ? ` on ${when}` : '';
+  const on = fmt(t.at, clock)?.phrase ?? '';
   const note = t.note ? ` (${t.note})` : '';
   switch (t.to) {
     case 'OPEN':
@@ -143,8 +156,12 @@ function ownershipStep(t: ObligationTransition, nameOf: NameOf): ProvenanceStep 
     case 'REQUESTED':
       return { at: t.at, certainty: 'recorded', detail: `${who} asked for someone to take this on${on}${note}.` };
     case 'ASSIGNED':
-      // Who owns it is authoritative from the obligation, spoken separately; here we only
-      // record that it became owned, without inferring the owner from who wrote the row.
+      // Who owns it is authoritative from the obligation. When the person who wrote this
+      // row is that owner, they took it on themselves and we can say so; otherwise we only
+      // record that it became owned, never inferring the owner from who wrote the row.
+      if (t.byMemberId && t.byMemberId === ownerId && nameOf(t.byMemberId)) {
+        return { at: t.at, certainty: 'recorded', detail: `${who} took it on${on}${note}.` };
+      }
       return { at: t.at, certainty: 'recorded', detail: `It became owned${on}${note}.` };
     case 'RESOLVED':
       return { at: t.at, certainty: 'recorded', detail: `${who} marked it done${on}${note}.` };
@@ -208,18 +225,20 @@ export function explainProvenance(
   events: CareEvent[],
   nameOf: NameOf,
   timezone = 'America/New_York',
+  now?: Date,
 ): ProvenanceExplanation {
-  const chain: ProvenanceStep[] = [origin(obligation.provenance, nameOf)];
+  const clock: Clock = { timezone, ...(now ? { now } : {}) };
+  const chain: ProvenanceStep[] = [origin(obligation.provenance, nameOf, clock)];
 
   const source = obligation.sourceEventId
     ? events.find((e) => e.id === obligation.sourceEventId)
     : undefined;
-  const step = sourceStep(source, nameOf);
+  const step = sourceStep(source, nameOf, clock);
   if (step) chain.push(step);
 
   const ordered = [...transitions].sort((a, b) => a.at.localeCompare(b.at));
   for (const t of ordered) {
-    const os = ownershipStep(t, nameOf);
+    const os = ownershipStep(t, obligation.ownerId, nameOf, clock);
     if (os) chain.push(os);
   }
 

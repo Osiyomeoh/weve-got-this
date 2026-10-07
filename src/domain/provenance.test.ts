@@ -134,6 +134,29 @@ test('ownership is taken from the obligation, not inferred from who recorded a m
   assert.doesNotMatch(e.spoken, /Renee owns it/);
 });
 
+test('the owner taking it on is said by name; Renee assigning it is not', () => {
+  const by = (who: string): ObligationTransition[] => [
+    { obligationId: 'o1', from: 'OPEN', to: 'ASSIGNED', byMemberId: who, at: '2026-03-11T10:00:00Z' },
+  ];
+  const o = obligation({ status: 'ASSIGNED', ownerId: 'm_david' });
+  assert.match(explainProvenance(o, by('m_david'), [], nameOf).spoken, /David took it on/);
+  assert.match(explainProvenance(o, by('m_renee'), [], nameOf).spoken, /It became owned/);
+  assert.doesNotMatch(explainProvenance(o, by('m_renee'), [], nameOf).spoken, /Renee took it on/);
+});
+
+test('what happened today is said by the clock, earlier days by the date', () => {
+  const o = obligation({ status: 'RESOLVED', ownerId: 'm_david', resolvedAt: '2026-03-12T19:16:00Z' });
+  const transitions: ObligationTransition[] = [
+    { obligationId: 'o1', from: 'OPEN', to: 'ASSIGNED', byMemberId: 'm_david', at: '2026-03-12T11:31:00Z' },
+    { obligationId: 'o1', from: 'ASSIGNED', to: 'RESOLVED', byMemberId: 'm_david', at: '2026-03-12T19:16:00Z' },
+  ];
+  const e = explainProvenance(o, transitions, [], nameOf, 'Africa/Lagos', new Date('2026-03-12T19:20:00Z'));
+  assert.equal(e.spoken,
+    'David confirmed this on March 10. David took it on at 12:31 PM. David marked it done at 8:16 PM. It is resolved.');
+  const later = explainProvenance(o, transitions, [], nameOf, 'Africa/Lagos', new Date('2026-03-14T09:00:00Z'));
+  assert.match(later.spoken, /David marked it done on March 12\./);
+});
+
 test('a decline is recorded as information, never as a failure', () => {
   const transitions: ObligationTransition[] = [
     { obligationId: 'o1', from: 'OPEN', to: 'REQUESTED', byMemberId: 'm_david', at: '2026-03-11T09:00:00Z' },

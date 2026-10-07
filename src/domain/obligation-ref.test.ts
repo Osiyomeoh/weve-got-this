@@ -51,3 +51,18 @@ test('finished work is not matched, and no match says what is live', () => {
   assert.equal(found('the laundry'), 'none');
   assert.equal(found('   '), 'none');
 });
+
+test('a question about what happened may name finished work, and gets the latest', () => {
+  const pick = (ref: string, os: Obligation[]) => {
+    const m = matchObligation(ref, os, { finished: true });
+    return m.kind === 'found' ? m.obligation.id : m.kind;
+  };
+  assert.equal(pick('book the eye check-up', board), 'ob_old');
+  assert.equal(pick('the refill', board), 'ob_refill', 'live work still comes first');
+  const twice = [
+    { ...work('ob_r1', "Pick up Daddy's eye drops refill", 'RESOLVED'), resolvedAt: '2026-09-20T19:00:00Z' },
+    { ...work('ob_r2', "Pick up Daddy's eye drops refill", 'RESOLVED'), resolvedAt: '2026-10-07T19:16:00Z' },
+  ];
+  assert.equal(pick('the eye drops refill', twice), 'ob_r2');
+  assert.equal(pick('the laundry', board), 'none');
+});

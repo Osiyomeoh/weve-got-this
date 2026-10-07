@@ -87,6 +87,17 @@ test('a sandbox copy runs on the story time its caller sends', async () => {
   assert.ok(at >= Date.parse(story) && at < Date.parse(story) + 5_000, `recorded at ${new Date(at).toISOString()}`);
 });
 
+test('who took the work on, and when, is kept in story time too', async () => {
+  const copy = await sandbox();
+  const story = '2026-10-07T11:34:00.000Z';
+  await callTool(copy.tokens['m_david']!, 'claim_obligation', { obligationId: 'eye check-up' }, story);
+  const ride = store.getCareState(copy.householdId).obligations.find((o) => /eye check-up/.test(o.what))!;
+  const moved = store.getTransitions(ride.id).at(-1)!;
+  assert.equal(moved.to, 'ASSIGNED');
+  const at = Date.parse(moved.at);
+  assert.ok(at >= Date.parse(story) && at < Date.parse(story) + 5_000, `moved at ${moved.at}`);
+});
+
 test('the real demo household ignores a claimed story time', async () => {
   const before = Date.now();
   await callTool('david-token', 'add_note', { note: 'A note on the real clock.' }, '2001-01-01T12:00:00.000Z');

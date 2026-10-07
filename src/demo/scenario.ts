@@ -142,7 +142,12 @@ export async function seedScenario(
     what: "Pick up Daddy's eye drops refill",
     status: 'OPEN',
     consequence: 'medical',
-    provenance: { kind: 'CONFIRMED', byMemberId: sid('m_renee'), at: now.toISOString() },
+    // In a visitor's copy the day is played from the morning, so Funmi noticed the
+    // drops running low the evening before, not at whatever real time the copy was made.
+    provenance: {
+      kind: 'CONFIRMED', byMemberId: sid('m_renee'),
+      at: (options.refillDueTonight ? todayAt(18, 30, new Date(now.getTime() - 86_400_000), TZ) : now).toISOString(),
+    },
     ownerId: null,
     dueAt: options.refillDueTonight
       ? todayAt(20, 0, now, TZ).toISOString()

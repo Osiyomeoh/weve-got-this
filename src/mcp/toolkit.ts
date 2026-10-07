@@ -65,13 +65,15 @@ export class ObligationRefError extends Error {}
  * The piece of work a tool call names: by id, or by the words for it when the planner
  * passed those instead (see domain/obligation-ref.ts). Never guesses between two.
  */
-export function obligationFrom(store: CareStore, ref: string, householdId: string): Obligation {
+export function obligationFrom(
+  store: CareStore, ref: string, householdId: string, opts: { finished?: boolean } = {},
+): Obligation {
   try {
     return store.getObligation(ref, householdId);
   } catch (err) {
     if (!(err instanceof NotFoundError)) throw err;
   }
-  const match = matchObligation(ref, store.getCareState(householdId).obligations);
+  const match = matchObligation(ref, store.getCareState(householdId).obligations, opts);
   if (match.kind === 'found') return match.obligation;
   const list = (os: Obligation[]) => os.map((o) => `"${o.what}" (obligationId ${o.id})`).join('; ');
   if (match.kind === 'ambiguous') {

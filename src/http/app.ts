@@ -90,6 +90,8 @@ const messenger = notifier ?? new RecordOnlyNotifier();
 // What the MCP tools read as "now": the story time inside a sandbox copy that asked for
 // one (see story-clock.ts), the real time everywhere else.
 const clock = storyAware(now ?? (() => new Date()));
+// The record's own times about the work (who asked, who took it on) follow the same clock.
+store.useClock(clock);
 const app = express();
 
 // Before anything touches the care record, make sure this process has the latest of it: another

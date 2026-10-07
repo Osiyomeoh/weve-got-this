@@ -35,16 +35,37 @@ function significant(s: string): string[] {
   return words(s).split(' ').filter((w) => w.length > 2 && !FILLER.has(w));
 }
 
-export function matchObligation(ref: string, obligations: Obligation[]): ObligationMatch {
+export function matchObligation(
+  ref: string, obligations: Obligation[], opts: { finished?: boolean } = {},
+): ObligationMatch {
   const byId = obligations.find((o) => o.id === ref);
   if (byId) return { kind: 'found', obligation: byId };
 
   const live = obligations.filter((o) => LIVE.has(o.status));
+  const inLive = matchIn(ref, live);
+  if (inLive) return inLive;
+  // A question about what happened ("where does it say the refill was picked up?") is
+  // about finished work. Only read-only callers ask for it; nothing acts on a closed task.
+  if (opts.finished) {
+    const done = matchIn(ref, obligations.filter((o) => !LIVE.has(o.status)));
+    if (done?.kind === 'found') return done;
+    // The same errand done more than once: the latest is the one being asked about.
+    if (done?.kind === 'ambiguous') {
+      const latest = [...done.options].sort((a, b) =>
+        (b.resolvedAt ?? b.createdAt).localeCompare(a.resolvedAt ?? a.createdAt))[0]!;
+      return { kind: 'found', obligation: latest };
+    }
+  }
+  return { kind: 'none', live };
+}
+
+/** The work in `pool` that the words fit, or undefined when nothing does. */
+function matchIn(ref: string, pool: Obligation[]): ObligationMatch | undefined {
   const said = words(ref);
-  if (!said) return { kind: 'none', live };
+  if (!said) return undefined;
 
   // The task's own words, or the gap line that starts with them.
-  const whole = live.filter((o) => {
+  const whole = pool.filter((o) => {
     const what = words(o.what);
     return what.length > 0 && (said === what || said.startsWith(`${what} `) || said.includes(what));
   });
@@ -53,12 +74,12 @@ export function matchObligation(ref: string, obligations: Obligation[]): Obligat
 
   // Part of it: every significant word said appears in the task.
   const key = significant(ref);
-  if (key.length === 0) return { kind: 'none', live };
-  const partial = live.filter((o) => {
+  if (key.length === 0) return undefined;
+  const partial = pool.filter((o) => {
     const what = new Set(words(o.what).split(' '));
     return key.every((w) => what.has(w));
   });
   if (partial.length === 1) return { kind: 'found', obligation: partial[0]! };
   if (partial.length > 1) return { kind: 'ambiguous', options: partial };
-  return { kind: 'none', live };
+  return undefined;
 }

@@ -73,6 +73,11 @@ test('closing a ride records what the doorbell saw, and "how do we know?" says i
   assert.match(why.text, /Around then the doorbell saw activity at the door at .* not proof on its own/);
   assert.match(why.text, /It is resolved\./);
   assert.doesNotMatch(why.text, /owns it/, 'finished work is not "owned" by anyone');
+
+  // Asked in words after it is done, as Tolu does in the world's 8:16 PM beat.
+  const byWords = await call('david-token', 'get_provenance', { obligationId: 'the pharmacy' });
+  assert.equal(byWords.isError, false, byWords.text);
+  assert.match(byWords.text, /It is resolved\./);
 });
 
 test('"can\'t make it after all" from the owner hands the work back; "on my way" keeps it', async () => {

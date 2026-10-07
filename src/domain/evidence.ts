@@ -51,10 +51,10 @@ export function hasDoorSensor(events: CareEvent[]): boolean {
   return events.some(isPresence);
 }
 
-/** "9:04 am", in the household's own time. */
+/** "9:04 AM", in the household's own time, written the way every other answer writes it. */
 export function clockAt(at: string, timezone: string): string {
   return new Date(at).toLocaleTimeString('en-US', { timeZone: timezone, hour: 'numeric', minute: '2-digit' })
-    .toLowerCase().replace(/\s/g, ' ');
+    .replace(/\s/g, ' ');
 }
 
 /** One signal as a plain line: what was seen and when, nothing about what it means. */

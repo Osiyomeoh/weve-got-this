@@ -20,7 +20,7 @@ import { describeError, guidance, reply, type ToolContext, obligationFrom } from
 /**
  * "How do we know that?"
  */
-export function registerGetProvenance({ server, store, actor, state, nameOf }: ToolContext): void {
+export function registerGetProvenance({ server, store, now, actor, state, nameOf }: ToolContext): void {
   server.registerTool('get_provenance', {
     title: 'Explain how the system knows something',
     description:
@@ -32,7 +32,10 @@ export function registerGetProvenance({ server, store, actor, state, nameOf }: T
       + 'gap or a claim. Speak the result verbatim - it is phrased to state a guess as a guess '
       + 'and an absent record as an absent record, and it never accuses anyone.',
     inputSchema: {
-      obligationId: z.string().describe('Which piece of work to explain. From get_care_gaps.'),
+      obligationId: z.string().describe(
+        'Which piece of work to explain: its obligationId, or the task\'s own words ("eye drops '
+        + 'refill"). Finished work counts, so "where does it say the refill was picked up?" works.',
+      ),
     },
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
     outputSchema: OUT.get_provenance,
@@ -40,10 +43,10 @@ export function registerGetProvenance({ server, store, actor, state, nameOf }: T
     try {
       const me = actor();
       requireCap(me, 'read_shift');
-      const o = obligationFrom(store, ref, me.householdId);
+      const o = obligationFrom(store, ref, me.householdId, { finished: true });
       const obligationId = o.id;
       const explanation = explainProvenance(
-        o, store.getTransitions(obligationId), state().events, nameOf, state().household.timezone,
+        o, store.getTransitions(obligationId), state().events, nameOf, state().household.timezone, now(),
       );
       return reply(explanation.spoken, {
         obligationId: explanation.obligationId,
