@@ -10,11 +10,14 @@ import { MODEL, preloadWorld } from '../world/models';
 import { Scene } from '../world/Scene';
 import { clockText, STORY, type ShotName } from '../world/story';
 import { SHOTS } from '../world/layout';
+import { FAMILIES, family, setFamily } from '../world/families';
+import type { CareCaseId } from '../lib/api';
 import '../world/world.css';
 
 preloadWorld([
   ...Object.values(CAST).map((p) => MODEL.character(p.model)),
-  MODEL.character('aid-sunglasses'), MODEL.car('sedan'),
+  ...Object.values(FAMILIES).map((f) => MODEL.character(f.recipient.model)),
+  MODEL.character('aid-sunglasses'), MODEL.character('wheelchair'), MODEL.car('sedan'),
 ]);
 
 /**
@@ -34,7 +37,11 @@ export default function World() {
     const shot = new URLSearchParams(window.location.search).get('shot');
     if (shot && shot in SHOTS) { director.look(shot as ShotName); director.choose(null); }
     // A hidden tab gets no animation frames; let a checking script step the scene by hand.
-    if (shot) Object.assign(window, { __advance: (t: number) => advance(t), __look: director.look, __pose: director.pose, __shots: SHOTS });
+    if (shot) Object.assign(window, {
+      __advance: (t: number) => advance(t), __look: director.look, __pose: director.pose, __shots: SHOTS,
+      // Switch family, then __look() any shot to redraw with them in it.
+      __family: (id: CareCaseId) => setFamily(id),
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -108,7 +115,7 @@ export default function World() {
       {view.status === 'done' && (
         <div className="world-panel">
           <h3>One day, one record</h3>
-          <p>Daddy logged his own care by voice. A promise made on one phone was followed up by the agent when it slipped. A doorbell added evidence without claiming to know who. And when nobody knew, it was said as a question.</p>
+          <p>{family().ending}</p>
           <div className="row">
             <button className="world-btn" onClick={() => void director.restart().then(() => director.choose(null)).then(() => director.restart())}>Play as someone else</button>
             <button className="world-btn ghost" onClick={() => void director.restart()}>Watch again</button>
@@ -142,17 +149,28 @@ function ExposeForChecking() {
 }
 
 function CastPicker({ onChoose }: { onChoose: (who: PersonKey | null) => void }) {
+  const [which, setWhich] = useState<CareCaseId>(family().id);
+  const pick = (id: CareCaseId) => { setFamily(id); setWhich(id); };
+  const f = FAMILIES[which];
   const choose = async (who: PersonKey | null) => {
     // A fresh copy of the family for every visit: nothing anyone else did is in it.
-    await api.resetSandbox({ liveMorning: true }).catch(() => undefined);
+    await api.resetSandbox({ liveMorning: true, careCase: which }).catch(() => undefined);
     onChoose(who);
   };
   return (
     <div className="world-cast">
       <h1>Who are you in this family?</h1>
+      <div className="world-families" role="tablist" aria-label="Which family">
+        {Object.values(FAMILIES).map((x) => (
+          <button key={x.id} role="tab" aria-selected={x.id === which}
+            className={`world-family${x.id === which ? ' on' : ''}`} onClick={() => pick(x.id)}>
+            <span className="name">{x.label}</span>
+            <span className="tag">{x.tagline}</span>
+          </button>
+        ))}
+      </div>
       <p className="lede">
-        A week after eye surgery, Daddy can't read a screen. His son Tolu is across town at work. Musa drives for the family.
-        Pick one of them. The others are played for you. Every word goes to the real Alexa+ planner, on your own copy of their care record.
+        {f.lede} Pick one of them. The others are played for you. Every word goes to the real Alexa+ planner, on your own copy of their care record.
       </p>
       <div className="world-cast-cards">
         {PLAYABLE.map((key) => {
@@ -167,7 +185,11 @@ function CastPicker({ onChoose }: { onChoose: (who: PersonKey | null) => void })
         })}
       </div>
       <button className="world-btn ghost" onClick={() => void choose(null)}>Just watch the day</button>
-      <p className="fine">A simulation of a real family's week, run on the live CareCircle server. Your copy is thrown away when you restart.</p>
+      <p className="fine">
+        {f.simulated
+          ? 'A simulated family, run on the live CareCircle server. The coordination is real; the family is made up to show it around a different need. Your copy is thrown away when you restart.'
+          : 'A simulation of a real family\'s week, run on the live CareCircle server. Your copy is thrown away when you restart.'}
+      </p>
     </div>
   );
 }

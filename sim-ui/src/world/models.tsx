@@ -43,7 +43,7 @@ export function Model({ url, tint, shadows = true, center = true, ...rest }: Pro
   return <group {...rest}><primitive object={copy} /></group>;
 }
 
-export type Anim = 'idle' | 'walk' | 'sit' | 'drive' | 'emote-yes' | 'emote-no' | 'interact-right' | 'pick-up' | 'holding-right' | 'wheelchair-sit';
+export type Anim = 'idle' | 'walk' | 'sit' | 'drive' | 'emote-yes' | 'emote-no' | 'interact-right' | 'pick-up' | 'holding-right' | 'wheelchair-sit' | 'wheelchair-move-forward';
 
 export interface Gesture { kind: 'nod' | 'shake'; key: number }
 
@@ -107,6 +107,9 @@ export function Character({
   look = null, talking = false, phone = false, typing = false, gesture = null,
 }: CharacterProps) {
   const { scene, animations } = useGLTF(MODEL.character(model));
+  // In a wheelchair they sit to rest and roll to move; the chair goes everywhere they do.
+  const rest: Anim = aid === 'wheelchair' ? 'wheelchair-sit' : anim;
+  const moving: Anim = aid === 'wheelchair' ? 'wheelchair-move-forward' : 'walk';
   const rig = useMemo(() => {
     const c = cloneSkinned(scene) as THREE.Object3D;
     c.traverse((o) => { if ((o as THREE.Mesh).isMesh) { o.castShadow = true; o.receiveShadow = true; } });
@@ -143,10 +146,10 @@ export function Character({
   useEffect(() => {
     target.current.set(...position);
     const here = root.current?.position;
-    if (here && here.distanceTo(target.current) > 0.05) { walking.current = true; play('walk'); }
-    else play(anim);
+    if (here && here.distanceTo(target.current) > 0.05) { walking.current = true; play(moving); }
+    else play(rest);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [position[0], position[1], position[2], anim, actions]);
+  }, [position[0], position[1], position[2], rest, actions]);
 
   // Start where they belong, not walking in from the origin.
   useEffect(() => { root.current?.position.set(...position); /* eslint-disable-next-line */ }, []);
@@ -169,7 +172,7 @@ export function Character({
       if (d < 0.03) {
         g.position.copy(target.current);
         walking.current = false;
-        play(anim);
+        play(rest);
       } else {
         g.position.add(to.normalize().multiplyScalar(Math.min(d, speed * dt)));
         g.rotation.y = Math.atan2(to.x, to.z);
@@ -241,6 +244,7 @@ export function Character({
       <primitive object={rig} />
       {aid === 'sunglasses' && <Accessory url={MODEL.character('aid-sunglasses')} rig={rig} />}
       {aid === 'glasses' && <Accessory url={MODEL.character('aid-glasses')} rig={rig} />}
+      {aid === 'wheelchair' && <Model url={MODEL.character('wheelchair')} center={false} />}
       {bones.armR && <Handset arm={bones.armR.bone} shown={phone} />}
     </group>
   );

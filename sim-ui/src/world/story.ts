@@ -35,13 +35,68 @@ export interface Beat {
   steps: Step[];
 }
 
-export const STORY: Beat[] = [
+/**
+ * The words of one family's day. The shape of the day is the same for every family: it is
+ * the coordination being shown, not a condition. What changes is who is cared for, what
+ * they take, where Thursday's ride goes, and the one moment their need makes different.
+ */
+export interface Words {
+  /** How the family speaks of them: "Daddy", "Mama", "Baba". */
+  who: string;
+  /** "his" / "her". */
+  his: string;
+  /** "him" / "her". */
+  him: string;
+  /** The opening caption, over their home. */
+  intro: string;
+  /** What the morning beat's card says about them. */
+  morningPoint: string;
+  /** What they say as their morning dose is taken. */
+  logMorning: string;
+  /** The refill, as Tolu asks for it. */
+  refill: string;
+  /** The ride, as it is said. */
+  ride: string;
+  /** "eye drops", "blood pressure tablet": the evening dose. */
+  evening: string;
+  /** How the dose is said: you "use" eye drops and "take" a tablet. */
+  use: { present: string; past: string };
+  /** What Musa hands over at the door. */
+  handover: string;
+  /**
+   * The moment this family's need changes the day, played right after the morning.
+   * Memory loss: asking again, and the record answering the same way, calmly.
+   */
+  extraMorning?: Step[];
+  /**
+   * Thursday's ride. Default: Tolu takes it on himself. Wheelchair: Musa is asked, says no
+   * with his reason, and the loop moves on instead of stalling.
+   */
+  rideSteps?: Step[];
+  ridePoint?: string;
+}
+
+export const EYES: Words = {
+  who: 'Daddy', his: 'his', him: 'him',
+  intro: 'Daddy is a week out of eye surgery. He can\'t read a screen, so he talks.',
+  morningPoint: 'The person cared for is a participant, not a monitored subject. He records his own care.',
+  logMorning: 'Alexa, I used my eye drops.',
+  refill: 'Daddy\'s eye drops refill',
+  ride: 'Daddy to his eye check-up',
+  evening: 'eye drops',
+  use: { present: 'use', past: 'used' },
+  handover: 'Good evening, sir. Your eye drops.',
+};
+
+export function storyFor(w: Words): Beat[] {
+  return [
   {
-    id: 'morning', at: [7, 42], title: 'Daddy\'s morning',
-    point: 'The person cared for is a participant, not a monitored subject. He records his own care.',
+    id: 'morning', at: [7, 42], title: `${w.who}'s morning`,
+    point: w.morningPoint,
     steps: [
-      { kind: 'caption', text: 'Daddy is a week out of eye surgery. He can\'t read a screen, so he talks.', shot: 'daddy', ms: 3200 },
-      { kind: 'line', who: 'daddy', via: 'echo', text: 'Alexa, I used my eye drops.', expect: ['log_care_event'] },
+      { kind: 'caption', text: w.intro, shot: 'daddy', ms: 3200 },
+      { kind: 'line', who: 'daddy', via: 'echo', text: w.logMorning, expect: ['log_care_event'] },
+      ...(w.extraMorning ?? []),
     ],
   },
   {
@@ -50,16 +105,16 @@ export const STORY: Beat[] = [
     steps: [
       { kind: 'caption', text: 'Across town, Tolu has ten minutes between meetings.', shot: 'tolu', ms: 2600 },
       { kind: 'line', who: 'tolu', via: 'echo', text: 'Alexa, what\'s going to fall through the cracks this week?', expect: ['get_care_gaps'] },
-      { kind: 'line', who: 'tolu', via: 'echo', text: 'Ask Musa if he can pick up Daddy\'s eye drops refill tonight.', expect: ['request_owner'] },
+      { kind: 'line', who: 'tolu', via: 'echo', text: `Ask Musa if he can pick up ${w.refill} tonight.`, expect: ['request_owner'] },
       { kind: 'shot', shot: 'musa', ms: 1800 },
       { kind: 'line', who: 'musa', via: 'phone', text: 'Yes, I\'ll do it.', expect: ['respond_to_request'], shot: 'musa' },
     ],
   },
   {
     id: 'ride', at: [12, 34], title: 'Thursday\'s ride',
-    point: 'Work has an owner or it is a gap. Tolu takes the check-up ride himself.',
-    steps: [
-      { kind: 'line', who: 'tolu', via: 'echo', text: 'I\'ll take Daddy to his eye check-up on Thursday.', expect: ['claim_obligation'], shot: 'tolu' },
+    point: w.ridePoint ?? 'Work has an owner or it is a gap. Tolu takes the ride himself.',
+    steps: w.rideSteps ?? [
+      { kind: 'line', who: 'tolu', via: 'echo', text: `I'll take ${w.ride} on Thursday.`, expect: ['claim_obligation'], shot: 'tolu' },
     ],
   },
   {
@@ -71,17 +126,17 @@ export const STORY: Beat[] = [
       { kind: 'lapse', to: [19, 58], seconds: 2.5, shot: 'overview' },
       { kind: 'musa', stage: 'driving', ms: 3500 },
       { kind: 'musa', stage: 'atDoor', shot: 'door', ms: 3200 },
-      // Daddy hears the bell and gets up, slowly, while the doorbell reports what it saw.
+      // They hear the bell and come to the door, slowly, while the doorbell reports what it saw.
       { kind: 'move', who: 'daddy', to: 'door' },
       {
         kind: 'signal', source: 'ring', tool: 'ingest_signal', args: { source: 'ring', kind: 'motion' }, shot: 'door',
-        caption: 'Ring sees someone at Daddy\'s door at 7:58. It can say a person. It can\'t say who.',
+        caption: `Ring sees someone at ${w.who}'s door at 7:58. It can say a person. It can't say who.`,
       },
-      { kind: 'aside', who: 'musa', to: 'daddy', text: 'Good evening, sir. Your eye drops.', shot: 'door' },
+      { kind: 'aside', who: 'musa', to: 'daddy', text: w.handover, shot: 'door' },
       { kind: 'aside', who: 'daddy', to: 'musa', text: 'Thank you, Musa.', listener: 'nod' },
       { kind: 'move', who: 'daddy', to: 'home' },
       { kind: 'musa', stage: 'backInCar', shot: 'overview', ms: 3000 },
-      { kind: 'caption', text: 'Daddy knows who came. The record only knows someone did. Musa drives on, and never says it\'s done.', ms: 3600 },
+      { kind: 'caption', text: `${w.who} knows who came. The record only knows someone did. Musa drives on, and never says it's done.`, ms: 3600 },
     ],
   },
   {
@@ -94,8 +149,8 @@ export const STORY: Beat[] = [
         caption: 'The pharmacy run was due at 8:00. CareCircle\'s own pass notices, and asks the one person who said yes.',
       },
       { kind: 'shot', shot: 'musa', ms: 2600 },
-      { kind: 'line', who: 'musa', via: 'phone', text: 'Done. I dropped them with him at eight.', expect: ['resolve_obligation'], shot: 'musa' },
-      { kind: 'line', who: 'tolu', via: 'echo', text: 'Where does it say the eye drops refill was picked up? Show me the trail.', expect: ['get_provenance'], shot: 'tolu' },
+      { kind: 'line', who: 'musa', via: 'phone', text: `Done. I dropped them with ${w.him} at eight.`, expect: ['resolve_obligation'], shot: 'musa' },
+      { kind: 'line', who: 'tolu', via: 'echo', text: `Where does it say ${w.refill} was picked up? Show me the trail.`, expect: ['get_provenance'], shot: 'tolu' },
     ],
   },
   {
@@ -103,13 +158,21 @@ export const STORY: Beat[] = [
     point: 'No record is not the same as "didn\'t happen". It is said as a question, never as a failure.',
     steps: [
       { kind: 'lapse', to: [21, 10], seconds: 2, shot: 'overview' },
-      { kind: 'line', who: 'tolu', via: 'echo', text: 'Did Daddy use his evening eye drops?', shot: 'tolu' },
+      { kind: 'line', who: 'tolu', via: 'echo', text: `Did ${w.who} ${w.use.present} ${w.his} evening ${w.evening}?`, shot: 'tolu' },
       { kind: 'shot', shot: 'daddyTv', ms: 3500 },
-      { kind: 'line', who: 'daddy', via: 'echo', text: 'Alexa, I used my evening eye drops at ten to eight.', expect: ['log_care_event'], shot: 'daddy' },
-      { kind: 'caption', text: 'One record. The question cleared for the whole family at once, on Daddy\'s TV too.', shot: 'both', ms: 3600 },
+      { kind: 'line', who: 'daddy', via: 'echo', text: `Alexa, I ${w.use.past} my evening ${w.evening} at ten to eight.`, expect: ['log_care_event'], shot: 'daddy' },
+      { kind: 'caption', text: `One record. The question cleared for the whole family at once, on ${w.who}'s TV too.`, shot: 'both', ms: 3600 },
     ],
   },
-];
+  ];
+}
+
+/**
+ * The day being played. One family at a time per page, and the people keep their keys
+ * ("daddy" is always the person cared for, as m_margaret is on the server), so choosing a
+ * family rewrites this in place rather than threading a story through every component.
+ */
+export const STORY: Beat[] = storyFor(EYES);
 
 /** The household lives in Lagos (UTC+1, no daylight saving). */
 const LAGOS_OFFSET_H = 1;

@@ -3,6 +3,7 @@ import { api, type BoardState, type ToolCall } from '../lib/api';
 import { ALEXA_VOICE, CAST, type PersonKey } from './cast';
 import { DEVICE, HUB, SHOTS, SPOT, v3, type V3 } from './layout';
 import { lagosToday, STORY, type ShotName, type Stage, type Step } from './story';
+import { family } from './families';
 import { hush, prepare, speak, wait } from './voice';
 import type { Glow, PulseSpec } from './devices';
 import type { Gesture } from './models';
@@ -71,7 +72,8 @@ function personNamed(name: string): PersonKey | null {
   const n = name.toLowerCase();
   if (n.includes('musa')) return 'musa';
   if (n.includes('tolu')) return 'tolu';
-  if (n.includes('daddy') || n.includes('joseph')) return 'daddy';
+  // The person cared for, by what the family calls them or the name on the record.
+  if (['daddy', 'joseph', 'mama', 'grace', 'baba', 'adewale'].some((k) => n.includes(k))) return 'daddy';
   return null;
 }
 
@@ -310,7 +312,9 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
       for (let b = from; b < STORY.length; b++) {
         const beat = STORY[b]!;
         set({ beat: b });
-        if (storyNow().getTime() < lagosToday(beat.at[0], beat.at[1]).getTime() && !beat.steps.some((s) => s.kind === 'lapse')) {
+        // A beat that opens with a lapse runs the clock there itself; any other starts at its time,
+        // even if the clock runs on later in the beat (Mama asks again at 9:05).
+        if (storyNow().getTime() < lagosToday(beat.at[0], beat.at[1]).getTime() && beat.steps[0]?.kind !== 'lapse') {
           setClock(lagosToday(beat.at[0], beat.at[1]));
         }
         for (const step of beat.steps) {
@@ -363,7 +367,7 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     seen.current.clear();
     busy.current.clear();
     lastNotice.current = {};
-    await api.resetSandbox({ liveMorning: true }).catch(() => undefined);
+    await api.resetSandbox({ liveMorning: true, careCase: family().id }).catch(() => undefined);
     clock.current = { at: START.clock.getTime(), setAt: Date.now() };
     setView((v) => ({ ...START, playing: v.playing, status: 'ready' }));
   }, []);

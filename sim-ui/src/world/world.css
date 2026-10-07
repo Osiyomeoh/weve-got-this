@@ -125,3 +125,14 @@
   .world-caption { font-size: 15px; bottom: 84px; }
   .world-time { font-size: 24px; }
 }
+
+/* Which family: the real one first, the simulated ones labelled as such. */
+.world-families { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin: 4px 0 10px; }
+.world-family {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 150px;
+  padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.04); color: inherit; cursor: pointer; text-align: left; font: inherit;
+}
+.world-family .name { font-weight: 600; }
+.world-family .tag { font-size: 12px; opacity: .7; }
+.world-family.on { border-color: #ffd27a; background: rgba(255,210,122,.12); }

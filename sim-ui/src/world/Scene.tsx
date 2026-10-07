@@ -163,8 +163,9 @@ function Lamp({ at, night }: { at: V3; night: boolean }) {
 const local = (base: V3, x: number, y: number, z: number): V3 => [base[0] + x, base[1] + y, base[2] + z];
 
 const LAPTOP = local(TOLU, -0.1, 0.45, -0.95);
-/** Where Daddy is: in his chair, or up at the front door. */
-const daddySpot = (at: Presence['at']): V3 => (at === 'door' ? SPOT.daddyDoor : local(SPOT.daddyChair, 0, 0.12, 0.08));
+/** Where Daddy is: in his chair, or up at the front door. In a wheelchair, his own chair is the seat. */
+const daddySpot = (at: Presence['at']): V3 => (at === 'door' ? SPOT.daddyDoor
+  : CAST.daddy!.aid === 'wheelchair' ? SPOT.daddyChair : local(SPOT.daddyChair, 0, 0.12, 0.08));
 
 /** The point in the world a person's attention goes to. */
 function lookPoint(who: PersonKey, look: LookAt, people: WorldView['people']): V3 | null {
@@ -212,7 +213,7 @@ function DaddysHouse({ view, night }: { view: WorldView; night: boolean }) {
       <Room at={DADDY} w={4} d={3.6} floor="#a7764a" wall="#efe2c9" low={['front', 'right']} />
       <Window at={local(DADDY, -1, 0.7, -1.75)} night={night} />
       <Model url={MODEL.furniture('rugRectangle')} position={local(DADDY, 0.1, 0.04, 0)} scale={1.2} />
-      <Model url={MODEL.furniture('loungeChairRelax')} position={SPOT.daddyChair} rotation={[0, FACE.away, 0]} />
+      {daddy.aid !== 'wheelchair' && <Model url={MODEL.furniture('loungeChairRelax')} position={SPOT.daddyChair} rotation={[0, FACE.away, 0]} />}
       <Model url={MODEL.furniture('sideTable')} position={local(DADDY, 0.95, 0.04, 0.45)} rotation={[0, Math.PI / 2, 0]} />
       <Model url={MODEL.furniture('cabinetTelevision')} position={local(DADDY, 0, 0.04, -1.6)} />
       <Model url={MODEL.furniture('loungeSofa')} position={local(DADDY, -1.35, 0.04, 0.2)} rotation={[0, FACE.right, 0]} />
@@ -234,7 +235,7 @@ function DaddysHouse({ view, night }: { view: WorldView; night: boolean }) {
       <group position={SPOT.daddyChair}>
         <PhoneBubble who="daddy" message={view.phones.daddy} listening={view.phoneListening === 'daddy'} />
       </group>
-      {/* A week after eye surgery: he gets up slowly, and walks slowly. */}
+      {/* Whoever is cared for moves at their own pace: slowly after eye surgery, steadily in a chair. */}
       <Character model={daddy.model} anim={view.people.daddy!.at === 'door' ? 'idle' : 'sit'} position={daddySpot(view.people.daddy!.at)}
         facing={view.people.daddy!.at === 'door' ? FACE.toward : FACE.away} scale={PERSON_SCALE} aid={daddy.aid} speed={0.5}
         {...alive('daddy', view.people)} />
