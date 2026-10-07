@@ -156,6 +156,32 @@ test('an American copy: Mom in Dayton on Eastern time, Mike nearby, Sarah in Chi
   assert.ok(gaps.structuredContent.gaps.some((g: { spoken: string }) => /cardiology/.test(g.spoken)));
 });
 
+test('make it yours: a copy carries the visitor\'s own names, and odd ones are refused', async () => {
+  const names = { recipient: 'Mum', primary: 'Ada', caregiver: 'Tolu', away: 'Chidi', helper: 'Sarah' };
+  const c = (await create(KEY, { careCase: 'us', liveMorning: true, names })).json;
+  const s = store.getCareState(c.householdId);
+  const by = (id: string) => s.members.find((m) => m.id === `${id}${c.suffix}`)!;
+  assert.equal(s.household.name, "Mum's care circle");
+  assert.deepEqual([by('m_margaret').name, by('m_margaret').spokenAs], ['Mum', 'Mum']);
+  // Renamed all at once: the visitor's "Tolu" is the caregiver, never renamed again.
+  assert.deepEqual([by('m_david').name, by('m_renee').name, by('m_kunle').name, by('m_aide').name], ['Ada', 'Tolu', 'Chidi', 'Sarah']);
+  assert.equal(by('m_david').livesAway, 'Chicago', 'the case still decides where people live');
+  assert.ok(s.obligations.some((o) => o.what === 'Drive Mum to her cardiology follow-up'));
+  assert.ok(!JSON.stringify(s).includes('Mom'), 'no trace of the case\'s own names');
+
+  for (const bad of [
+    { ...names, helper: 'Ada' },
+    { ...names, away: '<script>' },
+    { ...names, away: 'x'.repeat(40) },
+    { ...names, extra: 'Bob' },
+    { recipient: 'Mum' },
+  ]) {
+    const d = (await create(KEY, { careCase: 'us', names: bad })).json;
+    const m = store.getCareState(d.householdId).members.find((x) => x.id === `m_margaret${d.suffix}`)!;
+    assert.equal(m.spokenAs, 'Mom', `refused: ${JSON.stringify(bad)}`);
+  }
+});
+
 test('a press on the Fire TV remote is still her word: recorded as pressed on the TV, reported not observed', async () => {
   const c = (await create(KEY, { careCase: 'hometown', liveMorning: true })).json;
   await callTool(c.tokens.m_margaret, 'log_care_event',

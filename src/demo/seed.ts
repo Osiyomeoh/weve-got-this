@@ -1,5 +1,5 @@
 import type { CareStore } from '../store/store.js';
-import { CASES, type CareCaseId } from './cases.js';
+import { careCaseFor, type CareCaseId, type FamilyNames } from './cases.js';
 
 /**
  * The demo household: Daddy, going on 70 in Lagos, two of his grown children nearby, a
@@ -28,9 +28,9 @@ export const DEMO_TOKENS: Record<string, string> = {
 export const DEMO_HOUSEHOLD_ID = 'h_margaret';
 
 export async function seedDemoHousehold(
-  store: CareStore, options: { suffix?: string; careCase?: CareCaseId } = {},
+  store: CareStore, options: { suffix?: string; careCase?: CareCaseId; names?: FamilyNames } = {},
 ): Promise<void> {
-  const c = CASES[options.careCase ?? 'eyes'];
+  const c = careCaseFor(options.careCase, options.names);
   // A suffix gives a per-visitor sandbox copy ids of its own; ids are global keys.
   const sid = (id: string): string => `${id}${options.suffix ?? ''}`;
   const HOUSEHOLD_ID = sid(DEMO_HOUSEHOLD_ID);

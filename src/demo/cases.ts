@@ -134,3 +134,78 @@ export const CASES: Record<CareCaseId, CareCase> = {
 export function isCareCase(v: unknown): v is CareCaseId {
   return typeof v === 'string' && (CARE_CASES as readonly string[]).includes(v);
 }
+
+/**
+ * "Make it yours": the names a visitor's own family goes by, put over one of the cases.
+ * The case still decides the need, the country and the wording; only names change. They
+ * live in that visitor's throwaway copy and nowhere else: never logged, never kept.
+ */
+export interface FamilyNames {
+  /** What the visitor calls the person cared for: "Mum", "Uncle Femi". */
+  recipient: string;
+  /** Who coordinates (m_david), usually the visitor. */
+  primary: string;
+  /** A second family caregiver (m_renee). */
+  caregiver: string;
+  /** Someone far away who wants the daily update (m_kunle). */
+  away: string;
+  /** Who helps in person nearby (m_aide). */
+  helper: string;
+}
+
+const NAME = /^\p{L}[\p{L}' -]{0,22}\p{L}$|^\p{L}$/u;
+const NAME_KEYS = ['recipient', 'primary', 'caregiver', 'away', 'helper'] as const;
+
+/** Names read from an untrusted body: each a short name of letters, and all different. */
+export function isFamilyNames(v: unknown): v is FamilyNames {
+  if (!v || typeof v !== 'object') return false;
+  const o = v as Record<string, unknown>;
+  if (Object.keys(o).some((k) => !(NAME_KEYS as readonly string[]).includes(k))) return false;
+  const names = NAME_KEYS.map((k) => o[k]);
+  if (!names.every((n) => typeof n === 'string' && NAME.test(n))) return false;
+  return new Set((names as string[]).map((n) => n.toLowerCase())).size === names.length;
+}
+
+/** The names a case already uses, in the same order as FamilyNames. */
+export function caseNames(c: CareCase): FamilyNames {
+  return {
+    recipient: c.recipient.spokenAs,
+    primary: c.family?.primary.name ?? 'Tolu',
+    caregiver: c.family?.caregiver.name ?? 'Funmi',
+    away: c.family?.away.name ?? 'Kunle',
+    helper: c.helper ?? 'Musa',
+  };
+}
+
+/**
+ * Put one set of names over another, whole words only and all at once, so a visitor
+ * calling their helper "Tolu" never gets renamed twice.
+ */
+export function renameAll<T>(value: T, from: FamilyNames, to: FamilyNames): T {
+  const map = new Map(NAME_KEYS.map((k) => [from[k], to[k]]));
+  const words = [...map.keys()].sort((a, b) => b.length - a.length).map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const re = new RegExp(`(?<![\\p{L}])(${words.join('|')})(?![\\p{L}])`, 'gu');
+  const walk = (x: unknown): unknown => typeof x === 'string' ? x.replace(re, (w) => map.get(w) ?? w)
+    : Array.isArray(x) ? x.map(walk)
+    : x && typeof x === 'object' ? Object.fromEntries(Object.entries(x).map(([k, v]) => [k, walk(v)]))
+    : x;
+  return walk(value) as T;
+}
+
+/** A case with the visitor's own names, or the case as it is when they gave none. */
+export function careCaseFor(id: CareCaseId = 'eyes', names?: FamilyNames): CareCase {
+  const base = CASES[id];
+  if (!names) return base;
+  const c = renameAll(base, caseNames(base), names);
+  // The formal name is the case's own (Joseph, Linda); a visitor's family goes by what they typed.
+  return {
+    ...c,
+    recipient: { ...c.recipient, name: names.recipient, spokenAs: names.recipient },
+    helper: names.helper,
+    family: {
+      primary: { name: names.primary, ...(base.family?.primary.livesAway ? { livesAway: base.family.primary.livesAway } : {}) },
+      caregiver: { name: names.caregiver, ...(base.family?.caregiver.livesAway ? { livesAway: base.family.caregiver.livesAway } : {}) },
+      away: { name: names.away, livesAway: base.family?.away.livesAway ?? 'London' },
+    },
+  };
+}

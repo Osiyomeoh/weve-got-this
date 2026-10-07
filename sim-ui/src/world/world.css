@@ -189,3 +189,11 @@
 .world-meant label { display: block; margin-bottom: 10px; line-height: 1.45; color: rgba(255, 255, 255, 0.8); }
 .world-meant .ok { color: #7cf0c8; margin: 0; }
 .world-meant .world-btn:disabled { opacity: 0.45; cursor: default; }
+
+/* "Make it yours": the visitor's own family's names. */
+.world-yours { width: min(680px, 100%); padding: 16px; border-radius: 16px; background: rgba(255, 255, 255, 0.06); display: flex; flex-direction: column; gap: 12px; }
+.world-yours .grid { display: grid; align-items: end; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px 14px; }
+.world-yours label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; opacity: 0.9; text-align: left; }
+.world-yours input { font: inherit; font-size: 15px; padding: 9px 12px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(0, 0, 0, 0.35); color: #fff; }
+.world-yours .row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.world-yours .world-btn:disabled { opacity: 0.45; cursor: default; }

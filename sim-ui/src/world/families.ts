@@ -213,21 +213,66 @@ export const FAMILIES: Record<CareCaseId, Family> = {
 };
 
 let current: CareCaseId = 'eyes';
+let names: FamilyNames | null = null;
 
-/** The family being played. */
-export function family(): Family { return FAMILIES[current]; }
+/**
+ * "Make it yours": what the visitor's own family is called, over one of the families. The
+ * family still decides the need, the country and the wording; only names change. They go
+ * to the visitor's throwaway copy on the server (src/demo/cases.ts) and nowhere else.
+ */
+export interface FamilyNames { recipient: string; primary: string; caregiver: string; away: string; helper: string }
+
+/** The names each family already goes by, matching the server's caseNames(). */
+export const BASE_NAMES: Record<CareCaseId, FamilyNames> = {
+  eyes: { recipient: 'Daddy', primary: 'Tolu', caregiver: 'Funmi', away: 'Kunle', helper: 'Musa' },
+  memory: { recipient: 'Mama', primary: 'Tolu', caregiver: 'Funmi', away: 'Kunle', helper: 'Musa' },
+  wheelchair: { recipient: 'Baba', primary: 'Tolu', caregiver: 'Funmi', away: 'Kunle', helper: 'Musa' },
+  hometown: { recipient: 'Mummy', primary: 'Tolu', caregiver: 'Funmi', away: 'Kunle', helper: 'Bisi' },
+  us: { recipient: 'Mom', primary: 'Sarah', caregiver: 'Jen', away: 'Tom', helper: 'Mike' },
+};
+
+const NAME = /^\p{L}[\p{L}' -]{0,22}\p{L}$|^\p{L}$/u;
+const KEYS = ['recipient', 'primary', 'caregiver', 'away', 'helper'] as const;
+
+/** Why these names can't be used, or null when they can. The server checks the same. */
+export function namesProblem(n: FamilyNames): string | null {
+  for (const k of KEYS) if (!NAME.test(n[k].trim())) return n[k].trim() ? `"${n[k].trim()}" isn't a name we can use: letters only, up to 24.` : 'Every person needs a name.';
+  if (new Set(KEYS.map((k) => n[k].trim().toLowerCase())).size < KEYS.length) return 'Give each person a different name.';
+  return null;
+}
+
+/** Whole words, all at once, so a helper the visitor calls "Tolu" is never renamed twice. */
+function renameAll<T>(value: T, from: FamilyNames, to: FamilyNames): T {
+  const map = new Map(KEYS.map((k) => [from[k], to[k]]));
+  const re = new RegExp(`(?<![\\p{L}])(${[...map.keys()].sort((a, b) => b.length - a.length).join('|')})(?![\\p{L}])`, 'gu');
+  const walk = (x: unknown): unknown => typeof x === 'string' ? x.replace(re, (w) => map.get(w) ?? w)
+    : Array.isArray(x) ? x.map(walk)
+    : x && typeof x === 'object' ? Object.fromEntries(Object.entries(x).map(([k, v]) => [k, walk(v)]))
+    : x;
+  return walk(value) as T;
+}
+
+/** The family being played, in the visitor's own names when they gave them. */
+export function family(): Family {
+  return names ? renameAll(FAMILIES[current], BASE_NAMES[current], names) : FAMILIES[current];
+}
+
+/** The visitor's own names, or null when they are playing the family as it is. */
+export function familyNames(): FamilyNames | null { return names; }
 
 /**
  * Make this the family the world plays. The people keep their keys - "daddy" is always the
  * person cared for - so the cast and the day are rewritten in place.
  */
-export function setFamily(id: CareCaseId): void {
+export function setFamily(id: CareCaseId, own: FamilyNames | null = null): void {
   current = id;
-  const f = FAMILIES[id];
+  names = own ? Object.fromEntries(KEYS.map((k) => [k, own[k].trim()])) as unknown as FamilyNames : null;
+  const f = family();
+  const mine = <T,>(x: T): T => (names ? renameAll(x, BASE_NAMES[id], names) : x);
   // Start from the real recipient each time, so an aid never carries over from another family.
-  CAST.daddy = { ...EYES_RECIPIENT, aid: undefined, ...f.recipient };
-  CAST.tolu = { ...TOLU, ...f.tolu, role: f.toluRole, playAs: f.toluPlayAs ?? TOLU.playAs };
-  CAST.musa = { ...MUSA, ...f.helper };
+  CAST.daddy = mine({ ...EYES_RECIPIENT, aid: undefined, ...f.recipient });
+  CAST.tolu = mine({ ...TOLU, ...f.tolu, role: f.toluRole, playAs: f.toluPlayAs ?? TOLU.playAs });
+  CAST.musa = mine({ ...MUSA, ...f.helper });
   setHomeZone(COUNTRIES[f.country].zone);
-  STORY.splice(0, STORY.length, ...storyFor(f.words));
+  STORY.splice(0, STORY.length, ...mine(storyFor(f.words)));
 }

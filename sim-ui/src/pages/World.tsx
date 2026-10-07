@@ -11,7 +11,7 @@ import { Scene } from '../world/Scene';
 import { clockText, homeToday, STORY, type ShotName } from '../world/story';
 import { SHOTS } from '../world/layout';
 import { impactOf } from '../world/impact';
-import { COUNTRIES, FAMILIES, family, setFamily, type Country } from '../world/families';
+import { BASE_NAMES, COUNTRIES, FAMILIES, family, familyNames, namesProblem, setFamily, type Country, type FamilyNames } from '../world/families';
 import type { Stuck } from '../world/director';
 import type { CareCaseId } from '../lib/api';
 import type { Key } from '../lib/dpad';
@@ -191,14 +191,18 @@ function ExposeForChecking() {
 
 function CastPicker({ onChoose, onFamily }: { onChoose: (who: PersonKey | null) => void; onFamily: () => void }) {
   const [which, setWhich] = useState<CareCaseId>(family().id);
-  const pick = (id: CareCaseId) => { setFamily(id); setWhich(id); onFamily(); };
-  const f = FAMILIES[which];
+  const [own, setOwn] = useState<FamilyNames | null>(familyNames());
+  const [editing, setEditing] = useState(false);
+  // A new family drops the visitor's names: they were written for the one before.
+  const pick = (id: CareCaseId) => { setFamily(id); setWhich(id); setOwn(null); setEditing(false); onFamily(); };
+  const useNames = (n: FamilyNames | null) => { setFamily(which, n); setOwn(n); setEditing(false); onFamily(); };
+  const f = family();
   // Country first, then the family: the same coordination, in a home the visitor knows.
   const country = f.country;
   const goTo = (c: Country) => { if (c !== country) pick(Object.values(FAMILIES).find((x) => x.country === c)!.id); };
   const choose = async (who: PersonKey | null) => {
     // A fresh copy of the family for every visit: nothing anyone else did is in it.
-    await api.resetSandbox({ liveMorning: true, careCase: which }).catch(() => undefined);
+    await api.resetSandbox({ liveMorning: true, careCase: which, ...(own ? { names: own } : {}) }).catch(() => undefined);
     onChoose(who);
   };
   return (
@@ -224,6 +228,11 @@ function CastPicker({ onChoose, onFamily }: { onChoose: (who: PersonKey | null) 
       <p className="lede">
         {f.lede} Pick one of them. The others are played for you. Every word goes to the real Alexa+ planner, on your own copy of their care record.
       </p>
+      {editing
+        ? <MakeItYours base={BASE_NAMES[which]} start={own ?? BASE_NAMES[which]} onDone={useNames} onCancel={() => setEditing(false)} />
+        : <button type="button" className="world-link" onClick={() => setEditing(true)}>
+            {own ? `Playing with your names (${own.recipient}, ${own.primary}…). Change them` : 'Make it yours: use your own family\'s names'}
+          </button>}
       <div className="world-cast-cards">
         {PLAYABLE.map((key) => {
           const p = CAST[key]!;
@@ -293,6 +302,41 @@ function StuckPanel({ stuck, onDecide }: { stuck: Stuck; onDecide: (again: boole
         <button className="world-btn ghost" onClick={() => onDecide(false)}>Carry on</button>
       </div>
     </div>
+  );
+}
+
+/**
+ * "Make it yours": the names the visitor's family goes by, over the family they picked. They
+ * go into this visitor's copy of the demo only, which is thrown away on restart: never saved.
+ */
+function MakeItYours({ base, start, onDone, onCancel }: { base: FamilyNames; start: FamilyNames; onDone: (n: FamilyNames | null) => void; onCancel: () => void }) {
+  const [n, setN] = useState<FamilyNames>(start);
+  const problem = namesProblem(n);
+  const rows: { k: keyof FamilyNames; label: string }[] = [
+    { k: 'recipient', label: `What you call them (instead of ${base.recipient})` },
+    { k: 'primary', label: `Who keeps it together (instead of ${base.primary})` },
+    { k: 'caregiver', label: `Who else helps (instead of ${base.caregiver})` },
+    { k: 'away', label: `Who's far away (instead of ${base.away})` },
+    { k: 'helper', label: `Who's nearby (instead of ${base.helper})` },
+  ];
+  return (
+    <form className="world-yours" onSubmit={(e) => { e.preventDefault(); if (!problem) onDone(n); }}>
+      <div className="grid">
+        {rows.map((r) => (
+          <label key={r.k}>
+            <span>{r.label}</span>
+            <input value={n[r.k]} maxLength={24} autoComplete="off" onChange={(e) => setN({ ...n, [r.k]: e.target.value })} />
+          </label>
+        ))}
+      </div>
+      <p className="fine">Names only, no surnames needed. They go into your copy of the demo, which is thrown away when you restart. Nothing is saved, and the need, the town and the day stay as they are.</p>
+      {problem && <p className="world-turn-note">{problem}</p>}
+      <div className="row">
+        <button type="submit" className="world-btn" disabled={!!problem}>Use these names</button>
+        <button type="button" className="world-btn ghost" onClick={() => onDone(null)}>Use theirs</button>
+        <button type="button" className="world-btn ghost" onClick={onCancel}>Cancel</button>
+      </div>
+    </form>
   );
 }
 

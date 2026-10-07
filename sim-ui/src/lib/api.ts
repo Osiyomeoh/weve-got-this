@@ -156,7 +156,7 @@ export const api = {
       body: JSON.stringify({ memberId, tool, args, storyTime: storyTime?.toISOString(), ...(via ? { via } : {}) }),
     }).then(jsonOrThrow),
   /** Throw away this browser's copy of the demo; the next request gets a fresh one. */
-  resetSandbox: (opts: { liveMorning?: boolean; careCase?: CareCaseId } = {}): Promise<{ ok: boolean }> =>
+  resetSandbox: (opts: { liveMorning?: boolean; careCase?: CareCaseId; names?: { recipient: string; primary: string; caregiver: string; away: string; helper: string } } = {}): Promise<{ ok: boolean }> =>
     fetch('/api/sandbox/reset', {
       method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(opts),
     }).then(jsonOrThrow),

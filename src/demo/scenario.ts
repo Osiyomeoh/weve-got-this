@@ -1,6 +1,6 @@
 import { toInstant } from '../domain/time.js';
 import type { CareStore } from '../store/store.js';
-import { CASES, type CareCaseId } from './cases.js';
+import { careCaseFor, type CareCaseId, type FamilyNames } from './cases.js';
 
 /**
  * The demo scenario.
@@ -76,6 +76,8 @@ export interface ScenarioOptions {
   refillDueTonight?: boolean;
   /** Who the family is caring for in this copy (see cases.ts). Defaults to Daddy's eyes. */
   careCase?: CareCaseId;
+  /** The visitor's own family names over the case ("Make it yours"). */
+  names?: FamilyNames;
 }
 
 /**
@@ -92,7 +94,7 @@ export async function seedScenario(
   store: CareStore, householdId: string, options: ScenarioOptions = {},
 ): Promise<{ checkUpAt: Date; rideObligationId: string }> {
   const now = options.now ?? new Date();
-  const c = CASES[options.careCase ?? 'eyes'];
+  const c = careCaseFor(options.careCase, options.names);
   const TZ = c.timezone ?? 'Africa/Lagos';
   const sid = (id: string): string => `${id}${options.suffix ?? ''}`;
   const checkUpAt = nextWeekdayAt(4, 10, 0, now, TZ); // 4 = Thursday
