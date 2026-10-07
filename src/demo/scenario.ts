@@ -1,5 +1,6 @@
 import { toInstant } from '../domain/time.js';
 import type { CareStore } from '../store/store.js';
+import { CASES, type CareCaseId } from './cases.js';
 
 /**
  * The demo scenario.
@@ -75,6 +76,8 @@ export interface ScenarioOptions {
    * it, and the agent's "still on?" can follow it up that evening (the 8:16 PM scene).
    */
   refillDueTonight?: boolean;
+  /** Who the family is caring for in this copy (see cases.ts). Defaults to Daddy's eyes. */
+  careCase?: CareCaseId;
 }
 
 /**
@@ -91,6 +94,7 @@ export async function seedScenario(
   store: CareStore, householdId: string, options: ScenarioOptions = {},
 ): Promise<{ checkUpAt: Date; rideObligationId: string }> {
   const now = options.now ?? new Date();
+  const c = CASES[options.careCase ?? 'eyes'];
   const sid = (id: string): string => `${id}${options.suffix ?? ''}`;
   const checkUpAt = nextWeekdayAt(4, 10, 0, now, TZ); // 4 = Thursday
 
@@ -101,14 +105,14 @@ export async function seedScenario(
       householdId, kind: 'medication_taken', reportedBy: sid('m_margaret'),
       occurredAt: todayAt(8, 10, now, TZ).toISOString(),
       source: 'voice', confidence: 'reported',
-      data: { medicationId: sid('med_heart'), medicationName: 'eye drops', aboutMemberId: sid('m_margaret') },
+      data: { medicationId: sid('med_heart'), medicationName: c.medication, aboutMemberId: sid('m_margaret') },
     });
   }
   await store.appendEvent({
     householdId, kind: 'medication_taken', reportedBy: sid('m_margaret'),
     occurredAt: todayAt(8, 12, now, TZ).toISOString(),
     source: 'voice', confidence: 'reported',
-    data: { medicationId: sid('med_thyroid'), medicationName: 'supplement', aboutMemberId: sid('m_margaret') },
+    data: { medicationId: sid('med_thyroid'), medicationName: c.supplement, aboutMemberId: sid('m_margaret') },
   });
   // The evening dose is deliberately absent. Not "missed" - unrecorded.
 
@@ -116,17 +120,17 @@ export async function seedScenario(
     householdId, kind: 'appointment_scheduled', reportedBy: sid('m_renee'),
     occurredAt: checkUpAt.toISOString(),
     source: 'voice', confidence: 'reported',
-    detail: 'Eye check-up, Thursday at 10',
-    data: { appointmentKind: 'eye check-up', forMemberId: sid('m_margaret') },
+    detail: c.appointment.detail,
+    data: { appointmentKind: c.appointment.kind, forMemberId: sid('m_margaret') },
   });
 
   const ride = await store.createObligation({
     householdId,
-    what: 'Take Daddy to his eye check-up',
+    what: c.appointment.ride,
     status: 'OPEN',
     consequence: 'medical',
     // Inferred originally, then confirmed by a human - which is why it counts.
-    provenance: { kind: 'INFERRED', rule: 'medical-appointment-transport', from: 'eye check-up appointment' },
+    provenance: { kind: 'INFERRED', rule: 'medical-appointment-transport', from: c.appointment.inferredFrom },
     ownerId: options.rideClaimedByFunmi ? sid('m_renee') : null,
     dueAt: checkUpAt.toISOString(),
     sourceEventId: appointment.id,
@@ -139,7 +143,7 @@ export async function seedScenario(
 
   await store.createObligation({
     householdId,
-    what: "Pick up Daddy's eye drops refill",
+    what: c.refill,
     status: 'OPEN',
     consequence: 'medical',
     // In a visitor's copy the day is played from the morning, so Funmi noticed the
@@ -158,7 +162,7 @@ export async function seedScenario(
     householdId, kind: 'note_added', reportedBy: sid('m_renee'),
     occurredAt: todayAt(14, 20, now, TZ).toISOString(),
     source: 'voice', confidence: 'reported',
-    detail: 'Daddy asked who is taking him on Thursday.',
+    detail: c.note,
     data: { aboutMemberId: sid('m_margaret') },
   });
 

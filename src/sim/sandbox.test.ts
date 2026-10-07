@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseCookies, toSandbox, fromSandbox, isVisitorId, newVisitorId, VisitorSandboxes, type SandboxGrant } from './sandbox.ts';
+import { parseCookies, toSandbox, fromSandbox, isVisitorId, newVisitorId, VisitorSandboxes, sandboxKindFrom, type SandboxGrant } from './sandbox.ts';
 
 const SFX = '~mfx1a2b-0badc0de';
 
@@ -62,6 +62,18 @@ test('"start over" can ask for the next copy to be made differently, once', asyn
   s.forget('v');
   await s.get('v');
   assert.deepEqual(kinds, [{}, { liveMorning: true }, {}]);
+});
+
+test('a care case carries through "start over"; anything else in the body is dropped', async () => {
+  assert.deepEqual(sandboxKindFrom({ careCase: 'wheelchair', liveMorning: true, admin: true }), { careCase: 'wheelchair', liveMorning: true });
+  assert.deepEqual(sandboxKindFrom({ careCase: '../h_margaret', liveMorning: 'yes' }), {});
+  assert.deepEqual(sandboxKindFrom(undefined), {});
+  const kinds: unknown[] = [];
+  const s = new VisitorSandboxes({ create: async (kind) => { kinds.push(kind); return { suffix: `~s${kinds.length}-00000000`, tokens: {}, expiresAt: Date.now() + 3600_000 }; } });
+  await s.get('v');
+  s.forget('v', { careCase: 'memory' });
+  await s.get('v');
+  assert.deepEqual(kinds, [{}, { careCase: 'memory' }]);
 });
 
 test('memory is bounded: the least recently used visitor is dropped first', async () => {

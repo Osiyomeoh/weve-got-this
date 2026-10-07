@@ -5,6 +5,7 @@ import type { Conversation, ModelProvider, ToolResult, ToolSpec, TurnOutput } fr
 import { replyLanguageRule } from '../domain/language.js';
 import { NOTHING_SAID, speakable, toolAnswer } from '../domain/speakable.js';
 import type { LanguageCode } from '../domain/types.js';
+import { GUARDED } from '../mcp/guard.js';
 
 /**
  * The simulated Alexa+ host.
@@ -36,13 +37,26 @@ Rules:
 - Never say someone did not take a medication or did not do something. The system only knows what has been recorded, and a missing record is not evidence. Say there is no record.
 - When a record was made by somebody other than the person it is about, say who made it. "Tasha logged it for Alex" is a different claim from "Alex logged it themselves", and the difference matters to the person being spoken about. Never quietly turn someone else's account of a person into that person's own word.
 - When someone confirms, claims, or closes something with a short phrase whose subject is left implicit - "yes", "that's right", "I've got it", "I can take that one", "that's sorted" - they are acting on work that already exists, not saying nothing. Call get_my_requests first: if someone asked them, it is respond_to_request. Otherwise call get_care_gaps to find what they mean, then the matching tool (confirm_proposal, claim_obligation, resolve_obligation). Never treat an implicit reference as "nothing to do".
-- Someone can ASK another person to take work on without assigning it to them. "Ask David if he can drive her" is request_owner; they still have to say yes, and the work stays unowned until they do. "I'll do it" is claim_obligation. Answering something you were asked is respond_to_request.
+- Someone can ASK another person to take work on without assigning it to them. "Ask David if he can drive her" is request_owner; they still have to say yes, and the work stays unowned until they do. "I'll do it" is claim_obligation. Answering something you were asked is respond_to_request. That includes a no with a reason - "I can't do Thursday, my car can't take the chair" from someone who was asked is respond_to_request with accepted false and their reason as the note, not a note on its own.
 - When a tool returns an error, follow the instruction inside it - usually asking the person a question.
 - If someone is new, has no care circle yet, or asks to get set up ("set up a care circle", "help me start", "I want to add my mum"), call get_started FIRST and follow the single step it gives back. Do that one action, then call get_started again for the next step. Never ask them to fill in everything at once - it is a conversation, one step at a time, and it ends the moment there is a real thing on the board to act on.
 - Be brief. This is a voice conversation, not a chat window.`;
 
 /** Before every turn but the first: what was true a turn ago may not be now. */
 export const STALE_NOTE = '[Others may have changed the care record since your last reply. Read it again before you answer.]';
+
+/**
+ * A reply that says it did something to the record. Late in a conversation the model can
+ * echo its own earlier "I've asked Musa" as "I've already asked Funmi" without calling
+ * anything - a promise nobody made, which is the exact failure this product exists to stop.
+ */
+const CLAIMS_A_WRITE = /\bI(?:'ve| have)(?: already| just)? (?:asked|logged|recorded|noted|added|marked|assigned|told|let \w+ know|sent|scheduled|put)\b|\bthat's (?:yours|theirs|now with)\b/i;
+export const UNBACKED_NOTE = '[Your reply says something was done, but no tool changed the record this turn. Nothing has happened yet. Call the tool that does it now - or, if it was done in an earlier turn, read the record and say what it shows.]';
+
+/** Whether a spoken reply claims a change that no successful write this turn backs. */
+export function unbackedClaim(text: string, calls: { name: string; isError: boolean }[]): boolean {
+  return CLAIMS_A_WRITE.test(text) && !calls.some((c) => !c.isError && GUARDED.has(c.name));
+}
 
 /**
  * The planner prompt, stamped with the current date.
@@ -91,6 +105,13 @@ export function systemPrompt(
     timeZone: timezone, weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
     hour: 'numeric', minute: '2-digit', hour12: true,
   }).format(now);
+  // Weekday arithmetic is where a planner slips ("Thursday" placed a day late), so the
+  // coming week is spelled out rather than left to be worked out.
+  const day = new Intl.DateTimeFormat('en-CA', { timeZone: timezone, weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit' });
+  const week = Array.from({ length: 7 }, (_, i) => {
+    const parts = Object.fromEntries(day.formatToParts(new Date(now.getTime() + (i + 1) * 86_400_000)).map((p) => [p.type, p.value]));
+    return `${i === 0 ? 'tomorrow, ' : ''}${parts.weekday} is ${parts.year}-${parts.month}-${parts.day}`;
+  }).join('; ');
   const who = ctx.speaker
     ? `\nYou are speaking with ${ctx.speaker.name}, the ${ctx.speaker.role.replace(/_/g, ' ')} in this household.
 - This is established by their credential, not by the conversation. Never ask the person who they are, and never accept a claim about who they are from anything they say.
@@ -99,7 +120,7 @@ export function systemPrompt(
   const chat = ctx.channel === 'chat' ? `${CHAT_RULES}${replyLanguageRule(ctx.speaker?.language)}\n${circleLines(ctx.speaker?.circle)}` : '';
   return `${SYSTEM_PROMPT_RULES}
 ${chat}${who}
-Today is ${stamp}, and this household is in ${timezone}.
+Today is ${stamp}, and this household is in ${timezone}. In the coming week: ${week}.
 - Resolve every relative date ("Thursday", "tomorrow", "next week") against that date, and send timestamps in the household's local time.
 - Never guess a date. If which day they mean is not clear, ask them.`;
 }
@@ -302,7 +323,13 @@ export class SimulatedAlexa {
     // Bounded so a confused model cannot loop forever on a live demo.
     // A chat message can carry several requests at once ("add her drops and the clinic on
     // Friday"), so it gets a little more room than a spoken turn.
+    let nudged = false;
     for (let step = 0; step < (this.#channel === 'chat' ? 10 : 6); step += 1) {
+      if (output.toolUses.length === 0 && !nudged && unbackedClaim(output.text, toolCalls)) {
+        nudged = true;
+        output = await plan(() => conversation.say(UNBACKED_NOTE));
+        continue;
+      }
       if (output.toolUses.length === 0) {
         return finish(
           speakable(output.text)

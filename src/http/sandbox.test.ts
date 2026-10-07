@@ -105,6 +105,49 @@ test('a copy for the 3D world leaves the morning eye drops for the visitor to lo
     'the supplement is still there, so the morning is not reported as missed');
 });
 
+test('a copy can be of a simulated family: memory loss or a wheelchair, same ids, their own words', async () => {
+  const recipient = (hh: string) => store.getCareState(hh).members.find((m) => m.role === 'care_recipient')!;
+  const memory = (await create(KEY, { careCase: 'memory' })).json;
+  assert.equal(recipient(memory.householdId).spokenAs, 'Mama');
+  assert.deepEqual(recipient(memory.householdId).attributes, { requiresAssistance: true });
+  assert.ok(store.getCareState(memory.householdId).obligations.some((o) => /memory clinic/.test(o.what)));
+
+  const chair = (await create(KEY, { careCase: 'wheelchair', liveMorning: true })).json;
+  assert.equal(recipient(chair.householdId).spokenAs, 'Baba');
+  assert.equal(recipient(chair.householdId).id, `m_margaret${chair.suffix}`, 'ids are the same in every case');
+  const gaps = await callTool(chair.tokens.m_david, 'get_care_gaps');
+  assert.ok(gaps.structuredContent.gaps.some((g: { spoken: string }) => /physiotherapy/.test(g.spoken)));
+
+  const odd = (await create(KEY, { careCase: 'not-a-case' })).json;
+  assert.equal(recipient(odd.householdId).spokenAs, 'Daddy', 'an unknown case is the real story, not an error');
+});
+
+test('"I can\'t do Thursday" from someone who was asked names the request and asks; it never answers for them', async () => {
+  const c = (await create(KEY, { careCase: 'wheelchair' })).json;
+  const ride = store.getCareState(c.householdId).obligations.find((o) => /physiotherapy/.test(o.what))!;
+  await callTool(c.tokens.m_david, 'request_owner', { obligationId: ride.id, assigneeName: 'Musa' });
+  const out = await callTool(c.tokens.m_aide, 'add_note', {
+    note: "I can't do Thursday, my car can't take the wheelchair",
+    // A day off from the ride's own day, as a planner may get it: still asked about.
+    unavailable: { memberName: 'Musa', from: '2030-01-01T00:00:00', to: '2030-01-01T23:59:59' },
+  });
+  assert.match(out.content[0].text, /Tolu asked if you can take Baba to physiotherapy.*Is that a no\?/);
+  assert.deepEqual(out.structuredContent.unanswered.map((u: { obligationId: string }) => u.obligationId), [ride.id]);
+  assert.equal(store.getObligation(ride.id, c.householdId).status, 'REQUESTED', 'still theirs to answer');
+});
+
+test('a no moves the loop on: the gap says who said no, and the next ask is never the asker', async () => {
+  const c = (await create(KEY, { careCase: 'wheelchair' })).json;
+  const ride = store.getCareState(c.householdId).obligations.find((o) => /physiotherapy/.test(o.what))!;
+  await callTool(c.tokens.m_david, 'request_owner', { obligationId: ride.id, assigneeName: 'Musa' });
+  const no = await callTool(c.tokens.m_aide, 'respond_to_request', { obligationId: ride.id, accepted: false, note: "my car can't take the chair" });
+  assert.match(no.content[0].text, /back with no owner: take Baba to physiotherapy/);
+  assert.notEqual(no.structuredContent.nextCandidate, 'Tolu', 'Tolu asked; Tolu is not who to ask next');
+  const gaps = await callTool(c.tokens.m_david, 'get_care_gaps');
+  const gap = gaps.structuredContent.gaps.find((g: { obligationId?: string }) => g.obligationId === ride.id);
+  assert.match(gap.spoken, /nobody has taken this yet; Musa said no\./);
+});
+
 test('one judge taking the ride does not take it for the next judge, or the real demo', async () => {
   const a = (await create()).json;
   const b = (await create()).json;

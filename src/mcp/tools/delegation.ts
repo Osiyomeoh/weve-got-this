@@ -191,6 +191,8 @@ export function registerRespondToRequest({ server, store, now, actor, state, nam
       }
 
       const declinedBy = [...(o.declinedBy ?? []), me.id];
+      // Read before the transition clears the request on the record.
+      const askedBy = o.request?.askedById ?? me.id;
       await store.transition(
         obligationId, me.householdId, 'OPEN', me.id,
         { ownerId: null, clearRequest: true, declinedBy }, note,
@@ -203,10 +205,11 @@ export function registerRespondToRequest({ server, store, now, actor, state, nam
       });
       // A decline should move the loop forward, not dead-end it.
       const next = candidatesFor(
-        { ...o, declinedBy, ownerId: null }, state(), { askerId: me.id },
+        // Whoever made the ask is the one who will ask again; they are not the next ask.
+        { ...o, declinedBy, ownerId: null }, state(), { askerId: askedBy },
       )[0];
       return reply(
-        `That's noted - ${o.what} is back with no owner. `
+        `That's noted - this is back with no owner: ${asTask(o.what)}. `
         + (next
           ? `${next.name} ${next.because}. Shall I ask them?`
           : 'There is nobody else left to ask, so the primary caregiver may need to step in.'),

@@ -3,6 +3,7 @@ import type { Request, Response } from 'express';
 import type { CareStore } from '../store/store.js';
 import { seedDemoHousehold, DEMO_HOUSEHOLD_ID } from '../demo/seed.js';
 import { seedScenario } from '../demo/scenario.js';
+import { isCareCase } from '../demo/cases.js';
 import { signToken } from './oauth.js';
 
 /**
@@ -103,10 +104,12 @@ export function createSandboxRoute(opts: SandboxOptions) {
       const suffix = sandboxSuffix(at);
       // The 3D world's day opens at 7:42 with Daddy logging his eye drops by voice, so
       // its copy must not already hold the 8:10 dose (Alexa would call it a duplicate).
-      const liveMorning = (req.body as { liveMorning?: unknown } | undefined)?.liveMorning === true;
-      await seedDemoHousehold(opts.store, { suffix });
+      const body = (req.body ?? {}) as { liveMorning?: unknown; careCase?: unknown };
+      const liveMorning = body.liveMorning === true;
+      const careCase = isCareCase(body.careCase) ? { careCase: body.careCase } : {};
+      await seedDemoHousehold(opts.store, { suffix, ...careCase });
       await seedScenario(opts.store, `${DEMO_HOUSEHOLD_ID}${suffix}`, {
-        suffix, now: at, refillDueTonight: true, skipMorningEyeDrops: liveMorning,
+        suffix, now: at, refillDueTonight: true, skipMorningEyeDrops: liveMorning, ...careCase,
       });
 
       const iat = Math.floor(at.getTime() / 1000);

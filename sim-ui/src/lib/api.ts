@@ -96,6 +96,9 @@ async function jsonOrThrow(res: Response) {
 }
 
 /** Matches the server's RATES. `slow` is an accessibility control, not a demo toggle. */
+/** Who the family is caring for in a visitor's copy (mirrors src/demo/cases.ts). */
+export type CareCaseId = 'eyes' | 'memory' | 'wheelchair';
+
 export type SpeechRate = 'slow' | 'gentle' | 'normal';
 
 export const api = {
@@ -131,7 +134,7 @@ export const api = {
       body: JSON.stringify({ memberId, tool, args, storyTime: storyTime?.toISOString() }),
     }).then(jsonOrThrow),
   /** Throw away this browser's copy of the demo; the next request gets a fresh one. */
-  resetSandbox: (opts: { liveMorning?: boolean } = {}): Promise<{ ok: boolean }> =>
+  resetSandbox: (opts: { liveMorning?: boolean; careCase?: CareCaseId } = {}): Promise<{ ok: boolean }> =>
     fetch('/api/sandbox/reset', {
       method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(opts),
     }).then(jsonOrThrow),

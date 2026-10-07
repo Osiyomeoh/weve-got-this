@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { applyAppointment } from '../../domain/appointments.js';
 import { require as requireCap } from '../../domain/auth.js';
 import { orphanedBy } from '../../domain/inference.js';
-import { clockTime, happenedAt } from '../../domain/local-time.js';
+import { asTask, clockTime, dueSpoken, happenedAt } from '../../domain/local-time.js';
 import { doseRecord, localParts, parseHHMM, spokenClock } from '../../domain/gaps.js';
 import { namesMedicine } from '../../domain/language.js';
 import type { CareEvent, CareState } from '../../domain/types.js';
@@ -219,7 +219,11 @@ export function registerAddNote({ server, store, now, actor, state, nameOf }: To
       + 'Thursday", "I won\'t be able to make Friday after all", "Renee is away next week" - '
       + 'this is still an add_note, with `unavailable` filled in. It is never "nothing to do": '
       + 'work that person was covering may quietly stop being covered, and that silence is '
-      + 'exactly what this system exists to catch.',
+      + 'exactly what this system exists to catch.\n\n'
+      + 'But if the speaker was ASKED to take something on and this is their answer - "I can\'t '
+      + 'do Thursday, my car can\'t take the chair" right after being asked to drive - that is '
+      + 'respond_to_request with accepted false and their reason as the note, not add_note. '
+      + 'Call get_my_requests first when unsure.',
     inputSchema: {
       note: z.string().describe('The observation, in the words it was said.'),
       aboutMemberId: z.string().optional().describe('Who it concerns: their name as the family says it (e.g. "Mum"), or their id.'),
@@ -273,6 +277,21 @@ export function registerAddNote({ server, store, now, actor, state, nameOf }: To
         (id) => nameOf(id) ?? 'They',
       );
       if (orphaned.length === 0) {
+        // "I can't do Thursday" from someone who was just asked to do Thursday is very
+        // likely their answer. It is still theirs to give: say what is waiting on them
+        // and ask, rather than declining it on their behalf or letting it hang unanswered.
+        const waiting = person.id === me.id ? unansweredBy(s, me.id) : [];
+        if (waiting.length > 0) {
+          const tz = s.household.timezone;
+          const asks = waiting.map((o) => {
+            const due = dueSpoken(o.dueAt, tz, now());
+            return `${nameOf(o.request!.askedById) ?? 'Someone'} asked if you can ${asTask(o.what)}${due ? ` ${due}` : ''}`;
+          });
+          return reply(
+            `Noted. ${joinSpoken(asks)}, and you haven't answered yet. Is that a no?`,
+            { eventId: event.id, orphaned: [], unanswered: waiting.map((o) => ({ obligationId: o.id, what: o.what })) },
+          );
+        }
         return reply("Noted - I'll keep that in mind.", { eventId: event.id, orphaned: [] });
       }
 
@@ -288,6 +307,13 @@ export function registerAddNote({ server, store, now, actor, state, nameOf }: To
       });
     } catch (err) { return guidance(describeError(err)); }
   });
+}
+
+/** Requests put to this member that they have not answered yet, soonest due first. */
+function unansweredBy(state: CareState, memberId: string): CareState['obligations'] {
+  return state.obligations
+    .filter((o) => o.status === 'REQUESTED' && o.request?.askedOfId === memberId)
+    .sort((a, b) => (a.dueAt ?? '9').localeCompare(b.dueAt ?? '9'));
 }
 
 /** A dose of this medication already on the record for the slot this one falls in, if any. */

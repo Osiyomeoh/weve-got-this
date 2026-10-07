@@ -15,6 +15,7 @@ import { STORY_TIME_HEADER } from '../http/story-clock.js';
 import {
   VisitorSandboxes, parseCookies, isVisitorId, newVisitorId, toSandbox, fromSandbox,
   VISITOR_COOKIE, LIVE_COOKIE, type SandboxGrant,
+  sandboxKindFrom,
 } from './sandbox.js';
 
 /**
@@ -427,7 +428,7 @@ app.post('/api/speak', async (req, res) => {
 app.post('/api/sandbox/reset', (req, res) => {
   const visitor = parseCookies(req.header('cookie'))[VISITOR_COOKIE];
   if (isVisitorId(visitor)) {
-    const old = sandboxes.forget(visitor, { liveMorning: (req.body as { liveMorning?: unknown } | undefined)?.liveMorning === true });
+    const old = sandboxes.forget(visitor, sandboxKindFrom(req.body));
     if (old) for (const k of [...hosts.keys()]) if (k.startsWith(`${visitor}${old.suffix}|`)) hosts.delete(k);
   }
   res.json({ ok: true });

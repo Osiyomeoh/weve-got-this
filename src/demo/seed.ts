@@ -1,4 +1,5 @@
 import type { CareStore } from '../store/store.js';
+import { CASES, type CareCaseId } from './cases.js';
 
 /**
  * The demo household: Daddy, going on 70 in Lagos, two of his grown children nearby, a
@@ -27,8 +28,9 @@ export const DEMO_TOKENS: Record<string, string> = {
 export const DEMO_HOUSEHOLD_ID = 'h_margaret';
 
 export async function seedDemoHousehold(
-  store: CareStore, options: { suffix?: string } = {},
+  store: CareStore, options: { suffix?: string; careCase?: CareCaseId } = {},
 ): Promise<void> {
+  const c = CASES[options.careCase ?? 'eyes'];
   // A suffix gives a per-visitor sandbox copy ids of its own; ids are global keys.
   const sid = (id: string): string => `${id}${options.suffix ?? ''}`;
   const HOUSEHOLD_ID = sid(DEMO_HOUSEHOLD_ID);
@@ -39,17 +41,16 @@ export async function seedDemoHousehold(
 
   await store.addHousehold({
     id: HOUSEHOLD_ID,
-    name: "Daddy's care circle",
+    name: c.household,
     timezone: 'Africa/Lagos',
   });
 
   await store.addMember({
-    id: sid('m_margaret'), householdId: HOUSEHOLD_ID, name: 'Joseph',
-    role: 'care_recipient', spokenAs: 'Daddy',
-    // Getting around is no longer easy for him, so a ride to a check-up needs care and
-    // an accessible vehicle. A logistics fact the graph carries so a dropped ride ranks
-    // with the weight it deserves - never a label the system may editorialise about.
-    attributes: { needsAccessibleTransport: true },
+    id: sid('m_margaret'), householdId: HOUSEHOLD_ID, name: c.recipient.name,
+    role: 'care_recipient', spokenAs: c.recipient.spokenAs,
+    // Standing needs (see cases.ts): logistics facts that rank a dropped task higher,
+    // never a label the system may editorialise about.
+    attributes: c.recipient.attributes,
   });
   await store.addMember({
     id: sid('m_david'), householdId: HOUSEHOLD_ID, name: 'Tolu',
@@ -71,11 +72,11 @@ export async function seedDemoHousehold(
   });
 
   await store.addMedication({
-    id: sid('med_heart'), householdId: HOUSEHOLD_ID, name: 'eye drops',
+    id: sid('med_heart'), householdId: HOUSEHOLD_ID, name: c.medication,
     times: ['08:00', '20:00'], forMemberId: sid('m_margaret'),
   });
   await store.addMedication({
-    id: sid('med_thyroid'), householdId: HOUSEHOLD_ID, name: 'supplement',
+    id: sid('med_thyroid'), householdId: HOUSEHOLD_ID, name: c.supplement,
     times: ['08:00'], forMemberId: sid('m_margaret'),
   });
 
@@ -83,6 +84,6 @@ export async function seedDemoHousehold(
   // subject at Daddy (whose mobility need drives risk); this entity is here so the graph
   // names the destination the ride is *to*.
   await store.addEntity({
-    id: sid('e_cardiology'), householdId: HOUSEHOLD_ID, type: 'service', name: 'Eye clinic',
+    id: sid('e_cardiology'), householdId: HOUSEHOLD_ID, type: 'service', name: c.appointment.place,
   });
 }

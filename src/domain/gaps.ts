@@ -194,7 +194,9 @@ export function spokenDue(dueAt: string | undefined, timezone: string, now: Date
   return ` on ${dayFmt.format(due)} ${monthFmt.format(due)} ${ordinal(dayNum)} at ${time}`;
 }
 
-function unclaimedGap(o: Obligation, timezone: string, now: Date, attrs?: EntityAttributes): CareGap {
+function unclaimedGap(
+  o: Obligation, timezone: string, now: Date, attrs?: EntityAttributes, saidNo: string[] = [],
+): CareGap {
   // P(dropped) = deadline hazard OR aging hazard (either failure mode suffices), then
   // lifted by any accessibility need on the subject (a dropped accessible ride recovers
   // slower). The lift is monotone, so it can only raise the rank, never invent a gap.
@@ -214,7 +216,9 @@ function unclaimedGap(o: Obligation, timezone: string, now: Date, attrs?: Entity
     id: `gap_unclaimed_${o.id}`,
     kind: 'UNCLAIMED',
     severity: severityFor(score),
-    spoken: `${o.what}${due} - nobody has taken this yet.`,
+    // Who already said no is part of the state: without it, "I asked Musa" lingers as
+    // if he were still thinking about it, and the next ask goes to him again.
+    spoken: `${o.what}${due} - nobody has taken this yet${saidNo.length ? `; ${joinNames(saidNo)} said no` : ''}.`,
     because: note ? `${base} ${note}` : base,
     obligationId: o.id,
     ...(o.dueAt ? { dueAt: o.dueAt } : {}),
@@ -372,6 +376,10 @@ export interface GapOptions {
  * Pure: same state and same `now` always produce the same gaps, which is what
  * makes the "what's going to fall through the cracks?" answer trustworthy.
  */
+function joinNames(names: string[]): string {
+  return names.length <= 1 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+}
+
 export function detectCareGaps(state: CareState, options: GapOptions = {}): CareGap[] {
   const now = options.now ?? new Date();
   const { timezone } = state.household;
@@ -385,7 +393,11 @@ export function detectCareGaps(state: CareState, options: GapOptions = {}): Care
     // Surfacing them as work would be exactly the inference-as-fact error
     // the trust model forbids.
     if (o.status === 'OPEN' && o.ownerId === null) {
-      gaps.push(unclaimedGap(o, timezone, now, attrs));
+      const saidNo = (o.declinedBy ?? []).map((id) => {
+        const m = state.members.find((x) => x.id === id);
+        return m?.spokenAs ?? m?.name;
+      }).filter((n): n is string => Boolean(n));
+      gaps.push(unclaimedGap(o, timezone, now, attrs, saidNo));
     } else if (o.status === 'REQUESTED' && o.ownerId === null) {
       // Still a gap. Someone was asked; nobody has agreed.
       const askedOf = state.members.find((m) => m.id === o.request?.askedOfId);

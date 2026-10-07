@@ -1,4 +1,5 @@
 import { randomBytes } from 'node:crypto';
+import { isCareCase, type CareCaseId } from '../demo/cases.js';
 
 /**
  * The console's side of per-visitor demo sandboxes (the server side is
@@ -66,9 +67,22 @@ export function fromSandbox<T>(value: T, suffix: string): T {
   return JSON.parse(JSON.stringify(value).split(suffix).join('')) as T;
 }
 
-/** Options for a new copy. `liveMorning`: the visitor logs Daddy's morning eye drops themselves. */
+/**
+ * Options for a new copy. `liveMorning`: the visitor logs the morning dose themselves.
+ * `careCase`: who the family is caring for (see demo/cases.ts); absent means Daddy's eyes.
+ */
 export interface SandboxKind {
   liveMorning?: boolean;
+  careCase?: CareCaseId;
+}
+
+/** A kind read from an untrusted request body: unknown fields and values are dropped. */
+export function sandboxKindFrom(body: unknown): SandboxKind {
+  const b = (body ?? {}) as { liveMorning?: unknown; careCase?: unknown };
+  return {
+    ...(b.liveMorning === true ? { liveMorning: true } : {}),
+    ...(isCareCase(b.careCase) ? { careCase: b.careCase } : {}),
+  };
 }
 
 export interface SandboxGrant {
@@ -130,7 +144,7 @@ export class VisitorSandboxes {
     const g = this.#grants.get(visitor);
     this.#grants.delete(visitor);
     this.#next.delete(visitor);
-    if (kind.liveMorning) this.#next.set(visitor, kind);
+    if (kind.liveMorning || kind.careCase) this.#next.set(visitor, kind);
     // The #next map is bounded by the same visitors the grants are.
     while (this.#next.size > this.#limit) {
       const oldest = this.#next.keys().next().value;

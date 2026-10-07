@@ -19,7 +19,7 @@ export const OUT = {
   change_appointment: { eventId: z.string().optional(), appointmentEventId: z.string().optional(), startsAt: z.string().optional(), cancelled: z.boolean().optional() },
   raise_urgent: { eventId: z.string().optional(), reached: z.array(z.string()).optional() },
   record_appointment: { eventId: z.string().optional(), proposals: arr.optional() },
-  add_note: { eventId: z.string().optional(), orphaned: arr.optional() },
+  add_note: { eventId: z.string().optional(), orphaned: arr.optional(), unanswered: arr.optional() },
   get_care_gaps: { recordedToday: arr.optional(), gaps: arr.optional() },
   claim_obligation: { obligationId: z.string().optional(), ownerId: z.string().nullable().optional() },
   assign_obligation: { obligationId: z.string().optional(), ownerId: z.string().nullable().optional() },
