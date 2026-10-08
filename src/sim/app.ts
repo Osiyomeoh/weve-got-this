@@ -382,10 +382,12 @@ app.post('/api/transcribe', express.raw({ type: '*/*', limit: '12mb' }), async (
     const vocabularyName = await ensureVocabulary(terms).catch(() => undefined);
     const raw = await transcribePcm(pcm, vocabularyName);
     // The shared vocabulary knows the live household; a visitor's world has its own family
-    // (Musa, Segun, or the names they typed), so the corrector hears those too.
+    // (Musa, Segun, Mike, or the names they typed), and only those names count there. Mixing
+    // them turned the US family's "Mike" into the live household's "Musa"; with only theirs, a
+    // "Musa" the recogniser was biased towards maps back onto "Mike".
     const ctx = await contextFor(req);
     const mine = ctx === LIVE ? [] : buildVocabulary(await readCareState(ctx).catch(() => ({})));
-    const heardAs = [...new Set([...mine, ...terms])];
+    const heardAs = mine.length > 0 ? mine : terms;
     const { text, corrections } = correctTranscript(unhyphenate(raw, heardAs), heardAs);
     res.json({
       text,
