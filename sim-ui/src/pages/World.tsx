@@ -1,3 +1,4 @@
+import { music } from '../world/music';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { advance, Canvas, useThree } from '@react-three/fiber';
 import { Link } from 'react-router-dom';
@@ -41,6 +42,9 @@ export default function World() {
   // The set in the house has its sound on when the world does; told again whenever it reloads.
   useEffect(() => { soundTv(tv(), !muted); const id = setInterval(() => soundTv(tv(), !muted), 2000); return () => clearInterval(id); }, [muted]);
   const { view } = director;
+  // The score starts once the day does (after a click, as browsers require) and follows Sound.
+  const started = view.status !== 'cast';
+  useEffect(() => { music(started && !muted); return () => music(false); }, [started, muted]);
   const beat = STORY[view.beat]!;
   const [room, setRoom] = useState<string | null>(null);
   const [inviting, setInviting] = useState(false);

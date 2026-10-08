@@ -1,4 +1,5 @@
 import { api } from '../lib/api';
+import { duck } from './music';
 
 // Speech in the world, in Amazon Polly. Each person has their own Polly voice. If Polly
 // fails, the browser's own voice speaks for a minute and then Polly is tried again; one
@@ -52,7 +53,8 @@ function play(blob: Blob): Promise<void> {
     const url = URL.createObjectURL(blob);
     const el = new Audio(url);
     current = el;
-    const done = () => { URL.revokeObjectURL(url); if (current === el) current = null; resolve(); };
+    duck(true);
+    const done = () => { duck(false); URL.revokeObjectURL(url); if (current === el) current = null; resolve(); };
     el.onended = done;
     el.onerror = done;
     el.play().catch(done);
@@ -61,7 +63,8 @@ function play(blob: Blob): Promise<void> {
 
 function browserVoice(text: string, pitch: number): Promise<void> {
   if (!('speechSynthesis' in window)) return wait(1200 + text.length * 50);
-  return new Promise((resolve) => {
+  duck(true);
+  return new Promise<void>((resolve) => {
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'en-US';
     u.pitch = pitch;
@@ -71,7 +74,7 @@ function browserVoice(text: string, pitch: number): Promise<void> {
     u.onend = () => { clearTimeout(guard); resolve(); };
     u.onerror = () => { clearTimeout(guard); resolve(); };
     window.speechSynthesis.speak(u);
-  });
+  }).finally(() => duck(false));
 }
 
 export const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
