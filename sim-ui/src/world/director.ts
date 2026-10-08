@@ -421,7 +421,9 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     try {
       if (from === 0) {
         const tv = new URLSearchParams(window.location.search).get('tv');
-        atTv.current = tv === 'on' ? true : tv === 'off' ? false : Math.random() < 0.5;
+        // She is at the TV unless the link says otherwise, so the Fire TV is in every day;
+        // ?tv=off plays the morning where she isn't, with the reminder on her phone.
+        atTv.current = tv !== 'off';
         powerTv(opts.tvFrame(), true);
         await primeSeen();
       }

@@ -64,9 +64,17 @@ export function Programme({ region, hour, raised, sound, ducked }: {
   useEffect(() => {
     const v = video.current;
     if (!v) return;
-    v.muted = !sound;
     v.volume = ducked ? 0.12 : 0.7;
-    if (v.paused) void v.play().catch(() => { v.muted = true; void v.play().catch(() => undefined); });
+    // An unmute the browser refuses (no click has reached it yet) falls back to muted, and is
+    // tried again every couple of seconds, so the set is never left silent for the whole day.
+    const tune = () => {
+      v.muted = !sound;
+      if (v.paused || !v.muted !== sound) void v.play().catch(() => { v.muted = true; void v.play().catch(() => undefined); });
+    };
+    tune();
+    if (!sound) return;
+    const id = setInterval(() => { if (v.muted || v.paused) tune(); }, 2000);
+    return () => clearInterval(id);
   }, [sound, ducked, pick]);
 
   const src = pick?.sources?.find((s) => s.type === 'mp4')?.url;
@@ -75,12 +83,46 @@ export function Programme({ region, hour, raised, sound, ducked }: {
     <div className="tv-show bg-black">
       <video ref={video} key={src} src={src} autoPlay muted loop playsInline onError={() => setFailed(true)}
         className="absolute inset-0 h-full w-full object-cover" />
+      {!ducked && <Break />}
       {banner && (
         <div className="tv-rise absolute left-[3vw] top-[4vh] rounded-[0.8vw] bg-black/60 px-[1.6vw] py-[1.2vh] backdrop-blur">
           <div className="text-[0.9vw] uppercase tracking-[0.25em] text-white/60">Now playing · {pick!.category}</div>
           <div className="text-[2vw] font-medium">{pick!.title}</div>
         </div>
       )}
+    </div>
+  );
+}
+
+/** The Amazon devices this story runs on. Our own cards about them, not Amazon's adverts. */
+const BREAK = [
+  { name: 'Alexa+', line: 'Say it once, in your own words. Here it keeps the whole family on one record.' },
+  { name: 'Fire TV', line: 'The screen already in the room. A dose question answers with one press of the remote.' },
+  { name: 'Ring Video Doorbell', line: 'Sees someone at the door, and says only that. Never who.' },
+];
+const EVERY_MS = 75_000;
+const CARD_MS = 4_000;
+
+/** A short break between scenes of the programme, as Fire TV shows one. */
+function Break() {
+  const [card, setCard] = useState(-1);
+  useEffect(() => {
+    let timers: ReturnType<typeof setTimeout>[] = [];
+    const run = () => {
+      timers = BREAK.map((_, i) => setTimeout(() => setCard(i), i * CARD_MS));
+      timers.push(setTimeout(() => setCard(-1), BREAK.length * CARD_MS));
+    };
+    const first = setTimeout(run, 20_000);
+    const id = setInterval(run, EVERY_MS);
+    return () => { clearTimeout(first); clearInterval(id); timers.forEach(clearTimeout); };
+  }, []);
+  const c = BREAK[card];
+  if (!c) return null;
+  return (
+    <div key={card} className="tv-rise absolute bottom-[6vh] right-[3vw] max-w-[34vw] rounded-[0.8vw] bg-black/70 px-[1.8vw] py-[1.6vh] backdrop-blur">
+      <div className="text-[0.8vw] uppercase tracking-[0.25em] text-[#00caff]">Works with CareCircle</div>
+      <div className="text-[2vw] font-medium">{c.name}</div>
+      <div className="text-[1.1vw] text-white/80">{c.line}</div>
     </div>
   );
 }

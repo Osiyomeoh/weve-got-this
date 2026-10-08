@@ -62,7 +62,7 @@ export function FireTV({ src, width = 0.62, live = true, frameId, ...rest }: JSX
       {live && (
         <Html transform occlude="blending" distanceFactor={(width / px) * 400} position={[0, 0, 0]} zIndexRange={[5, 0]}
           style={{ width: px, height: px * 9 / 16, background: '#05070a' }} pointerEvents="none">
-          <iframe id={frameId} title="Fire TV" src={src} style={{ width: px, height: px * 9 / 16, border: 0 }} />
+          <iframe id={frameId} title="Fire TV" src={src} allow="autoplay" style={{ width: px, height: px * 9 / 16, border: 0 }} />
         </Html>
       )}
     </group>
