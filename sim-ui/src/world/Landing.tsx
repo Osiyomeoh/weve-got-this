@@ -111,7 +111,7 @@ export function CardFigure({ who, hover }: { who: PersonKey; hover: boolean }) {
   const p = CAST[who]!;
   return (
     <div className="world-cast-figure" aria-hidden>
-      <Canvas camera={{ position: [0, 0.75, 1.7], fov: 34 }} dpr={[1, 2]}>
+      <Canvas camera={{ position: [0, 1.1, 2.3], fov: 34 }} dpr={[1, 2]} onCreated={({ camera }) => camera.lookAt(0, 0.65, 0)}>
         <ambientLight intensity={0.8} />
         <directionalLight position={[2, 4, 3]} intensity={1.6} />
         <pointLight position={[0, 0.5, 1.5]} intensity={2} color={p.color} />
