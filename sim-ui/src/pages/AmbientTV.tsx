@@ -3,8 +3,11 @@ import { useBoard } from '../lib/useBoard';
 import { storyNow, useNow } from '../lib/storyTime';
 import { api, MEMBERS, type BoardMember, type BoardState, type DoseSlot, type Gap, type Member } from '../lib/api';
 import { START, keyOf, reduce, type Key, type Nav } from '../lib/dpad';
-import { onRemote, onRing, reportToWorld } from '../lib/remote';
-import { regionOf, Show } from '../tv/Show';
+import { onRemote, onRing, onSound, reportToWorld } from '../lib/remote';
+import { regionOf } from '../tv/Show';
+import { Programme } from '../tv/Programme';
+import { hush, speak } from '../world/voice';
+import { ALEXA_VOICE } from '../world/cast';
 import { RingPip } from '../tv/RingPip';
 
 /**
@@ -157,6 +160,9 @@ export default function AmbientTV() {
   // The doorbell's live view, open over the programme until it times out or they press BACK.
   const [ring, setRing] = useState(0);
   useEffect(() => onRing(() => setRing(Date.now())), []);
+  // The world's sound switch. Off until the world says otherwise: a set nobody asked to hear stays quiet.
+  const [sound, setSound] = useState(false);
+  useEffect(() => onSound((on) => { setSound(on); if (!on) hush(); }), []);
   useEffect(() => {
     if (!ring) return;
     const id = setTimeout(() => setRing(0), 16000);
@@ -267,6 +273,14 @@ export default function AmbientTV() {
   const focused = items.length ? items[index] : undefined;
   const current = focused?.type === 'gap' ? focused.gap : undefined;
   const dose = focused?.type === 'dose' ? focused.dose : undefined;
+  // Alexa says on the set what she shows: the question when it rises, and what their press did.
+  const spoken = useRef('');
+  const say = WATCHING && sound ? (claimed ?? (dose ? `${recipient.spoken}, it's time for your ${dose.name}. Have you taken it?` : '')) : '';
+  useEffect(() => {
+    if (!say || say === spoken.current) return;
+    spoken.current = say;
+    void speak(say, ALEXA_VOICE, 1.15);
+  }, [say]);
   const gapIndex = index - doses.length;
 
   // Fire the real Fire TV heads-up once per distinct gap (no-op in a browser).
@@ -303,7 +317,7 @@ export default function AmbientTV() {
     const hour = Math.floor(localMinutes(now, zoneName) / 60);
     return (
       <div className="relative h-screen overflow-hidden bg-black text-white">
-        <Show region={regionOf(zoneName)} hour={hour} raised={!!(claimed || dose)} />
+        <Programme region={regionOf(zoneName)} hour={hour} raised={!!(claimed || dose)} sound={sound} ducked={!!(claimed || dose || ring)} />
         {ring > 0 && <RingPip key={ring} dark={hour >= 18 || hour < 6} />}
 
         {/* Alexa, along the bottom, over the programme: their question, or what their press did. */}

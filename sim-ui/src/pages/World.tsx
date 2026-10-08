@@ -16,6 +16,7 @@ import type { Stuck } from '../world/director';
 import type { CareCaseId } from '../lib/api';
 import type { Key } from '../lib/dpad';
 import { useHostRoom } from '../world/room';
+import { soundTv } from '../lib/remote';
 import '../world/world.css';
 
 /** How many calls the record panel shows before the oldest give way. */
@@ -37,6 +38,8 @@ export default function World() {
   const [muted, setMuted] = useState(false);
   const tv = () => (document.getElementById('world-tv') as HTMLIFrameElement | null)?.contentWindow;
   const director = useDirector({ muted, tvFrame: tv, onStoryTime: (at) => tellStoryTime(tv(), at) });
+  // The set in the house has its sound on when the world does; told again whenever it reloads.
+  useEffect(() => { soundTv(tv(), !muted); const id = setInterval(() => soundTv(tv(), !muted), 2000); return () => clearInterval(id); }, [muted]);
   const { view } = director;
   const beat = STORY[view.beat]!;
   const [room, setRoom] = useState<string | null>(null);

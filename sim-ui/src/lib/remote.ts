@@ -60,3 +60,22 @@ export function onRing(handler: () => void): () => void {
   window.addEventListener('message', listen);
   return () => window.removeEventListener('message', listen);
 }
+
+// Sound. The world's "Sound on / off" is the set's volume too: a muted world has a silent TV.
+const SOUND = 'carecircle-sound';
+
+/** The world's side: the set's sound follows the world's. */
+export function soundTv(frame: Window | null | undefined, on: boolean): void {
+  frame?.postMessage({ type: SOUND, on }, window.location.origin);
+}
+
+/** The TV's side: hear the world's sound switch. Returns an unsubscribe. */
+export function onSound(handler: (on: boolean) => void): () => void {
+  if (typeof window === 'undefined' || window.parent === window) return () => undefined;
+  const listen = (e: MessageEvent) => {
+    if (e.origin !== window.location.origin || e.data?.type !== SOUND) return;
+    handler(!!e.data.on);
+  };
+  window.addEventListener('message', listen);
+  return () => window.removeEventListener('message', listen);
+}
