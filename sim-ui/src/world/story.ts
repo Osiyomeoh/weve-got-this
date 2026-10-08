@@ -192,8 +192,11 @@ export function storyFor(w: Words): Beat[] {
       { kind: 'lapse', to: [21, 10], seconds: 2, shot: 'overview' },
       { kind: 'line', who: 'tolu', via: 'echo', text: `Did ${w.who} ${w.use.present} ${w.his} evening ${w.evening}?`, shot: 'tolu' },
       { kind: 'shot', shot: 'daddyTv', ms: 3500 },
+      // Every family answers it on the Fire TV: the question rises over the programme, and
+      // one press of the remote they already hold puts their own word on the record.
       ...(w.answerSteps ?? [
-        { kind: 'line', who: 'daddy', via: 'echo', text: `Alexa, I ${w.use.past} my evening ${w.evening} at ten to eight.`, expect: ['log_care_event'], shot: 'daddy' } as Step,
+        { kind: 'remote', who: 'daddy', keys: ['ok', 'ok', 'ok'], expect: 'log_care_event', shot: 'daddyTv',
+          caption: `${w.who} sees the same question on ${w.his} TV, and answers it with the remote.` } as Step,
       ]),
       { kind: 'caption', text: w.answered ?? `One record. The question cleared for the whole family at once, on ${w.who}'s TV too.`, shot: 'both', ms: 3600 },
     ],

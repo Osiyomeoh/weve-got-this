@@ -4,7 +4,7 @@ import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { advance, Canvas, useThree } from '@react-three/fiber';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
-import { record, type Recording } from '../lib/mic';
+import { LISTENING_EVENT, record, type Recording } from '../lib/mic';
 import { tellStoryTime } from '../lib/storyTime';
 import { CAST, PLAYABLE, type PersonKey } from '../world/cast';
 import { useDirector, type WorldView } from '../world/director';
@@ -45,7 +45,13 @@ export default function World() {
   const { view } = director;
   // The set in the house is heard only while the camera is on it, and only when the world's
   // sound is on; told again whenever it reloads. Elsewhere in the day it plays on, silent.
-  const tvHeard = !muted && view.shot === 'daddyTv';
+  const [micOpen, setMicOpen] = useState(false);
+  useEffect(() => {
+    const on = (e: Event) => setMicOpen(!!(e as CustomEvent<boolean>).detail);
+    window.addEventListener(LISTENING_EVENT, on);
+    return () => window.removeEventListener(LISTENING_EVENT, on);
+  }, []);
+  const tvHeard = !muted && !micOpen && view.shot === 'daddyTv';
   useEffect(() => { soundTv(tv(), tvHeard); const id = setInterval(() => soundTv(tv(), tvHeard), 2000); return () => clearInterval(id); }, [tvHeard]);
   // The score starts once the day does (after a click, as browsers require) and follows Sound.
   const started = view.status !== 'cast';
@@ -428,8 +434,11 @@ function YourTurn({ who, suggestion, reply, onSay }: { who: PersonKey; suggestio
     try {
       rec.current = await record({ onEnd: (reason) => { if (reason === 'nothing') { rec.current?.cancel(); rec.current = null; setListening(false); setNote("I didn't hear anything."); } else void finish(); } });
       setListening(true);
-    } catch {
-      setNote('The browser blocked the microphone. Type it instead.');
+    } catch (e) {
+      const name = (e as Error).name;
+      setNote(name === 'NotAllowedError' ? 'The browser blocked the microphone. Allow it in the address bar, or type it instead.'
+        : name === 'NotFoundError' ? 'No microphone found. Type it instead.'
+        : `The microphone wouldn't start (${(e as Error).message}). Type it instead.`);
     }
   };
 

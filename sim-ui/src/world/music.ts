@@ -19,6 +19,11 @@ let bar = 0;
 let next = 0;
 let speaking = 0;
 
+// Quiet while the microphone is open (see LISTENING_EVENT in lib/mic.ts).
+if (typeof window !== 'undefined') {
+  window.addEventListener('carecircle-listening', (e) => duck(!!(e as CustomEvent<boolean>).detail));
+}
+
 const hz = (midi: number) => 440 * 2 ** ((midi - 69) / 12);
 
 function tone(at: number, midi: number, dur: number, peak: number, type: OscillatorType) {

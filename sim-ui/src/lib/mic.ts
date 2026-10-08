@@ -16,6 +16,13 @@ import { FRESH, hear, type Ear, type Ending } from './endpoint.ts';
 
 export const SAMPLE_RATE = 16_000;
 
+/**
+ * Fired on window as the microphone opens and closes, so the page's own sound (music, the
+ * TV) steps back while someone speaks: the mic would hear it, and never hear them stop.
+ */
+export const LISTENING_EVENT = 'carecircle-listening';
+const listeningNow = (on: boolean) => window.dispatchEvent(new CustomEvent(LISTENING_EVENT, { detail: on }));
+
 export interface Recording {
   /** Resolves with the captured audio as 16-bit little-endian PCM. */
   stop(): Promise<Blob>;
@@ -32,6 +39,21 @@ export interface Listening {
    * tap is no longer required.
    */
   onEnd?: (reason: Ending) => void;
+}
+
+/** To the rate Transcribe wants, averaging each output sample's span so nothing aliases. */
+function resample(samples: Float32Array, from: number, to: number): Float32Array {
+  if (from === to) return samples;
+  const ratio = from / to;
+  const out = new Float32Array(Math.floor(samples.length / ratio));
+  for (let i = 0; i < out.length; i++) {
+    const start = Math.floor(i * ratio);
+    const end = Math.min(samples.length, Math.floor((i + 1) * ratio));
+    let sum = 0;
+    for (let j = start; j < end; j++) sum += samples[j]!;
+    out[i] = end > start ? sum / (end - start) : samples[Math.min(start, samples.length - 1)] ?? 0;
+  }
+  return out;
 }
 
 /** Float samples in [-1, 1] to signed 16-bit, clipped rather than wrapped. */
@@ -60,9 +82,14 @@ export async function record(listening: Listening | ((level: number) => void) = 
     audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
   });
 
-  const context = new AudioContext({ sampleRate: SAMPLE_RATE });
+  // The device's own rate, converted to 16 kHz at the end: some browsers (Firefox, older
+  // Safari) refuse to feed a microphone into a context at any other rate than the device's.
+  const context = new AudioContext();
+  const rate = context.sampleRate;
   const source = context.createMediaStreamSource(stream);
   const processor = context.createScriptProcessor(4096, 1, 1);
+  listeningNow(true);
+  let open = true;
   const captured: Float32Array[] = [];
 
   // Endpointing runs off the audio callbacks rather than a timer, so it cannot
@@ -97,6 +124,7 @@ export async function record(listening: Listening | ((level: number) => void) = 
   mute.connect(context.destination);
 
   const teardown = () => {
+    if (open) { open = false; listeningNow(false); }
     closed = true;
     processor.disconnect();
     source.disconnect();
@@ -114,7 +142,7 @@ export async function record(listening: Listening | ((level: number) => void) = 
       for (const chunk of captured) { merged.set(chunk, offset); offset += chunk.length; }
       // Pass the view, not `.buffer`: a typed array is a valid BlobPart and
       // avoids the SharedArrayBuffer branch of ArrayBufferLike.
-      return new Blob([toPcm16(merged)], { type: 'application/octet-stream' });
+      return new Blob([toPcm16(resample(merged, rate, SAMPLE_RATE))], { type: 'application/octet-stream' });
     },
     cancel: teardown,
   };
