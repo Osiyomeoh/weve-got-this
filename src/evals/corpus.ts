@@ -11,6 +11,12 @@
  * get_care_gaps to resolve which item is meant - and marking those as failures
  * would measure our opinions rather than the model's judgement.
  *
+ * get_my_requests joined ten claim/confirm/resolve keys on 2026-10-08, after a run scored
+ * 139/155 with it counted wrong. It is the route the planner was told to take on 2026-10-03
+ * (cc42789, src/sim/host.ts): a short "I've got it" first checks whether someone asked them,
+ * because then it is respond_to_request. shift-04 ("Anything assigned to me?") is the same
+ * question that tool's description has named since it was written. Disclosed in the README.
+ *
  * `expectNone` marks utterances where reaching for a tool at all is the error.
  */
 
@@ -107,11 +113,11 @@ export const CORPUS: EvalCase[] = [
   { id: 'gap-08', member: 'm_renee', utterance: 'What are the open items?', expect: ['get_care_gaps'] },
 
   // --- Claiming ----------------------------------------------------------
-  { id: 'claim-01', member: 'm_david', utterance: "I'll take the check-up one.", expect: ['claim_obligation', 'get_care_gaps'] },
-  { id: 'claim-02', member: 'm_david', utterance: "I've got Thursday.", expect: ['claim_obligation', 'get_care_gaps'] },
+  { id: 'claim-01', member: 'm_david', utterance: "I'll take the check-up one.", expect: ['claim_obligation', 'get_care_gaps', 'get_my_requests'] },
+  { id: 'claim-02', member: 'm_david', utterance: "I've got Thursday.", expect: ['claim_obligation', 'get_care_gaps', 'get_my_requests'] },
   { id: 'claim-03', member: 'm_renee', utterance: "I'll do the prescription pickup.", expect: ['claim_obligation', 'get_care_gaps'] },
   { id: 'claim-04', member: 'm_david', utterance: "I'll handle both of those.", expect: ['claim_obligation', 'get_care_gaps'] },
-  { id: 'claim-05', member: 'm_aide', utterance: "I can take that one.", expect: ['claim_obligation', 'get_care_gaps', 'get_shift_brief'] },
+  { id: 'claim-05', member: 'm_aide', utterance: "I can take that one.", expect: ['claim_obligation', 'get_care_gaps', 'get_shift_brief', 'get_my_requests'] },
   { id: 'claim-06', member: 'm_renee', utterance: 'Put me down for the drive.', expect: ['claim_obligation', 'get_care_gaps'] },
 
   // --- Assigning (distinct from claiming) --------------------------------
@@ -148,7 +154,7 @@ export const CORPUS: EvalCase[] = [
   { id: 'shift-01', member: 'm_aide', utterance: 'What do I need to know today?', expect: ['get_shift_brief'] },
   { id: 'shift-02', member: 'm_aide', utterance: "What's on for this shift?", expect: ['get_shift_brief'] },
   { id: 'shift-03', member: 'm_aide', utterance: 'What medications is he on today?', expect: ['get_shift_brief'] },
-  { id: 'shift-04', member: 'm_aide', utterance: 'Anything assigned to me?', expect: ['get_shift_brief', 'get_care_gaps'] },
+  { id: 'shift-04', member: 'm_aide', utterance: 'Anything assigned to me?', expect: ['get_shift_brief', 'get_care_gaps', 'get_my_requests'] },
 
   // --- Telling a person ---------------------------------------------------
   { id: 'notify-01', member: 'm_david', utterance: "Tell Funmi I'm taking Daddy Thursday.", expect: ['notify_member'] },
@@ -210,8 +216,8 @@ export const CORPUS: EvalCase[] = [
   { id: 'h-gap-05', member: 'm_david', utterance: 'Is everything handled for tomorrow?', expect: ['get_care_gaps', 'get_care_summary'] },
 
   // --- claiming, harder / elliptical ------------------------------------
-  { id: 'h-claim-01', member: 'm_david', utterance: 'Leave that with me.', expect: ['claim_obligation', 'get_care_gaps'] },
-  { id: 'h-claim-02', member: 'm_renee', utterance: "I've got it.", expect: ['claim_obligation', 'get_care_gaps'] },
+  { id: 'h-claim-01', member: 'm_david', utterance: 'Leave that with me.', expect: ['claim_obligation', 'get_care_gaps', 'get_my_requests'] },
+  { id: 'h-claim-02', member: 'm_renee', utterance: "I've got it.", expect: ['claim_obligation', 'get_care_gaps', 'get_my_requests'] },
   { id: 'h-claim-03', member: 'm_david', utterance: 'Sign me up for the Monday one.', expect: ['claim_obligation', 'get_care_gaps'] },
   { id: 'h-claim-04', member: 'm_aide', utterance: "I'll cover the shopping.", expect: ['claim_obligation', 'get_care_gaps', 'get_shift_brief'] },
   { id: 'h-claim-05', member: 'm_renee', utterance: "I'll be the one driving.", expect: ['claim_obligation', 'get_care_gaps'] },
@@ -224,13 +230,13 @@ export const CORPUS: EvalCase[] = [
   // --- confirming, harder / elliptical ----------------------------------
   { id: 'h-confirm-01', member: 'm_david', utterance: "Yep, that's needed.", expect: ['confirm_proposal', 'get_care_gaps'] },
   { id: 'h-confirm-02', member: 'm_renee', utterance: 'Correct, book the ride.', expect: ['confirm_proposal', 'get_care_gaps'] },
-  { id: 'h-confirm-03', member: 'm_david', utterance: 'No, skip that one.', expect: ['confirm_proposal', 'get_care_gaps'] },
+  { id: 'h-confirm-03', member: 'm_david', utterance: 'No, skip that one.', expect: ['confirm_proposal', 'get_care_gaps', 'get_my_requests'] },
   { id: 'h-confirm-04', member: 'm_renee', utterance: 'Right, he needs company for that.', expect: ['confirm_proposal', 'get_care_gaps'] },
 
   // --- resolving, harder -------------------------------------------------
-  { id: 'h-resolve-01', member: 'm_david', utterance: 'Done and dusted.', expect: ['resolve_obligation', 'get_care_gaps'] },
-  { id: 'h-resolve-02', member: 'm_renee', utterance: 'Handled it.', expect: ['resolve_obligation', 'get_care_gaps'] },
-  { id: 'h-resolve-03', member: 'm_aide', utterance: 'Took care of that already.', expect: ['resolve_obligation', 'get_care_gaps', 'get_shift_brief'] },
+  { id: 'h-resolve-01', member: 'm_david', utterance: 'Done and dusted.', expect: ['resolve_obligation', 'get_care_gaps', 'get_my_requests'] },
+  { id: 'h-resolve-02', member: 'm_renee', utterance: 'Handled it.', expect: ['resolve_obligation', 'get_care_gaps', 'get_my_requests'] },
+  { id: 'h-resolve-03', member: 'm_aide', utterance: 'Took care of that already.', expect: ['resolve_obligation', 'get_care_gaps', 'get_shift_brief', 'get_my_requests'] },
   { id: 'h-resolve-04', seen: RESOLVE_FIX, member: 'm_david', utterance: "Dropped him at the clinic and he's home now.", expect: ['resolve_obligation', 'get_care_gaps'] },
 
   // --- summary, harder ---------------------------------------------------

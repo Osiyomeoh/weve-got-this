@@ -399,7 +399,7 @@ saved us hours - each one hit while building CareCircle this period.
 ## AWS Builder mini - which services, how, why
 
 - **Bedrock (Sonnet 4.5)** is the planner that turns a spoken sentence into a tool call
-  - the reasoning core, measured at 95.5% (148/155; 63/66 on held-out phrasings never tuned against).
+  - the reasoning core, measured at 96.1% (149/155; 64/66 on held-out phrasings never tuned against; 2026-10-08, after the answer key accepted the 10-03 `get_my_requests` route - 139/155 under the old key, see the README).
 - **DynamoDB** is the durable care record (single-table, diff-based writes).
 - **App Runner + CodeBuild + ECR** build and serve the MCP server at a public URL.
 - **SNS** delivers `notify_member` messages for real (record-only fallback otherwise).

@@ -121,7 +121,7 @@ Evidence is only worth citing if the system answers it.
 
 | Finding | What the system does |
 |---|---|
-| ~50% non-adherence | Missing doses surfaced as **"there is no record"** — never as an accusation. A trust benchmark measures this: a raw model asserts a false accusation in 6 of 12 cases; CareCircle, 0. |
+| ~50% non-adherence | Missing doses surfaced as **"there is no record"** — never as an accusation. A trust benchmark measures this: a raw model asserts a false accusation in 6 or 7 of 12 cases across runs; CareCircle, 0. |
 | Transport barriers → missed appointments | A medical appointment **infers** a transport obligation, which appears as an unowned Care Gap until a person takes it. |
 | >50% of care is shared between several people | EVENTS → OBLIGATIONS → **OWNERSHIP**. The unit of the system is who is responsible, not what is scheduled. |
 | Distance and migration | Household state is shared, persistent, and reachable from any surface — a child abroad and an aide in the house see one record. |

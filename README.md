@@ -52,7 +52,7 @@ what happened          what must happen        who has it
   against the cost of the interruption. If they can't, it names who to ask next, and it asks the
   same person less often the more it has already asked them.
 - **It never turns silence into blame.** A missing record is "there's no record", never "he
-  missed it": **0%** false accusations, where the raw model it plans with makes them **50%** of
+  missed it": **0%** false accusations, where the raw model it plans with makes them **50-58%** of
   the time on the same cases.
 - **It works across borders.** The Echo sits with whoever coordinates; everyone else talks to
   CareCircle in Telegram, in any country. With no Echo in the house, Daddy tells the bot "I used
@@ -107,9 +107,9 @@ driver) is fictional and modelled on mine. No real names or medical details are 
 
 **And it is real - not a mockup.** A live MCP server you can hit right now, **710 tests**
 (`npm test`, including property-based proofs of the risk model), and one headline number:
-the planner picks the right tool **95.5%** of the time on Amazon Bedrock (148/155; 63/66 on
-held-out phrasings never tuned against;
-[`evals/results/2026-10-02-claude-sonnet-4-5-question-not-report.json`](evals/results/2026-10-02-claude-sonnet-4-5-question-not-report.json)).
+the planner picks the right tool **96.1%** of the time on Amazon Bedrock (149/155; 64/66 on
+held-out phrasings never tuned against; 2026-10-08,
+[`evals/results/2026-10-08-claude-sonnet-4-5-get-my-requests-key.json`](evals/results/2026-10-08-claude-sonnet-4-5-get-my-requests-key.json); the answer key changed that day, see [Measured tool selection](#measured-tool-selection)).
 Amazon Nova Pro, and Amazon's own MASSIVE set of everyday Alexa requests (does it leave alone
 what isn't care?), are measured too. Every number, with the file it came from:
 [/proof](https://krqi2tpsif.us-east-1.awsapprunner.com/proof.html).
@@ -223,10 +223,10 @@ is worse than no system. So ours structurally cannot.
 **We measured how much this matters.** Given a care log with a dose that has no record
 and the question "did she take it?", a raw Claude Sonnet 4.5 - the *same* model
 CareCircle plans with - asserted the accusation ("she missed it", "she hasn't taken
-it") in **6 of 12 cases (50%)**. CareCircle's deterministic engine: **0%**, on the same
+it") in **6 or 7 of 12 cases (50-58%) across runs** - it is sampled, so the count moves. CareCircle's deterministic engine: **0%**, on the same
 scenarios, because it can only say "there's no record." Every answer is printed and
 auditable; reproduce with `npm run trust-benchmark`. The trust model is not a slogan -
-it is a measurable, ~50-point swing on whether a sick, elderly woman gets accused of
+it is a measurable, 50-point-plus swing on whether a sick, elderly woman gets accused of
 missing her heart medication.
 
 **Inference proposes, humans dispose.** Obligations the system infers enter as
@@ -639,7 +639,7 @@ npm run demo:reset && npm run dev   # in one shell
 npm run evals                       # in another
 ```
 
-**Latest: 148/155 (95.5%), held-out 63/66, 2026-10-02** (`evals/results/2026-10-02-claude-sonnet-4-5-question-not-report.json`), after `log_care_event` learned that a question is not a report. The run below is the one written up in detail.
+**Latest: 149/155 (96.1%), held-out 64/66, 2026-10-08** (`evals/results/2026-10-08-claude-sonnet-4-5-get-my-requests-key.json`). **The answer key changed for this run, and here is why.** On 2026-10-03 the planner was told (`src/sim/host.ts`, commit cc42789) that a short answer with no subject - "I've got it", "Handled it", "No, skip that one" - should first check whether someone asked them (`get_my_requests`), because then it is a reply to that request. The key still counted that as wrong, so the same day's run under the old key scored **139/155 (89.7%), held-out 57/66**. We added `get_my_requests` as accepted for those ten cases (listed in `src/evals/corpus.ts`) and re-ran. Before that: 148/155 (95.5%), held-out 63/66, 2026-10-02 (`evals/results/2026-10-02-claude-sonnet-4-5-question-not-report.json`). The run below is the one written up in detail.
 
 **Result: 94.8% first-tool accuracy (147 / 155, 0 errored) - Claude Sonnet 4.5 on Amazon
 Bedrock, 2026-09-23, with 28 tools.** That is one run, and every case of it is in
