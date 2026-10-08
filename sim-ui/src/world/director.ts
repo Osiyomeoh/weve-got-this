@@ -61,6 +61,8 @@ export interface WorldView {
   error: string | null;
   playing: PersonKey | null;
   people: Record<PersonKey, Presence>;
+  /** The last button pressed on the TV remote, counted so the same button twice shows twice. */
+  press: { key: Key; n: number } | null;
 }
 
 const AT_REST: Record<PersonKey, Presence> = {
@@ -71,7 +73,7 @@ const AT_REST: Record<PersonKey, Presence> = {
 };
 
 const START: WorldView = {
-  status: 'cast', beat: 0, clock: homeToday(7, 30), shot: 'overview', caption: null,
+  status: 'cast', beat: 0, clock: homeToday(7, 30), shot: 'overview', caption: null, press: null,
   glow: { daddy: 'idle', tolu: 'idle' }, phones: {}, phoneListening: null, point: null, trace: [], log: [], pulses: [],
   musa: 'midday', ringActive: false, evidence: null, hubBusy: false, prompt: null, stuck: null, error: null, playing: null,
   people: AT_REST,
@@ -344,6 +346,12 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
    * Someone presses buttons on the TV remote. The TV is the real Fire TV page; the world only
    * presses its buttons, and hears back the tool call the press made on this visitor's copy.
    */
+  /** A button on the remote: pressed on the TV, and seen pressed in their hand. */
+  const click = (key: Key) => {
+    pressRemote(opts.tvFrame(), key);
+    set((v) => ({ press: { key, n: (v.press?.n ?? 0) + 1 } }));
+  };
+
   const remote = async (step: Extract<Step, { kind: 'remote' }>, token: number): Promise<void> => {
     // Mornings, they may not be at the set at all. Then nothing rises on a screen nobody is
     // watching: the reminder goes to where they are, and they answer it there.
@@ -366,7 +374,7 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
       await wait(1400);
       for (const key of step.keys) {
         if (run.current !== token) { tvOff.current?.(); return; }
-        pressRemote(opts.tvFrame(), key);
+        click(key);
         gesture(step.who, 'nod');
         await wait(1300);
       }
@@ -503,7 +511,7 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     []);
   const say = useCallback((text: string) => answer.current?.(text), []);
   /** The visitor's thumb on the remote, when they are the one holding it. */
-  const press = useCallback((key: Key) => pressRemote(opts.tvFrame(), key),
+  const press = useCallback((key: Key) => click(key),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []);
   const decide = useCallback((again: boolean) => retry.current?.(again), []);
@@ -524,7 +532,7 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     const p = viewRef.current.prompt;
     if (viewRef.current.status !== 'yourTurn' || !p?.guest || p.who !== msg.who) return;
     if (msg.text && !p.remote) answer.current?.(msg.text);
-    else if (msg.key && p.remote) pressRemote(opts.tvFrame(), msg.key);
+    else if (msg.key && p.remote) click(msg.key);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const skipTo = useCallback((b: number) => {

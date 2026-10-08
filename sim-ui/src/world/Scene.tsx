@@ -241,6 +241,53 @@ function DaddysHouse({ view, night }: { view: WorldView; night: boolean }) {
       <Character model={daddy.model} anim={view.people.daddy!.at === 'door' ? 'idle' : 'sit'} position={daddySpot(view.people.daddy!.at)}
         facing={view.people.daddy!.at === 'door' ? FACE.toward : FACE.away} scale={PERSON_SCALE} aid={daddy.aid} speed={0.5}
         {...alive('daddy', view.people)} />
+      {view.people.daddy!.look === 'tv' && view.people.daddy!.at !== 'door' && (
+        <HeldRemote at={local(daddySpot(view.people.daddy!.at), 0.16, 0.5, -0.3)} press={view.press} />
+      )}
+    </group>
+  );
+}
+
+/** Where each button sits on the remote's face, as on a Fire TV remote: the ring, OK, back. */
+const BUTTON: Record<string, [number, number]> = {
+  up: [0, 0.045], down: [0, -0.005], left: [-0.025, 0.02], right: [0.025, 0.02], ok: [0, 0.02], back: [-0.02, -0.04],
+};
+
+/**
+ * The remote in their hand while they are at the TV. The button they press lights, and a
+ * short beam goes to the set, so a press is seen in the room as well as on the screen.
+ */
+function HeldRemote({ at, press }: { at: V3; press: WorldView['press'] }) {
+  const lit = useRef<THREE.MeshStandardMaterial>(null);
+  const beam = useRef<THREE.Mesh>(null);
+  const since = useRef(99);
+  useEffect(() => { if (press) since.current = 0; }, [press?.n]);
+  useFrame((_, dt) => {
+    since.current += dt;
+    const on = Math.max(0, 1 - since.current / 0.5);
+    if (lit.current) lit.current.emissiveIntensity = 0.2 + on * 3;
+    if (beam.current) { beam.current.visible = on > 0; (beam.current.material as THREE.MeshBasicMaterial).opacity = on * 0.8; }
+  });
+  const [bx, by] = BUTTON[press?.key ?? 'ok'] ?? BUTTON.ok!;
+  // From the remote's tip to the TV, in the remote's own frame.
+  const to = new THREE.Vector3(...DEVICE.daddyTv).sub(new THREE.Vector3(...at));
+  const len = to.length();
+  const dir = to.clone().normalize();
+  const tilt = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+  return (
+    <group position={at}>
+      <group rotation={[-1.1, 0, 0]} scale={1.6}>
+        <mesh castShadow><boxGeometry args={[0.07, 0.17, 0.02]} /><meshStandardMaterial color="#1c1c1e" roughness={0.5} /></mesh>
+        <mesh position={[0, 0.02, 0.011]} rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[0.025, 0.006, 8, 24]} /><meshStandardMaterial color="#3a3a3c" /></mesh>
+        {Object.entries(BUTTON).filter(([k]) => k === 'ok' || k === 'back').map(([k, [x, y]]) => (
+          <mesh key={k} position={[x, y, 0.012]}><cylinderGeometry args={[0.009, 0.009, 0.006, 16]} /><meshStandardMaterial color="#48484a" /></mesh>
+        ))}
+        <mesh position={[bx, by, 0.016]}><sphereGeometry args={[0.009, 12, 12]} /><meshStandardMaterial ref={lit} color="#00caff" emissive="#00caff" emissiveIntensity={0.2} toneMapped={false} /></mesh>
+      </group>
+      <mesh ref={beam} visible={false} position={dir.clone().multiplyScalar(len / 2).toArray()} quaternion={tilt}>
+        <cylinderGeometry args={[0.006, 0.006, len, 6]} />
+        <meshBasicMaterial color="#00caff" transparent opacity={0} toneMapped={false} />
+      </mesh>
     </group>
   );
 }
