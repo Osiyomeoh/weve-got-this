@@ -758,3 +758,19 @@ Template:
 - **Suggestion:** For skills fronting an LLM planner, document a catch-all, words-only pattern as
   the default, and make `profile-nlu` easy to run in bulk so builders measure this step.
 - **Date:** 2026-10-02
+
+### Bee - "no device needed" still needs an Apple Watch to get into the app
+- **Task attempted:** Send a real dose reminder into the person's Bee (`POST /v1/todos` with
+  `alarm_at`) and record the dose when they tick it done. Built and tested (commit `39403cd`).
+- **Steps taken:** Followed Bee's CLI guide: install the Bee iOS app, unlock Developer Mode by
+  tapping the version number five times, then `bee login`.
+- **Expected:** At the 2026-10-06 office hours we were told Bee works "with the CLI without a
+  device".
+- **Actual:** The Bee iOS app would not get past setup without an Apple Watch, so Developer
+  Mode, `bee login`, and an API token were all out of reach.
+- **Severity:** blocker - for anyone without a Bee wearable or an Apple Watch, Bee can't be used at all.
+- **Workaround:** The Bee code ships off by default (`BEE_TOKEN`, `BEE_API_BASE`, `BEE_MEMBER_ID`).
+  The pilot's phone reminder goes by Telegram, which is live.
+- **Suggestion:** Let the app's setup be skipped in Developer Mode, or hand out a sandbox
+  account or token for hackathon builders, and say in the CLI docs what hardware it really needs.
+- **Date:** 2026-10-08

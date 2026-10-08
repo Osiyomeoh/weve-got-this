@@ -396,18 +396,19 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
   };
 
   /**
-   * The same question, away from the TV: a Bee reminder on their phone (simulated here; no Bee
-   * device is connected), answered in their own words to Alexa on that phone. The record
+   * The same question, away from the TV: the Telegram reminder the real pilot sends, on their
+   * phone. Here they answer it in their own words to Alexa on that phone; at home a tap on
+   * "Taken" does the same. The record
    * gets the same thing the remote would have given it: their word, at the time they said it.
    */
   const reminded = async (step: Extract<Step, { kind: 'remote' }>, token: number): Promise<void> => {
     const w = family().words;
     const they = w.his === 'his' ? 'he' : 'she';
     powerTv(opts.tvFrame(), false);
-    set({ shot: 'daddy', point: `The reminder goes where ${they} is. Not at the TV this morning, so it comes as a Bee reminder on ${w.his} phone, and ${w.his} answer is ${w.his} own word.`, caption: { who: '', text: `${w.who} isn't in front of the TV this morning, so the set stays off. The reminder goes where ${they} is: ${w.his} phone.`, tone: 'narration' } });
+    set({ shot: 'daddy', point: `The reminder goes where ${they} is. Not at the TV this morning, so it comes to ${w.his} phone on Telegram, and ${w.his} answer is ${w.his} own word.`, caption: { who: '', text: `${w.who} isn't in front of the TV this morning, so the set stays off. The reminder goes where ${they} is: ${w.his} phone.`, tone: 'narration' } });
     await wait(2800);
     if (run.current !== token) return;
-    set((v) => ({ phones: { ...v.phones, [step.who]: { from: 'Bee reminder (simulated)', text: `It's time for your ${w.evening}. Tell Alexa when it's done.`, key: `bee-${Date.now()}` } } }));
+    set((v) => ({ phones: { ...v.phones, [step.who]: { from: 'CareCircle on Telegram', text: `It's time for your ${w.evening}. [Taken] [In 15 minutes]`, key: `tg-${Date.now()}` } } }));
     if (!opts.muted) chime();
     await wait(2600);
     if (run.current !== token) return;
