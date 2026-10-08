@@ -5,6 +5,7 @@ import { advance, Canvas, useThree } from '@react-three/fiber';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import { LISTENING_EVENT, record, type Recording } from '../lib/mic';
+import { SPEECH_LANGUAGES, setSpeechLanguage, speechLanguage } from '../lib/speech-language';
 import { tellStoryTime } from '../lib/storyTime';
 import { CAST, PLAYABLE, type PersonKey } from '../world/cast';
 import { useDirector, type WorldView } from '../world/director';
@@ -409,6 +410,7 @@ function MakeItYours({ base, start, onDone, onCancel }: { base: FamilyNames; sta
 function YourTurn({ who, suggestion, reply, onSay }: { who: PersonKey; suggestion: string; reply: boolean; onSay: (text: string) => void }) {
   const [text, setText] = useState(suggestion);
   const [listening, setListening] = useState(false);
+  const [lang, setLang] = useState(() => speechLanguage().code);
   const [note, setNote] = useState<string | null>(null);
   const rec = useRef<Recording | null>(null);
   const input = useRef<HTMLInputElement>(null);
@@ -448,6 +450,11 @@ function YourTurn({ who, suggestion, reply, onSay }: { who: PersonKey; suggestio
       <div className="world-turn-head"><span style={{ color: p.color }}>{reply ? `Answer Alexa, ${p.name}.` : `Your turn, ${p.name}.`}</span> {reply ? 'She hasn\'t done it yet. Reply to her, or say it again:' : 'Say it your own way, or use this:'}</div>
       <div className="row">
         <input ref={input} value={text} onChange={(e) => setText(e.target.value)} aria-label={`What ${p.name} says`} />
+        <select className="world-btn ghost" value={lang} aria-label="The language you speak in"
+          title="You're heard in it, and Alexa answers in it"
+          onChange={(e) => { setSpeechLanguage(e.target.value); setLang(e.target.value); setNote(speechLanguage().hears ? null : 'Nothing hears this one spoken yet: speak English, or type it. Alexa answers in writing.'); }}>
+          {SPEECH_LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.native}</option>)}
+        </select>
         <button type="button" className={`world-btn ghost${listening ? ' live' : ''}`} onClick={() => void mic()}>{listening ? 'Stop' : 'Speak'}</button>
         <button type="button" className="world-btn ghost" disabled={text === suggestion}
           title="Put the story's line back in the box" onClick={() => { setText(suggestion); input.current?.focus(); }}>Suggest</button>

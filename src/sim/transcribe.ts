@@ -184,14 +184,14 @@ export async function ensureFamilyVocabulary(terms: string[]): Promise<string | 
  * Only finalised results are kept; partials exist to drive a live caption and
  * would otherwise duplicate the sentence.
  */
-export async function transcribePcm(pcm: Buffer, vocabularyName?: string): Promise<string> {
+export async function transcribePcm(pcm: Buffer, vocabularyName?: string, languageCode = 'en-US'): Promise<string> {
   const chunks = frames(pcm);
   const audio = (async function* () {
     for (const chunk of chunks) yield { AudioEvent: { AudioChunk: chunk } };
   })();
 
   const response = await streamingClient().send(new StartStreamTranscriptionCommand({
-    LanguageCode: 'en-US',
+    LanguageCode: languageCode as never,
     MediaEncoding: 'pcm',
     MediaSampleRateHertz: SAMPLE_RATE,
     AudioStream: audio,

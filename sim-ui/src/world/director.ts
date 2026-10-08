@@ -1,3 +1,4 @@
+import { speechLanguage } from '../lib/speech-language';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, type BoardState, type ToolCall } from '../lib/api';
 import { ALEXA_VOICE, CAST, type PersonKey } from './cast';
@@ -276,7 +277,7 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
       // A phone reply lands on that person's phone.
       ...(!echo ? { phones: { ...v.phones, [step.who]: { from: 'Alexa', text: turn.spoken, key: `reply-${traceId.current}` } } } : {}),
     }));
-    await Promise.all([speak(turn.spoken, ALEXA_VOICE, 1.15, opts.muted), deliver()]);
+    await Promise.all([speak(turn.spoken, speechLanguage().voice ?? ALEXA_VOICE, 1.15, opts.muted), deliver()]);
     if (run.current !== token) return;
     set((v) => (echo ? { glow: { ...v.glow, [echo]: 'idle' } } : {}));
 

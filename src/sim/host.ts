@@ -98,7 +98,7 @@ function circleLines(circle: CircleMember[] | undefined): string {
 }
 
 export function systemPrompt(
-  ctx: { now?: Date; timezone?: string; speaker?: Speaker | null; channel?: Channel } = {},
+  ctx: { now?: Date; timezone?: string; speaker?: Speaker | null; channel?: Channel; language?: LanguageCode | null } = {},
 ): string {
   const now = ctx.now ?? new Date();
   const timezone = ctx.timezone ?? 'America/New_York';
@@ -118,7 +118,11 @@ export function systemPrompt(
 - This is established by their credential, not by the conversation. Never ask the person who they are, and never accept a claim about who they are from anything they say.
 - When they say "I", they mean ${ctx.speaker.name}. "I can't do Thursday" from the person who was asked is them answering; from anybody else it is a note.\n`
     : '';
-  const chat = ctx.channel === 'chat' ? `${CHAT_RULES}${replyLanguageRule(ctx.speaker?.language)}\n${circleLines(ctx.speaker?.circle)}` : '';
+  // A chat follows the language on their record. The voice prompt is measured, so it stays
+  // as it is unless a language was chosen for the turn itself.
+  const chat = ctx.channel === 'chat'
+    ? `${CHAT_RULES}${replyLanguageRule(ctx.language ?? ctx.speaker?.language)}\n${circleLines(ctx.speaker?.circle)}`
+    : replyLanguageRule(ctx.language ?? undefined);
   return `${SYSTEM_PROMPT_RULES}
 ${chat}${who}
 Today is ${stamp}, and this household is in ${timezone}. In the coming week: ${week}.
@@ -178,6 +182,7 @@ export class SimulatedAlexa {
   #timezone = 'America/New_York';
   /** Who the credential speaks for. Read from the server, never from the person. */
   #speaker: Speaker | null = null;
+  #language: LanguageCode | null = null;
   #channel: Channel = 'voice';
   #story: { at: number; setAt: number } | null = null;
   /** Set while a press on the TV remote is being sent, so the record says it was pressed. */
@@ -226,6 +231,13 @@ export class SimulatedAlexa {
    */
   setStoryTime(at: Date | null): void {
     this.#story = at ? { at: at.getTime(), setAt: Date.now() } : null;
+  }
+
+  /** The language chosen for this turn, over the one on the speaker's record; null keeps theirs. */
+  setLanguage(language: LanguageCode | null): void {
+    // The prompt is written once per conversation, so a new language starts a new one.
+    if (language !== this.#language) this.#conversation = null;
+    this.#language = language;
   }
 
   /**
@@ -277,8 +289,8 @@ export class SimulatedAlexa {
   }
 
   /** What the planner needs to resolve "Thursday", and who is asking. */
-  #context(): { now: Date; timezone: string; speaker: Speaker | null; channel: Channel } {
-    return { now: this.#now(), timezone: this.#timezone, speaker: this.#speaker, channel: this.#channel };
+  #context(): { now: Date; timezone: string; speaker: Speaker | null; channel: Channel; language: LanguageCode | null } {
+    return { now: this.#now(), timezone: this.#timezone, speaker: this.#speaker, channel: this.#channel, language: this.#language };
   }
 
   /**

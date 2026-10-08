@@ -1,3 +1,4 @@
+import { isLanguageCode, LANGUAGES } from '../domain/language.js';
 import { randomUUID } from 'node:crypto';
 import express from 'express';
 import { fileURLToPath } from 'node:url';
@@ -274,7 +275,7 @@ async function namesFor(ctx: Awaited<ReturnType<typeof contextFor>>, live?: stri
 }
 
 app.post('/api/say', async (req, res) => {
-  const { memberId, text, storyTime } = req.body as { memberId?: string; text?: string; storyTime?: string };
+  const { memberId, text, storyTime, language } = req.body as { memberId?: string; text?: string; storyTime?: string; language?: string };
   if (!memberId || !text) {
     res.status(400).json({ error: 'memberId and text are required' });
     return;
@@ -288,6 +289,7 @@ app.post('/api/say', async (req, res) => {
     const { text: heard, corrections } = correctTranscript(text, await namesFor(ctx));
     const host = await hostFor(ctx, memberId);
     host.setStoryTime(storyTimeOf(ctx, storyTime));
+    host.setLanguage(isLanguageCode(language) ? language : null);
     const turn = fromSandbox(await withRetry(() => host.say(heard)), ctx.suffix);
     // The whole trace goes back to the person who took the turn; the log gets it without the care.
     log.info('console turn', traceFields(turn.trace));
@@ -390,18 +392,24 @@ app.post('/api/transcribe', express.raw({ type: '*/*', limit: '12mb' }), async (
     res.status(400).json({ error: 'Send at least a quarter second of 16-bit PCM at 16 kHz.' });
     return;
   }
+  // Heard in the language the speaker chose; one no AWS service hears is heard in English.
+  const lang = req.query['lang'];
+  const hears = (isLanguageCode(lang) ? LANGUAGES[lang].hears : null) ?? 'en-US';
   try {
     const terms = await vocabulary();
     const ctx = await contextFor(req);
     const heardAs = await namesFor(ctx, terms);
     // A visitor's world is steered towards its own family's names, not the live household's.
-    const vocabularyName = await (ctx === LIVE ? ensureVocabulary(terms) : ensureFamilyVocabulary(heardAs)).catch(() => undefined);
-    const raw = await transcribePcm(pcm, vocabularyName);
+    // The vocabularies are English ones, so another language goes without.
+    const vocabularyName = hears !== 'en-US' ? undefined
+      : await (ctx === LIVE ? ensureVocabulary(terms) : ensureFamilyVocabulary(heardAs)).catch(() => undefined);
+    const raw = await transcribePcm(pcm, vocabularyName, hears);
     const { text, corrections } = correctTranscript(unhyphenate(raw, heardAs), heardAs);
     res.json({
       text,
       ...(corrections.length ? { corrections } : {}),
-      vocabulary: vocabularyName ? 'applied' : 'building',
+      vocabulary: vocabularyName ? 'applied' : hears === 'en-US' ? 'building' : 'none',
+      language: hears,
       sampleRate: SAMPLE_RATE,
     });
   } catch (err) {
@@ -419,7 +427,8 @@ app.post('/api/transcribe', express.raw({ type: '*/*', limit: '12mb' }), async (
  * The voices the world's people speak in, so a visitor hears who is talking. Alexa
  * keeps the default voice. A short allowlist, so nobody can spend Polly on any voice.
  */
-const CHARACTER_VOICES = new Set(['Ruth', 'Gregory', 'Matthew', 'Danielle', 'Stephen', 'Joanna', 'Arthur', 'Ayanda', 'Kevin', 'Kendra']);
+const CHARACTER_VOICES = new Set(['Ruth', 'Gregory', 'Matthew', 'Danielle', 'Stephen', 'Joanna', 'Arthur', 'Ayanda', 'Kevin', 'Kendra',
+  ...Object.values(LANGUAGES).flatMap((l) => (l.voice ? [l.voice] : []))]);
 
 app.post('/api/speak', async (req, res) => {
   const { text, rate, voice } = (req.body ?? {}) as { text?: string; rate?: string; voice?: string };

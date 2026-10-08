@@ -1,3 +1,4 @@
+import { speechLanguage } from './speech-language';
 // Thin client over the sim server's real endpoints (src/sim/app.ts).
 
 export type Provenance = 'CONFIRMED' | 'INFERRED' | 'NOT_LOGGED';
@@ -122,7 +123,7 @@ export const api = {
   say: (memberId: string, text: string, storyTime?: Date): Promise<Turn> =>
     fetch('/api/say', {
       method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ memberId, text, storyTime: storyTime?.toISOString() }),
+      body: JSON.stringify({ memberId, text, storyTime: storyTime?.toISOString(), language: speechLanguage().code }),
     }).then(jsonOrThrow),
   /** A person nobody is playing, answering what Alexa just said to them, in character. */
   npc: (body: { name: string; role: string; meant: string; alexa: string }): Promise<{ text: string }> =>
@@ -130,7 +131,7 @@ export const api = {
       method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),
     }).then(jsonOrThrow),
   transcribe: (pcm: Blob): Promise<Transcription> =>
-    fetch('/api/transcribe', {
+    fetch(`/api/transcribe?lang=${speechLanguage().code}`, {
       method: 'POST', headers: { 'content-type': 'application/octet-stream' }, body: pcm,
     }).then(jsonOrThrow),
   /**
