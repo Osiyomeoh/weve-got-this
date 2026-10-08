@@ -3,6 +3,7 @@ import {
   parseFacts, parseTodos, beeTodoToProposal, beeFactToObservation,
   type BeeItems,
 } from '../domain/bee.js';
+import { doseRecord } from '../domain/gaps.js';
 
 /**
  * The Bee connector: an ambient wearable's facts and todos as a care signal source.
@@ -38,6 +39,8 @@ export interface BeeSyncResult {
   /** PROPOSED obligations raised from todos, and observations recorded from facts. */
   proposed: Array<{ obligationId: string; eventId: string; spoken: string }>;
   observed: Array<{ eventId: string; spoken: string }>;
+  /** Doses recorded because they ticked CareCircle's own reminder done in Bee. */
+  taken: Array<{ eventId: string; medicationId: string }>;
   skipped: Array<{ id: string; reason: string }>;
 }
 
@@ -60,6 +63,28 @@ async function getJson(url: string, token: string): Promise<unknown> {
     throw new Error(`Bee ${url} failed (${res.status}): ${text.slice(0, 300)}`);
   }
   return res.json();
+}
+
+/**
+ * Put a reminder in the person's own Bee: a todo with an alarm (POST /v1/todos, which Bee's
+ * developer API documents with `text` and an ISO 8601 `alarm_at`). It rings in their Bee app,
+ * and when they tick it done, the next sync records the dose as their word. Returns Bee's id.
+ */
+export async function createBeeTodo(
+  config: BeeConfig, todo: { text: string; alarmAt: string }, fetchImpl: typeof fetch = fetch,
+): Promise<string> {
+  const res = await fetchImpl(`${config.apiBase}/v1/todos`, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${config.token}`, 'content-type': 'application/json' },
+    body: JSON.stringify({ text: todo.text, alarm_at: todo.alarmAt }),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Bee POST /v1/todos failed (${res.status}): ${text.slice(0, 300)}`);
+  }
+  const [row] = parseTodos({ todos: [await res.json()] });
+  if (!row) throw new Error('Bee created a todo but returned no id.');
+  return row.id;
 }
 
 /** Pull the account's facts and todos. The only function that touches the network. */
@@ -98,7 +123,7 @@ export async function syncBeeItems(
   }
 
   const result: BeeSyncResult = {
-    fetched: items.facts.length + items.todos.length, proposed: [], observed: [], skipped: [],
+    fetched: items.facts.length + items.todos.length, proposed: [], observed: [], taken: [], skipped: [],
   };
 
   const baseEvent = (beeId: string, text: string) => ({
@@ -110,9 +135,34 @@ export async function syncBeeItems(
     detail: text,
   });
 
+  // Reminders CareCircle itself put in their Bee, by Bee's id: the dose each one is about.
+  const ours = new Map<string, { medicationId: string; slot: string; to: string }>();
+  for (const e of state.events) {
+    if (e.kind !== 'reminder_sent' || typeof e.data['beeTodoId'] !== 'string') continue;
+    ours.set(e.data['beeTodoId'], { medicationId: String(e.data['medicationId']), slot: String(e.data['slot']), to: String(e.data['to']) });
+  }
+
   // Todos first: each open one is a proposal the family confirms.
   for (const todo of items.todos) {
     if (seen.has(todo.id)) { result.skipped.push({ id: todo.id, reason: 'already applied' }); continue; }
+    const mine = ours.get(todo.id);
+    if (mine) {
+      // Our own reminder is not something Bee overheard, so it never becomes a proposal.
+      // Ticked done, it is their word, tapped by them: the same as "Taken" on Telegram.
+      // That differs from a sentence Bee heard, which stays heard and unconfirmed.
+      if (!todo.completed) { result.skipped.push({ id: todo.id, reason: 'our reminder, still open' }); continue; }
+      const med = state.medications.find((m) => m.id === mine.medicationId);
+      if (med && !doseRecord(state, med.id, mine.slot, now)) {
+        const event = await store.appendEvent({
+          householdId, kind: 'medication_taken', reportedBy: mine.to, occurredAt: now.toISOString(),
+          source: 'bee', confidence: 'reported', detail: `Ticked the ${med.name} reminder done in Bee`,
+          data: { medicationId: med.id, medicationName: med.name, aboutMemberId: med.forMemberId, beeId: todo.id },
+        });
+        result.taken.push({ eventId: event.id, medicationId: med.id });
+      } else result.skipped.push({ id: todo.id, reason: 'dose already on the record' });
+      seen.add(todo.id);
+      continue;
+    }
     const proposal = beeTodoToProposal(todo, recipientName);
     if (!proposal) { result.skipped.push({ id: todo.id, reason: 'completed or empty' }); continue; }
 

@@ -4,6 +4,7 @@ import { buttonLabel, medicineName, phrase, timeIn, whenIn, type Piece } from '.
 import { toInstant } from './time.js';
 import type { CareStore } from '../store/store.js';
 import type { Notifier } from '../notify/notifier.js';
+import { createBeeTodo, type BeeConfig } from '../connectors/bee.js';
 import type { CareState, Member, Obligation } from './types.js';
 import { called } from './who.js';
 
@@ -23,7 +24,7 @@ import { called } from './who.js';
  */
 
 export interface Button { text: string; data: string }
-export interface Reminder { key: string; to: string; text: string; buttons?: Button[][] }
+export interface Reminder { key: string; to: string; text: string; buttons?: Button[][]; /** A dose reminder: which dose, so a Bee tick can be matched back to it. */ dose?: { medicationId: string; slot: string; at: string } }
 
 const DOSE_WINDOW_MIN = 30;
 const LIVE = new Set<Obligation['status']>(['PROPOSED', 'OPEN', 'REQUESTED', 'ASSIGNED']);
@@ -55,7 +56,7 @@ export function dueReminders(state: CareState, now: Date): Reminder[] {
       if (doseRecord(state, med.id, slot, now)) continue;
       const at = toInstant(`${local.date}T${slot}:00`, tz) ?? now.toISOString();
       push({
-        key: `dose:${med.id}:${local.date}:${slot}`, to: who.id,
+        key: `dose:${med.id}:${local.date}:${slot}`, to: who.id, dose: { medicationId: med.id, slot, at },
         text: phrase(who.language, ['dose', { time: timeIn(who.language, at, tz), med: medicineName(med, who.language) }, { time: spokenClock(slot), med: med.name }]),
         buttons: [[
           { text: buttonLabel(who.language, 'taken'), data: `dose:${med.id}:${slot}` },
@@ -111,14 +112,35 @@ export function dueReminders(state: CareState, now: Date): Reminder[] {
   return out;
 }
 
+/**
+ * Whose Bee is connected: the account (BEE_TOKEN, BEE_API_BASE) and the member who uses it
+ * (BEE_MEMBER_ID). Their dose reminders also go into their Bee, where they may be when
+ * they are not at the TV or in the chat.
+ */
+export interface BeeReminders { config: BeeConfig; memberId: string; create?: typeof createBeeTodo }
+
 /** Send what is due now, and record each one so it is never sent twice. */
-export async function sendDueReminders(deps: { store: CareStore; notifier: Notifier; now?: Date }): Promise<number> {
+export async function sendDueReminders(deps: { store: CareStore; notifier: Notifier; bee?: BeeReminders | null; now?: Date }): Promise<number> {
   const now = deps.now ?? new Date();
   let sent = 0;
   for (const householdId of deps.store.householdIds()) {
     if (householdId.includes('~')) continue; // demo sandboxes remind nobody
     const state = deps.store.getCareState(householdId);
+    const inBee = new Set(state.events.filter((e) => e.kind === 'reminder_sent' && e.data['channel'] === 'bee').map((e) => String(e.data['key'])));
     for (const r of dueReminders(state, now)) {
+      const bee = deps.bee;
+      if (bee && r.dose && r.to === bee.memberId && !inBee.has(r.key)) {
+        try {
+          const id = await (bee.create ?? createBeeTodo)(bee.config, { text: r.text, alarmAt: now.toISOString() });
+          await deps.store.appendEvent({
+            householdId, kind: 'reminder_sent', reportedBy: 'system:carecircle', occurredAt: now.toISOString(),
+            source: 'system', confidence: 'confirmed', detail: r.text,
+            data: { key: r.key, to: r.to, channel: 'bee', beeTodoId: id, medicationId: r.dose.medicationId, slot: r.dose.slot },
+          });
+          inBee.add(r.key);
+          sent += 1;
+        } catch { /* tried again next tick, as a failed Telegram send is */ }
+      }
       const d = deps.notifier.direct
         ? await deps.notifier.direct({ to: r.to, text: r.text, ...(r.buttons ? { buttons: r.buttons } : {}) })
         : { delivered: false, channel: 'none' as const };

@@ -3,6 +3,7 @@ import type { Notifier } from './notify/notifier.js';
 import { runAgentAll } from './domain/agent-runner.js';
 import { sendDailyUpdates } from './domain/daily-update.js';
 import { sendDueReminders } from './domain/reminders.js';
+import { beeConfigFromEnv } from './connectors/bee.js';
 
 /** Another instance holds the loops' lease; this one stays quiet. */
 class NotLeader extends Error {}
@@ -77,6 +78,10 @@ export function startAgentLoop(deps: AgentLoopDeps): () => void {
   const handle = setInterval(() => { void tick(); }, ms);
   handle.unref?.(); // the loop must never hold the process open on its own
 
+  // A connected Bee, and whose it is: their dose reminders also ring in their Bee app.
+  const beeConfig = beeConfigFromEnv();
+  const beeMember = process.env['BEE_MEMBER_ID']?.trim();
+  const bee = beeConfig && beeMember ? { config: beeConfig, memberId: beeMember } : null;
   let reminding = false;
   const remind = setInterval(() => {
     if (reminding) return;
@@ -86,7 +91,7 @@ export function startAgentLoop(deps: AgentLoopDeps): () => void {
         if (!mine) throw new NotLeader();
         await deps.store.refresh().catch((err: unknown) => deps.log.error('record refresh failed', { reason: (err as Error).name }));
       })
-      .then(() => sendDueReminders(deps))
+      .then(() => sendDueReminders({ ...deps, bee }))
       .then((n) => { if (n > 0) deps.log.info('reminders sent', { reminders: n }); })
       .catch((err: unknown) => { if (!(err instanceof NotLeader)) deps.log.error('reminders failed', { reason: (err as Error).message }); })
       .finally(() => { reminding = false; });
