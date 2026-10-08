@@ -1,4 +1,5 @@
 import { music } from '../world/music';
+import { CardFigure, Intro, introSeen, useHover } from '../world/Landing';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { advance, Canvas, useThree } from '@react-three/fiber';
 import { Link } from 'react-router-dom';
@@ -37,6 +38,8 @@ preloadWorld([
  */
 export default function World() {
   const [muted, setMuted] = useState(false);
+  // The start-up shows on a first visit, and again with ?intro.
+  const [intro, setIntro] = useState(() => !introSeen() || new URLSearchParams(window.location.search).has('intro'));
   const tv = () => (document.getElementById('world-tv') as HTMLIFrameElement | null)?.contentWindow;
   const director = useDirector({ muted, tvFrame: tv, onStoryTime: (at) => tellStoryTime(tv(), at) });
   // The set in the house has its sound on when the world does; told again whenever it reloads.
@@ -122,7 +125,9 @@ export default function World() {
         </div>
       )}
 
-      {view.status === 'cast' && <CastPicker onChoose={director.choose} onFamily={director.reclock} />}
+      {view.status === 'cast' && (intro
+        ? <Intro muted={muted} onDone={() => setIntro(false)} />
+        : <CastPicker onChoose={director.choose} onFamily={director.reclock} />)}
       {view.evidence && view.status !== 'cast' && (
         <aside className="world-evidence" aria-label="What the doorbell reported">
           <div className="head"><span className="dot" />Ring · Front door · {clockText(view.evidence.at)}</div>
@@ -280,14 +285,7 @@ function CastPicker({ onChoose, onFamily }: { onChoose: (who: PersonKey | null) 
           </button>}
       <div className="world-cast-cards">
         {PLAYABLE.map((key) => {
-          const p = CAST[key]!;
-          return (
-            <button key={key} className="world-cast-card" style={{ borderColor: p.color }} onClick={() => void choose(key)}>
-              <span className="name" style={{ color: p.color }}>{p.name}</span>
-              <span className="role">{p.role}</span>
-              <span className="play">{p.playAs}</span>
-            </button>
-          );
+          return <CastCard key={`${which}-${key}`} who={key} onPick={() => void choose(key)} />;
         })}
       </div>
       <button className="world-btn ghost" onClick={() => void choose(null)}>Just watch the day</button>
@@ -297,6 +295,20 @@ function CastPicker({ onChoose, onFamily }: { onChoose: (who: PersonKey | null) 
           : 'A simulation of a real family\'s week, run on the live CareCircle server. Your copy is thrown away when you restart.'}
       </p>
     </div>
+  );
+}
+
+/** One person to play, standing on their card in 3D. */
+function CastCard({ who, onPick }: { who: PersonKey; onPick: () => void }) {
+  const p = CAST[who]!;
+  const { hover, bind } = useHover();
+  return (
+    <button className="world-cast-card" style={{ borderColor: p.color }} onClick={onPick} {...bind}>
+      <CardFigure who={who} hover={hover} />
+      <span className="name" style={{ color: p.color }}>{p.name}</span>
+      <span className="role">{p.role}</span>
+      <span className="play">{p.playAs}</span>
+    </button>
   );
 }
 

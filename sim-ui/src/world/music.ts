@@ -53,6 +53,39 @@ function level() {
   master.gain.setTargetAtTime(speaking > 0 ? DUCKED : LEVEL, ctx.currentTime, 0.4);
 }
 
+function open(): AudioContext {
+  if (!ctx) {
+    ctx = new AudioContext();
+    master = ctx.createGain();
+    master.gain.value = 0;
+    master.connect(ctx.destination);
+  }
+  void ctx.resume();
+  return ctx;
+}
+
+/** A bright two-note chime for each step of the start-up, climbing as it goes. */
+export function chime(step: number): void {
+  const ctx = open();
+  const g = ctx.createGain();
+  g.gain.value = 0.25;
+  g.connect(ctx.destination);
+  const at = ctx.currentTime + 0.02;
+  const base = 76 + Math.min(step, 4) * 2;
+  for (const [i, n] of [base, base + 7].entries()) {
+    const o = ctx.createOscillator();
+    const e = ctx.createGain();
+    o.type = 'sine';
+    o.frequency.value = hz(n);
+    e.gain.setValueAtTime(0, at + i * 0.12);
+    e.gain.linearRampToValueAtTime(0.5, at + i * 0.12 + 0.02);
+    e.gain.exponentialRampToValueAtTime(0.0001, at + i * 0.12 + 1.2);
+    o.connect(e).connect(g);
+    o.start(at + i * 0.12);
+    o.stop(at + i * 0.12 + 1.3);
+  }
+}
+
 /** Start or stop the score. Must first be called from a click, as browsers require. */
 export function music(on: boolean): void {
   if (!on) {
@@ -61,15 +94,9 @@ export function music(on: boolean): void {
     if (ctx && master) master.gain.setTargetAtTime(0, ctx.currentTime, 0.3);
     return;
   }
-  if (!ctx) {
-    ctx = new AudioContext();
-    master = ctx.createGain();
-    master.gain.value = 0;
-    master.connect(ctx.destination);
-  }
-  void ctx.resume();
+  const c = open();
   if (timer) return;
-  next = ctx.currentTime + 0.1;
+  next = c.currentTime + 0.1;
   schedule();
   timer = setInterval(schedule, 1000);
   level();
