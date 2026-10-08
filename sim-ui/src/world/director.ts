@@ -397,6 +397,9 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     // Mornings, they may not be at the set at all. Then nothing rises on a screen nobody is
     // watching: the reminder goes to where they are, and they answer it there.
     if (!atTv.current && storyNow().getTime() < homeToday(12, 0).getTime()) return reminded(step, token);
+    // A set that never loaded (a slow phone, a tab in the background) can't be pressed: the
+    // question goes to the reminder instead of waiting on a screen that isn't there.
+    if (!opts.tvFrame() && viewRef.current.playing !== step.who && !guests.current.has(step.who)) return reminded(step, token);
     powerTv(opts.tvFrame(), true);
     const person = CAST[step.who]!;
     const guest = viewRef.current.playing !== step.who && guests.current.has(step.who);
