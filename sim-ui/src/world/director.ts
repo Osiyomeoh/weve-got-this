@@ -206,11 +206,19 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
   };
 
   /** One spoken turn, through the real planner, as that person. */
-  const line = async (step: Extract<Step, { kind: 'line' }>, token: number, followUps = 0): Promise<void> => {
+  const line = async (step: Extract<Step, { kind: 'line' }>, token: number, followUps = 0, before: string[] = []): Promise<void> => {
     const person = CAST[step.who]!;
     const played = viewRef.current.playing === step.who;
     const guest = !played && guests.current.has(step.who);
     let text = step.text;
+    // Alexa asked back. Someone nobody is playing hears her and answers that, in their own
+    // words, rather than saying their line again; the line stands if the answer can't be had.
+    const heard = viewRef.current.caption;
+    if (followUps > 0 && !played && !guest && heard?.tone === 'alexa') {
+      text = await api.npc({ name: person.name, role: person.role, meant: step.text, alexa: heard.text })
+        .then((r) => r.text, () => step.text);
+      if (run.current !== token) return;
+    }
 
     if (played || guest) {
       set({ status: 'yourTurn', prompt: { who: step.who, suggestion: step.text, ...(guest ? { guest: true } : {}), ...(followUps ? { reply: true } : {}) } });
@@ -275,7 +283,8 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     // The scene needs something to have happened. If the planner did something else,
     // say so plainly and let the visitor try again, rather than pretending.
     const called = turn.toolCalls.filter((c) => !c.isError).map((c) => c.name);
-    const landed = !step.expect || step.expect.some((t) => called.includes(t));
+    // What they set out to do may have happened a turn ago, with Alexa then asking about it.
+    const landed = !step.expect || step.expect.some((t) => called.includes(t) || before.includes(t));
     // A nod when it went the way they meant; a small shake of the head when it didn't.
     gesture(step.who, landed ? 'nod' : 'shake');
     busy.current.delete(step.who);
@@ -284,7 +293,7 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     // A conversation, not a test: Alexa may ask back or answer something nearby first. The
     // same device keeps the same conversation, so the next thing said carries on from hers.
     if (!landed && step.expect && followUps < 2 && run.current === token) {
-      return line(step, token, followUps + 1);
+      return line(step, token, followUps + 1, [...before, ...called]);
     }
     if (!landed && step.expect) {
       set({ status: 'stuck', stuck: { reason: called.length ? `Alexa used ${called.join(', ')}.` : 'Alexa answered without changing the record.', expected: step.expect, ...(played || guest ? { said: text, got: called } : {}) } });

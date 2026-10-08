@@ -91,7 +91,8 @@ export class BedrockProvider implements ModelProvider {
         modelId: this.modelId,
         system: [{ text: system }],
         messages: history,
-        toolConfig,
+        // Bedrock refuses an empty tool list: a conversation with no tools sends none.
+        ...(toolConfig.tools.length ? { toolConfig } : {}),
         inferenceConfig: { maxTokens: 512, temperature: 0 },
       }));
       const content = response.output?.message?.content ?? [];

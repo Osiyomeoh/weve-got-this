@@ -124,6 +124,11 @@ export const api = {
       method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ memberId, text, storyTime: storyTime?.toISOString() }),
     }).then(jsonOrThrow),
+  /** A person nobody is playing, answering what Alexa just said to them, in character. */
+  npc: (body: { name: string; role: string; meant: string; alexa: string }): Promise<{ text: string }> =>
+    fetch('/api/npc', {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),
+    }).then(jsonOrThrow),
   transcribe: (pcm: Blob): Promise<Transcription> =>
     fetch('/api/transcribe', {
       method: 'POST', headers: { 'content-type': 'application/octet-stream' }, body: pcm,

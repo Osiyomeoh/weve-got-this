@@ -446,6 +446,35 @@ app.post('/api/speak', async (req, res) => {
  * no visitor cookie, no IP and no family: only the words, what they meant and what happened.
  */
 const TOOL_NAME = /^[a-z_]{1,40}$/;
+/**
+ * A person the visitor is not playing, answering what Alexa just said to them. They know what
+ * they came to say, and they hear the reply: if she asks back, they answer her question in
+ * their own words; if it is already done, they say so instead of repeating themselves. Only
+ * their words come from here: what goes on the record is still Alexa's, through /api/say.
+ */
+app.post('/api/npc', async (req, res) => {
+  const { name, role, meant, alexa } = (req.body ?? {}) as Record<string, unknown>;
+  const ok = (v: unknown, max: number) => typeof v === 'string' && v.trim().length > 0 && v.length <= max;
+  if (!ok(name, 60) || !ok(role, 200) || !ok(meant, 400) || !ok(alexa, 1200)) {
+    res.status(400).json({ error: 'name, role, meant and alexa are required' });
+    return;
+  }
+  const system = `You are ${name as string}: ${role as string}. You are talking to Alexa, out loud, in your own home.
+You set out to say: "${meant as string}"
+Alexa has just replied. Answer her in character, as you would really speak: one short sentence, at most 25 words.
+- If she asks you to confirm or choose, answer her question so that what you set out to do happens.
+- If she says it is already done or already yours, say that's fine and do not ask again.
+- Never invent new people, dates or tasks. Keep any day or time she named.
+Reply with only the words you say. No quotes, no stage directions.`;
+  try {
+    const out = await withRetry(() => provider.start(system, []).say(`Alexa said: "${alexa as string}"`));
+    const text = out.text.trim().replace(/^["']|["']$/g, '').slice(0, 300);
+    res.json({ text: text || (meant as string) });
+  } catch (err) {
+    res.status(502).json({ error: (err as Error).message });
+  }
+});
+
 app.post('/api/phrasing', (req, res) => {
   const { said, meant, got, country } = (req.body ?? {}) as { said?: unknown; meant?: unknown; got?: unknown; country?: unknown };
   const tools = (v: unknown) => Array.isArray(v) && v.length <= 10 && v.every((t) => typeof t === 'string' && TOOL_NAME.test(t));
