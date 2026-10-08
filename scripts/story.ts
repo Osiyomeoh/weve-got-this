@@ -152,6 +152,8 @@ async function main(): Promise<void> {
   const when = new Intl.DateTimeFormat('en-US', {
     timeZone: TZ, weekday: 'long', hour: 'numeric', minute: '2-digit',
   }).format(checkUpAt);
+  // The check-up's own day: it is two days from whenever the story runs, so never a fixed name.
+  const rideDay = new Intl.DateTimeFormat('en-US', { timeZone: TZ, weekday: 'long' }).format(checkUpAt);
 
   // 3. Four members, four credentials, four sessions.
   const daddy = await connect(url, 'margaret-token');
@@ -175,9 +177,9 @@ async function main(): Promise<void> {
   // ── Beat 2 · the constraint - work comes loose, silently ────────────────
   clockAt = wallClockToday(9, 15, TZ);
   beat('9:15am', 'A constraint quietly orphans work nobody re-assigned');
-  say('Funmi (phone)', "I can't take Daddy to his eye check-up on Thursday after all.");
+  say('Funmi (phone)', `I can't take Daddy to his eye check-up on ${rideDay} after all.`);
   alexa(await call(funmi, 'add_note', {
-    note: "I can't take Daddy to his eye check-up Thursday.",
+    note: `I can't take Daddy to his eye check-up ${rideDay}.`,
     unavailable: {
       memberName: 'Funmi',
       from: new Date(checkUpAt.getTime() - 3 * 3600_000).toISOString(),
@@ -203,7 +205,7 @@ async function main(): Promise<void> {
 
   const ride = gapsOf(gapsRes).find((g) => g.obligationId === rideObligationId)
     ?? gapsOf(gapsRes).find((g) => /check-up|take daddy/i.test(g.spoken));
-  say('Tolu', "I'll take him Thursday.");
+  say('Tolu', `I'll take him ${rideDay}.`);
   alexa(await call(tolu, 'claim_obligation', { obligationId: ride.obligationId }));
 
   // The delivery pointed at the refill; Tolu confirms it and closes it out.

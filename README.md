@@ -105,7 +105,7 @@ reported yet, so no pilot number appears anywhere in this submission.
 The demo family (Daddy, his children Tolu and Funmi, Kunle in London, and Musa the
 driver) is fictional and modelled on mine. No real names or medical details are used.
 
-**And it is real - not a mockup.** A live MCP server you can hit right now, **659 tests**
+**And it is real - not a mockup.** A live MCP server you can hit right now, **710 tests**
 (`npm test`, including property-based proofs of the risk model), and one headline number:
 the planner picks the right tool **95.5%** of the time on Amazon Bedrock (148/155; 63/66 on
 held-out phrasings never tuned against;
@@ -558,7 +558,7 @@ git clone https://github.com/Osiyomeoh/carecircle && cd carecircle
 npm ci
 npm run lint      # eslint (typescript-eslint, strict) - 0 findings
 npm run typecheck # tsc under strict + noUncheckedIndexedAccess + exactOptionalPropertyTypes
-npm test          # 679 tests (unit, adversarial, and property-based)
+npm test          # 710 tests (unit, adversarial, and property-based)
 npm run story     # the whole one-day story, end to end, over real MCP
 ```
 
