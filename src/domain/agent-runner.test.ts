@@ -2,7 +2,7 @@ import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { CareStore } from '../store/store.ts';
 import { RecordOnlyNotifier } from '../notify/notifier.ts';
-import { runAgentOnce } from './agent-runner.ts';
+import { runAgentAll, runAgentOnce } from './agent-runner.ts';
 import { AGENT_ID } from './agent.ts';
 
 const HH = 'h1';
@@ -114,4 +114,18 @@ test('a slipped promise: the owner gets a question, keeps the work, and silence 
 
   await runAgentOnce(HH, { store, notifier: spy as never, now: () => new Date(later.getTime() + 60 * 60_000) });
   assert.equal(sent.length, 2, 'the primary caregiver hears once');
+});
+
+test('the background pass leaves a visitor\'s sandbox copy to its own story clock', async () => {
+  const copy = `${HH}~mgx1k2-0a1b2c3d`;
+  await store.addHousehold({ id: copy, name: 'copy', timezone: 'America/New_York' });
+  await store.addMember({ id: 'm_david~mgx1k2-0a1b2c3d', householdId: copy, name: 'David', role: 'primary_caregiver' });
+  await store.createObligation({
+    householdId: copy, what: 'Pick up the refill', consequence: 'medical',
+    status: 'OPEN', ownerId: null,
+    provenance: { kind: 'CONFIRMED', byMemberId: 'm_david~mgx1k2-0a1b2c3d', at: '2026-10-12T12:00:00Z' },
+    dueAt: '2026-10-15T00:00:00Z',
+  });
+  const runs = await runAgentAll({ store, notifier, now: () => DAYTIME });
+  assert.deepEqual(runs.map((r) => r.householdId), [HH]);
 });

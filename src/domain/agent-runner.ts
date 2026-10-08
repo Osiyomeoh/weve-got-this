@@ -127,7 +127,10 @@ function messageFor(
 
 /** Run the agent over every household the store knows. */
 export async function runAgentAll(deps: RunnerDeps): Promise<AgentRun[]> {
-  const householdIds = [...new Set(deps.store.allMembers().map((m) => m.householdId))];
+  // A visitor's sandbox copy (`<household>~<suffix>`) lives on its own story clock: the
+  // story runs CareCircle's pass when its day reaches it. Run on the server's clock, the
+  // pass would ask the helper about tonight's refill before the story's own asking does.
+  const householdIds = [...new Set(deps.store.allMembers().map((m) => m.householdId))].filter((id) => !id.includes('~'));
   const runs: AgentRun[] = [];
   for (const id of householdIds) runs.push(await runAgentOnce(id, deps));
   return runs;
