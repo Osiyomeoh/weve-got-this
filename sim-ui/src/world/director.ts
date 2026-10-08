@@ -90,7 +90,7 @@ function personNamed(name: string): PersonKey | null {
   if (n.includes('musa') || n.includes('bisi')) return 'musa';
   if (n.includes('tolu')) return 'tolu';
   // The person cared for, by what the family calls them or the name on the record.
-  if (['daddy', 'joseph', 'mama', 'grace', 'baba', 'adewale', 'mummy', 'adunni', 'linda'].some((k) => n.includes(k))) return 'daddy';
+  if (['daddy', 'joseph', 'mama', 'grace', 'baba', 'adewale', 'mummy', 'adunni', 'linda', 'folake', 'wambui'].some((k) => n.includes(k))) return 'daddy';
   return null;
 }
 

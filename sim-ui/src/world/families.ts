@@ -8,9 +8,10 @@ import { EYES, setHomeZone, STORY, storyFor, type Words } from './story';
 // names and needs (src/demo/cases.ts), and these are the same people in the world.
 
 /** Where the family lives. The picker asks this first, then the family. */
-export type Country = 'ng' | 'us';
+export type Country = 'ng' | 'ke' | 'us';
 export const COUNTRIES: Record<Country, { label: string; zone: string }> = {
   ng: { label: 'Nigeria', zone: 'Africa/Lagos' },
+  ke: { label: 'Kenya', zone: 'Africa/Nairobi' },
   us: { label: 'United States', zone: 'America/New_York' },
 };
 
@@ -210,6 +211,91 @@ export const FAMILIES: Record<CareCaseId, Family> = {
     },
     ending: 'Mom logged her own care with the remote already in her hand. Sarah, four hours away, saw it the moment she pressed, and took Thursday from Chicago. Mike, fifteen minutes away, took tonight, and was asked, not assumed: three in four caregivers say they get no consistent help from family, and the one nearby is not the only name on the record. A doorbell said someone came without claiming to know who, and the agent followed up when the promise slipped.',
   },
+  // Mummy in Ibadan; her children went abroad. Tolu coordinates from London, where in October
+  // the clock reads the same as hers. Segun, her nephew, is the only family nearby.
+  abroad: {
+    id: 'abroad', country: 'ng', label: 'Mummy abroad', tagline: 'In Ibadan. Her children are in London, Toronto and Houston. A simulated family.', simulated: true,
+    lede: 'Mummy lives in Ibadan. Her children left: Tolu is in London, Funmi in Toronto, Kunle in Houston. Segun, her nephew, lives ten minutes away. Everyone wants to help; only one of them can knock on her door.',
+    recipient: {
+      name: 'Mummy', role: 'At home in Ibadan, her children abroad',
+      playAs: 'Your children call every Sunday. The rest of the week, you tell Alexa.',
+      model: 'character-female-f', voice: 'Danielle', fallbackPitch: 1.0,
+    },
+    toluRole: 'Her son, in London, coordinating her care from five thousand kilometres away',
+    toluPlayAs: 'You hold it together from London, on the Tube and between meetings. You can ask; you can\'t drive over.',
+    tolu: { name: 'Tolu', model: 'character-male-b', voice: 'Brian', fallbackPitch: 1.0 },
+    helper: {
+      name: 'Segun', role: 'Mummy\'s nephew, ten minutes away in Ibadan',
+      playAs: 'You\'re the family member who stayed. Every errand finds its way to you.',
+      model: 'character-male-c', voice: 'Joey', fallbackPitch: 1.0,
+    },
+    places: { home: 'Ibadan', tolu: 'London' },
+    words: {
+      who: 'Mummy', his: 'her', him: 'her',
+      intro: 'Mummy lives in Ibadan. Her children are in London, Toronto and Houston. She talks to Alexa, and they read the record.',
+      morningPoint: 'Distance doesn\'t make her a monitored subject. She records her own care, and three countries see it.',
+      logMorning: 'Alexa, I took my blood pressure tablet.',
+      refill: 'Mummy\'s blood pressure tablets refill',
+      ride: 'Mummy to her hospital check-up',
+      evening: 'blood pressure tablet', use: { present: 'take', past: 'took' },
+      handover: 'Good evening, Mummy. Your tablets.',
+      helper: { name: 'Segun', they: 'he' },
+      toluWhere: 'In London, five thousand kilometres away',
+      askPoint: 'From London, all Tolu can do is ask. One sentence becomes a question on the phone of the one person in Ibadan.',
+      ridePoint: 'Wanting to help from abroad is not the same as being able to. Tolu can\'t take Thursday, so he asks, and the record only names Segun once Segun says yes.',
+      rideSteps: [
+        { kind: 'line', who: 'tolu', via: 'echo', text: 'Ask Segun if he can take Mummy to her hospital check-up on Thursday.', expect: ['request_owner'], shot: 'tolu' },
+        { kind: 'shot', shot: 'musa', ms: 1800 },
+        { kind: 'line', who: 'musa', via: 'phone', text: 'Yes, I\'ll take her.', expect: ['respond_to_request'], shot: 'musa' },
+      ],
+      ringCaption: 'Ring sees someone at Mummy\'s door at 7:58, and the live view opens on her TV. Her children are asleep or at work in three time zones. Ring can say a person. It can\'t say who.',
+      afterDoor: 'Mummy knows Segun came. London, Toronto and Houston only know what the record knows: someone did. Segun goes home, and never says it\'s done.',
+      answered: 'One sentence in Ibadan. The question cleared for her whole family at once, in three countries.',
+    },
+    ending: 'Mummy logged her own care by voice, and her children abroad saw it without a call. Tolu couldn\'t take Thursday from London, so he asked, and Segun said yes: nobody was assumed just because they live nearby. A doorbell said someone came without claiming to know who, and the agent followed up when the promise slipped.',
+  },
+  // A Kenyan family. Mum is at home in Nyeri; Wanjiru coordinates from Nairobi, a few hours'
+  // drive; Mwangi works in Dubai. Njeri, the neighbour, is the one who is there. Simulated.
+  ke: {
+    id: 'ke', country: 'ke', label: 'Mum', tagline: 'At home in Nyeri, managing diabetes. Her daughter is in Nairobi. A simulated family.', simulated: true,
+    lede: 'Mum lives in Nyeri and manages her diabetes herself. Wanjiru coordinates from Nairobi, a few hours\' drive away, between meetings. Mwangi works in Dubai. Njeri, next door, is the one who is there.',
+    recipient: {
+      name: 'Mum', role: 'At home in Nyeri, managing diabetes',
+      playAs: 'You have managed your sugar for years. You just tell Alexa when you\'ve taken your tablet.',
+      model: 'character-female-e', voice: 'Ayanda', fallbackPitch: 1.0,
+    },
+    toluRole: 'Her daughter, in Nairobi, coordinating Mum\'s care around a full-time job',
+    toluPlayAs: 'You hold it together from Nairobi, between meetings, a few hours up the road.',
+    tolu: { name: 'Wanjiru', model: 'character-female-b', voice: 'Joanna', fallbackPitch: 1.1 },
+    helper: {
+      name: 'Njeri', role: 'Mum\'s neighbour in Nyeri',
+      playAs: 'You live next door. You\'re the one who is actually there.',
+      model: 'character-female-a', voice: 'Salli', fallbackPitch: 1.15,
+    },
+    places: { home: 'Nyeri', tolu: 'Nairobi' },
+    words: {
+      who: 'Mum', his: 'her', him: 'her',
+      intro: 'Mum lives in Nyeri and manages her diabetes. Her daughter is in Nairobi, her son in Dubai. She tells Alexa.',
+      morningPoint: 'The person cared for records her own care. She has managed this for years; the record just lets her family stop asking.',
+      logMorning: 'Alexa, I took my diabetes tablet.',
+      refill: 'Mum\'s diabetes tablets refill',
+      ride: 'Mum to her diabetes clinic visit',
+      evening: 'diabetes tablet', use: { present: 'take', past: 'took' },
+      handover: 'Habari ya jioni, Mum. Your tablets.',
+      helper: { name: 'Njeri', they: 'she' },
+      primary: { name: 'Wanjiru', self: 'herself' },
+      toluWhere: 'In Nairobi, a few hours\' drive away',
+      askPoint: 'One sentence in Nairobi becomes a question on the phone of the one person in Nyeri.',
+      ridePoint: 'Living in Nairobi is not a reason to be left out. Wanjiru can\'t do tonight, but she can do Thursday, and she says so.',
+      rideSteps: [
+        { kind: 'line', who: 'tolu', via: 'echo', text: 'I\'ll drive up and take Mum to her diabetes clinic visit on Thursday.', expect: ['claim_obligation'], shot: 'tolu' },
+      ],
+      ringCaption: 'Ring sees someone at Mum\'s door at 7:58, and the live view opens on her TV. Nobody from the family is in Nyeri to see it. Ring can say a person. It can\'t say who.',
+      afterDoor: 'Mum knows Njeri came. Wanjiru, in Nairobi, only knows what the record knows: someone did. Njeri goes home, and never says it\'s done.',
+      answered: 'One sentence in Nyeri. The question cleared for the whole family at once: Nairobi and Dubai too.',
+    },
+    ending: 'Mum logged her own care by voice. Wanjiru, in Nairobi, saw it without a call, and took Thursday herself. Njeri, next door, took tonight, and was asked, not assumed. A doorbell said someone came without claiming to know who, and the agent followed up when the promise slipped.',
+  },
 };
 
 let current: CareCaseId = 'eyes';
@@ -229,6 +315,8 @@ export const BASE_NAMES: Record<CareCaseId, FamilyNames> = {
   wheelchair: { recipient: 'Baba', primary: 'Tolu', caregiver: 'Funmi', away: 'Kunle', helper: 'Musa' },
   hometown: { recipient: 'Mummy', primary: 'Tolu', caregiver: 'Funmi', away: 'Kunle', helper: 'Bisi' },
   us: { recipient: 'Mom', primary: 'Sarah', caregiver: 'Jen', away: 'Tom', helper: 'Mike' },
+  abroad: { recipient: 'Mummy', primary: 'Tolu', caregiver: 'Funmi', away: 'Kunle', helper: 'Segun' },
+  ke: { recipient: 'Mum', primary: 'Wanjiru', caregiver: 'Kamau', away: 'Mwangi', helper: 'Njeri' },
 };
 
 const NAME = /^\p{L}[\p{L}' -]{0,22}\p{L}$|^\p{L}$/u;

@@ -15,9 +15,9 @@ import type { EntityAttributes } from '../domain/types.js';
  * the console and the world work unchanged; only names, needs and wording differ.
  */
 
-export type CareCaseId = 'eyes' | 'memory' | 'wheelchair' | 'hometown' | 'us';
+export type CareCaseId = 'eyes' | 'memory' | 'wheelchair' | 'hometown' | 'us' | 'abroad' | 'ke';
 
-export const CARE_CASES: readonly CareCaseId[] = ['eyes', 'memory', 'wheelchair', 'hometown', 'us'];
+export const CARE_CASES: readonly CareCaseId[] = ['eyes', 'memory', 'wheelchair', 'hometown', 'us', 'abroad', 'ke'];
 
 export interface CareCase {
   household: string;
@@ -127,6 +127,47 @@ export const CASES: Record<CareCaseId, CareCase> = {
       primary: { name: 'Sarah', livesAway: 'Chicago' },
       caregiver: { name: 'Jen', livesAway: 'Seattle' },
       away: { name: 'Tom', livesAway: 'Phoenix' },
+    },
+  },
+  // Mummy in Ibadan; her children left: Tolu to London, Funmi to Toronto, Kunle to Houston.
+  // Segun, her nephew in Ibadan, is the family's only hands nearby.
+  abroad: {
+    household: "Mummy's care circle",
+    recipient: { name: 'Folake', spokenAs: 'Mummy', attributes: { requiresAssistance: true } },
+    medication: 'blood pressure tablet',
+    supplement: 'supplement',
+    appointment: {
+      kind: 'hospital check-up', detail: 'Check-up at University College Hospital, Thursday at 10', place: 'University College Hospital, Ibadan',
+      ride: 'Take Mummy to her hospital check-up', inferredFrom: 'hospital check-up appointment',
+    },
+    refill: "Pick up Mummy's blood pressure tablets refill",
+    note: 'Mummy asked who is taking her on Thursday.',
+    helper: 'Segun',
+    family: {
+      primary: { name: 'Tolu', livesAway: 'London' },
+      caregiver: { name: 'Funmi', livesAway: 'Toronto' },
+      away: { name: 'Kunle', livesAway: 'Houston' },
+    },
+  },
+  // A Kenyan family: Mum at home in Nyeri, her daughter coordinating from Nairobi, a son
+  // working in Dubai. Njeri, the neighbour, is the one who is there.
+  ke: {
+    household: "Mum's care circle",
+    recipient: { name: 'Wambui', spokenAs: 'Mum', attributes: {} },
+    medication: 'diabetes tablet',
+    supplement: 'supplement',
+    appointment: {
+      kind: 'diabetes clinic visit', detail: 'Diabetes clinic, Thursday at 10', place: 'Nyeri County Referral Hospital',
+      ride: 'Take Mum to her diabetes clinic visit', inferredFrom: 'diabetes clinic appointment',
+    },
+    refill: "Pick up Mum's diabetes tablets refill",
+    note: 'Mum asked who is taking her on Thursday.',
+    helper: 'Njeri',
+    timezone: 'Africa/Nairobi',
+    family: {
+      primary: { name: 'Wanjiru', livesAway: 'Nairobi' },
+      caregiver: { name: 'Kamau', livesAway: 'Nairobi' },
+      away: { name: 'Mwangi', livesAway: 'Dubai' },
     },
   },
 };

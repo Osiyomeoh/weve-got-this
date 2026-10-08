@@ -156,6 +156,29 @@ test('an American copy: Mom in Dayton on Eastern time, Mike nearby, Sarah in Chi
   assert.ok(gaps.structuredContent.gaps.some((g: { spoken: string }) => /cardiology/.test(g.spoken)));
 });
 
+test('a family abroad, and a Kenyan family: the children far away, the one nearby asked, each clock its own', async () => {
+  const a = (await create(KEY, { careCase: 'abroad', liveMorning: true })).json;
+  const s = store.getCareState(a.householdId);
+  const by = (id: string) => s.members.find((m) => m.id === `${id}${a.suffix}`)!;
+  assert.equal(s.household.timezone, 'Africa/Lagos');
+  assert.deepEqual([by('m_david').name, by('m_david').livesAway], ['Tolu', 'London']);
+  assert.deepEqual([by('m_renee').name, by('m_renee').livesAway], ['Funmi', 'Toronto']);
+  assert.deepEqual([by('m_aide').name, by('m_aide').livesAway], ['Segun', undefined]);
+
+  const k = (await create(KEY, { careCase: 'ke', liveMorning: true })).json;
+  const t = store.getCareState(k.householdId);
+  const kb = (id: string) => t.members.find((m) => m.id === `${id}${k.suffix}`)!;
+  assert.equal(t.household.timezone, 'Africa/Nairobi');
+  assert.equal(kb('m_margaret').spokenAs, 'Mum');
+  assert.deepEqual([kb('m_david').name, kb('m_david').livesAway], ['Wanjiru', 'Nairobi']);
+  assert.deepEqual([kb('m_kunle').name, kb('m_kunle').livesAway], ['Mwangi', 'Dubai']);
+  assert.equal(kb('m_aide').name, 'Njeri');
+  const ride = t.obligations.find((o) => /diabetes clinic/.test(o.what))!;
+  const local = new Intl.DateTimeFormat('en-US', { timeZone: 'Africa/Nairobi', weekday: 'long', hour: 'numeric', hour12: false })
+    .format(new Date(ride.dueAt!));
+  assert.equal(local.replace(',', ''), 'Thursday 10');
+});
+
 test('make it yours: a copy carries the visitor\'s own names, and odd ones are refused', async () => {
   const names = { recipient: 'Mum', primary: 'Ada', caregiver: 'Tolu', away: 'Chidi', helper: 'Sarah' };
   const c = (await create(KEY, { careCase: 'us', liveMorning: true, names })).json;
