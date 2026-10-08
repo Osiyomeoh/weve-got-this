@@ -260,6 +260,19 @@ async function vocabulary(): Promise<string[]> {
   return vocabularyCache.terms;
 }
 
+/**
+ * The names a line is corrected onto. The shared vocabulary knows the live household; a
+ * visitor's world has its own family (Musa, Segun, Mike, or the names they typed), and only
+ * those count there. Mixing them turned the US family's "Mike" into the live household's
+ * "Musa"; with only theirs, a "Musa" the recogniser leans towards maps back onto "Mike".
+ */
+async function namesFor(ctx: Awaited<ReturnType<typeof contextFor>>, live?: string[]): Promise<string[]> {
+  const shared = live ?? await vocabulary();
+  if (ctx === LIVE) return shared;
+  const mine = buildVocabulary(await readCareState(ctx).catch(() => ({})));
+  return mine.length > 0 ? mine : shared;
+}
+
 app.post('/api/say', async (req, res) => {
   const { memberId, text, storyTime } = req.body as { memberId?: string; text?: string; storyTime?: string };
   if (!memberId || !text) {
@@ -271,8 +284,8 @@ app.post('/api/say', async (req, res) => {
     // gets wrong are the ones that matter most: a name, or a medication. Map the
     // transcript back onto the household's own vocabulary before the planner
     // sees it, and report what changed rather than rewriting anyone silently.
-    const { text: heard, corrections } = correctTranscript(text, await vocabulary());
     const ctx = await contextFor(req);
+    const { text: heard, corrections } = correctTranscript(text, await namesFor(ctx));
     const host = await hostFor(ctx, memberId);
     host.setStoryTime(storyTimeOf(ctx, storyTime));
     const turn = fromSandbox(await withRetry(() => host.say(heard)), ctx.suffix);
@@ -381,13 +394,7 @@ app.post('/api/transcribe', express.raw({ type: '*/*', limit: '12mb' }), async (
     const terms = await vocabulary();
     const vocabularyName = await ensureVocabulary(terms).catch(() => undefined);
     const raw = await transcribePcm(pcm, vocabularyName);
-    // The shared vocabulary knows the live household; a visitor's world has its own family
-    // (Musa, Segun, Mike, or the names they typed), and only those names count there. Mixing
-    // them turned the US family's "Mike" into the live household's "Musa"; with only theirs, a
-    // "Musa" the recogniser was biased towards maps back onto "Mike".
-    const ctx = await contextFor(req);
-    const mine = ctx === LIVE ? [] : buildVocabulary(await readCareState(ctx).catch(() => ({})));
-    const heardAs = mine.length > 0 ? mine : terms;
+    const heardAs = await namesFor(await contextFor(req), terms);
     const { text, corrections } = correctTranscript(unhyphenate(raw, heardAs), heardAs);
     res.json({
       text,
