@@ -10,7 +10,14 @@ export type ShotName = 'overview' | 'daddy' | 'daddyTv' | 'tolu' | 'musa' | 'pha
 export type Device = 'echo' | 'phone';
 export type Stage = 'midday' | 'pharmacy' | 'driving' | 'atDoor' | 'backInCar';
 
-export type Step =
+/**
+ * Where the day can go another way. `id` names a moment someone can say no to, or let go;
+ * `no` is what they say when they decline. A step that `needs` a moment plays only if it
+ * went ahead; one that runs `unless` it did plays only if it was declined or let go.
+ */
+export interface Branch { id?: string; needs?: string; unless?: string; no?: string }
+
+export type Step = Branch & (
   /** A person speaks to their device. If the visitor plays them, the visitor says it. */
   | { kind: 'line'; who: PersonKey; text: string; via: Device; expect?: string[]; shot?: ShotName }
   /** A device or the server itself acts, through a tool, with no one speaking. */
@@ -30,7 +37,7 @@ export type Step =
    * Fire TV page, so the press does whatever it does there, through the same tools.
    */
   | { kind: 'remote'; who: PersonKey; keys: Key[]; expect: string; caption: string; shot?: ShotName }
-  | { kind: 'shot'; shot: ShotName; ms?: number };
+  | { kind: 'shot'; shot: ShotName; ms?: number });
 
 export interface Beat {
   id: string;
@@ -136,16 +143,21 @@ export function storyFor(w: Words): Beat[] {
     steps: [
       { kind: 'caption', text: `${w.toluWhere ?? 'Across town'}, ${T} has ten minutes between meetings.`, shot: 'tolu', ms: 2600 },
       { kind: 'line', who: 'tolu', via: 'echo', text: 'Alexa, what\'s going to fall through the cracks this week?', expect: ['get_care_gaps'] },
-      { kind: 'line', who: 'tolu', via: 'echo', text: `Ask ${H} if ${helper.they} can pick up ${w.refill} tonight.`, expect: ['request_owner'] },
-      { kind: 'shot', shot: 'musa', ms: 1800 },
-      { kind: 'line', who: 'musa', via: 'phone', text: 'Yes, I\'ll do it.', expect: ['respond_to_request'], shot: 'musa' },
+      { kind: 'line', who: 'tolu', via: 'echo', text: `Ask ${H} if ${helper.they} can pick up ${w.refill} tonight.`, expect: ['request_owner'], id: 'asked' },
+      { kind: 'shot', shot: 'musa', ms: 1800, needs: 'asked' },
+      { kind: 'line', who: 'musa', via: 'phone', text: 'Yes, I\'ll do it.', expect: ['respond_to_request'], shot: 'musa', id: 'helper', needs: 'asked', no: 'Sorry, I can\'t tonight.' },
     ],
   },
   {
     id: 'ride', at: [12, 34], title: 'Thursday\'s ride',
     point: w.ridePoint ?? `Work has an owner or it is a gap. ${T} takes the ride ${w.primary?.self ?? 'himself'}.`,
-    steps: w.rideSteps ?? [
-      { kind: 'line', who: 'tolu', via: 'echo', text: `I'll take ${w.ride} on Thursday.`, expect: ['claim_obligation'], shot: 'tolu' },
+    steps: [
+      ...(w.rideSteps ?? [
+        { kind: 'line', who: 'tolu', via: 'echo', text: `I'll take ${w.ride} on Thursday.`, expect: ['claim_obligation'], shot: 'tolu' } as Step,
+      ]).map((s): Step => (s.kind === 'line' && s.expect?.includes('claim_obligation')
+        ? { ...s, id: 'ride', no: `I can't do it this time. Can someone else take ${w.ride}?` } : s)),
+      { kind: 'caption', unless: 'ride', shot: 'both', ms: 3800,
+        text: `Nobody has said they'll take ${w.ride}. It stays on the record as work with no owner: a gap, not a promise.` },
     ],
   },
   {
@@ -153,22 +165,26 @@ export function storyFor(w: Words): Beat[] {
     point: 'Saying yes is not doing it. The day runs on.',
     steps: [
       { kind: 'lapse', to: [19, 20], seconds: 4, shot: 'overview' },
-      { kind: 'musa', stage: 'pharmacy', shot: 'pharmacy', ms: 4200 },
+      // Nobody said yes to tonight's refill, so someone else has to take it, or nobody does.
+      { kind: 'line', unless: 'helper', who: 'tolu', via: 'echo', id: 'covered', shot: 'tolu',
+        text: `${H} can't do tonight. I'll pick up ${w.refill} myself on the way home.`, expect: ['claim_obligation'],
+        no: `${H} can't do tonight, and neither can I.` },
+      { needs: 'helper', kind: 'musa', stage: 'pharmacy', shot: 'pharmacy', ms: 4200 },
       { kind: 'lapse', to: [19, 58], seconds: 2.5, shot: 'overview' },
-      { kind: 'musa', stage: 'driving', ms: 3500 },
-      { kind: 'musa', stage: 'atDoor', shot: 'door', ms: 3200 },
+      { needs: 'helper', kind: 'musa', stage: 'driving', ms: 3500 },
+      { needs: 'helper', kind: 'musa', stage: 'atDoor', shot: 'door', ms: 3200 },
       // The bell: on Fire TV the door camera opens over whatever is on. They see someone, and
       // get up and go to the door, slowly, while the doorbell reports what it saw.
       {
-        kind: 'signal', source: 'ring', tool: 'ingest_signal', args: { source: 'ring', kind: 'motion' }, shot: 'daddyTv',
+        needs: 'helper', kind: 'signal', source: 'ring', tool: 'ingest_signal', args: { source: 'ring', kind: 'motion' }, shot: 'daddyTv',
         caption: w.ringCaption ?? `Ring sees someone at ${w.who}'s door at 7:58, and the live view opens over the programme on the TV. It can say a person. It can't say who.`,
       },
-      { kind: 'move', who: 'daddy', to: 'door', shot: 'door' },
-      { kind: 'aside', who: 'musa', to: 'daddy', text: w.handover, shot: 'door' },
-      { kind: 'aside', who: 'daddy', to: 'musa', text: `Thank you, ${H}.`, listener: 'nod' },
-      { kind: 'move', who: 'daddy', to: 'home' },
-      { kind: 'musa', stage: 'backInCar', shot: 'overview', ms: 3000 },
-      { kind: 'caption', text: w.afterDoor ?? `${w.who} knows who came. The record only knows someone did. ${H} drives on, and never says it's done.`, ms: 3600 },
+      { needs: 'helper', kind: 'move', who: 'daddy', to: 'door', shot: 'door' },
+      { needs: 'helper', kind: 'aside', who: 'musa', to: 'daddy', text: w.handover, shot: 'door' },
+      { needs: 'helper', kind: 'aside', who: 'daddy', to: 'musa', text: `Thank you, ${H}.`, listener: 'nod' },
+      { needs: 'helper', kind: 'move', who: 'daddy', to: 'home' },
+      { needs: 'helper', kind: 'musa', stage: 'backInCar', shot: 'overview', ms: 3000 },
+      { needs: 'helper', kind: 'caption', text: w.afterDoor ?? `${w.who} knows who came. The record only knows someone did. ${H} drives on, and never says it's done.`, ms: 3600 },
     ],
   },
   {
@@ -179,9 +195,15 @@ export function storyFor(w: Words): Beat[] {
       {
         kind: 'signal', source: 'agent', tool: 'run_care_agent', args: {}, shot: 'hub',
         caption: 'The pharmacy run was due at 8:00. CareCircle\'s own pass notices, and asks the one person who said yes.',
+        needs: 'helper',
       },
-      { kind: 'shot', shot: 'musa', ms: 2600 },
-      { kind: 'line', who: 'musa', via: 'phone', text: `Done. I dropped them with ${w.him} at eight.`, expect: ['resolve_obligation'], shot: 'musa' },
+      {
+        kind: 'signal', source: 'agent', tool: 'run_care_agent', args: {}, shot: 'hub', unless: 'helper',
+        caption: `${H} said no to tonight, so nobody is assumed. CareCircle\'s own pass looks at what is still open, and asks whoever it can.`,
+      },
+      { kind: 'shot', shot: 'musa', ms: 2600, needs: 'helper' },
+      { kind: 'line', needs: 'helper', who: 'musa', via: 'phone', text: `Done. I dropped them with ${w.him} at eight.`, expect: ['resolve_obligation'], shot: 'musa' },
+      { kind: 'line', needs: 'covered', unless: 'helper', who: 'tolu', via: 'echo', text: `Done. I dropped ${w.refill} with ${w.him} on the way home.`, expect: ['resolve_obligation'], shot: 'tolu' },
       { kind: 'line', who: 'tolu', via: 'echo', text: `Where does it say ${w.refill} was picked up? Show me the trail.`, expect: ['get_provenance'], shot: 'tolu' },
     ],
   },

@@ -8,7 +8,8 @@ import { LISTENING_EVENT, record, type Recording } from '../lib/mic';
 import { SPEECH_LANGUAGES, setSpeechLanguage, speechLanguage } from '../lib/speech-language';
 import { tellStoryTime } from '../lib/storyTime';
 import { CAST, PLAYABLE, type PersonKey } from '../world/cast';
-import { useDirector, type WorldView } from '../world/director';
+import { SAY_NO, STAY_QUIET, useDirector, type WorldView } from '../world/director';
+import type { BoardState } from '../lib/api';
 import { MODEL, preloadWorld } from '../world/models';
 import { Scene } from '../world/Scene';
 import { clockText, homeToday, STORY, type ShotName } from '../world/story';
@@ -174,8 +175,8 @@ export default function World() {
         </div>
       )}
       {view.status === 'yourTurn' && view.prompt && !view.prompt.guest && (view.prompt.remote
-        ? <RemoteTurn who={view.prompt.who} hint={view.prompt.suggestion} onPress={director.press} />
-        : <YourTurn key={`${view.prompt.who}${view.prompt.reply ? '-r' : ''}${view.trace.length}`} who={view.prompt.who} suggestion={view.prompt.suggestion} reply={!!view.prompt.reply} onSay={director.say} />)}
+        ? <RemoteTurn who={view.prompt.who} hint={view.prompt.suggestion} onPress={director.press} onLeave={director.leave} />
+        : <YourTurn key={`${view.prompt.who}${view.prompt.reply ? '-r' : ''}${view.trace.length}`} who={view.prompt.who} suggestion={view.prompt.suggestion} no={view.prompt.no} reply={!!view.prompt.reply} onSay={director.say} />)}
       {view.status === 'stuck' && view.stuck && <StuckPanel stuck={view.stuck} onDecide={director.decide} />}
       {view.status === 'error' && (
         <div className="world-panel">
@@ -186,8 +187,10 @@ export default function World() {
       )}
       {view.status === 'done' && (
         <div className="world-panel">
-          <h3>One day, one record</h3>
-          <p>{family().ending}</p>
+          <h3>{view.choices.length ? 'Your day, as it went' : 'One day, one record'}</h3>
+          {/* The written ending is the day as scripted; a day that went another way is told by its record. */}
+          {!view.choices.length && <p>{family().ending}</p>}
+          <DayScore view={view} />
           <Impact log={view.log} playing={view.playing ? CAST[view.playing]!.name : null} />
           <div className="row">
             <button className="world-btn" onClick={() => void director.restart().then(() => director.choose(null)).then(() => director.restart())}>Play as someone else</button>
@@ -237,6 +240,48 @@ function Impact({ log, playing }: { log: WorldView['log']; playing: string | nul
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+/**
+ * The day's score, read from the record the day left behind, not from the script: doses
+ * with someone's word on them, work that has an owner, work that has none, and what it cost
+ * the family in messages. The sim's own weights, shown so nobody has to trust a number.
+ */
+function DayScore({ view }: { view: WorldView }) {
+  const [state, setState] = useState<BoardState | null>(null);
+  useEffect(() => { void api.state(view.clock).then(setState, () => setState(null)); }, [view.clock]);
+  if (!state) return null;
+  const doses = state.schedule ?? [];
+  const recorded = doses.filter((d) => d.recorded).length;
+  const work = (state.obligations ?? []).filter((o) => o.status !== 'DISMISSED');
+  const owned = work.filter((o) => o.owner && o.status !== 'PROPOSED');
+  const done = work.filter((o) => o.status === 'RESOLVED');
+  const open = work.filter((o) => !o.owner || o.status === 'PROPOSED');
+  const covered = recorded + owned.length;
+  const score = 10 * covered - 10 * open.length - view.interrupts;
+  return (
+    <div className="world-score" aria-label="How the day went">
+      <div className="head">How the day went<span>Read from the record this run left, not the script</span></div>
+      <div className="world-score-grid">
+        <div><b>{recorded}/{doses.length}</b>doses with someone's word on them</div>
+        <div><b>{owned.length}</b>jobs with an owner{done.length ? `, ${done.length} done` : ''}</div>
+        <div className={open.length ? 'bad' : undefined}><b>{open.length}</b>{open.length === 1 ? 'job' : 'jobs'} nobody has</div>
+        <div><b>{view.interrupts}</b>{view.interrupts === 1 ? 'message' : 'messages'} to the family</div>
+      </div>
+      {open.length > 0 && <ul className="world-score-open">{open.map((o) => <li key={o.id}>Still nobody's: {o.what}</li>)}</ul>}
+      {view.choices.length > 0 && (
+        <ul className="world-score-choices">
+          {view.choices.map((c, i) => (
+            <li key={i}>{c.who} {c.choice === 'no' ? <>said no: “{c.said}”</> : 'let it go'}{c.yours && <b> Your choice.</b>}</li>
+          ))}
+        </ul>
+      )}
+      <div className="world-score-total">
+        Day score <b>{score}</b>
+        <span>10 for every dose on the record and job with an owner, minus 10 for every job nobody has, minus 1 for every message it took. Covered without nagging scores highest.</span>
+      </div>
     </div>
   );
 }
@@ -407,7 +452,7 @@ function MakeItYours({ base, start, onDone, onCancel }: { base: FamilyNames; sta
 }
 
 /** Your line: say it your own way, type it, or speak it (Amazon Transcribe). */
-function YourTurn({ who, suggestion, reply, onSay }: { who: PersonKey; suggestion: string; reply: boolean; onSay: (text: string) => void }) {
+function YourTurn({ who, suggestion, no, reply, onSay }: { who: PersonKey; suggestion: string; no?: string; reply: boolean; onSay: (text: string) => void }) {
   const [text, setText] = useState(suggestion);
   const [listening, setListening] = useState(false);
   const [lang, setLang] = useState(() => speechLanguage().code);
@@ -460,13 +505,18 @@ function YourTurn({ who, suggestion, reply, onSay }: { who: PersonKey; suggestio
           title="Put the story's line back in the box" onClick={() => { setText(suggestion); input.current?.focus(); }}>Suggest</button>
         <button type="submit" className="world-btn">Say it</button>
       </div>
+      {/* The day doesn't have to go to script. A no is an answer; silence is a choice too. */}
+      <div className="row world-choices">
+        {no && <button type="button" className="world-btn ghost" title={`Say: "${no}"`} onClick={() => onSay(SAY_NO)}>Say no</button>}
+        {!reply && <button type="button" className="world-btn ghost" title="Say nothing to Alexa. Nothing goes on the record." onClick={() => onSay(STAY_QUIET)}>Stay quiet</button>}
+      </div>
       {note && <div className="world-turn-note">{note}</div>}
     </form>
   );
 }
 
 /** Your turn is the TV remote: the same five buttons a Fire TV remote has, pressed on the TV on the wall. */
-function RemoteTurn({ who, hint, onPress }: { who: PersonKey; hint: string; onPress: (key: Key) => void }) {
+function RemoteTurn({ who, hint, onPress, onLeave }: { who: PersonKey; hint: string; onPress: (key: Key) => void; onLeave: () => void }) {
   const p = CAST[who]!;
   const keys: { key: Key; label: string }[] = [
     { key: 'left', label: '◀' }, { key: 'up', label: '▲' }, { key: 'ok', label: 'OK' }, { key: 'down', label: '▼' }, { key: 'right', label: '▶' }, { key: 'back', label: 'BACK' },
@@ -478,6 +528,7 @@ function RemoteTurn({ who, hint, onPress }: { who: PersonKey; hint: string; onPr
         {keys.map((k) => (
           <button key={k.key} type="button" className={`world-btn${k.key === 'ok' ? '' : ' ghost'}`} onClick={() => onPress(k.key)} aria-label={k.key}>{k.label}</button>
         ))}
+        <button type="button" className="world-btn ghost" title="Leave the question on the TV" onClick={onLeave}>Ignore it</button>
       </div>
     </div>
   );

@@ -24,7 +24,13 @@ export interface Presence { look: LookAt; talking: boolean; phone: boolean; gest
 export interface PhoneMessage { from: string; text: string; key: string }
 export interface TraceItem { id: number; who: string; call: ToolCall; at: string }
 /** `remote`: their turn is buttons on the TV remote, not words. */
-export interface Prompt { who: PersonKey; suggestion: string; remote?: boolean; guest?: boolean; /** Alexa answered but the scene isn't there yet: say the next thing to her. */ reply?: boolean }
+/** Said in place of a line: decline it (with the step's own words), or let it go entirely. */
+export const SAY_NO = '\u0000no';
+export const STAY_QUIET = '\u0000quiet';
+export type Choice = 'yes' | 'no' | 'quiet';
+/** A moment that went another way than the script, and who chose it. */
+export interface Choosing { who: string; said: string; choice: Exclude<Choice, 'yes'>; yours: boolean }
+export interface Prompt { /** This moment can be declined, in these words. */ no?: string; who: PersonKey; suggestion: string; remote?: boolean; guest?: boolean; /** Alexa answered but the scene isn't there yet: say the next thing to her. */ reply?: boolean }
 /** What the doorbell reported, drawn as the card a family would see: what it saw, and what it can't know. */
 export interface Evidence { at: Date; saw: string; cannot: string }
 export interface Stuck {
@@ -64,6 +70,10 @@ export interface WorldView {
   people: Record<PersonKey, Presence>;
   /** The last button pressed on the TV remote, counted so the same button twice shows twice. */
   press: { key: Key; n: number } | null;
+  /** Every moment that went another way: a no, or nothing said. */
+  choices: Choosing[];
+  /** Messages that reached someone's phone or Echo today: what the day cost in interruptions. */
+  interrupts: number;
 }
 
 const AT_REST: Record<PersonKey, Presence> = {
@@ -74,7 +84,7 @@ const AT_REST: Record<PersonKey, Presence> = {
 };
 
 const START: WorldView = {
-  status: 'cast', beat: 0, clock: homeToday(7, 30), shot: 'overview', caption: null, press: null,
+  status: 'cast', beat: 0, clock: homeToday(7, 30), shot: 'overview', caption: null, press: null, choices: [], interrupts: 0,
   glow: { daddy: 'idle', tolu: 'idle' }, phones: {}, phoneListening: null, point: null, trace: [], log: [], pulses: [],
   musa: 'midday', ringActive: false, evidence: null, hubBusy: false, prompt: null, stuck: null, error: null, playing: null,
   people: AT_REST,
@@ -118,6 +128,14 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
   /** Is the person cared for in front of the set this morning? Decided once a day: ?tv=on or ?tv=off, or a coin. */
   const atTv = useRef(true);
   const retry = useRef<((again: boolean) => void) | null>(null);
+  /** How each named moment went, so later steps follow from it. */
+  const outcomes = useRef(new Map<string, Choice>());
+  const went = (id: string) => { const o = outcomes.current.get(id); return o !== 'no' && o !== 'quiet'; };
+  const remoteQuiet = useRef(false);
+  const chose = (step: Step, who: PersonKey, choice: Choice, said: string, yours: boolean) => {
+    if (step.id) outcomes.current.set(step.id, choice);
+    if (choice !== 'yes') set((v) => ({ choices: [...v.choices, { who: CAST[who]!.name, said, choice, yours }] }));
+  };
   /** The people family members are playing from their own phones (see room.ts). */
   const guests = useRef<Set<PersonKey>>(new Set());
   const seen = useRef(new Set<string>());
@@ -173,6 +191,7 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
       const to = personNamed(n.to);
       if (!to) continue;
       pulse(HUB, deviceOf(to), '#ffd27a');
+      set((v) => ({ interrupts: v.interrupts + 1 }));
       await wait(700);
       set((v) => ({ phones: { ...v.phones, [to]: { from: n.from, text: n.message, key } } }));
       // They notice, and pick it up. Daddy can't read a screen this week: his comes out of the Echo.
@@ -222,12 +241,22 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     }
 
     if (played || guest) {
-      set({ status: 'yourTurn', prompt: { who: step.who, suggestion: step.text, ...(guest ? { guest: true } : {}), ...(followUps ? { reply: true } : {}) } });
+      set({ status: 'yourTurn', prompt: { who: step.who, suggestion: step.text, ...(step.no && !followUps ? { no: step.no } : {}), ...(guest ? { guest: true } : {}), ...(followUps ? { reply: true } : {}) } });
       text = await new Promise<string>((resolve) => { answer.current = resolve; });
       answer.current = null;
       if (run.current !== token) return;
       set({ status: 'playing', prompt: null });
     }
+    // Nothing said. Nothing goes to Alexa, and nothing goes on the record: the day goes on without it.
+    if (text === STAY_QUIET) {
+      chose(step, step.who, 'quiet', step.text, played);
+      set({ caption: { who: '', text: `${person.name} lets it go. Nobody tells Alexa, so the record never hears of it.`, tone: 'narration' } });
+      gesture(step.who, 'shake');
+      await wait(2600);
+      return;
+    }
+    const declined = text === SAY_NO;
+    if (declined) text = step.no ?? 'No.';
 
     const echo = step.via === 'echo' ? (step.who === 'daddy' ? 'daddy' : 'tolu') : null;
     busy.current.add(step.who);
@@ -285,7 +314,8 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     // say so plainly and let the visitor try again, rather than pretending.
     const called = turn.toolCalls.filter((c) => !c.isError).map((c) => c.name);
     // What they set out to do may have happened a turn ago, with Alexa then asking about it.
-    const landed = !step.expect || step.expect.some((t) => called.includes(t) || before.includes(t));
+    // A no is an answer: whatever Alexa made of it stands, and the day follows from it.
+    const landed = declined || !step.expect || step.expect.some((t) => called.includes(t) || before.includes(t));
     // A nod when it went the way they meant; a small shake of the head when it didn't.
     gesture(step.who, landed ? 'nod' : 'shake');
     busy.current.delete(step.who);
@@ -296,6 +326,7 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     if (!landed && step.expect && followUps < 2 && run.current === token) {
       return line(step, token, followUps + 1, [...before, ...called]);
     }
+    if (landed) chose(step, step.who, declined ? 'no' : 'yes', text, played || guest);
     if (!landed && step.expect) {
       set({ status: 'stuck', stuck: { reason: called.length ? `Alexa used ${called.join(', ')}.` : 'Alexa answered without changing the record.', expected: step.expect, ...(played || guest ? { said: text, got: called } : {}) } });
       const again = await new Promise<boolean>((resolve) => { retry.current = resolve; });
@@ -389,11 +420,20 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
         await wait(1300);
       }
     }
+    remoteQuiet.current = false;
     const got = played ? await did : await Promise.race([did, wait(15000).then(() => null)]);
     tvOff.current?.();
     busy.current.delete(step.who);
     if (run.current !== token) return;
     if (played) set({ status: 'playing', prompt: null });
+    if (remoteQuiet.current) {
+      remoteQuiet.current = false;
+      chose(step, step.who, 'quiet', step.caption, true);
+      set({ caption: { who: '', text: `${person.name} leaves the question on the TV. Nothing goes on the record.`, tone: 'narration' } });
+      settle(step.who);
+      await wait(2600);
+      return;
+    }
     const call = got?.call;
     if (call) {
       addTrace(`${person.name} · TV remote`, [call]);
@@ -455,6 +495,11 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
         }
         for (const step of beat.steps) {
           if (run.current !== token) return;
+          // The day as it actually went: a moment that was declined takes what hung on it with it.
+          if ((step.needs && !went(step.needs)) || (step.unless && went(step.unless))) {
+            if (step.id) outcomes.current.set(step.id, 'quiet');
+            continue;
+          }
           if ('shot' in step && step.shot) set({ shot: step.shot });
           switch (step.kind) {
             case 'caption':
@@ -507,6 +552,7 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     seen.current.clear();
     busy.current.clear();
     lastNotice.current = {};
+    outcomes.current.clear();
     await api.resetSandbox({ liveMorning: true, careCase: family().id, ...(familyNames() ? { names: familyNames()! } : {}) }).catch(() => undefined);
     // The day opens at 7:30 in their home, wherever that is.
     const dawn = homeToday(7, 30);
@@ -525,6 +571,8 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []);
   const decide = useCallback((again: boolean) => retry.current?.(again), []);
+  /** Leave the TV's question unanswered. */
+  const leave = useCallback(() => { remoteQuiet.current = true; tvOff.current?.(); }, []);
   /** Who family members hold now. A person let go mid-turn is played for them from the next line. */
   const setGuests = useCallback((who: PersonKey[]) => {
     guests.current = new Set(who);
@@ -563,7 +611,7 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { view, play, restart, choose, reclock, say, press, decide, setGuests, fromGuest, skipTo, pulseDone, storyNow, look, pose };
+  return { view, play, restart, choose, reclock, say, press, decide, leave, setGuests, fromGuest, skipTo, pulseDone, storyNow, look, pose };
 }
 
 /** A doorbell's two notes, so the house hears someone at the door. */

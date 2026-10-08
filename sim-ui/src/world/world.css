@@ -238,3 +238,18 @@
 
 /* Each person floating on their own card. */
 .world-cast-figure { height: 170px; margin: -8px -8px 0; pointer-events: none; }
+
+.world-choices { margin-top: 6px; gap: 6px; }
+.world-choices .world-btn { font-size: 12px; padding: 4px 10px; }
+.world-score { margin: 0 0 14px; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 12px; }
+.world-score .head { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #7cf0c8; margin-bottom: 8px; }
+.world-score .head span { display: block; margin-top: 2px; letter-spacing: 0; text-transform: none; color: rgba(255, 255, 255, 0.5); }
+.world-score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+.world-score-grid > div { background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 8px 10px; font-size: 12px; color: rgba(255, 255, 255, 0.7); }
+.world-score-grid b { display: block; font-size: 22px; color: #fff; }
+.world-score-grid .bad b { color: #ff8a7a; }
+.world-score-open, .world-score-choices { margin: 10px 0 0; padding-left: 18px; font-size: 13px; color: rgba(255, 255, 255, 0.8); }
+.world-score-open li { color: #ffb4a8; }
+.world-score-total { margin-top: 12px; font-size: 14px; }
+.world-score-total b { font-size: 22px; margin-left: 6px; color: #ffd27a; }
+.world-score-total span { display: block; font-size: 11px; color: rgba(255, 255, 255, 0.5); margin-top: 2px; }
