@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { Buffer } from 'node:buffer';
 import {
   TranscribeStreamingClient, StartStreamTranscriptionCommand,
@@ -146,6 +147,33 @@ export async function ensureVocabulary(terms: string[]): Promise<string | undefi
       VocabularyName: VOCABULARY_NAME, LanguageCode: 'en-US', Phrases: phrases,
     })).catch(() => undefined);
     applied = wanted;
+    return undefined;
+  }
+}
+
+const familyVocabularies = new Map<string, 'ready' | 'pending'>();
+
+/**
+ * A vocabulary for one visitor's family, named by its own contents, so it never needs
+ * updating: a different family is a different vocabulary. The shared one above knows the
+ * live household; a world played as the US family or the Kenyan one has other names, and
+ * Transcribe steered towards the wrong names hears the wrong names.
+ */
+export async function ensureFamilyVocabulary(terms: string[]): Promise<string | undefined> {
+  const phrases = vocabularyPhrases(terms);
+  if (phrases.length === 0) return undefined;
+  const name = `carecircle-f-${createHash('sha1').update(signature(phrases)).digest('hex').slice(0, 16)}`;
+  if (familyVocabularies.get(name) === 'ready') return name;
+  try {
+    const got = await controlClient().send(new GetVocabularyCommand({ VocabularyName: name }));
+    if (got.VocabularyState === 'READY') { familyVocabularies.set(name, 'ready'); return name; }
+    return undefined;
+  } catch (err) {
+    if ((err as { name?: string }).name !== 'BadRequestException' || familyVocabularies.has(name)) return undefined;
+    familyVocabularies.set(name, 'pending');
+    await controlClient().send(new CreateVocabularyCommand({
+      VocabularyName: name, LanguageCode: 'en-US', Phrases: phrases,
+    })).catch(() => undefined);
     return undefined;
   }
 }

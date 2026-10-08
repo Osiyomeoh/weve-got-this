@@ -9,7 +9,7 @@ import { providerFromEnv } from './providers.js';
 import { diagnoseBedrock, describe as describeDiagnosis } from './preflight.js';
 import { DEMO_TOKENS } from '../demo/seed.js';
 import { buildVocabulary, correctTranscript } from './transcript.js';
-import { ensureVocabulary, hasEnoughAudio, transcribePcm, unhyphenate, SAMPLE_RATE } from './transcribe.js';
+import { ensureFamilyVocabulary, ensureVocabulary, hasEnoughAudio, transcribePcm, unhyphenate, SAMPLE_RATE } from './transcribe.js';
 import { isRate, synthesize } from './speech.js';
 import { STORY_TIME_HEADER } from '../http/story-clock.js';
 import { Rooms, isSeat, type RoomError } from './rooms.js';
@@ -392,9 +392,11 @@ app.post('/api/transcribe', express.raw({ type: '*/*', limit: '12mb' }), async (
   }
   try {
     const terms = await vocabulary();
-    const vocabularyName = await ensureVocabulary(terms).catch(() => undefined);
+    const ctx = await contextFor(req);
+    const heardAs = await namesFor(ctx, terms);
+    // A visitor's world is steered towards its own family's names, not the live household's.
+    const vocabularyName = await (ctx === LIVE ? ensureVocabulary(terms) : ensureFamilyVocabulary(heardAs)).catch(() => undefined);
     const raw = await transcribePcm(pcm, vocabularyName);
-    const heardAs = await namesFor(await contextFor(req), terms);
     const { text, corrections } = correctTranscript(unhyphenate(raw, heardAs), heardAs);
     res.json({
       text,

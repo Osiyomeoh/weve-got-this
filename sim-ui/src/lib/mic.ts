@@ -41,7 +41,29 @@ export interface Listening {
   onEnd?: (reason: Ending) => void;
 }
 
-/** To the rate Transcribe wants, averaging each output sample's span so nothing aliases. */
+/**
+ * To the rate Transcribe wants, with the browser's own resampler (a proper low-pass, the
+ * same one it plays audio through). The averaging below is only for a browser without
+ * OfflineAudioContext; it smears consonants, and consonants are what names are made of.
+ */
+async function toRate(samples: Float32Array, from: number, to: number): Promise<Float32Array> {
+  if (from === to || samples.length === 0 || typeof OfflineAudioContext === 'undefined') return resample(samples, from, to);
+  try {
+    const length = Math.ceil(samples.length * to / from);
+    const offline = new OfflineAudioContext(1, length, to);
+    const buffer = offline.createBuffer(1, samples.length, from);
+    buffer.copyToChannel(new Float32Array(samples), 0);
+    const source = offline.createBufferSource();
+    source.buffer = buffer;
+    source.connect(offline.destination);
+    source.start();
+    return (await offline.startRendering()).getChannelData(0);
+  } catch {
+    return resample(samples, from, to);
+  }
+}
+
+/** Fallback resampling: average each output sample's span so nothing aliases. */
 function resample(samples: Float32Array, from: number, to: number): Float32Array {
   if (from === to) return samples;
   const ratio = from / to;
@@ -79,7 +101,7 @@ export async function record(listening: Listening | ((level: number) => void) = 
   const { onLevel, onEnd } = typeof listening === 'function' ? { onLevel: listening, onEnd: undefined } : listening;
 
   const stream = await navigator.mediaDevices.getUserMedia({
-    audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
+    audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
   });
 
   // The device's own rate, converted to 16 kHz at the end: some browsers (Firefox, older
@@ -142,7 +164,7 @@ export async function record(listening: Listening | ((level: number) => void) = 
       for (const chunk of captured) { merged.set(chunk, offset); offset += chunk.length; }
       // Pass the view, not `.buffer`: a typed array is a valid BlobPart and
       // avoids the SharedArrayBuffer branch of ArrayBufferLike.
-      return new Blob([toPcm16(resample(merged, rate, SAMPLE_RATE))], { type: 'application/octet-stream' });
+      return new Blob([toPcm16(await toRate(merged, rate, SAMPLE_RATE))], { type: 'application/octet-stream' });
     },
     cancel: teardown,
   };
