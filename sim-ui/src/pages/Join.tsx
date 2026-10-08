@@ -130,7 +130,7 @@ export default function Join() {
         </div>
       )}
 
-      {myTurn && !myTurn.remote && <GuestLine key={feed.captionId + myTurn.suggestion} name={me.name} color={me.color} suggestion={myTurn.suggestion} onSay={(text) => void api.room.send(code, { text })} />}
+      {myTurn && !myTurn.remote && <GuestLine key={feed.captionId + myTurn.suggestion} reply={!!myTurn.reply} name={me.name} color={me.color} suggestion={myTurn.suggestion} onSay={(text) => void api.room.send(code, { text })} />}
       {myTurn && myTurn.remote && (
         <div className="world-turn join-turn" style={{ borderColor: me.color }}>
           <div className="world-turn-head"><span style={{ color: me.color }}>Your turn, {me.name}.</span> {myTurn.suggestion} This is the TV remote.</div>
@@ -161,7 +161,7 @@ export default function Join() {
 }
 
 /** A guest's line: their own words, typed or spoken, or the one the story suggests. */
-function GuestLine({ name, color, suggestion, onSay }: { name: string; color: string; suggestion: string; onSay: (text: string) => void }) {
+function GuestLine({ name, color, suggestion, reply, onSay }: { reply: boolean; name: string; color: string; suggestion: string; onSay: (text: string) => void }) {
   const [text, setText] = useState(suggestion);
   const [sent, setSent] = useState(false);
   const [listening, setListening] = useState(false);
@@ -196,7 +196,7 @@ function GuestLine({ name, color, suggestion, onSay }: { name: string; color: st
   if (sent) return <p className="join-wait">Sent. Alexa is hearing it now…</p>;
   return (
     <form className="world-turn join-turn" style={{ borderColor: color }} onSubmit={(e) => { e.preventDefault(); send(text); }}>
-      <div className="world-turn-head"><span style={{ color }}>Your turn, {name}.</span> Say it your own way, or use this:</div>
+      <div className="world-turn-head"><span style={{ color }}>{reply ? `Answer Alexa, ${name}.` : `Your turn, ${name}.`}</span> {reply ? 'She hasn\'t done it yet. Reply to her, or say it again:' : 'Say it your own way, or use this:'}</div>
       <input value={text} onChange={(e) => setText(e.target.value)} aria-label={`What ${name} says`} />
       <div className="row">
         <button type="button" className={`world-btn ghost${listening ? ' live' : ''}`} onClick={() => void mic()}>{listening ? 'Stop' : 'Speak'}</button>

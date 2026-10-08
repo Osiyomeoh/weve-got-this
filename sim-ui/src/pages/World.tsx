@@ -154,7 +154,7 @@ export default function World() {
       )}
       {view.status === 'yourTurn' && view.prompt && !view.prompt.guest && (view.prompt.remote
         ? <RemoteTurn who={view.prompt.who} hint={view.prompt.suggestion} onPress={director.press} />
-        : <YourTurn who={view.prompt.who} suggestion={view.prompt.suggestion} onSay={director.say} />)}
+        : <YourTurn key={`${view.prompt.who}${view.prompt.reply ? '-r' : ''}${view.trace.length}`} who={view.prompt.who} suggestion={view.prompt.suggestion} reply={!!view.prompt.reply} onSay={director.say} />)}
       {view.status === 'stuck' && view.stuck && <StuckPanel stuck={view.stuck} onDecide={director.decide} />}
       {view.status === 'error' && (
         <div className="world-panel">
@@ -379,7 +379,7 @@ function MakeItYours({ base, start, onDone, onCancel }: { base: FamilyNames; sta
 }
 
 /** Your line: say it your own way, type it, or speak it (Amazon Transcribe). */
-function YourTurn({ who, suggestion, onSay }: { who: PersonKey; suggestion: string; onSay: (text: string) => void }) {
+function YourTurn({ who, suggestion, reply, onSay }: { who: PersonKey; suggestion: string; reply: boolean; onSay: (text: string) => void }) {
   const [text, setText] = useState(suggestion);
   const [listening, setListening] = useState(false);
   const [note, setNote] = useState<string | null>(null);
@@ -415,7 +415,7 @@ function YourTurn({ who, suggestion, onSay }: { who: PersonKey; suggestion: stri
   const p = CAST[who]!;
   return (
     <form className="world-turn" style={{ borderColor: p.color }} onSubmit={(e) => { e.preventDefault(); if (text.trim()) onSay(text.trim()); }}>
-      <div className="world-turn-head"><span style={{ color: p.color }}>Your turn, {p.name}.</span> Say it your own way, or use this:</div>
+      <div className="world-turn-head"><span style={{ color: p.color }}>{reply ? `Answer Alexa, ${p.name}.` : `Your turn, ${p.name}.`}</span> {reply ? 'She hasn\'t done it yet. Reply to her, or say it again:' : 'Say it your own way, or use this:'}</div>
       <div className="row">
         <input ref={input} value={text} onChange={(e) => setText(e.target.value)} aria-label={`What ${p.name} says`} />
         <button type="button" className={`world-btn ghost${listening ? ' live' : ''}`} onClick={() => void mic()}>{listening ? 'Stop' : 'Speak'}</button>

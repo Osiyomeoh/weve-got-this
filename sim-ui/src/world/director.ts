@@ -23,7 +23,7 @@ export interface Presence { look: LookAt; talking: boolean; phone: boolean; gest
 export interface PhoneMessage { from: string; text: string; key: string }
 export interface TraceItem { id: number; who: string; call: ToolCall; at: string }
 /** `remote`: their turn is buttons on the TV remote, not words. */
-export interface Prompt { who: PersonKey; suggestion: string; remote?: boolean; guest?: boolean }
+export interface Prompt { who: PersonKey; suggestion: string; remote?: boolean; guest?: boolean; /** Alexa answered but the scene isn't there yet: say the next thing to her. */ reply?: boolean }
 /** What the doorbell reported, drawn as the card a family would see: what it saw, and what it can't know. */
 export interface Evidence { at: Date; saw: string; cannot: string }
 export interface Stuck {
@@ -200,14 +200,14 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
   };
 
   /** One spoken turn, through the real planner, as that person. */
-  const line = async (step: Extract<Step, { kind: 'line' }>, token: number): Promise<void> => {
+  const line = async (step: Extract<Step, { kind: 'line' }>, token: number, followUps = 0): Promise<void> => {
     const person = CAST[step.who]!;
     const played = viewRef.current.playing === step.who;
     const guest = !played && guests.current.has(step.who);
     let text = step.text;
 
     if (played || guest) {
-      set({ status: 'yourTurn', prompt: { who: step.who, suggestion: step.text, ...(guest ? { guest: true } : {}) } });
+      set({ status: 'yourTurn', prompt: { who: step.who, suggestion: step.text, ...(guest ? { guest: true } : {}), ...(followUps ? { reply: true } : {}) } });
       text = await new Promise<string>((resolve) => { answer.current = resolve; });
       answer.current = null;
       if (run.current !== token) return;
@@ -275,6 +275,11 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     busy.current.delete(step.who);
     const who = step.who;
     setTimeout(() => { if (!busy.current.has(who)) settle(who); }, 1300);
+    // A conversation, not a test: Alexa may ask back or answer something nearby first. The
+    // same device keeps the same conversation, so the next thing said carries on from hers.
+    if (!landed && step.expect && followUps < 2 && run.current === token) {
+      return line(step, token, followUps + 1);
+    }
     if (!landed && step.expect) {
       set({ status: 'stuck', stuck: { reason: called.length ? `Alexa used ${called.join(', ')}.` : 'Alexa answered without changing the record.', expected: step.expect, ...(played || guest ? { said: text, got: called } : {}) } });
       const again = await new Promise<boolean>((resolve) => { retry.current = resolve; });

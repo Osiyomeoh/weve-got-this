@@ -381,7 +381,12 @@ app.post('/api/transcribe', express.raw({ type: '*/*', limit: '12mb' }), async (
     const terms = await vocabulary();
     const vocabularyName = await ensureVocabulary(terms).catch(() => undefined);
     const raw = await transcribePcm(pcm, vocabularyName);
-    const { text, corrections } = correctTranscript(unhyphenate(raw, terms), terms);
+    // The shared vocabulary knows the live household; a visitor's world has its own family
+    // (Musa, Segun, or the names they typed), so the corrector hears those too.
+    const ctx = await contextFor(req);
+    const mine = ctx === LIVE ? [] : buildVocabulary(await readCareState(ctx).catch(() => ({})));
+    const heardAs = [...new Set([...mine, ...terms])];
+    const { text, corrections } = correctTranscript(unhyphenate(raw, heardAs), heardAs);
     res.json({
       text,
       ...(corrections.length ? { corrections } : {}),
