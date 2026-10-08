@@ -15,6 +15,7 @@ import { BASE_NAMES, COUNTRIES, FAMILIES, family, familyNames, namesProblem, set
 import type { Stuck } from '../world/director';
 import type { CareCaseId } from '../lib/api';
 import type { Key } from '../lib/dpad';
+import { useHostRoom } from '../world/room';
 import '../world/world.css';
 
 /** How many calls the record panel shows before the oldest give way. */
@@ -38,6 +39,15 @@ export default function World() {
   const director = useDirector({ muted, tvFrame: tv, onStoryTime: (at) => tellStoryTime(tv(), at) });
   const { view } = director;
   const beat = STORY[view.beat]!;
+  const [room, setRoom] = useState<string | null>(null);
+  const [inviting, setInviting] = useState(false);
+  const [roomError, setRoomError] = useState<string | null>(null);
+  const { held, error: relayError } = useHostRoom(room, view, director);
+  const invite = async () => {
+    setInviting(true);
+    if (room) return;
+    try { setRoom((await api.room.open()).code); setRoomError(null); } catch (e) { setRoomError((e as Error).message); }
+  };
 
   // ?shot=daddy opens on a given camera, for checking a scene by eye.
   useEffect(() => {
@@ -75,6 +85,7 @@ export default function World() {
         )}
         <div className="world-tools">
           {view.playing && <span className="world-you" style={{ color: CAST[view.playing]!.color }}>You are {CAST[view.playing]!.name}</span>}
+          {view.status !== 'cast' && <button className="world-btn ghost" onClick={() => (inviting ? setInviting(false) : void invite())}>{room ? `Family · ${held.length}` : 'Invite family'}</button>}
           <button className="world-btn ghost" onClick={() => setMuted((m) => !m)}>{muted ? 'Sound off' : 'Sound on'}</button>
         </div>
       </header>
@@ -114,7 +125,34 @@ export default function World() {
         </aside>
       )}
 
-      {view.status === 'yourTurn' && view.prompt && (view.prompt.remote
+      {inviting && view.status !== 'cast' && (
+        <aside className="world-invite" aria-label="Invite family">
+          <div className="head">Play this day together<button className="world-btn ghost" onClick={() => setInviting(false)}>Close</button></div>
+          {room ? (
+            <>
+              <p>On another phone, open <b>{window.location.host}/join</b> and type</p>
+              <div className="code">{room}</div>
+              <p className="link"><a href={`/join?code=${room}`} target="_blank" rel="noreferrer">{window.location.origin}/join?code={room}</a></p>
+              <ul>
+                {PLAYABLE.map((k) => (
+                  <li key={k}><span style={{ color: CAST[k]!.color }}>{CAST[k]!.name}</span>{' '}
+                    {view.playing === k ? 'you' : held.includes(k) ? 'on their phone' : 'played for you'}</li>
+                ))}
+              </ul>
+              <p className="note">Their words come here and go to Alexa from this screen, on this one copy. Nothing they type is kept.</p>
+              {relayError && <p className="note">Lost touch with the room: {relayError}</p>}
+            </>
+          ) : roomError ? <p>Couldn't open a room: {roomError}</p> : <p>Opening a room…</p>}
+        </aside>
+      )}
+
+      {view.status === 'yourTurn' && view.prompt?.guest && (
+        <div className="world-panel world-waiting">
+          <h3>Waiting for {CAST[view.prompt.who]!.name}</h3>
+          <p>It's {CAST[view.prompt.who]!.name}'s turn, on their phone.</p>
+        </div>
+      )}
+      {view.status === 'yourTurn' && view.prompt && !view.prompt.guest && (view.prompt.remote
         ? <RemoteTurn who={view.prompt.who} hint={view.prompt.suggestion} onPress={director.press} />
         : <YourTurn who={view.prompt.who} suggestion={view.prompt.suggestion} onSay={director.say} />)}
       {view.status === 'stuck' && view.stuck && <StuckPanel stuck={view.stuck} onDecide={director.decide} />}

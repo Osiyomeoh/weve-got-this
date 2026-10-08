@@ -23,7 +23,7 @@ export interface Presence { look: LookAt; talking: boolean; phone: boolean; gest
 export interface PhoneMessage { from: string; text: string; key: string }
 export interface TraceItem { id: number; who: string; call: ToolCall; at: string }
 /** `remote`: their turn is buttons on the TV remote, not words. */
-export interface Prompt { who: PersonKey; suggestion: string; remote?: boolean }
+export interface Prompt { who: PersonKey; suggestion: string; remote?: boolean; guest?: boolean }
 /** What the doorbell reported, drawn as the card a family would see: what it saw, and what it can't know. */
 export interface Evidence { at: Date; saw: string; cannot: string }
 export interface Stuck {
@@ -85,10 +85,12 @@ function deviceOf(who: PersonKey): V3 {
 /** Which person a notification is for, from the name the record gives them. */
 function personNamed(name: string): PersonKey | null {
   const n = name.toLowerCase();
+  // The names this family goes by now (the US family, or a visitor's own), then the old ones.
+  for (const k of ['musa', 'tolu', 'daddy'] as PersonKey[]) if (CAST[k] && n.includes(CAST[k]!.name.toLowerCase())) return k;
   if (n.includes('musa') || n.includes('bisi')) return 'musa';
   if (n.includes('tolu')) return 'tolu';
   // The person cared for, by what the family calls them or the name on the record.
-  if (['daddy', 'joseph', 'mama', 'grace', 'baba', 'adewale', 'mummy', 'adunni'].some((k) => n.includes(k))) return 'daddy';
+  if (['daddy', 'joseph', 'mama', 'grace', 'baba', 'adewale', 'mummy', 'adunni', 'linda'].some((k) => n.includes(k))) return 'daddy';
   return null;
 }
 
@@ -109,6 +111,8 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
   /** Stops listening for the TV, when a run is abandoned mid-press. */
   const tvOff = useRef<(() => void) | null>(null);
   const retry = useRef<((again: boolean) => void) | null>(null);
+  /** The people family members are playing from their own phones (see room.ts). */
+  const guests = useRef<Set<PersonKey>>(new Set());
   const seen = useRef(new Set<string>());
   const pulseId = useRef(0);
   const traceId = useRef(0);
@@ -199,10 +203,11 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
   const line = async (step: Extract<Step, { kind: 'line' }>, token: number): Promise<void> => {
     const person = CAST[step.who]!;
     const played = viewRef.current.playing === step.who;
+    const guest = !played && guests.current.has(step.who);
     let text = step.text;
 
-    if (played) {
-      set({ status: 'yourTurn', prompt: { who: step.who, suggestion: step.text } });
+    if (played || guest) {
+      set({ status: 'yourTurn', prompt: { who: step.who, suggestion: step.text, ...(guest ? { guest: true } : {}) } });
       text = await new Promise<string>((resolve) => { answer.current = resolve; });
       answer.current = null;
       if (run.current !== token) return;
@@ -271,7 +276,7 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     const who = step.who;
     setTimeout(() => { if (!busy.current.has(who)) settle(who); }, 1300);
     if (!landed && step.expect) {
-      set({ status: 'stuck', stuck: { reason: called.length ? `Alexa used ${called.join(', ')}.` : 'Alexa answered without changing the record.', expected: step.expect, ...(played ? { said: text, got: called } : {}) } });
+      set({ status: 'stuck', stuck: { reason: called.length ? `Alexa used ${called.join(', ')}.` : 'Alexa answered without changing the record.', expected: step.expect, ...(played || guest ? { said: text, got: called } : {}) } });
       const again = await new Promise<boolean>((resolve) => { retry.current = resolve; });
       retry.current = null;
       set({ status: 'playing', stuck: null });
@@ -332,7 +337,8 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
    */
   const remote = async (step: Extract<Step, { kind: 'remote' }>, token: number): Promise<void> => {
     const person = CAST[step.who]!;
-    const played = viewRef.current.playing === step.who;
+    const guest = viewRef.current.playing !== step.who && guests.current.has(step.who);
+    const played = viewRef.current.playing === step.who || guest;
     busy.current.add(step.who);
     be(step.who, { look: 'tv', phone: false });
     set({ caption: { who: '', text: step.caption, tone: 'narration' } });
@@ -342,7 +348,7 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
       tvOff.current = () => { off(); resolve(null); };
     });
     if (played) {
-      set({ status: 'yourTurn', prompt: { who: step.who, suggestion: step.caption, remote: true } });
+      set({ status: 'yourTurn', prompt: { who: step.who, suggestion: step.caption, remote: true, ...(guest ? { guest: true } : {}) } });
     } else {
       await wait(1400);
       for (const key of step.keys) {
@@ -461,6 +467,26 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []);
   const decide = useCallback((again: boolean) => retry.current?.(again), []);
+  /** Who family members hold now. A person let go mid-turn is played for them from the next line. */
+  const setGuests = useCallback((who: PersonKey[]) => {
+    guests.current = new Set(who);
+    // Someone left while it was their turn: their line is said as written, and a press is
+    // handed to whoever runs the day, so the day never waits on a phone that went away.
+    const p = viewRef.current.prompt;
+    if (viewRef.current.status === 'yourTurn' && p?.guest && !guests.current.has(p.who)) {
+      if (p.remote) set({ prompt: { ...p, guest: false } });
+      else answer.current?.(p.suggestion);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  /** A family member's line or press, from their phone: taken only when it is their turn. */
+  const fromGuest = useCallback((msg: { who: PersonKey; text?: string; key?: Key }) => {
+    const p = viewRef.current.prompt;
+    if (viewRef.current.status !== 'yourTurn' || !p?.guest || p.who !== msg.who) return;
+    if (msg.text && !p.remote) answer.current?.(msg.text);
+    else if (msg.key && p.remote) pressRemote(opts.tvFrame(), msg.key);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const skipTo = useCallback((b: number) => {
     run.current++; hush(); answer.current = null; tvOff.current?.(); retry.current?.(false); busy.current.clear();
     set({ people: AT_REST });
@@ -479,7 +505,7 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { view, play, restart, choose, reclock, say, press, decide, skipTo, pulseDone, storyNow, look, pose };
+  return { view, play, restart, choose, reclock, say, press, decide, setGuests, fromGuest, skipTo, pulseDone, storyNow, look, pose };
 }
 
 /** A doorbell's two notes, so the house hears someone at the door. */

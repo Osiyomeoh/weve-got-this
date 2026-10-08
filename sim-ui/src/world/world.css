@@ -197,3 +197,26 @@
 .world-yours input { font: inherit; font-size: 15px; padding: 9px 12px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(0, 0, 0, 0.35); color: #fff; }
 .world-yours .row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
 .world-yours .world-btn:disabled { opacity: 0.45; cursor: default; }
+
+/* Playing together: the host's invite, and a family member's phone (/join). */
+.world-invite { position: absolute; top: 84px; right: 16px; width: min(320px, calc(100vw - 32px)); background: rgba(12, 16, 24, 0.94); border: 1px solid rgba(255,255,255,0.14); border-radius: 12px; padding: 14px; color: #e8edf5; font-size: 14px; z-index: 20; }
+.world-invite .head { display: flex; justify-content: space-between; align-items: center; font-weight: 600; margin-bottom: 6px; }
+.world-invite .code { font: 700 34px/1.2 ui-monospace, monospace; letter-spacing: 0.18em; text-align: center; margin: 6px 0; }
+.world-invite .link { word-break: break-all; font-size: 12px; }
+.world-invite .link a { color: #8fb8ff; }
+.world-invite ul { list-style: none; padding: 0; margin: 8px 0; }
+.world-invite li { padding: 2px 0; opacity: 0.9; }
+.world-invite .note { font-size: 12px; opacity: 0.7; }
+.join { min-height: 100vh; background: #0b0f17; color: #e8edf5; padding: 16px; max-width: 560px; margin: 0 auto; box-sizing: border-box; font-family: system-ui, sans-serif; display: flex; flex-direction: column; gap: 12px; }
+.join h1 { font-size: 22px; margin: 8px 0 0; }
+.join input { flex: 1; min-width: 0; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #141a26; color: inherit; font-size: 16px; }
+.join .row { display: flex; gap: 8px; flex-wrap: wrap; }
+.join-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 14px; flex-wrap: wrap; }
+.join-people { display: grid; gap: 10px; }
+.join-people .world-cast-card:disabled { opacity: 0.45; }
+.join-beat { display: flex; flex-direction: column; gap: 2px; }
+.join-beat span { opacity: 0.75; font-size: 14px; }
+.join-caption, .join-turn { position: static !important; transform: none !important; width: auto !important; max-width: none !important; }
+.join-wait { opacity: 0.7; }
+.join-trace { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 10px; font-size: 13px; }
+.join-end h2 { margin: 0 0 4px; }

@@ -9,6 +9,7 @@ import AmbientTV from './pages/AmbientTV';
 import Setup from './pages/Setup';
 // The 3D world brings three.js with it; nobody else should have to download that.
 const World = lazy(() => import('./pages/World'));
+const Join = lazy(() => import('./pages/Join'));
 
 const router = createBrowserRouter([
   { path: '/', element: <Hero /> },
@@ -21,6 +22,8 @@ const router = createBrowserRouter([
   { path: '/setup', element: <Setup /> },
   // One family's day as a 3D street, played on the real server. Pick who you are.
   { path: '/world', element: <Suspense fallback={<div className="world" />}><World /></Suspense> },
+  // A family member's phone in someone else's day: take a person, say their lines.
+  { path: '/join', element: <Suspense fallback={<div className="join" />}><Join /></Suspense> },
 ]);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

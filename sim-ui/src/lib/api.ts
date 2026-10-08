@@ -136,6 +136,24 @@ export const api = {
     fetch('/api/phrasing', {
       method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),
     }).then(jsonOrThrow).then(() => undefined),
+  /** Playing together (src/sim/rooms.ts). */
+  room: {
+    open: (): Promise<{ code: string }> => fetch('/api/room', { method: 'POST' }).then(jsonOrThrow),
+    host: (code: string, feed: unknown, hostAs: string | null): Promise<{ seats: Record<string, true>; inbox: { who: string; text?: string; key?: string }[] }> =>
+      fetch(`/api/room/${encodeURIComponent(code)}/host`, {
+        method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ feed, hostAs }),
+      }).then(jsonOrThrow),
+    view: <F,>(code: string): Promise<{ feed: F | null; taken: string[]; mine: string | null }> =>
+      fetch(`/api/room/${encodeURIComponent(code)}`).then(jsonOrThrow),
+    seat: (code: string, who: string): Promise<{ ok: true }> =>
+      fetch(`/api/room/${encodeURIComponent(code)}/seat`, {
+        method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ who }),
+      }).then(jsonOrThrow),
+    send: (code: string, msg: { text: string } | { key: string }): Promise<{ ok: true }> =>
+      fetch(`/api/room/${encodeURIComponent(code)}/send`, {
+        method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(msg),
+      }).then(jsonOrThrow),
+  },
   /** Polly audio for a line, or null when the service is unavailable. */
   speak: async (text: string, rate: SpeechRate, voice?: string): Promise<Blob | null> => {
     try {

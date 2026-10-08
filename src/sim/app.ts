@@ -12,6 +12,7 @@ import { buildVocabulary, correctTranscript } from './transcript.js';
 import { ensureVocabulary, hasEnoughAudio, transcribePcm, unhyphenate, SAMPLE_RATE } from './transcribe.js';
 import { isRate, synthesize } from './speech.js';
 import { STORY_TIME_HEADER } from '../http/story-clock.js';
+import { Rooms, isSeat, type RoomError } from './rooms.js';
 import {
   VisitorSandboxes, parseCookies, isVisitorId, newVisitorId, toSandbox, fromSandbox,
   VISITOR_COOKIE, LIVE_COOKIE, type SandboxGrant,
@@ -441,6 +442,57 @@ app.post('/api/phrasing', (req, res) => {
   }
   console.log(JSON.stringify({ phrasing: { said: said.trim(), meant, got, country, at: new Date().toISOString() } }));
   res.json({ ok: true });
+});
+
+/**
+ * Playing together (see rooms.ts): the host's world posts its feed and takes guests' turns;
+ * guests on their own phones read it and send their lines. Each side is its visitor cookie.
+ */
+const rooms = new Rooms();
+const ROOM_STATUS: Record<RoomError, number> = {
+  'no-room': 404, 'not-host': 403, 'seat-taken': 409, 'no-seat': 409, 'bad-message': 400, 'too-big': 413,
+};
+const ROOM_SAYS: Record<RoomError, string> = {
+  'no-room': 'That game has ended, or the code is wrong.',
+  'not-host': 'Only the person running the day can do that.',
+  'seat-taken': 'Someone is already playing them.',
+  'no-seat': 'Pick who you are first.',
+  'bad-message': 'That can\'t be sent.',
+  'too-big': 'Too much to send.',
+};
+function visitorOr401(req: express.Request, res: express.Response): string | null {
+  const v = parseCookies(req.header('cookie'))[VISITOR_COOKIE];
+  if (isVisitorId(v)) return v;
+  res.status(401).json({ error: 'Open the world first.' });
+  return null;
+}
+function roomReply(res: express.Response, out: object | true | RoomError): void {
+  if (typeof out === 'string') res.status(ROOM_STATUS[out]).json({ error: ROOM_SAYS[out] });
+  else res.json(out === true ? { ok: true } : out);
+}
+app.post('/api/room', (req, res) => {
+  const v = visitorOr401(req, res);
+  if (v) res.json({ code: rooms.open(v) });
+});
+app.post('/api/room/:code/host', (req, res) => {
+  const v = visitorOr401(req, res);
+  const { feed, hostAs } = (req.body ?? {}) as { feed?: unknown; hostAs?: unknown };
+  if (v) roomReply(res, rooms.post(String(req.params.code), v, feed ?? null, isSeat(hostAs) ? hostAs : null));
+});
+app.get('/api/room/:code', (req, res) => {
+  const v = visitorOr401(req, res);
+  if (v) roomReply(res, rooms.view(String(req.params.code), v));
+});
+app.post('/api/room/:code/seat', (req, res) => {
+  const v = visitorOr401(req, res);
+  const who = (req.body ?? {}).who as unknown;
+  if (!v) return;
+  if (!isSeat(who)) { res.status(400).json({ error: 'Who?' }); return; }
+  roomReply(res, rooms.seat(String(req.params.code), v, who));
+});
+app.post('/api/room/:code/send', (req, res) => {
+  const v = visitorOr401(req, res);
+  if (v) roomReply(res, rooms.send(String(req.params.code), v, req.body));
 });
 
 // "Start over": this visitor gets a brand-new copy of the demo on their next request.
