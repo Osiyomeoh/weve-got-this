@@ -26,23 +26,6 @@ function localTimeToUtc(date: Date, hour: number, minute: number, timezone: stri
   return new Date(at);
 }
 
-/** The next occurrence of a weekday (0=Sun) at a local time, strictly in the future. */
-function nextWeekdayAt(
-  weekday: number, hour: number, minute: number, from: Date, timezone: string,
-): Date {
-  for (let addDays = 0; addDays <= 14; addDays += 1) {
-    const day = new Date(from.getTime() + addDays * 86_400_000);
-    const localWeekday = new Date(
-      new Intl.DateTimeFormat('en-CA', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' })
-        .format(day) + 'T12:00:00Z',
-    ).getUTCDay();
-    if (localWeekday !== weekday) continue;
-    const at = localTimeToUtc(day, hour, minute, timezone);
-    if (at.getTime() > from.getTime()) return at;
-  }
-  throw new Error('No matching weekday found within two weeks');
-}
-
 /** Today at a local time in the household's zone. */
 function todayAt(hour: number, minute: number, now: Date, timezone: string): Date {
   return localTimeToUtc(now, hour, minute, timezone);
@@ -97,7 +80,12 @@ export async function seedScenario(
   const c = careCaseFor(options.careCase, options.names);
   const TZ = c.timezone ?? 'Africa/Lagos';
   const sid = (id: string): string => `${id}${options.suffix ?? ''}`;
-  const checkUpAt = nextWeekdayAt(4, 10, 0, now, TZ); // 4 = Thursday
+  // The check-up is two days from whenever the day is played, at ten, and is called by that
+  // day's name. A fixed "Thursday" fell on the day itself when played on a Thursday, and was
+  // already past by the time anyone offered to drive.
+  const checkUpAt = localTimeToUtc(new Date(now.getTime() + 2 * 86_400_000), 10, 0, TZ);
+  const rideDay = new Intl.DateTimeFormat('en-US', { timeZone: TZ, weekday: 'long' }).format(checkUpAt);
+  const onRideDay = (text: string): string => text.replace(/Thursday/g, rideDay);
 
   // Morning medications, logged by Daddy himself. The eye drops are optionally
   // left for the live walkthrough to log on camera (see skipMorningEyeDrops).
@@ -123,7 +111,7 @@ export async function seedScenario(
     householdId, kind: 'appointment_scheduled', reportedBy: sid('m_renee'),
     occurredAt: checkUpAt.toISOString(),
     source: 'voice', confidence: 'reported',
-    detail: c.appointment.detail,
+    detail: onRideDay(c.appointment.detail),
     data: { appointmentKind: c.appointment.kind, forMemberId: sid('m_margaret') },
   });
 
@@ -165,7 +153,7 @@ export async function seedScenario(
     householdId, kind: 'note_added', reportedBy: sid('m_renee'),
     occurredAt: todayAt(14, 20, now, TZ).toISOString(),
     source: 'voice', confidence: 'reported',
-    detail: c.note,
+    detail: onRideDay(c.note),
     data: { aboutMemberId: sid('m_margaret') },
   });
 

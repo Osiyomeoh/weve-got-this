@@ -36,9 +36,9 @@ test('the evening update says what the record says, and never "missed"', async (
   assert.match(text, /- eye drops, 8 AM: Daddy logged it themselves/);
   assert.match(text, /- eye drops, 8 PM: no record yet/);
   assert.match(text, /- supplement, 8 AM: Daddy logged it themselves/);
-  assert.match(text, /Pick up Daddy's eye drops refill \(today\): nobody has taken this on yet/);
-  assert.match(text, /Take Daddy to his eye check-up \(tomorrow\): nobody has taken this on yet/);
-  assert.match(text, /Funmi: Daddy asked who is taking him on Thursday\./);
+  assert.match(text, /Pick up Daddy's eye drops refill \(tomorrow\): nobody has taken this on yet/);
+  assert.match(text, /Take Daddy to his eye check-up \(Friday\): nobody has taken this on yet/);
+  assert.match(text, /Funmi: Daddy asked who is taking him on \w+day\./);
   assert.match(text, /"No record" means nobody logged it - not that it didn't happen\./);
   assert.doesNotMatch(text, /missed|didn't take|did not take|forgot/i);
 });

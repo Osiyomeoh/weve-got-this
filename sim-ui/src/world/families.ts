@@ -1,6 +1,6 @@
 import type { CareCaseId } from '../lib/api';
 import { CAST, type Person } from './cast';
-import { EYES, setHomeZone, STORY, storyFor, type Words } from './story';
+import { EYES, homeToday, setHomeZone, STORY, storyFor, weekdayName, type Words } from './story';
 
 // Who the family is caring for. Daddy's week after eye surgery is the builder's own family
 // and the default. Mama and Baba are simulated families, labelled as such wherever they
@@ -340,9 +340,23 @@ function renameAll<T>(value: T, from: FamilyNames, to: FamilyNames): T {
   return walk(value) as T;
 }
 
+/**
+ * The story's "Thursday" is the check-up two days from whenever it is played, and its
+ * "Wednesday" the night before, called by their real names as the server records them.
+ */
+function onTheDays<T>(value: T): T {
+  const day = (ahead: number) => weekdayName(new Date(homeToday(12, 0).getTime() + ahead * 86_400_000));
+  const map = new Map([['Wednesday', day(1)], ['Thursday', day(2)]]);
+  const walk = (x: unknown): unknown => typeof x === 'string' ? x.replace(/Wednesday|Thursday/g, (w) => map.get(w) ?? w)
+    : Array.isArray(x) ? x.map(walk)
+    : x && typeof x === 'object' ? Object.fromEntries(Object.entries(x).map(([k, v]) => [k, walk(v)]))
+    : x;
+  return walk(value) as T;
+}
+
 /** The family being played, in the visitor's own names when they gave them. */
 export function family(): Family {
-  return names ? renameAll(FAMILIES[current], BASE_NAMES[current], names) : FAMILIES[current];
+  return onTheDays(names ? renameAll(FAMILIES[current], BASE_NAMES[current], names) : FAMILIES[current]);
 }
 
 /** The visitor's own names, or null when they are playing the family as it is. */
@@ -362,5 +376,5 @@ export function setFamily(id: CareCaseId, own: FamilyNames | null = null): void 
   CAST.tolu = mine({ ...TOLU, ...f.tolu, role: f.toluRole, playAs: f.toluPlayAs ?? TOLU.playAs });
   CAST.musa = mine({ ...MUSA, ...f.helper });
   setHomeZone(COUNTRIES[f.country].zone);
-  STORY.splice(0, STORY.length, ...mine(storyFor(f.words)));
+  STORY.splice(0, STORY.length, ...onTheDays(mine(storyFor(f.words))));
 }

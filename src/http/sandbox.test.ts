@@ -147,11 +147,12 @@ test('an American copy: Mom in Dayton on Eastern time, Mike nearby, Sarah in Chi
   assert.deepEqual([by('m_kunle').name, by('m_kunle').livesAway], ['Tom', 'Phoenix']);
   assert.equal(by('m_aide').name, 'Mike');
   assert.equal(by('m_aide').livesAway, undefined, 'her son is fifteen minutes away');
-  // Thursday at ten is ten in Dayton, not in Lagos.
+  // Ten, two days from now, is ten in Dayton, not in Lagos.
   const ride = s.obligations.find((o) => /cardiology/.test(o.what))!;
   const local = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', weekday: 'long', hour: 'numeric', hour12: false })
     .format(new Date(ride.dueAt!));
-  assert.equal(local.replace(',', ''), 'Thursday 10');
+  const twoDaysOn = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', weekday: 'long' }).format(Date.now() + 2 * 86_400_000);
+  assert.equal(local.replace(',', ''), `${twoDaysOn} 10`);
   const gaps = await callTool(c.tokens.m_david, 'get_care_gaps');
   assert.ok(gaps.structuredContent.gaps.some((g: { spoken: string }) => /cardiology/.test(g.spoken)));
 });
@@ -176,7 +177,8 @@ test('a family abroad, and a Kenyan family: the children far away, the one nearb
   const ride = t.obligations.find((o) => /diabetes clinic/.test(o.what))!;
   const local = new Intl.DateTimeFormat('en-US', { timeZone: 'Africa/Nairobi', weekday: 'long', hour: 'numeric', hour12: false })
     .format(new Date(ride.dueAt!));
-  assert.equal(local.replace(',', ''), 'Thursday 10');
+  const twoDaysOn = new Intl.DateTimeFormat('en-US', { timeZone: 'Africa/Nairobi', weekday: 'long' }).format(Date.now() + 2 * 86_400_000);
+  assert.equal(local.replace(',', ''), `${twoDaysOn} 10`);
 });
 
 test('make it yours: a copy carries the visitor\'s own names, and odd ones are refused', async () => {

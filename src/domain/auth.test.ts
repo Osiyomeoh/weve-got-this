@@ -90,13 +90,14 @@ test('an unavailability outside the window orphans nothing', () => {
   );
 });
 
-test('the scenario puts the check-up on a real Thursday at 10:00 Lagos, whenever it is reset', async () => {
-  // The video says "Thursday at ten". A card reading "Wednesday" while the narrator says
-  // Thursday is the kind of detail a judge notices. Every hour of a week, on a fixed clock:
-  // reading the UTC day once put it on Wednesday when reset between midnight and 1 AM Lagos.
+test('the scenario puts the check-up two days from whenever it is played, at 10:00 Lagos, and calls it by that day', async () => {
+  // A fixed "Thursday" fell on the day itself when played on a Thursday, and was past by the
+  // time anyone offered to drive. Every hour of a week, on a fixed clock: reading the UTC day
+  // once put a Lagos date a day out when reset between midnight and 1 AM there.
   const fmt = new Intl.DateTimeFormat('en-US', {
     timeZone: 'Africa/Lagos', weekday: 'long', hour: 'numeric', minute: '2-digit', hour12: false,
   });
+  const weekday = new Intl.DateTimeFormat('en-US', { timeZone: 'Africa/Lagos', weekday: 'long' });
   for (let h = 0; h < 24 * 7; h += 1) {
     const now = new Date(Date.UTC(2026, 8, 21, 0, 30) + h * 3_600_000);
     const store = new CareStore();
@@ -105,10 +106,13 @@ test('the scenario puts the check-up on a real Thursday at 10:00 Lagos, whenever
     const { checkUpAt } = await seedScenario(store, 'h_margaret', { now });
     const parts = Object.fromEntries(fmt.formatToParts(checkUpAt).map((p) => [p.type, p.value]));
     const at = `reset at ${now.toISOString()}`;
-    assert.equal(parts['weekday'], 'Thursday', at);
+    const day = weekday.format(new Date(now.getTime() + 2 * 86_400_000));
+    assert.equal(parts['weekday'], day, at);
     assert.equal(Number(parts['hour']) % 24, 10, at);
     assert.equal(parts['minute'], '00', at);
     assert.ok(checkUpAt.getTime() > now.getTime(), `must be in the future: ${at}`);
+    const said = store.getCareState('h_margaret').events.find((e) => e.kind === 'appointment_scheduled')?.detail ?? '';
+    assert.ok(said.includes(day) && !(day !== 'Thursday' && said.includes('Thursday')), `the record names ${day}: ${said}`);
   }
 });
 

@@ -233,6 +233,10 @@ export function homeToday(hour: number, minute: number, base = new Date()): Date
   return new Date(guess - offset);
 }
 
+export function weekdayName(at: Date): string {
+  return at.toLocaleDateString('en-US', { timeZone: ZONE, weekday: 'long' });
+}
+
 export function clockText(at: Date): string {
   return at.toLocaleTimeString('en-US', { timeZone: ZONE, hour: 'numeric', minute: '2-digit' });
 }
