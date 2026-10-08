@@ -4,7 +4,7 @@ import { api, type BoardState, type ToolCall } from '../lib/api';
 import { ALEXA_VOICE, CAST, type PersonKey } from './cast';
 import { DEVICE, HUB, SHOTS, SPOT, v3, type V3 } from './layout';
 import { clockText, homeToday, STORY, type ShotName, type Stage, type Step } from './story';
-import { family, familyNames } from './families';
+import { family, familyNames, setFamily } from './families';
 import { hush, prepare, speak, wait } from './voice';
 import { onTvDid, powerTv, pressRemote, ringTv } from '../lib/remote';
 import type { Key } from '../lib/dpad';
@@ -553,6 +553,8 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     busy.current.clear();
     lastNotice.current = {};
     outcomes.current.clear();
+    // Re-read the days: a day started after midnight has a new "two days from now".
+    setFamily(family().id, familyNames());
     await api.resetSandbox({ liveMorning: true, careCase: family().id, ...(familyNames() ? { names: familyNames()! } : {}) }).catch(() => undefined);
     // The day opens at 7:30 in their home, wherever that is.
     const dawn = homeToday(7, 30);

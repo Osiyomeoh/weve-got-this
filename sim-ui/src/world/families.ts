@@ -378,3 +378,7 @@ export function setFamily(id: CareCaseId, own: FamilyNames | null = null): void 
   setHomeZone(COUNTRIES[f.country].zone);
   STORY.splice(0, STORY.length, ...onTheDays(mine(storyFor(f.words))));
 }
+
+// The family played when nobody picks one still has its days named for today: the story
+// it starts with said "Thursday" for a check-up the record had on another day.
+setFamily(current);
