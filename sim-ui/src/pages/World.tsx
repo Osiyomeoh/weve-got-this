@@ -42,9 +42,11 @@ export default function World() {
   const [intro, setIntro] = useState(() => !introSeen() || new URLSearchParams(window.location.search).has('intro'));
   const tv = () => (document.getElementById('world-tv') as HTMLIFrameElement | null)?.contentWindow;
   const director = useDirector({ muted, tvFrame: tv, onStoryTime: (at) => tellStoryTime(tv(), at) });
-  // The set in the house has its sound on when the world does; told again whenever it reloads.
-  useEffect(() => { soundTv(tv(), !muted); const id = setInterval(() => soundTv(tv(), !muted), 2000); return () => clearInterval(id); }, [muted]);
   const { view } = director;
+  // The set in the house is heard only while the camera is on it, and only when the world's
+  // sound is on; told again whenever it reloads. Elsewhere in the day it plays on, silent.
+  const tvHeard = !muted && view.shot === 'daddyTv';
+  useEffect(() => { soundTv(tv(), tvHeard); const id = setInterval(() => soundTv(tv(), tvHeard), 2000); return () => clearInterval(id); }, [tvHeard]);
   // The score starts once the day does (after a click, as browsers require) and follows Sound.
   const started = view.status !== 'cast';
   useEffect(() => { music(started && !muted); return () => music(false); }, [started, muted]);
