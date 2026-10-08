@@ -83,7 +83,7 @@ export default function World() {
         {view.status !== 'cast' && (
           <div className="world-beat">
             <div className="world-beat-title">{beat.title}</div>
-            <div className="world-beat-point">{beat.point}</div>
+            <div className="world-beat-point">{view.point ?? beat.point}</div>
           </div>
         )}
         <div className="world-tools">

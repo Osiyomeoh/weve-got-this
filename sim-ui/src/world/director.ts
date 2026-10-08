@@ -5,7 +5,7 @@ import { DEVICE, HUB, SHOTS, SPOT, v3, type V3 } from './layout';
 import { clockText, homeToday, STORY, type ShotName, type Stage, type Step } from './story';
 import { family, familyNames } from './families';
 import { hush, prepare, speak, wait } from './voice';
-import { onTvDid, pressRemote, ringTv } from '../lib/remote';
+import { onTvDid, powerTv, pressRemote, ringTv } from '../lib/remote';
 import type { Key } from '../lib/dpad';
 import type { Glow, PulseSpec } from './devices';
 import type { Gesture } from './models';
@@ -46,6 +46,8 @@ export interface WorldView {
   glow: { daddy: Glow; tolu: Glow };
   phones: Partial<Record<PersonKey, PhoneMessage>>;
   phoneListening: PersonKey | null;
+  /** The beat's point, when the day went another way than the card says (the TV was off). */
+  point: string | null;
   trace: TraceItem[];
   /** Every call this run made, uncapped: what the impact panel counts. */
   log: TraceItem[];
@@ -70,7 +72,7 @@ const AT_REST: Record<PersonKey, Presence> = {
 
 const START: WorldView = {
   status: 'cast', beat: 0, clock: homeToday(7, 30), shot: 'overview', caption: null,
-  glow: { daddy: 'idle', tolu: 'idle' }, phones: {}, phoneListening: null, trace: [], log: [], pulses: [],
+  glow: { daddy: 'idle', tolu: 'idle' }, phones: {}, phoneListening: null, point: null, trace: [], log: [], pulses: [],
   musa: 'midday', ringActive: false, evidence: null, hubBusy: false, prompt: null, stuck: null, error: null, playing: null,
   people: AT_REST,
 };
@@ -110,6 +112,8 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
   const answer = useRef<((text: string) => void) | null>(null);
   /** Stops listening for the TV, when a run is abandoned mid-press. */
   const tvOff = useRef<(() => void) | null>(null);
+  /** Is the person cared for in front of the set this morning? Decided once a day: ?tv=on or ?tv=off, or a coin. */
+  const atTv = useRef(true);
   const retry = useRef<((again: boolean) => void) | null>(null);
   /** The people family members are playing from their own phones (see room.ts). */
   const guests = useRef<Set<PersonKey>>(new Set());
@@ -341,6 +345,10 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
    * presses its buttons, and hears back the tool call the press made on this visitor's copy.
    */
   const remote = async (step: Extract<Step, { kind: 'remote' }>, token: number): Promise<void> => {
+    // Mornings, they may not be at the set at all. Then nothing rises on a screen nobody is
+    // watching: the reminder goes to where they are, and they answer it there.
+    if (!atTv.current && storyNow().getTime() < homeToday(12, 0).getTime()) return reminded(step, token);
+    powerTv(opts.tvFrame(), true);
     const person = CAST[step.who]!;
     const guest = viewRef.current.playing !== step.who && guests.current.has(step.who);
     const played = viewRef.current.playing === step.who || guest;
@@ -387,14 +395,38 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     }
   };
 
+  /**
+   * The same question, away from the TV: a Bee reminder on their phone (simulated here; no Bee
+   * device is connected), answered in their own words to Alexa on that phone. The record
+   * gets the same thing the remote would have given it: their word, at the time they said it.
+   */
+  const reminded = async (step: Extract<Step, { kind: 'remote' }>, token: number): Promise<void> => {
+    const w = family().words;
+    const they = w.his === 'his' ? 'he' : 'she';
+    powerTv(opts.tvFrame(), false);
+    set({ shot: 'daddy', point: `The reminder goes where ${they} is. Not at the TV this morning, so it comes as a Bee reminder on ${w.his} phone, and ${w.his} answer is ${w.his} own word.`, caption: { who: '', text: `${w.who} isn't in front of the TV this morning, so the set stays off. The reminder goes where ${they} is: ${w.his} phone.`, tone: 'narration' } });
+    await wait(2800);
+    if (run.current !== token) return;
+    set((v) => ({ phones: { ...v.phones, [step.who]: { from: 'Bee reminder (simulated)', text: `It's time for your ${w.evening}. Tell Alexa when it's done.`, key: `bee-${Date.now()}` } } }));
+    if (!opts.muted) chime();
+    await wait(2600);
+    if (run.current !== token) return;
+    await line({ kind: 'line', who: step.who, via: 'phone', text: w.logMorning, expect: [step.expect], shot: 'daddy' }, token);
+  };
+
   const play = useCallback(async (from = viewRef.current.beat) => {
     const token = ++run.current;
     set({ status: 'playing', error: null });
     try {
-      if (from === 0) await primeSeen();
+      if (from === 0) {
+        const tv = new URLSearchParams(window.location.search).get('tv');
+        atTv.current = tv === 'on' ? true : tv === 'off' ? false : Math.random() < 0.5;
+        powerTv(opts.tvFrame(), true);
+        await primeSeen();
+      }
       for (let b = from; b < STORY.length; b++) {
         const beat = STORY[b]!;
-        set({ beat: b, evidence: null });
+        set({ beat: b, evidence: null, point: null });
         // A beat that opens with a lapse runs the clock there itself; any other starts at its time,
         // even if the clock runs on later in the beat (Mama asks again at 9:05).
         if (storyNow().getTime() < homeToday(beat.at[0], beat.at[1]).getTime() && beat.steps[0]?.kind !== 'lapse') {

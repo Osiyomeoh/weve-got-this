@@ -3,7 +3,7 @@ import { useBoard } from '../lib/useBoard';
 import { storyNow, useNow } from '../lib/storyTime';
 import { api, MEMBERS, type BoardMember, type BoardState, type DoseSlot, type Gap, type Member } from '../lib/api';
 import { START, keyOf, reduce, type Key, type Nav } from '../lib/dpad';
-import { onRemote, onRing, onSound, reportToWorld } from '../lib/remote';
+import { onPower, onRemote, onRing, onSound, reportToWorld } from '../lib/remote';
 import { regionOf } from '../tv/Show';
 import { Programme } from '../tv/Programme';
 import { hush, speak } from '../world/voice';
@@ -163,6 +163,8 @@ export default function AmbientTV() {
   // The world's sound switch. Off until the world says otherwise: a set nobody asked to hear stays quiet.
   const [sound, setSound] = useState(false);
   useEffect(() => onSound((on) => { setSound(on); if (!on) hush(); }), []);
+  const [power, setPower] = useState(true);
+  useEffect(() => onPower((on) => { setPower(on); if (!on) hush(); }), []);
   useEffect(() => {
     if (!ring) return;
     const id = setTimeout(() => setRing(0), 16000);
@@ -275,7 +277,7 @@ export default function AmbientTV() {
   const dose = focused?.type === 'dose' ? focused.dose : undefined;
   // Alexa says on the set what she shows: the question when it rises, and what their press did.
   const spoken = useRef('');
-  const say = WATCHING && sound ? (claimed ?? (dose ? `${recipient.spoken}, it's time for your ${dose.name}. Have you taken it?` : '')) : '';
+  const say = WATCHING && sound && power ? (claimed ?? (dose ? `${recipient.spoken}, it's time for your ${dose.name}. Have you taken it?` : '')) : '';
   useEffect(() => {
     if (!say || say === spoken.current) return;
     spoken.current = say;
@@ -313,6 +315,10 @@ export default function AmbientTV() {
     return theirs ? `${atTime(r.at)} · ${how}` : `${atTime(r.at)} · ${r.saidBy} says so`;
   };
 
+  if (WATCHING && !power) {
+    // Standby: the set is off, so nothing rises on it. Only the little red light.
+    return <div className="relative h-screen bg-black"><span className="absolute bottom-[3vh] right-[3vw] h-[1vw] w-[1vw] rounded-full bg-red-600/80" aria-label="TV off" /></div>;
+  }
   if (WATCHING) {
     const hour = Math.floor(localMinutes(now, zoneName) / 60);
     return (

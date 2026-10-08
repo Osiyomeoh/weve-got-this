@@ -48,7 +48,7 @@ export function feedOf(view: WorldView, captionId: number): Feed {
     place: f.places ? `${f.places.home} · ${f.places.tolu}` : 'Lagos',
     clock: clockText(view.clock),
     beat: view.status === 'cast' ? '' : beat.title,
-    point: view.status === 'cast' ? '' : beat.point,
+    point: view.status === 'cast' ? '' : view.point ?? beat.point,
     status: view.status,
     caption: c ? { who: c.who, ...(c.to ? { to: c.to } : {}), text: c.text, tone: c.tone, ...(c.color ? { color: c.color } : {}), ...(voiceOf(c.who) ? { voice: voiceOf(c.who) } : {}) } : null,
     captionId,

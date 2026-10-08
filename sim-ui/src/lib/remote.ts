@@ -79,3 +79,23 @@ export function onSound(handler: (on: boolean) => void): () => void {
   window.addEventListener('message', listen);
   return () => window.removeEventListener('message', listen);
 }
+
+// Power. When the person isn't in front of the set this morning, it is off: nothing rises on
+// a screen nobody is looking at, and the reminder goes where they are instead.
+const POWER = 'carecircle-power';
+
+/** The world's side: switch the set on or off. */
+export function powerTv(frame: Window | null | undefined, on: boolean): void {
+  frame?.postMessage({ type: POWER, on }, window.location.origin);
+}
+
+/** The TV's side: hear the power switch. Returns an unsubscribe. */
+export function onPower(handler: (on: boolean) => void): () => void {
+  if (typeof window === 'undefined' || window.parent === window) return () => undefined;
+  const listen = (e: MessageEvent) => {
+    if (e.origin !== window.location.origin || e.data?.type !== POWER) return;
+    handler(!!e.data.on);
+  };
+  window.addEventListener('message', listen);
+  return () => window.removeEventListener('message', listen);
+}
