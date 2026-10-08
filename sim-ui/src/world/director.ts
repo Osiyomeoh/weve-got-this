@@ -466,7 +466,8 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     const w = family().words;
     const they = w.his === 'his' ? 'he' : 'she';
     powerTv(opts.tvFrame(), false);
-    set({ shot: 'daddy', point: `The reminder goes where ${they} is. Not at the TV this morning, so it comes to ${w.his} phone on Telegram, and ${w.his} answer is ${w.his} own word.`, caption: { who: '', text: `${w.who} isn't in front of the TV this morning, so the set stays off. The reminder goes where ${they} is: ${w.his} phone.`, tone: 'narration' } });
+    const when = storyNow().getTime() < homeToday(12, 0).getTime() ? 'this morning' : 'tonight';
+    set({ shot: 'daddy', point: `The reminder goes where ${they} is. Not at the TV ${when}, so it comes to ${w.his} phone on Telegram, and ${w.his} answer is ${w.his} own word.`, caption: { who: '', text: `${w.who} isn't in front of the TV ${when}, so the set stays off. The reminder goes where ${they} is: ${w.his} phone.`, tone: 'narration' } });
     await wait(2800);
     if (run.current !== token) return;
     set((v) => ({ phones: { ...v.phones, [step.who]: { from: 'CareCircle on Telegram', text: `It's time for your ${w.evening}. [Taken] [In 15 minutes]`, key: `tg-${Date.now()}` } } }));
