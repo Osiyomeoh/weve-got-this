@@ -193,7 +193,7 @@ export default function World() {
           <DayScore view={view} />
           <Impact log={view.log} playing={view.playing ? CAST[view.playing]!.name : null} />
           <div className="row">
-            <button className="world-btn" onClick={() => void director.restart().then(() => director.choose(null)).then(() => director.restart())}>Play as someone else</button>
+            <button className="world-btn" onClick={() => void director.restart('cast')}>Play as someone else</button>
             <button className="world-btn ghost" onClick={() => void director.restart()}>Watch again</button>
           </div>
         </div>

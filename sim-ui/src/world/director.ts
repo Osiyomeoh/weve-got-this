@@ -546,8 +546,11 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /** Start the day over, on a brand-new copy of the family's record. */
-  const restart = useCallback(async () => {
+  /**
+   * Start the day over, on a brand-new copy of the family's record. With 'cast' it goes back
+   * to the picker instead, as on a first visit: the picker makes the copy once someone is chosen.
+   */
+  const restart = useCallback(async (to: 'ready' | 'cast' = 'ready') => {
     run.current++;
     hush();
     answer.current = null;
@@ -559,11 +562,11 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     outcomes.current.clear();
     // Re-read the days: a day started after midnight has a new "two days from now".
     setFamily(family().id, familyNames());
-    await api.resetSandbox({ liveMorning: true, careCase: family().id, ...(familyNames() ? { names: familyNames()! } : {}) }).catch(() => undefined);
+    if (to === 'ready') await api.resetSandbox({ liveMorning: true, careCase: family().id, ...(familyNames() ? { names: familyNames()! } : {}) }).catch(() => undefined);
     // The day opens at 7:30 in their home, wherever that is.
     const dawn = homeToday(7, 30);
     clock.current = { at: dawn.getTime(), setAt: Date.now() };
-    setView((v) => ({ ...START, clock: dawn, playing: v.playing, status: 'ready' }));
+    setView((v) => ({ ...START, clock: dawn, playing: to === 'cast' ? null : v.playing, status: to }));
   }, []);
 
   const choose = useCallback((who: PersonKey | null) => set({ playing: who, status: 'ready' }), [set]);
