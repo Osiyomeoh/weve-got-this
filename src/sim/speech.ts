@@ -52,7 +52,7 @@ function polly(): PollyClient {
  * BYTES. Asserting the SSML only proves we composed the request we intended to send,
  * which is precisely how a dead accessibility control passed its tests.
  */
-export const PACES = {
+const PACES = {
   slow:   { rate: '75%',  breathMs: 900 },
   gentle: { rate: '100%', breathMs: 600 },
   normal: { rate: '100%', breathMs: 350 },

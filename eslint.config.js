@@ -2,7 +2,7 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
 
-// Flat config. Lints the TypeScript sources under src/; formatting is owned by
+// Flat config. Lints the TypeScript under src/ and scripts/; formatting is owned by
 // Prettier, so eslint-config-prettier turns off every rule that would fight it.
 export default tseslint.config(
   {

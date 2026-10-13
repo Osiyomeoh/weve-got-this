@@ -159,7 +159,7 @@ function geminiSchema(schema: Record<string, unknown>): Record<string, unknown> 
   return walk(schema) as Record<string, unknown>;
 }
 
-export class GeminiProvider implements ModelProvider {
+class GeminiProvider implements ModelProvider {
   readonly name = 'gemini';
   readonly modelId: string;
   readonly #ai: GoogleGenAI;

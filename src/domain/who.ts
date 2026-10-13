@@ -16,7 +16,7 @@ export function careRecipients(state: CareState): Member[] {
 }
 
 /** "Dad", or "Dad and Grandma", or "Dad, Grandma and Uncle Tunde". */
-export function spokenList(names: string[], joiner = 'and'): string {
+function spokenList(names: string[], joiner = 'and'): string {
   if (names.length <= 1) return names[0] ?? '';
   return `${names.slice(0, -1).join(', ')} ${joiner} ${names.at(-1)}`;
 }

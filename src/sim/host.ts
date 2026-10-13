@@ -52,7 +52,7 @@ export const STALE_NOTE = '[Others may have changed the care record since your l
  * anything - a promise nobody made, which is the exact failure this product exists to stop.
  */
 const CLAIMS_A_WRITE = /\bI(?:'ve| have)(?: already| just)? (?:asked|logged|recorded|noted|added|marked|assigned|told|let \w+ know|sent|scheduled|put)\b|\bthat's (?:yours|theirs|now with)\b/i;
-export const UNBACKED_NOTE = '[Your reply says something was done, but no tool changed the record this turn. Nothing has happened yet. Call the tool that does it now - or, if it was done in an earlier turn, read the record and say what it shows.]';
+const UNBACKED_NOTE = '[Your reply says something was done, but no tool changed the record this turn. Nothing has happened yet. Call the tool that does it now - or, if it was done in an earlier turn, read the record and say what it shows.]';
 
 /** Whether a spoken reply claims a change that no successful write this turn backs. */
 export function unbackedClaim(text: string, calls: { name: string; isError: boolean }[]): boolean {
@@ -129,9 +129,6 @@ Today is ${stamp}, and this household is in ${timezone}. In the coming week: ${w
 - Resolve every relative date ("Thursday", "tomorrow", "next week") against that date, and send timestamps in the household's local time.
 - Never guess a date. If which day they mean is not clear, ask them.`;
 }
-
-/** @deprecated Use systemPrompt(), which knows what day it is. */
-export const SYSTEM_PROMPT = SYSTEM_PROMPT_RULES;
 
 export interface ToolCallRecord {
   name: string;

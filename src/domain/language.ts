@@ -361,7 +361,7 @@ export function medicineName(med: Pick<MedicationSchedule, 'name' | 'names'>, la
 }
 
 /** Every name the family has given a medicine, in any language: what it can be called. */
-export function medicineNames(med: Pick<MedicationSchedule, 'name' | 'names'>): string[] {
+function medicineNames(med: Pick<MedicationSchedule, 'name' | 'names'>): string[] {
   return [med.name, ...Object.values(med.names ?? {})].filter((n): n is string => !!n?.trim());
 }
 

@@ -1,4 +1,4 @@
-import type { CareGap, Obligation } from '../domain/types.js';
+import type { CareGap } from '../domain/types.js';
 
 /**
  * Turning structured state into sentences a voice assistant can say verbatim.
@@ -10,7 +10,7 @@ import type { CareGap, Obligation } from '../domain/types.js';
  */
 
 /** Beyond this, a spoken list stops being usable and starts being noise. */
-export const SPOKEN_LIST_LIMIT = 3;
+const SPOKEN_LIST_LIMIT = 3;
 
 export function joinSpoken(parts: string[]): string {
   if (parts.length === 0) return '';
@@ -22,7 +22,7 @@ export function joinSpoken(parts: string[]): string {
 /** Small numbers read better as words when spoken aloud. */
 const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
 
-export function numberWord(n: number): string {
+function numberWord(n: number): string {
   return WORDS[n] ?? String(n);
 }
 
@@ -56,9 +56,3 @@ export function speakGaps(gaps: CareGap[]): string {
   return `${lead} ${body}${rest}`;
 }
 
-export function speakObligation(o: Obligation, ownerName?: string): string {
-  if (o.status === 'RESOLVED') return `${o.what} is done.`;
-  if (o.ownerId && ownerName) return `${o.what} - ${ownerName} has it.`;
-  if (o.status === 'PROPOSED') return `${o.what} - not confirmed yet.`;
-  return `${o.what} - nobody has taken it yet.`;
-}

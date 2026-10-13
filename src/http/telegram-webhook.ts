@@ -36,7 +36,7 @@ import type { LanguageCode } from '../domain/types.js';
 
 export const SECRET_TOKEN_HEADER = 'x-telegram-bot-api-secret-token';
 
-export function verifySecretToken(given: string | undefined, expected: string): boolean {
+function verifySecretToken(given: string | undefined, expected: string): boolean {
   if (!given || !expected) return false;
   const a = Buffer.from(given, 'utf8');
   const b = Buffer.from(expected, 'utf8');

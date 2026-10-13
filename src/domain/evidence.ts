@@ -27,7 +27,7 @@ function isPresence(e: CareEvent): boolean {
 }
 
 /** The window of time in which a device signal bears on this work. */
-export function evidenceWindow(o: Obligation, at: Date): { from: number; to: number } {
+function evidenceWindow(o: Obligation, at: Date): { from: number; to: number } {
   const to = at.getTime();
   const from = o.dueAt
     ? new Date(o.dueAt).getTime() - BEFORE_MINUTES * 60_000
@@ -47,12 +47,12 @@ export function evidenceFor(o: Obligation, events: CareEvent[], at: Date): CareE
 }
 
 /** Whether this household has a device that could have seen anything at all. */
-export function hasDoorSensor(events: CareEvent[]): boolean {
+function hasDoorSensor(events: CareEvent[]): boolean {
   return events.some(isPresence);
 }
 
 /** "9:04 AM", in the household's own time, written the way every other answer writes it. */
-export function clockAt(at: string, timezone: string): string {
+function clockAt(at: string, timezone: string): string {
   return new Date(at).toLocaleTimeString('en-US', { timeZone: timezone, hour: 'numeric', minute: '2-digit' })
     .replace(/\s/g, ' ');
 }

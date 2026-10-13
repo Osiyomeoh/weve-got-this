@@ -25,7 +25,7 @@ import type { CareStore } from '../store/store.js';
  */
 
 /** Ring's signature header. */
-export const SIGNATURE_HEADER = 'x-signature';
+const SIGNATURE_HEADER = 'x-signature';
 
 /**
  * Constant-time comparison of a signature against the body.

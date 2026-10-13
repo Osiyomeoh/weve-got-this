@@ -441,5 +441,3 @@ export function makePkce(): { verifier: string; challenge: string } {
   const verifier = randomBytes(32).toString('hex');
   return { verifier, challenge: b64url(createHash('sha256').update(verifier).digest()) };
 }
-
-export { randomUUID };

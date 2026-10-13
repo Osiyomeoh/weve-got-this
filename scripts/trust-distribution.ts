@@ -40,7 +40,7 @@ async function main(): Promise<void> {
   // Collected per dimension: the raw rate (%) each run, and CareCircle's rate each run.
   const rawRates: Record<string, number[]> = {};
   const ccRates: Record<string, number[]> = {};
-  let n: Record<string, number> = {};
+  const n: Record<string, number> = {};
 
   for (let run = 1; run <= N; run++) {
     console.log(`\n\n############################  RUN ${run}/${N}  ############################`);

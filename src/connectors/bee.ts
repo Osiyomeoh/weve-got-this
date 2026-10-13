@@ -88,7 +88,7 @@ export async function createBeeTodo(
 }
 
 /** Pull the account's facts and todos. The only function that touches the network. */
-export async function fetchBeeItems(config: BeeConfig): Promise<BeeItems> {
+async function fetchBeeItems(config: BeeConfig): Promise<BeeItems> {
   const limit = config.maxResults ?? 25;
   const q = new URLSearchParams({ limit: String(limit) }).toString();
   const [factsJson, todosJson] = await Promise.all([

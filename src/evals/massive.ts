@@ -30,7 +30,7 @@ const READS = ['get_care_summary', 'get_care_gaps', 'get_shift_brief'];
 const MEDICATION = /\b(medicine|medication|meds|pills?|tablets?)\b/i;
 
 /** Tools that change the care record or reach a person. Everything else only reads. */
-export const WRITES = new Set([
+const WRITES = new Set([
   'log_care_event', 'record_appointment', 'add_note', 'claim_obligation', 'assign_obligation',
   'request_owner', 'respond_to_request', 'confirm_proposal', 'resolve_obligation',
   'run_care_agent', 'notify_member', 'ingest_signal', 'reorder_prescription',

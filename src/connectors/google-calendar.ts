@@ -11,7 +11,6 @@ import { planCalendarWriteback } from '../domain/calendar-writeback.js';
 import { refreshAccessToken, type GoogleCredentials } from './google-oauth.js';
 
 export type { GoogleCredentials } from './google-oauth.js';
-export { refreshAccessToken } from './google-oauth.js';
 
 /**
  * The Google Calendar connector: a real family calendar as a source of appointments.
@@ -75,7 +74,7 @@ export function googleCalendarConfigFromEnv(
  * Read upcoming events from a calendar. `singleEvents=true` expands recurring events
  * into individual instances, so each occurrence is its own appointment.
  */
-export async function fetchUpcomingEvents(
+async function fetchUpcomingEvents(
   accessToken: string,
   calendarId: string,
   now: Date,
@@ -189,7 +188,7 @@ export async function runGoogleCalendarSync(
  * obligation each represents. Uses Google's private-extended-property filter so we
  * touch only our own events, never the family's other entries.
  */
-export async function fetchCareCircleEvents(
+async function fetchCareCircleEvents(
   accessToken: string,
   calendarId: string,
 ): Promise<Map<string, { eventId: string; summary?: string; start?: string }>> {

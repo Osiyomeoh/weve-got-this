@@ -59,7 +59,7 @@ export function guidance(text: string) {
 
 /** Turn a thrown error into guidance the model can act on. */
 /** A reference to a piece of work that needs the person to say which one. Its message is guidance. */
-export class ObligationRefError extends Error {}
+class ObligationRefError extends Error {}
 
 /**
  * The piece of work a tool call names: by id, or by the words for it when the planner

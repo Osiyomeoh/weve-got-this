@@ -94,7 +94,7 @@ export function soundex(word: string): string {
 }
 
 /** Levenshtein edit distance. */
-export function editDistance(a: string, b: string): number {
+function editDistance(a: string, b: string): number {
   if (a === b) return 0;
   if (!a.length) return b.length;
   if (!b.length) return a.length;

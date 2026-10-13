@@ -82,7 +82,7 @@ function headerValue(part: GmailPart | undefined, name: string): string | undefi
 }
 
 /** Fetch candidate emails and reduce each to the subset the door reads. */
-export async function fetchInviteEmails(
+async function fetchInviteEmails(
   accessToken: string,
   query: string,
   maxResults = 25,

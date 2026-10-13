@@ -22,9 +22,6 @@ export const APP_MIME_TYPE = 'text/html;profile=mcp-app';
 /** Pre-standard metadata key. Older hosts only look here, so we emit both. */
 export const LEGACY_RESOURCE_URI_KEY = 'ui/resourceUri';
 
-/** Capability namespace a client uses to advertise MCP Apps support. */
-export const APPS_EXTENSION_ID = 'io.modelcontextprotocol/ui';
-
 /** Who may call a tool: the model, the app view, or both (the default). */
 export type ToolVisibility = 'model' | 'app';
 
@@ -40,19 +37,4 @@ export function appToolMeta(resourceUri: string, visibility?: ToolVisibility[]) 
     ui: { resourceUri, ...(visibility ? { visibility } : {}) },
     [LEGACY_RESOURCE_URI_KEY]: resourceUri,
   };
-}
-
-/**
- * Whether the connected client can actually render a view.
- *
- * Clients advertise MCP Apps under `capabilities.extensions`, listing the MIME
- * types they can draw. A client that says nothing is a voice surface or a plain
- * text client, and must still get a useful spoken answer - so this is read as a
- * progressive *enhancement* check, never as a gate on the tool existing.
- */
-export function clientRendersApps(capabilities: unknown): boolean {
-  const extensions = (capabilities as { extensions?: Record<string, unknown> } | null | undefined)
-    ?.extensions;
-  const ui = extensions?.[APPS_EXTENSION_ID] as { mimeTypes?: unknown } | undefined;
-  return Array.isArray(ui?.mimeTypes) && ui.mimeTypes.includes(APP_MIME_TYPE);
 }

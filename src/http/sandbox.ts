@@ -26,7 +26,7 @@ import { signToken } from './oauth.js';
  */
 
 /** The demo members a sandbox copy contains, by their logical (unsuffixed) ids. */
-export const SANDBOX_MEMBERS = ['m_margaret', 'm_david', 'm_renee', 'm_aide', 'm_kunle'] as const;
+const SANDBOX_MEMBERS = ['m_margaret', 'm_david', 'm_renee', 'm_aide', 'm_kunle'] as const;
 
 const SUFFIX = /~([0-9a-z]+)-[0-9a-f]{8}$/;
 
@@ -80,7 +80,7 @@ export interface SandboxOptions {
   now?: () => Date;
 }
 
-export const SANDBOX_KEY_HEADER = 'x-sandbox-key';
+const SANDBOX_KEY_HEADER = 'x-sandbox-key';
 
 export function createSandboxRoute(opts: SandboxOptions) {
   const ttlMs = opts.ttlMs ?? 12 * 3600_000;

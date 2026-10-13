@@ -24,9 +24,9 @@ import { SeenEvents } from './ring-webhook.js';
  * know is acknowledged and ignored - we do not act on strangers.
  */
 
-export const SIGNATURE_HEADER = 'x-hub-signature-256';
+const SIGNATURE_HEADER = 'x-hub-signature-256';
 
-export function verifySignature(rawBody: Buffer, signature: string | undefined, appSecret: string): boolean {
+function verifySignature(rawBody: Buffer, signature: string | undefined, appSecret: string): boolean {
   if (!signature || !appSecret) return false;
   const expected = createHmac('sha256', appSecret).update(rawBody).digest('hex');
   const given = signature.trim().replace(/^sha256=/i, '').toLowerCase();

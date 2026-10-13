@@ -22,7 +22,7 @@ import { AGENT_ID } from './agent.js';
  */
 
 /** When the update goes out, household time. After the evening doses and their grace hour. */
-export const DAILY_UPDATE_AT = '21:00';
+const DAILY_UPDATE_AT = '21:00';
 
 const UPCOMING_DAYS = 7;
 const NOTES_LIMIT = 3;

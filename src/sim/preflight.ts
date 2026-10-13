@@ -105,13 +105,13 @@ export interface PreflightOptions {
  * Quota codes for the models CareCircle uses, so the common case is a handful of
  * direct lookups rather than a full enumeration.
  */
-export const KNOWN_QUOTA_CODES: Record<string, string[]> = {
+const KNOWN_QUOTA_CODES: Record<string, string[]> = {
   'claude-sonnet-4-5': ['L-F4DDD3EB', 'L-4A6BFAB1'],
   'claude-haiku-4-5': ['L-58BE175A', 'L-CCA5DF70'],
 };
 
 /** Quota codes for a model id, when we know them. */
-export function codesFor(modelId: string): string[] | undefined {
+function codesFor(modelId: string): string[] | undefined {
   for (const [slug, codes] of Object.entries(KNOWN_QUOTA_CODES)) {
     if (modelId.includes(slug)) return codes;
   }

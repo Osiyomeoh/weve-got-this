@@ -17,7 +17,7 @@ import { isCareCase, isFamilyNames, type CareCaseId, type FamilyNames } from '..
  */
 
 /** Logical ids the UI uses, which a sandbox copy has under its own suffix. */
-export const LOGICAL_IDS = ['h_margaret', 'm_margaret', 'm_david', 'm_renee', 'm_aide', 'm_kunle'] as const;
+const LOGICAL_IDS = ['h_margaret', 'm_margaret', 'm_david', 'm_renee', 'm_aide', 'm_kunle'] as const;
 const LOGICAL = new Set<string>(LOGICAL_IDS);
 
 export const VISITOR_COOKIE = 'cc_visitor';
