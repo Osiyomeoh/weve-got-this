@@ -17,6 +17,10 @@ web-build/
 package-lock.json
 yarn-error.log
 .yarn/cache
+.yarn/install-state.gz
+
+# The Expo web export; it is copied to ../public/tv-native/, which is what is served
+dist-web/
 
 # macOS
 .DS_Store
