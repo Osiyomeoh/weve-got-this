@@ -33,11 +33,18 @@ const SIGNATURE_HEADER = 'x-signature';
  * `timingSafeEqual` throws on a length mismatch, and comparing with `===` would
  * leak how much of a forged signature was correct, so both are handled here.
  */
-export function verifySignature(rawBody: Buffer, signature: string | undefined, key: string): boolean {
+export function verifySignature(
+  rawBody: Buffer,
+  signature: string | undefined,
+  key: string,
+): boolean {
   if (!signature || !key) return false;
   const expected = createHmac('sha256', key).update(rawBody).digest('hex');
   // Ring sends hex; tolerate a `sha256=` prefix, which several partner APIs use.
-  const given = signature.trim().replace(/^sha256=/i, '').toLowerCase();
+  const given = signature
+    .trim()
+    .replace(/^sha256=/i, '')
+    .toLowerCase();
   const a = Buffer.from(expected, 'utf8');
   const b = Buffer.from(given, 'utf8');
   if (a.length !== b.length) return false;
@@ -55,7 +62,9 @@ export class SeenEvents {
   readonly #order: string[] = [];
   readonly #limit: number;
 
-  constructor(limit = 5_000) { this.#limit = limit; }
+  constructor(limit = 5_000) {
+    this.#limit = limit;
+  }
 
   /** True the first time a key is offered, false on every repeat. */
   admit(key: string): boolean {
@@ -142,7 +151,11 @@ export function createRingWebhook(opts: RingWebhookOptions) {
 }
 
 /** Is there already an event on the record from this Ring delivery? */
-async function alreadyRecorded(store: CareStore, householdId: string, key: string): Promise<boolean> {
+async function alreadyRecorded(
+  store: CareStore,
+  householdId: string,
+  key: string,
+): Promise<boolean> {
   await store.refresh().catch(() => false);
   return store.getCareState(householdId).events.some((e) => {
     const raw = (e.data as { raw?: { requestId?: unknown; ringEventId?: unknown } }).raw;

@@ -1,6 +1,10 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import {
-  DynamoDBDocumentClient, GetCommand, PutCommand, ScanCommand, TransactWriteCommand,
+  DynamoDBDocumentClient,
+  GetCommand,
+  PutCommand,
+  ScanCommand,
+  TransactWriteCommand,
   type TransactWriteCommandInput,
 } from '@aws-sdk/lib-dynamodb';
 import { StaleRecordError, type Persistence, type StoreSnapshot } from './store.js';
@@ -74,7 +78,8 @@ function rowsFor(snapshot: StoreSnapshot): Map<string, Row> {
   for (const o of snapshot.obligations) add(`HH#${o.householdId}`, 'OBLIGATION', o.id, o);
   for (const m of snapshot.medications) add(`HH#${m.householdId}`, 'MED', m.id, m);
   for (const i of snapshot.identities) add(`HH#${i.householdId}`, 'IDENTITY', i.subject, i);
-  for (const l of snapshot.telegramLinks ?? []) add(`HH#${l.householdId}`, 'TGLINK', l.telegramId, l);
+  for (const l of snapshot.telegramLinks ?? [])
+    add(`HH#${l.householdId}`, 'TGLINK', l.telegramId, l);
   // Non-person nodes (the eye clinic). They were once left out here, so a restart lost them.
   for (const n of snapshot.entities ?? []) add(`HH#${n.householdId}`, 'ENTITY', n.id, n);
   for (const t of snapshot.transitions) {
@@ -88,8 +93,15 @@ function rowsFor(snapshot: StoreSnapshot): Map<string, Row> {
 
 function emptySnapshot(): StoreSnapshot {
   return {
-    households: [], members: [], events: [],
-    obligations: [], medications: [], transitions: [], identities: [], telegramLinks: [], entities: [],
+    households: [],
+    members: [],
+    events: [],
+    obligations: [],
+    medications: [],
+    transitions: [],
+    identities: [],
+    telegramLinks: [],
+    entities: [],
   };
 }
 
@@ -98,15 +110,33 @@ function snapshotFrom(rows: Row[]): StoreSnapshot {
   const snapshot = emptySnapshot();
   for (const row of rows) {
     switch (row.kind) {
-      case 'HOUSEHOLD': snapshot.households.push(row.body as never); break;
-      case 'MEMBER': snapshot.members.push(row.body as never); break;
-      case 'EVENT': snapshot.events.push(row.body as never); break;
-      case 'OBLIGATION': snapshot.obligations.push(row.body as never); break;
-      case 'MED': snapshot.medications.push(row.body as never); break;
-      case 'TRANSITION': snapshot.transitions.push(row.body as never); break;
-      case 'IDENTITY': snapshot.identities.push(row.body as never); break;
-      case 'TGLINK': snapshot.telegramLinks!.push(row.body as never); break;
-      case 'ENTITY': snapshot.entities!.push(row.body as never); break;
+      case 'HOUSEHOLD':
+        snapshot.households.push(row.body as never);
+        break;
+      case 'MEMBER':
+        snapshot.members.push(row.body as never);
+        break;
+      case 'EVENT':
+        snapshot.events.push(row.body as never);
+        break;
+      case 'OBLIGATION':
+        snapshot.obligations.push(row.body as never);
+        break;
+      case 'MED':
+        snapshot.medications.push(row.body as never);
+        break;
+      case 'TRANSITION':
+        snapshot.transitions.push(row.body as never);
+        break;
+      case 'IDENTITY':
+        snapshot.identities.push(row.body as never);
+        break;
+      case 'TGLINK':
+        snapshot.telegramLinks!.push(row.body as never);
+        break;
+      case 'ENTITY':
+        snapshot.entities!.push(row.body as never);
+        break;
     }
   }
   // The event log is append-only and read in order; DynamoDB does not promise one.
@@ -137,15 +167,18 @@ export class DynamoPersistence implements Persistence {
 
   constructor({ tableName, region, client }: DynamoPersistenceOptions) {
     this.#table = tableName;
-    this.#doc = client ?? DynamoDBDocumentClient.from(
-      new DynamoDBClient(region ? { region } : {}),
-      { marshallOptions: { removeUndefinedValues: true } },
-    );
+    this.#doc =
+      client ??
+      DynamoDBDocumentClient.from(new DynamoDBClient(region ? { region } : {}), {
+        marshallOptions: { removeUndefinedValues: true },
+      });
   }
 
   /** The version of the record in the table now. */
   async #currentVersion(): Promise<number> {
-    const out = await this.#doc.send(new GetCommand({ TableName: this.#table, Key: VERSION_KEY, ConsistentRead: true }));
+    const out = await this.#doc.send(
+      new GetCommand({ TableName: this.#table, Key: VERSION_KEY, ConsistentRead: true }),
+    );
     return Number(out.Item?.['v'] ?? 0);
   }
 
@@ -161,13 +194,15 @@ export class DynamoPersistence implements Persistence {
   async lease(name: string, holder: string, ttlMs: number): Promise<boolean> {
     const now = Date.now();
     try {
-      await this.#doc.send(new PutCommand({
-        TableName: this.#table,
-        Item: { pk: VERSION_KEY.pk, sk: `LEASE#${name}`, holder, until: now + ttlMs },
-        ConditionExpression: 'attribute_not_exists(pk) OR holder = :me OR #until < :now',
-        ExpressionAttributeNames: { '#until': 'until' },
-        ExpressionAttributeValues: { ':me': holder, ':now': now },
-      }));
+      await this.#doc.send(
+        new PutCommand({
+          TableName: this.#table,
+          Item: { pk: VERSION_KEY.pk, sk: `LEASE#${name}`, holder, until: now + ttlMs },
+          ConditionExpression: 'attribute_not_exists(pk) OR holder = :me OR #until < :now',
+          ExpressionAttributeNames: { '#until': 'until' },
+          ExpressionAttributeValues: { ':me': holder, ':now': now },
+        }),
+      );
       return true;
     } catch (err) {
       if ((err as Error).name === 'ConditionalCheckFailedException') return false;
@@ -183,12 +218,15 @@ export class DynamoPersistence implements Persistence {
       const rows: Row[] = [];
       let startKey: Record<string, unknown> | undefined;
       do {
-        const page = await this.#doc.send(new ScanCommand({
-          TableName: this.#table,
-          ConsistentRead: true,
-          ...(startKey ? { ExclusiveStartKey: startKey } : {}),
-        }));
-        for (const item of page.Items ?? []) if (item['pk'] !== VERSION_KEY.pk) rows.push(item as Row);
+        const page = await this.#doc.send(
+          new ScanCommand({
+            TableName: this.#table,
+            ConsistentRead: true,
+            ...(startKey ? { ExclusiveStartKey: startKey } : {}),
+          }),
+        );
+        for (const item of page.Items ?? [])
+          if (item['pk'] !== VERSION_KEY.pk) rows.push(item as Row);
         startKey = page.LastEvaluatedKey;
       } while (startKey);
       if ((await this.#currentVersion()) !== before) continue;
@@ -199,7 +237,9 @@ export class DynamoPersistence implements Persistence {
       this.#written = new Map(rows.map((r) => [`${r.pk}|${r.sk}`, JSON.stringify(r.body)]));
       return rows.length === 0 ? null : snapshotFrom(rows);
     }
-    throw new Error('The care record kept changing while it was being read. Try again in a moment.');
+    throw new Error(
+      'The care record kept changing while it was being read. Try again in a moment.',
+    );
   }
 
   async save(snapshot: StoreSnapshot): Promise<void> {
@@ -216,7 +256,11 @@ export class DynamoPersistence implements Persistence {
 
     type Op = NonNullable<TransactWriteCommandInput['TransactItems']>[number];
     const ops: Array<{ op: Op; key: string; row?: Row }> = [
-      ...puts.map((row) => ({ op: { Put: { TableName: this.#table, Item: row } }, key: `${row.pk}|${row.sk}`, row })),
+      ...puts.map((row) => ({
+        op: { Put: { TableName: this.#table, Item: row } },
+        key: `${row.pk}|${row.sk}`,
+        row,
+      })),
       ...deletes.map((key) => {
         const [pk = '', sk = ''] = key.split('|');
         return { op: { Delete: { TableName: this.#table, Key: { pk, sk } } }, key };
@@ -234,14 +278,21 @@ export class DynamoPersistence implements Persistence {
           UpdateExpression: 'SET #v = :next',
           ConditionExpression: this.#version === 0 ? 'attribute_not_exists(pk)' : '#v = :expected',
           ExpressionAttributeNames: { '#v': 'v' },
-          ExpressionAttributeValues: this.#version === 0 ? { ':next': next } : { ':next': next, ':expected': this.#version },
+          ExpressionAttributeValues:
+            this.#version === 0 ? { ':next': next } : { ':next': next, ':expected': this.#version },
         },
       };
       try {
-        await this.#doc.send(new TransactWriteCommand({ TransactItems: [...part.map((p) => p.op), bump] }));
+        await this.#doc.send(
+          new TransactWriteCommand({ TransactItems: [...part.map((p) => p.op), bump] }),
+        );
       } catch (err) {
-        const reasons = (err as { CancellationReasons?: Array<{ Code?: string }> }).CancellationReasons;
-        if ((err as Error).name === 'TransactionCanceledException' && reasons?.at(-1)?.Code === 'ConditionalCheckFailed') {
+        const reasons = (err as { CancellationReasons?: Array<{ Code?: string }> })
+          .CancellationReasons;
+        if (
+          (err as Error).name === 'TransactionCanceledException' &&
+          reasons?.at(-1)?.Code === 'ConditionalCheckFailed'
+        ) {
           throw new StaleRecordError();
         }
         throw err;

@@ -4,7 +4,10 @@ import { RecordOnlyNotifier, SnsNotifier } from './notifier.ts';
 
 test('record-only delivery is honest that nothing was pushed', async () => {
   const r = await new RecordOnlyNotifier().deliver({
-    to: 'm_renee', toName: 'Renee', from: 'David', message: 'taking Mom Thursday',
+    to: 'm_renee',
+    toName: 'Renee',
+    from: 'David',
+    message: 'taking Mom Thursday',
   });
   assert.equal(r.delivered, false);
   assert.equal(r.channel, 'none');
@@ -13,10 +16,14 @@ test('record-only delivery is honest that nothing was pushed', async () => {
 test('SNS publishes with the recipient as a filterable attribute', async () => {
   let captured: any = null;
   const fakeClient = {
-    send: async (cmd: any) => { captured = cmd.input; return { MessageId: 'mid-123' }; },
+    send: async (cmd: any) => {
+      captured = cmd.input;
+      return { MessageId: 'mid-123' };
+    },
   };
   const r = await new SnsNotifier({
-    topicArn: 'arn:aws:sns:us-east-1:1:carecircle', client: fakeClient as never,
+    topicArn: 'arn:aws:sns:us-east-1:1:carecircle',
+    client: fakeClient as never,
   }).deliver({ to: 'm_renee', toName: 'Renee', from: 'David', message: 'taking Mom Thursday' });
 
   assert.equal(r.delivered, true);
@@ -30,9 +37,14 @@ test('SNS publishes with the recipient as a filterable attribute', async () => {
 });
 
 test('an SNS failure is reported, not thrown - the message is already recorded', async () => {
-  const failing = { send: async () => { throw new Error('AccessDenied'); } };
+  const failing = {
+    send: async () => {
+      throw new Error('AccessDenied');
+    },
+  };
   const r = await new SnsNotifier({
-    topicArn: 'arn:aws:sns:us-east-1:1:carecircle', client: failing as never,
+    topicArn: 'arn:aws:sns:us-east-1:1:carecircle',
+    client: failing as never,
   }).deliver({ to: 'm_renee', toName: 'Renee', from: 'David', message: 'x' });
 
   assert.equal(r.delivered, false);

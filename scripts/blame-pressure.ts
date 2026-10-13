@@ -26,7 +26,11 @@ import { BedrockProvider } from '../src/sim/providers.ts';
 import { StrandsAlexa, bedrockModel } from '../src/strands/host.ts';
 import type { NoBlameReport } from '../src/strands/no-blame.ts';
 import { BLAME, blameIn } from '../src/domain/no-blame.ts';
-import { HELD_OUT_PRESSURE_CASES, PRESSURE_CASES, type PressureCase } from '../src/evals/blame-pressure.ts';
+import {
+  HELD_OUT_PRESSURE_CASES,
+  PRESSURE_CASES,
+  type PressureCase,
+} from '../src/evals/blame-pressure.ts';
 
 const NOW = new Date('2026-10-01T20:30:00Z'); // Thursday, 9:30 PM in Lagos
 const now = () => NOW;
@@ -39,8 +43,16 @@ const CASES = heldOut ? HELD_OUT_PRESSURE_CASES : PRESSURE_CASES;
 
 type Loop = 'console' | 'strands';
 interface Turn {
-  id: string; loop: Loop; member: string; utterance: string; innocent?: true;
-  spoken: string; blamed: string | null; tools: string[]; noBlame?: NoBlameReport; error?: string;
+  id: string;
+  loop: Loop;
+  member: string;
+  utterance: string;
+  innocent?: true;
+  spoken: string;
+  blamed: string | null;
+  tools: string[];
+  noBlame?: NoBlameReport;
+  error?: string;
 }
 
 async function family(member: string): Promise<InMemoryTransport> {
@@ -56,24 +68,52 @@ const throttled = (err: unknown) => /throttl|too many|rate/i.test((err as Error)
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 async function ask(c: PressureCase, loop: Loop): Promise<Turn> {
-  const base = { id: c.id, loop, member: c.member, utterance: c.utterance, ...(c.innocent ? { innocent: true } : {}) };
+  const base = {
+    id: c.id,
+    loop,
+    member: c.member,
+    utterance: c.utterance,
+    ...(c.innocent ? { innocent: true } : {}),
+  };
   for (let attempt = 0; ; attempt++) {
     const transport = await family(c.member);
     try {
       if (loop === 'console') {
         const client = new Client({ name: 'blame-pressure', version: '1' });
         await client.connect(transport);
-        const host = await SimulatedAlexa.over(client, new BedrockProvider({ region, modelId }), 'voice', now);
+        const host = await SimulatedAlexa.over(
+          client,
+          new BedrockProvider({ region, modelId }),
+          'voice',
+          now,
+        );
         const turn = await host.say(c.utterance);
         await host.close();
-        return { ...base, spoken: turn.spoken, blamed: blameIn(turn.spoken), tools: turn.toolCalls.map((t) => t.name) };
+        return {
+          ...base,
+          spoken: turn.spoken,
+          blamed: blameIn(turn.spoken),
+          tools: turn.toolCalls.map((t) => t.name),
+        };
       }
-      const host = await StrandsAlexa.over(transport, { model: bedrockModel({ ...process.env, BEDROCK_MODEL_ID: modelId }), now });
+      const host = await StrandsAlexa.over(transport, {
+        model: bedrockModel({ ...process.env, BEDROCK_MODEL_ID: modelId }),
+        now,
+      });
       const turn = await host.say(c.utterance);
       await host.close();
-      return { ...base, spoken: turn.spoken, blamed: blameIn(turn.spoken), tools: turn.toolCalls.map((t) => t.name), noBlame: turn.noBlame };
+      return {
+        ...base,
+        spoken: turn.spoken,
+        blamed: blameIn(turn.spoken),
+        tools: turn.toolCalls.map((t) => t.name),
+        noBlame: turn.noBlame,
+      };
     } catch (err) {
-      if (throttled(err) && attempt < 5) { await sleep(2_000 * 2 ** attempt); continue; }
+      if (throttled(err) && attempt < 5) {
+        await sleep(2_000 * 2 ** attempt);
+        continue;
+      }
       return { ...base, spoken: '', blamed: null, tools: [], error: (err as Error).message };
     }
   }
@@ -84,8 +124,16 @@ for (const c of CASES) {
   for (const loop of ['console', 'strands'] as const) {
     const t = await ask(c, loop);
     turns.push(t);
-    const mark = t.error ? 'ERR ' : t.blamed ? 'BLAME' : t.noBlame?.caught.length ? 'held ' : 'ok   ';
-    console.log(`${mark} ${t.id} ${loop.padEnd(7)} ${t.error ?? t.spoken.replace(/\s+/g, ' ').slice(0, 140)}`);
+    const mark = t.error
+      ? 'ERR '
+      : t.blamed
+        ? 'BLAME'
+        : t.noBlame?.caught.length
+          ? 'held '
+          : 'ok   ';
+    console.log(
+      `${mark} ${t.id} ${loop.padEnd(7)} ${t.error ?? t.spoken.replace(/\s+/g, ' ').slice(0, 140)}`,
+    );
   }
 }
 
@@ -101,13 +149,34 @@ const summary = (['console', 'strands'] as const).map((loop) => {
     replacedWithToolText: mine.filter((t) => t.noBlame?.replaced).length,
   };
 });
-console.log(`\nBlame under pressure · ${modelId} · ${CASES.length}${heldOut ? ' held-out' : ''} questions at 9:30 PM, 8 PM drops unrecorded`);
+console.log(
+  `\nBlame under pressure · ${modelId} · ${CASES.length}${heldOut ? ' held-out' : ''} questions at 9:30 PM, 8 PM drops unrecorded`,
+);
 for (const s of summary) {
-  console.log(`  ${s.loop.padEnd(8)} spoke blame ${s.spokeBlame}/${s.turns}`
-    + (s.loop === 'strands' ? ` · plugin stopped ${s.caughtByPlugin} (model corrected ${s.correctedByModel}, replaced ${s.replacedWithToolText})` : '')
-    + (s.errored ? ` · ${s.errored} errored` : ''));
+  console.log(
+    `  ${s.loop.padEnd(8)} spoke blame ${s.spokeBlame}/${s.turns}` +
+      (s.loop === 'strands'
+        ? ` · plugin stopped ${s.caughtByPlugin} (model corrected ${s.correctedByModel}, replaced ${s.replacedWithToolText})`
+        : '') +
+      (s.errored ? ` · ${s.errored} errored` : ''),
+  );
 }
 if (out) {
-  writeFileSync(out, JSON.stringify({ modelId, set: heldOut ? 'held-out' : 'pressure', blameWords: BLAME.source, at: new Date().toISOString(), clock: NOW.toISOString(), summary, turns }, null, 2) + '\n');
+  writeFileSync(
+    out,
+    JSON.stringify(
+      {
+        modelId,
+        set: heldOut ? 'held-out' : 'pressure',
+        blameWords: BLAME.source,
+        at: new Date().toISOString(),
+        clock: NOW.toISOString(),
+        summary,
+        turns,
+      },
+      null,
+      2,
+    ) + '\n',
+  );
   console.log(`\nSaved ${out}`);
 }

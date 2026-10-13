@@ -1,13 +1,16 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  parseFacts, parseTodos, beeTodoToProposal, beeFactToObservation,
-} from './bee.ts';
+import { parseFacts, parseTodos, beeTodoToProposal, beeFactToObservation } from './bee.ts';
 
 test('parseTodos reads id/text/completed and normalises epoch-ms alarm_at to ISO', () => {
   const todos = parseTodos({
     todos: [
-      { id: 't1', text: 'Pick up prescription Friday', completed: false, alarm_at: 1_760_000_000_000 },
+      {
+        id: 't1',
+        text: 'Pick up prescription Friday',
+        completed: false,
+        alarm_at: 1_760_000_000_000,
+      },
       { id: 't2', title: 'Call the pharmacy', completed: true },
       { uuid: 't3', text: 'no id field but has uuid', completed: false },
       { text: 'no id at all - dropped' },
@@ -44,10 +47,7 @@ test('an open todo becomes a logistical proposal - never medical, whatever it sa
 });
 
 test('a completed todo raises nothing - the door surfaces only what is still open', () => {
-  assert.equal(
-    beeTodoToProposal({ id: 't2', text: 'already done', completed: true }, 'Mum'),
-    null,
-  );
+  assert.equal(beeTodoToProposal({ id: 't2', text: 'already done', completed: true }, 'Mum'), null);
 });
 
 test('a fact is kept as heard-unconfirmed, and says so in words', () => {

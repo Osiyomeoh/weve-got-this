@@ -33,9 +33,20 @@ export interface Offer {
   etaText: string;
   amountCents: number;
 }
-export interface Notification { from: string; to: string; message: string; at?: string }
+export interface Notification {
+  from: string;
+  to: string;
+  message: string;
+  at?: string;
+}
 
-export interface BoardMember { id: string; name: string; role: string; spokenAs: string | null; livesAway?: string }
+export interface BoardMember {
+  id: string;
+  name: string;
+  role: string;
+  spokenAs: string | null;
+  livesAway?: string;
+}
 /** One of today's scheduled doses, and the record that answers it (see src/mcp/resources.ts). */
 export interface DoseSlot {
   medicationId: string;
@@ -65,10 +76,16 @@ export interface ToolCall {
   ms: number;
 }
 /** A word the server mapped back onto a name this household actually uses. */
-export interface Correction { from: string; to: string }
+export interface Correction {
+  from: string;
+  to: string;
+}
 
 /** One reply from the model, and the tool calls it asked for (none on the reply that answers). */
-export interface TraceStep { plannerMs: number; calls: ToolCall[] }
+export interface TraceStep {
+  plannerMs: number;
+  calls: ToolCall[];
+}
 
 /** Everything one turn did, in order, and where the time went (see src/sim/host.ts). */
 export interface TurnTrace {
@@ -91,7 +108,10 @@ export interface Turn {
 }
 
 export interface SimConfig {
-  provider: string; region: string; modelId: string; endpoint: string;
+  provider: string;
+  region: string;
+  modelId: string;
+  endpoint: string;
   /** 'private': this browser has its own copy of the demo. 'shared': the live demo household. */
   demo?: 'shared' | 'private';
 }
@@ -118,53 +138,95 @@ export type SpeechRate = 'slow' | 'gentle' | 'normal';
 export const api = {
   /** `storyTime`: what time it is in the world's story (honoured only in this visitor's own copy). */
   state: (storyTime?: Date): Promise<BoardState> =>
-    fetch(storyTime ? `/api/state?storyTime=${encodeURIComponent(storyTime.toISOString())}` : '/api/state').then((r) => r.json()),
+    fetch(
+      storyTime
+        ? `/api/state?storyTime=${encodeURIComponent(storyTime.toISOString())}`
+        : '/api/state',
+    ).then((r) => r.json()),
   config: (): Promise<SimConfig> => fetch('/api/config').then((r) => r.json()),
   say: (memberId: string, text: string, storyTime?: Date): Promise<Turn> =>
     fetch('/api/say', {
-      method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ memberId, text, storyTime: storyTime?.toISOString(), language: speechLanguage().code }),
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        memberId,
+        text,
+        storyTime: storyTime?.toISOString(),
+        language: speechLanguage().code,
+      }),
     }).then(jsonOrThrow),
   /** A person nobody is playing, answering what Alexa just said to them, in character. */
-  npc: (body: { name: string; role: string; meant: string; alexa: string }): Promise<{ text: string }> =>
+  npc: (body: {
+    name: string;
+    role: string;
+    meant: string;
+    alexa: string;
+  }): Promise<{ text: string }> =>
     fetch('/api/npc', {
-      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
     }).then(jsonOrThrow),
   transcribe: (pcm: Blob): Promise<Transcription> =>
     fetch(`/api/transcribe?lang=${speechLanguage().code}`, {
-      method: 'POST', headers: { 'content-type': 'application/octet-stream' }, body: pcm,
+      method: 'POST',
+      headers: { 'content-type': 'application/octet-stream' },
+      body: pcm,
     }).then(jsonOrThrow),
   /**
    * "That's not what I meant": the visitor's own words that Alexa took the wrong way, sent
    * only when they tick the box. No visitor id, no family, no names beyond what they typed.
    */
-  phrasing: (body: { said: string; meant: string[]; got: string[]; country: string }): Promise<void> =>
+  phrasing: (body: {
+    said: string;
+    meant: string[];
+    got: string[];
+    country: string;
+  }): Promise<void> =>
     fetch('/api/phrasing', {
-      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),
-    }).then(jsonOrThrow).then(() => undefined),
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+      .then(jsonOrThrow)
+      .then(() => undefined),
   /** Playing together (src/sim/rooms.ts). */
   room: {
     open: (): Promise<{ code: string }> => fetch('/api/room', { method: 'POST' }).then(jsonOrThrow),
-    host: (code: string, feed: unknown, hostAs: string | null): Promise<{ seats: Record<string, true>; inbox: { who: string; text?: string; key?: string }[] }> =>
+    host: (
+      code: string,
+      feed: unknown,
+      hostAs: string | null,
+    ): Promise<{
+      seats: Record<string, true>;
+      inbox: { who: string; text?: string; key?: string }[];
+    }> =>
       fetch(`/api/room/${encodeURIComponent(code)}/host`, {
-        method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ feed, hostAs }),
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ feed, hostAs }),
       }).then(jsonOrThrow),
-    view: <F,>(code: string): Promise<{ feed: F | null; taken: string[]; mine: string | null }> =>
+    view: <F>(code: string): Promise<{ feed: F | null; taken: string[]; mine: string | null }> =>
       fetch(`/api/room/${encodeURIComponent(code)}`).then(jsonOrThrow),
     seat: (code: string, who: string): Promise<{ ok: true }> =>
       fetch(`/api/room/${encodeURIComponent(code)}/seat`, {
-        method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ who }),
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ who }),
       }).then(jsonOrThrow),
     send: (code: string, msg: { text: string } | { key: string }): Promise<{ ok: true }> =>
       fetch(`/api/room/${encodeURIComponent(code)}/send`, {
-        method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(msg),
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(msg),
       }).then(jsonOrThrow),
   },
   /** Polly audio for a line, or null when the service is unavailable. */
   speak: async (text: string, rate: SpeechRate, voice?: string): Promise<Blob | null> => {
     try {
       const res = await fetch('/api/speak', {
-        method: 'POST', headers: { 'content-type': 'application/json' },
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ text, rate, voice }),
       });
       if (!res.ok) return null;
@@ -174,15 +236,42 @@ export const api = {
     }
   },
   /** `via: 'tv'`: a press on the Fire TV remote, so the record says it was pressed, not spoken. */
-  act: (memberId: string, tool: string, args: Record<string, unknown>, storyTime?: Date, via?: 'tv'): Promise<ToolCall> =>
+  act: (
+    memberId: string,
+    tool: string,
+    args: Record<string, unknown>,
+    storyTime?: Date,
+    via?: 'tv',
+  ): Promise<ToolCall> =>
     fetch('/api/act', {
-      method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ memberId, tool, args, storyTime: storyTime?.toISOString(), ...(via ? { via } : {}) }),
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        memberId,
+        tool,
+        args,
+        storyTime: storyTime?.toISOString(),
+        ...(via ? { via } : {}),
+      }),
     }).then(jsonOrThrow),
   /** Throw away this browser's copy of the demo; the next request gets a fresh one. */
-  resetSandbox: (opts: { liveMorning?: boolean; careCase?: CareCaseId; names?: { recipient: string; primary: string; caregiver: string; away: string; helper: string } } = {}): Promise<{ ok: boolean }> =>
+  resetSandbox: (
+    opts: {
+      liveMorning?: boolean;
+      careCase?: CareCaseId;
+      names?: {
+        recipient: string;
+        primary: string;
+        caregiver: string;
+        away: string;
+        helper: string;
+      };
+    } = {},
+  ): Promise<{ ok: boolean }> =>
     fetch('/api/sandbox/reset', {
-      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(opts),
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(opts),
     }).then(jsonOrThrow),
   /** Reset the onboarding demo so setup starts from a blank new circle. */
   resetSetup: (): Promise<{ ok: boolean }> =>
@@ -213,7 +302,11 @@ export async function getStarted(memberId: string = FOUNDER_ID): Promise<Onboard
   return s ?? { step: 'create_circle', done: [], complete: false, spoken: call.result };
 }
 
-export interface Member { id: string; label: string; sub: string; }
+export interface Member {
+  id: string;
+  label: string;
+  sub: string;
+}
 export const MEMBERS: Member[] = [
   { id: 'm_margaret', label: 'Daddy', sub: 'Echo at home · voice-first' },
   { id: 'm_david', label: 'Tolu', sub: 'primary caregiver · phone' },

@@ -57,7 +57,9 @@ let cached: { token: string; expiresAt: number } | null = null;
 export async function getRingAccessToken(config: RingConfig): Promise<string> {
   if (config.accessToken) return config.accessToken;
   if (!config.refreshToken || !config.clientId || !config.clientSecret) {
-    throw new Error('Ring auth not configured: set RING_ACCESS_TOKEN, or RING_REFRESH_TOKEN with client id/secret.');
+    throw new Error(
+      'Ring auth not configured: set RING_ACCESS_TOKEN, or RING_REFRESH_TOKEN with client id/secret.',
+    );
   }
   if (cached && Date.now() < cached.expiresAt) return cached.token;
 
@@ -93,20 +95,32 @@ export async function getRingAccessToken(config: RingConfig): Promise<string> {
 export function parseDevices(json: unknown): RingDevice[] {
   const items = Array.isArray(json)
     ? json
-    : (json && typeof json === 'object' && Array.isArray((json as { devices?: unknown[] }).devices))
+    : json && typeof json === 'object' && Array.isArray((json as { devices?: unknown[] }).devices)
       ? (json as { devices: unknown[] }).devices
       : [];
   const out: RingDevice[] = [];
   for (const raw of items) {
     if (!raw || typeof raw !== 'object') continue;
     const d = raw as Record<string, unknown>;
-    const id = typeof d['id'] === 'string' ? d['id']
-      : typeof d['device_id'] === 'string' ? d['device_id'] : null;
+    const id =
+      typeof d['id'] === 'string'
+        ? d['id']
+        : typeof d['device_id'] === 'string'
+          ? d['device_id']
+          : null;
     if (!id) continue;
-    const kind = typeof d['kind'] === 'string' ? d['kind']
-      : typeof d['type'] === 'string' ? d['type'] : undefined;
-    const description = typeof d['description'] === 'string' ? d['description']
-      : typeof d['name'] === 'string' ? d['name'] : undefined;
+    const kind =
+      typeof d['kind'] === 'string'
+        ? d['kind']
+        : typeof d['type'] === 'string'
+          ? d['type']
+          : undefined;
+    const description =
+      typeof d['description'] === 'string'
+        ? d['description']
+        : typeof d['name'] === 'string'
+          ? d['name']
+          : undefined;
     out.push({ id, ...(kind ? { kind } : {}), ...(description ? { description } : {}) });
   }
   return out;

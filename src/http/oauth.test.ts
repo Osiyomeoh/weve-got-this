@@ -5,7 +5,15 @@ import { createHash, randomBytes } from 'node:crypto';
 import { createCareCircleApp } from './app.ts';
 import { CareStore } from '../store/store.ts';
 import { seedDemoHousehold, DEMO_TOKENS } from '../demo/seed.ts';
-import { makePkce, pkceMatches, redirectAllowed, signToken, verifyToken, oauthResolver, OAuthProvider } from './oauth.ts';
+import {
+  makePkce,
+  pkceMatches,
+  redirectAllowed,
+  signToken,
+  verifyToken,
+  oauthResolver,
+  OAuthProvider,
+} from './oauth.ts';
 import { resolverFromEnv } from './identity.ts';
 
 /**
@@ -60,7 +68,9 @@ function authorizeUrl(over: Record<string, string> = {}): string {
 
 /** Run the happy path and return the authorization code. */
 async function getCode(challenge: string, member = 'm_renee'): Promise<string> {
-  const res = await fetch(authorizeUrl({ code_challenge: challenge, member }), { redirect: 'manual' });
+  const res = await fetch(authorizeUrl({ code_challenge: challenge, member }), {
+    redirect: 'manual',
+  });
   assert.equal(res.status, 302, 'consent should redirect once a member is chosen');
   const location = new URL(res.headers.get('location')!);
   assert.equal(location.searchParams.get('state'), 'xyz', 'state must be echoed back');
@@ -98,7 +108,10 @@ test('the full authorization code flow issues a usable token', async () => {
   const { verifier, challenge } = makePkce();
   const code = await getCode(challenge);
   const { status, json } = await exchange({
-    grant_type: 'authorization_code', code, code_verifier: verifier, redirect_uri: REDIRECT,
+    grant_type: 'authorization_code',
+    code,
+    code_verifier: verifier,
+    redirect_uri: REDIRECT,
   });
   assert.equal(status, 200);
   assert.equal(json.token_type, 'Bearer');
@@ -113,10 +126,16 @@ test('the issued token actually authenticates an MCP session', async () => {
   const { verifier, challenge } = makePkce();
   const code = await getCode(challenge, 'm_david');
   const { json } = await exchange({
-    grant_type: 'authorization_code', code, code_verifier: verifier, redirect_uri: REDIRECT,
+    grant_type: 'authorization_code',
+    code,
+    code_verifier: verifier,
+    redirect_uri: REDIRECT,
   });
   const resolver = oauthResolver(SECRET);
-  const fake = { header: (h: string) => (h.toLowerCase() === 'authorization' ? `Bearer ${json.access_token}` : undefined) };
+  const fake = {
+    header: (h: string) =>
+      h.toLowerCase() === 'authorization' ? `Bearer ${json.access_token}` : undefined,
+  };
   assert.equal(resolver.resolve(fake as never), 'm_david');
 });
 
@@ -126,7 +145,10 @@ test('an issued token opens a real MCP session as the right member', async () =>
   const { verifier, challenge } = makePkce();
   const code = await getCode(challenge, 'm_aide');
   const { json } = await exchange({
-    grant_type: 'authorization_code', code, code_verifier: verifier, redirect_uri: REDIRECT,
+    grant_type: 'authorization_code',
+    code,
+    code_verifier: verifier,
+    redirect_uri: REDIRECT,
   });
 
   const res = await fetch(`${base}/mcp`, {
@@ -137,9 +159,12 @@ test('an issued token opens a real MCP session as the right member', async () =>
       authorization: `Bearer ${json.access_token}`,
     },
     body: JSON.stringify({
-      jsonrpc: '2.0', id: 1, method: 'initialize',
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'initialize',
       params: {
-        protocolVersion: '2025-11-25', capabilities: {},
+        protocolVersion: '2025-11-25',
+        capabilities: {},
         clientInfo: { name: 'oauth-client', version: '1.0' },
       },
     }),
@@ -158,8 +183,14 @@ test('a garbage bearer token still gets 401 on /mcp', async () => {
       authorization: 'Bearer not-a-real-token',
     },
     body: JSON.stringify({
-      jsonrpc: '2.0', id: 1, method: 'initialize',
-      params: { protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 'x', version: '1' } },
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'initialize',
+      params: {
+        protocolVersion: '2025-11-25',
+        capabilities: {},
+        clientInfo: { name: 'x', version: '1' },
+      },
     }),
   });
   assert.equal(res.status, 401);
@@ -175,8 +206,14 @@ test('demo tokens keep working alongside OAuth', async () => {
       authorization: 'Bearer renee-token',
     },
     body: JSON.stringify({
-      jsonrpc: '2.0', id: 1, method: 'initialize',
-      params: { protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 'x', version: '1' } },
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'initialize',
+      params: {
+        protocolVersion: '2025-11-25',
+        capabilities: {},
+        clientInfo: { name: 'x', version: '1' },
+      },
     }),
   });
   assert.equal(res.status, 200);
@@ -187,10 +224,14 @@ test('a refresh token gets a new access token', async () => {
   const { verifier, challenge } = makePkce();
   const code = await getCode(challenge);
   const first = await exchange({
-    grant_type: 'authorization_code', code, code_verifier: verifier, redirect_uri: REDIRECT,
+    grant_type: 'authorization_code',
+    code,
+    code_verifier: verifier,
+    redirect_uri: REDIRECT,
   });
   const second = await exchange({
-    grant_type: 'refresh_token', refresh_token: first.json.refresh_token,
+    grant_type: 'refresh_token',
+    refresh_token: first.json.refresh_token,
   });
   assert.equal(second.status, 200);
   assert.equal(verifyToken(second.json.access_token, SECRET)?.sub, 'm_renee');
@@ -221,8 +262,10 @@ test('attack: a stolen code without the verifier is worthless', async () => {
   const { challenge } = makePkce();
   const code = await getCode(challenge);
   const { status, json } = await exchange({
-    grant_type: 'authorization_code', code,
-    code_verifier: randomBytes(32).toString('hex'), redirect_uri: REDIRECT,
+    grant_type: 'authorization_code',
+    code,
+    code_verifier: randomBytes(32).toString('hex'),
+    redirect_uri: REDIRECT,
   });
   assert.equal(status, 400);
   assert.equal(json.error, 'invalid_grant');
@@ -232,11 +275,17 @@ test('attack: a code cannot be replayed', async () => {
   const { verifier, challenge } = makePkce();
   const code = await getCode(challenge);
   const first = await exchange({
-    grant_type: 'authorization_code', code, code_verifier: verifier, redirect_uri: REDIRECT,
+    grant_type: 'authorization_code',
+    code,
+    code_verifier: verifier,
+    redirect_uri: REDIRECT,
   });
   assert.equal(first.status, 200);
   const second = await exchange({
-    grant_type: 'authorization_code', code, code_verifier: verifier, redirect_uri: REDIRECT,
+    grant_type: 'authorization_code',
+    code,
+    code_verifier: verifier,
+    redirect_uri: REDIRECT,
   });
   assert.equal(second.status, 400, 'an authorization code is single-use');
 });
@@ -246,10 +295,16 @@ test('attack: a failed exchange still burns the code', async () => {
   const { verifier, challenge } = makePkce();
   const code = await getCode(challenge);
   await exchange({
-    grant_type: 'authorization_code', code, code_verifier: 'wrong', redirect_uri: REDIRECT,
+    grant_type: 'authorization_code',
+    code,
+    code_verifier: 'wrong',
+    redirect_uri: REDIRECT,
   });
   const retry = await exchange({
-    grant_type: 'authorization_code', code, code_verifier: verifier, redirect_uri: REDIRECT,
+    grant_type: 'authorization_code',
+    code,
+    code_verifier: verifier,
+    redirect_uri: REDIRECT,
   });
   assert.equal(retry.status, 400, 'the code must not survive a failed attempt');
 });
@@ -259,7 +314,9 @@ test('attack: redirecting the token to another URI is refused', async () => {
   const { verifier, challenge } = makePkce();
   const code = await getCode(challenge);
   const { status } = await exchange({
-    grant_type: 'authorization_code', code, code_verifier: verifier,
+    grant_type: 'authorization_code',
+    code,
+    code_verifier: verifier,
     redirect_uri: `${REDIRECT}.attacker.example`,
   });
   assert.equal(status, 400);
@@ -267,7 +324,9 @@ test('attack: redirecting the token to another URI is refused', async () => {
 
 test('attack: an unknown member cannot be consented as', async () => {
   const { challenge } = makePkce();
-  const res = await fetch(authorizeUrl({ code_challenge: challenge, member: 'm_intruder' }), { redirect: 'manual' });
+  const res = await fetch(authorizeUrl({ code_challenge: challenge, member: 'm_intruder' }), {
+    redirect: 'manual',
+  });
   assert.equal(res.status, 400);
 });
 
@@ -288,7 +347,14 @@ test('attack: a token signed with the wrong key is rejected', async () => {
 
 test('attack: an expired token is rejected', () => {
   const token = signToken(
-    { sub: 'm_renee', iss: ISSUER, aud: ISSUER, exp: Math.floor(Date.now() / 1000) - 10, iat: 0, typ: 'access' },
+    {
+      sub: 'm_renee',
+      iss: ISSUER,
+      aud: ISSUER,
+      exp: Math.floor(Date.now() / 1000) - 10,
+      iat: 0,
+      typ: 'access',
+    },
     SECRET,
   );
   assert.equal(verifyToken(token, SECRET), null);
@@ -320,17 +386,36 @@ test('a code issued by one instance is redeemed by another sharing the secret', 
   const code = await getCode(challenge);
   const store2 = new CareStore();
   await seedDemoHousehold(store2);
-  const other = createCareCircleApp({ store: store2, tokens: new Map(Object.entries(DEMO_TOKENS)) });
-  const s2 = await new Promise<Server>((resolve) => { const s = other.listen(0, () => resolve(s)); });
+  const other = createCareCircleApp({
+    store: store2,
+    tokens: new Map(Object.entries(DEMO_TOKENS)),
+  });
+  const s2 = await new Promise<Server>((resolve) => {
+    const s = other.listen(0, () => resolve(s));
+  });
   try {
     const a = s2.address();
-    const res = await fetch(`http://localhost:${typeof a === 'object' && a ? a.port : 0}/oauth/token`, {
-      method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ grant_type: 'authorization_code', code, code_verifier: verifier, redirect_uri: REDIRECT }).toString(),
-    });
+    const res = await fetch(
+      `http://localhost:${typeof a === 'object' && a ? a.port : 0}/oauth/token`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          code,
+          code_verifier: verifier,
+          redirect_uri: REDIRECT,
+        }).toString(),
+      },
+    );
     assert.equal(res.status, 200);
-    assert.equal(verifyToken(((await res.json()) as { access_token: string }).access_token, SECRET)?.sub, 'm_renee');
-  } finally { s2.close(); }
+    assert.equal(
+      verifyToken(((await res.json()) as { access_token: string }).access_token, SECRET)?.sub,
+      'm_renee',
+    );
+  } finally {
+    s2.close();
+  }
 });
 
 test('production wiring: the entrypoint resolver honours OAuth tokens', () => {
@@ -341,7 +426,14 @@ test('production wiring: the entrypoint resolver honours OAuth tokens', () => {
   // factory's convenience default.
   const resolver = resolverFromEnv(new Map(Object.entries(DEMO_TOKENS)));
   const token = signToken(
-    { sub: 'm_renee', iss: ISSUER, aud: ISSUER, exp: Math.floor(Date.now() / 1000) + 60, iat: 0, typ: 'access' },
+    {
+      sub: 'm_renee',
+      iss: ISSUER,
+      aud: ISSUER,
+      exp: Math.floor(Date.now() / 1000) + 60,
+      iat: 0,
+      typ: 'access',
+    },
     SECRET,
   );
   const asOAuth = { header: () => `Bearer ${token}` };
@@ -403,7 +495,11 @@ test('a new MCP client can register itself and complete the flow (RFC 7591)', as
   const reg = await fetch(`${base}/oauth/register`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ redirect_uris: [REDIRECT], client_name: 'Claude', token_endpoint_auth_method: 'none' }),
+    body: JSON.stringify({
+      redirect_uris: [REDIRECT],
+      client_name: 'Claude',
+      token_endpoint_auth_method: 'none',
+    }),
   });
   assert.equal(reg.status, 201);
   const client = await reg.json();
@@ -413,11 +509,17 @@ test('a new MCP client can register itself and complete the flow (RFC 7591)', as
 
   // The issued id works in the real flow, end to end.
   const { verifier, challenge } = makePkce();
-  const res = await fetch(authorizeUrl({ client_id: client.client_id, code_challenge: challenge, member: 'm_david' }), { redirect: 'manual' });
+  const res = await fetch(
+    authorizeUrl({ client_id: client.client_id, code_challenge: challenge, member: 'm_david' }),
+    { redirect: 'manual' },
+  );
   assert.equal(res.status, 302);
   const code = new URL(res.headers.get('location')!).searchParams.get('code')!;
   const { status, json } = await exchange({
-    grant_type: 'authorization_code', code, code_verifier: verifier, redirect_uri: REDIRECT,
+    grant_type: 'authorization_code',
+    code,
+    code_verifier: verifier,
+    redirect_uri: REDIRECT,
   });
   assert.equal(status, 200);
   assert.equal(verifyToken(json.access_token, SECRET)?.sub, 'm_david');
@@ -425,7 +527,9 @@ test('a new MCP client can register itself and complete the flow (RFC 7591)', as
 
 test('registration without redirect URIs is refused', async () => {
   const res = await fetch(`${base}/oauth/register`, {
-    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({}),
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({}),
   });
   assert.equal(res.status, 400);
   assert.equal((await res.json()).error, 'invalid_redirect_uri');
@@ -433,10 +537,23 @@ test('registration without redirect URIs is refused', async () => {
 
 test('attack: a client cannot register a redirect the allowlist would refuse', () => {
   const oauth = new OAuthProvider({
-    secret: SECRET, issuer: ISSUER, members: () => [], allowedRedirects: ['https://client.example/cb'],
+    secret: SECRET,
+    issuer: ISSUER,
+    members: () => [],
+    allowedRedirects: ['https://client.example/cb'],
   });
-  let status = 0; let body: any = null;
-  const res = { status(c: number) { status = c; return this; }, json(b: unknown) { body = b; return this; } };
+  let status = 0;
+  let body: any = null;
+  const res = {
+    status(c: number) {
+      status = c;
+      return this;
+    },
+    json(b: unknown) {
+      body = b;
+      return this;
+    },
+  };
   oauth.register({ body: { redirect_uris: ['https://attacker.test/cb'] } } as never, res as never);
   assert.equal(status, 400);
   assert.equal(body.error, 'invalid_redirect_uri');
@@ -445,8 +562,21 @@ test('attack: a client cannot register a redirect the allowlist would refuse', (
 test('attack: a confidential-client registration is refused (public clients only)', () => {
   const oauth = new OAuthProvider({ secret: SECRET, issuer: ISSUER, members: () => [] });
   let status = 0;
-  const res = { status(c: number) { status = c; return this; }, json() { return this; } };
-  oauth.register({ body: { redirect_uris: [REDIRECT], token_endpoint_auth_method: 'client_secret_basic' } } as never, res as never);
+  const res = {
+    status(c: number) {
+      status = c;
+      return this;
+    },
+    json() {
+      return this;
+    },
+  };
+  oauth.register(
+    {
+      body: { redirect_uris: [REDIRECT], token_endpoint_auth_method: 'client_secret_basic' },
+    } as never,
+    res as never,
+  );
   assert.equal(status, 400);
 });
 
@@ -463,21 +593,30 @@ test('a 401 from /mcp points the client at the resource metadata', async () => {
     body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize', params: {} }),
   });
   assert.equal(res.status, 401);
-  assert.match(res.headers.get('www-authenticate') ?? '',
-    new RegExp(`resource_metadata="${ISSUER}/\\.well-known/oauth-protected-resource/mcp"`));
+  assert.match(
+    res.headers.get('www-authenticate') ?? '',
+    new RegExp(`resource_metadata="${ISSUER}/\\.well-known/oauth-protected-resource/mcp"`),
+  );
 });
 
 test('attack: the demo sign-in never offers a member of another household', async () => {
   // Demo sign-in asks who you are instead of authenticating you. If it listed real
   // families, anyone could sign in as one of them and read their care record.
   await store.addHousehold({ id: 'h_real_family', name: 'real family', timezone: 'Africa/Lagos' });
-  await store.addMember({ id: 'm_real_aunt', householdId: 'h_real_family', name: 'Aunty Real', role: 'caregiver' });
+  await store.addMember({
+    id: 'm_real_aunt',
+    householdId: 'h_real_family',
+    name: 'Aunty Real',
+    role: 'caregiver',
+  });
 
   const { challenge } = makePkce();
   const page = await (await fetch(authorizeUrl({ code_challenge: challenge }))).text();
   assert.doesNotMatch(page, /Aunty Real/);
   assert.match(page, /Funmi/);
 
-  const res = await fetch(authorizeUrl({ code_challenge: challenge, member: 'm_real_aunt' }), { redirect: 'manual' });
-  assert.equal(res.status, 400, 'consenting as another household\'s member must be refused');
+  const res = await fetch(authorizeUrl({ code_challenge: challenge, member: 'm_real_aunt' }), {
+    redirect: 'manual',
+  });
+  assert.equal(res.status, 400, "consenting as another household's member must be refused");
 });

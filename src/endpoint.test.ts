@@ -1,8 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  FRESH, hear, SPEECH_PEAK, SILENCE_MS, PATIENCE_MS, MAX_MS,
-  type Ear, type Ending,
+  FRESH,
+  hear,
+  SPEECH_PEAK,
+  SILENCE_MS,
+  PATIENCE_MS,
+  MAX_MS,
+  type Ear,
+  type Ending,
 } from '../sim-ui/src/lib/endpoint.ts';
 
 /** One audio frame is ~256ms at 4096 samples / 16kHz, which is what the mic delivers. */
@@ -30,13 +36,19 @@ function play(script: Array<[number, number]>): { end: Ending | null; at: number
 }
 
 test('a normal question ends on its own, without anyone tapping stop', () => {
-  const { end } = play([[2_000, LOUD], [3_000, ROOM]]);
+  const { end } = play([
+    [2_000, LOUD],
+    [3_000, ROOM],
+  ]);
   assert.equal(end, 'silence');
 });
 
 test('the turn ends shortly after the speaker does, not seconds later', () => {
   const spoke = 2_000;
-  const { at } = play([[spoke, LOUD], [5_000, ROOM]]);
+  const { at } = play([
+    [spoke, LOUD],
+    [5_000, ROOM],
+  ]);
   // Allow a frame of slack either side of the threshold.
   assert.ok(at >= spoke + SILENCE_MS, `ended too early at ${at}ms`);
   assert.ok(at <= spoke + SILENCE_MS + FRAME * 2, `ended too late at ${at}ms`);
@@ -65,7 +77,11 @@ test('an empty room gives up rather than recording forever', () => {
 });
 
 test('someone slow to start is still waited for', () => {
-  const { end } = play([[PATIENCE_MS - 2_000, ROOM], [2_000, LOUD], [3_000, ROOM]]);
+  const { end } = play([
+    [PATIENCE_MS - 2_000, ROOM],
+    [2_000, LOUD],
+    [3_000, ROOM],
+  ]);
   assert.equal(end, 'silence', 'gave up on someone who was still getting to the mic');
 });
 

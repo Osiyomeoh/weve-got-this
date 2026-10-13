@@ -8,9 +8,7 @@ const NOW = new Date('2026-10-15T18:00:00Z'); // 14:00 New York
 function state(over: Partial<CareState> = {}): CareState {
   return {
     household: { id: 'h1', name: "Ada's care circle", timezone: 'America/New_York' },
-    members: [
-      { id: 'm_ada', householdId: 'h1', name: 'Ada', role: 'primary_caregiver' },
-    ],
+    members: [{ id: 'm_ada', householdId: 'h1', name: 'Ada', role: 'primary_caregiver' }],
     medications: [],
     obligations: [],
     events: [],
@@ -18,7 +16,13 @@ function state(over: Partial<CareState> = {}): CareState {
   };
 }
 
-const recipient = { id: 'm_mum', householdId: 'h1', name: 'Grace', role: 'care_recipient' as const, spokenAs: 'Mum' };
+const recipient = {
+  id: 'm_mum',
+  householdId: 'h1',
+  name: 'Grace',
+  role: 'care_recipient' as const,
+  spokenAs: 'Mum',
+};
 
 test('an unmapped caller is asked to create a circle first', () => {
   const p = onboardingProgress(null);
@@ -43,25 +47,45 @@ test('once there is a recipient but nothing to watch, it asks for one real detai
 });
 
 test('a medication is enough to be ready', () => {
-  const p = onboardingProgress(state({
-    members: [state().members[0]!, recipient],
-    medications: [{ id: 'med1', householdId: 'h1', name: 'heart pill', times: ['08:00'], forMemberId: 'm_mum' }],
-  }));
+  const p = onboardingProgress(
+    state({
+      members: [state().members[0]!, recipient],
+      medications: [
+        {
+          id: 'med1',
+          householdId: 'h1',
+          name: 'heart pill',
+          times: ['08:00'],
+          forMemberId: 'm_mum',
+        },
+      ],
+    }),
+  );
   assert.equal(p.step, 'ready');
   assert.equal(p.complete, true);
 });
 
 test('setup ends the moment there is a real gap to act on - it does not chase a finished form', () => {
   // An unowned obligation is "something to watch" even with no medications.
-  const p = onboardingProgress(state({
-    members: [state().members[0]!, recipient],
-    obligations: [{
-      id: 'o1', householdId: 'h1', what: 'Drive Mum to the clinic', status: 'OPEN',
-      consequence: 'medical', ownerId: null, createdAt: '2026-10-14T12:00:00Z',
-      dueAt: '2026-10-16T14:00:00Z',
-      provenance: { kind: 'CONFIRMED', byMemberId: 'm_ada', at: '2026-10-14T12:00:00Z' },
-    }],
-  }), { now: NOW });
+  const p = onboardingProgress(
+    state({
+      members: [state().members[0]!, recipient],
+      obligations: [
+        {
+          id: 'o1',
+          householdId: 'h1',
+          what: 'Drive Mum to the clinic',
+          status: 'OPEN',
+          consequence: 'medical',
+          ownerId: null,
+          createdAt: '2026-10-14T12:00:00Z',
+          dueAt: '2026-10-16T14:00:00Z',
+          provenance: { kind: 'CONFIRMED', byMemberId: 'm_ada', at: '2026-10-14T12:00:00Z' },
+        },
+      ],
+    }),
+    { now: NOW },
+  );
   assert.equal(p.step, 'ready');
   assert.ok(p.firstGap, 'ready without surfacing the first gap defeats the point');
   assert.match(p.firstGap!.what, /clinic/i);
@@ -69,10 +93,15 @@ test('setup ends the moment there is a real gap to act on - it does not chase a 
 });
 
 test('ready with nothing outstanding reassures rather than inventing work', () => {
-  const p = onboardingProgress(state({
-    members: [state().members[0]!, recipient],
-    medications: [{ id: 'med1', householdId: 'h1', name: 'vitamin', times: ['09:00'], forMemberId: 'm_mum' }],
-  }), { now: new Date('2026-10-15T11:00:00Z') }); // before 09:00 NY? actually 07:00 NY - dose not yet due
+  const p = onboardingProgress(
+    state({
+      members: [state().members[0]!, recipient],
+      medications: [
+        { id: 'med1', householdId: 'h1', name: 'vitamin', times: ['09:00'], forMemberId: 'm_mum' },
+      ],
+    }),
+    { now: new Date('2026-10-15T11:00:00Z') },
+  ); // before 09:00 NY? actually 07:00 NY - dose not yet due
   assert.equal(p.step, 'ready');
   // No due-and-missed dose yet, so no manufactured gap.
   assert.equal(/needs someone/i.test(p.spoken), p.firstGap !== undefined);
@@ -89,10 +118,14 @@ test('progress only ever moves forward through the four steps', () => {
     onboardingProgress(null).step,
     onboardingProgress(state()).step,
     onboardingProgress(state({ members: [state().members[0]!, recipient] })).step,
-    onboardingProgress(state({
-      members: [state().members[0]!, recipient],
-      medications: [{ id: 'med1', householdId: 'h1', name: 'x', times: ['08:00'], forMemberId: 'm_mum' }],
-    })).step,
+    onboardingProgress(
+      state({
+        members: [state().members[0]!, recipient],
+        medications: [
+          { id: 'med1', householdId: 'h1', name: 'x', times: ['08:00'], forMemberId: 'm_mum' },
+        ],
+      }),
+    ).step,
   ];
   assert.deepEqual(seen, order);
 });

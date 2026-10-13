@@ -25,15 +25,22 @@ const config = (() => {
 
 // A deployed runtime has no durable filesystem, so persistence is chosen by config:
 // DynamoDB when a table is named, a JSON file for local work.
-const persistence = config.persistence === 'dynamodb'
-  ? new DynamoPersistence({ tableName: config.tableName!, ...(config.region ? { region: config.region } : {}) })
-  : new FilePersistence(config.dbPath);
+const persistence =
+  config.persistence === 'dynamodb'
+    ? new DynamoPersistence({
+        tableName: config.tableName!,
+        ...(config.region ? { region: config.region } : {}),
+      })
+    : new FilePersistence(config.dbPath);
 
 const store = new CareStore(persistence);
 const tokens = new Map<string, string>(Object.entries(DEMO_TOKENS));
 // Members provisioned at runtime (add_member / create_household) authenticate via the
 // persisted identity map, in addition to any env-configured mapping.
-const identity = resolverFromEnv(tokens, (subject) => store.resolveIdentity(subject)?.memberId ?? null);
+const identity = resolverFromEnv(
+  tokens,
+  (subject) => store.resolveIdentity(subject)?.memberId ?? null,
+);
 // Members who joined Telegram by invite are looked up in the care record at send time.
 const notifier = notifierFromEnv({ telegramLinked: (memberId) => store.telegramLinkOf(memberId) });
 
@@ -44,10 +51,13 @@ const notifier = notifierFromEnv({ telegramLinked: (memberId) => store.telegramL
 const app = createCareCircleApp({ store, identity, notifier });
 const server: Server = app.listen(config.port, '0.0.0.0', () => {
   log.info('carecircle listening', {
-    port: config.port, spec: '2025-11-25',
-    identity: identity.strategy, storage: config.persistence,
+    port: config.port,
+    spec: '2025-11-25',
+    identity: identity.strategy,
+    storage: config.persistence,
     ...(config.tableName ? { table: config.tableName } : {}),
-    notify: notifier.channel, seedDemo: config.seedDemo,
+    notify: notifier.channel,
+    seedDemo: config.seedDemo,
   });
   if (identity.strategy === 'static') {
     for (const [token, memberId] of tokens) log.debug('demo credential', { memberId, token });
@@ -60,7 +70,9 @@ try {
   if (config.seedDemo) await seedDemoHousehold(store);
   log.info('care record ready', { households: store.householdCount(), seeded: config.seedDemo });
 } catch (err) {
-  log.error('storage init failed; serving with an empty record', { reason: (err as Error).message });
+  log.error('storage init failed; serving with an empty record', {
+    reason: (err as Error).message,
+  });
 }
 
 // --- the agent's heartbeat --------------------------------------------------
@@ -91,11 +103,17 @@ async function shutdown(signal: string): Promise<void> {
   await Promise.race([closed, timeout]);
   stopAgent();
   stopConnectors();
-  try { await store.quiesce(); } catch { /* already logged at the write site */ }
+  try {
+    await store.quiesce();
+  } catch {
+    /* already logged at the write site */
+  }
   log.info('shutdown complete', { signal });
   process.exit(0);
 }
 
 for (const signal of ['SIGTERM', 'SIGINT'] as const) {
-  process.on(signal, () => { void shutdown(signal); });
+  process.on(signal, () => {
+    void shutdown(signal);
+  });
 }

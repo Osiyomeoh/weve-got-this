@@ -19,7 +19,9 @@ console.log(describe(diagnosis));
 if (diagnosis.state === 'account_hold' || diagnosis.state === 'zero_quota') {
   console.log('\nApplied quotas:');
   for (const q of diagnosis.quotas) {
-    console.log(`  ${q.code}  applied=${q.applied}  level=${q.appliedAtLevel ?? 'DEFAULT'}  ${q.name}`);
+    console.log(
+      `  ${q.code}  applied=${q.applied}  level=${q.appliedAtLevel ?? 'DEFAULT'}  ${q.name}`,
+    );
   }
   console.log('');
   process.exit(1);

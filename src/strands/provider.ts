@@ -32,13 +32,18 @@ class Listed extends Tool {
     super();
     this.name = spec.name;
     this.description = spec.description;
-    this.toolSpec = { name: spec.name, description: spec.description, inputSchema: spec.inputSchema as JSONSchema };
+    this.toolSpec = {
+      name: spec.name,
+      description: spec.description,
+      inputSchema: spec.inputSchema as JSONSchema,
+    };
   }
 
   // eslint-disable-next-line require-yield
   async *stream(context: ToolContext): ToolStreamGenerator {
     return new ToolResultBlock({
-      toolUseId: context.toolUse.toolUseId, status: 'error',
+      toolUseId: context.toolUse.toolUseId,
+      status: 'error',
       content: [new TextBlock('Not run: the first reply is being measured.')],
     });
   }
@@ -48,9 +53,13 @@ export class StrandsProvider implements ModelProvider {
   readonly name = 'strands';
   readonly model: Model;
 
-  constructor(model: Model = bedrockModel()) { this.model = model; }
+  constructor(model: Model = bedrockModel()) {
+    this.model = model;
+  }
 
-  get modelId(): string { return String(this.model.getConfig().modelId ?? 'unknown'); }
+  get modelId(): string {
+    return String(this.model.getConfig().modelId ?? 'unknown');
+  }
 
   start(system: string, tools: ToolSpec[]): Conversation {
     const agent = new Agent({
@@ -64,10 +73,17 @@ export class StrandsProvider implements ModelProvider {
       if (first || !event.stopData) return;
       const content = event.stopData.message.content;
       first = {
-        text: content.map((b) => (b instanceof TextBlock ? b.text : '')).join(' ').trim(),
-        toolUses: content.filter((b): b is ToolUseBlock => b instanceof ToolUseBlock).map((b) => ({
-          id: b.toolUseId, name: b.name, input: (b.input ?? {}) as Record<string, unknown>,
-        })),
+        text: content
+          .map((b) => (b instanceof TextBlock ? b.text : ''))
+          .join(' ')
+          .trim(),
+        toolUses: content
+          .filter((b): b is ToolUseBlock => b instanceof ToolUseBlock)
+          .map((b) => ({
+            id: b.toolUseId,
+            name: b.name,
+            input: (b.input ?? {}) as Record<string, unknown>,
+          })),
       };
       if (first.toolUses.length) agent.cancel();
     });
@@ -79,9 +95,10 @@ export class StrandsProvider implements ModelProvider {
         return first;
       },
       async report() {
-        throw new Error('StrandsProvider measures the first reply only; use StrandsAlexa for full turns.');
+        throw new Error(
+          'StrandsProvider measures the first reply only; use StrandsAlexa for full turns.',
+        );
       },
     };
   }
 }
-

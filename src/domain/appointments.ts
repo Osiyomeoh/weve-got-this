@@ -91,8 +91,9 @@ export async function applyAppointment(
   if (!at) {
     return {
       ok: false,
-      spoken: `I couldn't make sense of "${input.startsAt}" as a date and time. `
-        + 'Ask them which day and time they meant.',
+      spoken:
+        `I couldn't make sense of "${input.startsAt}" as a date and time. ` +
+        'Ask them which day and time they meant.',
     };
   }
   const doubtful = implausible(at, now);
@@ -114,23 +115,28 @@ export async function applyAppointment(
   });
 
   const seeds = proposeFromAppointment(input.kind, subject, at);
-  const proposed = await Promise.all(seeds.map((seed) => store.createObligation({
-    householdId,
-    what: seed.what,
-    status: 'PROPOSED',
-    consequence: seed.consequence,
-    provenance: seed.provenance,
-    ownerId: null,
-    ...(seed.dueAt ? { dueAt: seed.dueAt } : {}),
-    sourceEventId: event.id,
-    // The work is for this recipient; their standing needs (e.g. accessible transport)
-    // then flow into how the gap ranks once a human confirms the proposal.
-    aboutEntityId: recipient.id,
-  })));
+  const proposed = await Promise.all(
+    seeds.map((seed) =>
+      store.createObligation({
+        householdId,
+        what: seed.what,
+        status: 'PROPOSED',
+        consequence: seed.consequence,
+        provenance: seed.provenance,
+        ownerId: null,
+        ...(seed.dueAt ? { dueAt: seed.dueAt } : {}),
+        sourceEventId: event.id,
+        // The work is for this recipient; their standing needs (e.g. accessible transport)
+        // then flow into how the gap ranks once a human confirms the proposal.
+        aboutEntityId: recipient.id,
+      }),
+    ),
+  );
 
-  const spoken = proposed.length === 0
-    ? `Noted - ${input.kind} for ${subject}.`
-    : `Noted - ${input.kind} for ${subject}. ${seeds[0]!.ask}`;
+  const spoken =
+    proposed.length === 0
+      ? `Noted - ${input.kind} for ${subject}.`
+      : `Noted - ${input.kind} for ${subject}. ${seeds[0]!.ask}`;
 
   return {
     ok: true,

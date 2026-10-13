@@ -20,12 +20,19 @@ import { sandboxCreatedAt } from './sandbox.js';
 
 export const STORY_TIME_HEADER = 'x-carecircle-story-time';
 
-interface StoryTime { at: number; received: number }
+interface StoryTime {
+  at: number;
+  received: number;
+}
 
 const current = new AsyncLocalStorage<StoryTime>();
 
 /** The claimed story time, if this request may have one: a sandbox household and a valid instant. */
-export function storyTimeFor(householdId: string | undefined, header: string | undefined, received = Date.now()): StoryTime | null {
+export function storyTimeFor(
+  householdId: string | undefined,
+  header: string | undefined,
+  received = Date.now(),
+): StoryTime | null {
   if (!householdId || !header || sandboxCreatedAt(householdId) === null) return null;
   const at = Date.parse(header);
   return Number.isFinite(at) ? { at, received } : null;

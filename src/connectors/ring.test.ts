@@ -3,7 +3,11 @@ import assert from 'node:assert/strict';
 import { ringConfigFromEnv, parseDevices } from './ring.ts';
 
 test('a direct access token is the preferred auth mode', () => {
-  const c = ringConfigFromEnv({ RING_ACCESS_TOKEN: 'tok', RING_CLIENT_ID: 'x', RING_CLIENT_SECRET: 'y' });
+  const c = ringConfigFromEnv({
+    RING_ACCESS_TOKEN: 'tok',
+    RING_CLIENT_ID: 'x',
+    RING_CLIENT_SECRET: 'y',
+  });
   assert.deepEqual(c, { accessToken: 'tok' });
 });
 

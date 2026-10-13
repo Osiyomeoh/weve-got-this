@@ -15,14 +15,17 @@
 import { CareStore } from '../src/store/store.ts';
 import { FilePersistence } from '../src/store/persistence.ts';
 import { DynamoPersistence } from '../src/store/dynamo.ts';
-import { googleCalendarConfigFromEnv, runGoogleCalendarSync } from '../src/connectors/google-calendar.ts';
+import {
+  googleCalendarConfigFromEnv,
+  runGoogleCalendarSync,
+} from '../src/connectors/google-calendar.ts';
 
 async function main(): Promise<void> {
   const config = googleCalendarConfigFromEnv();
   if (!config) {
     console.error(
-      'Google Calendar is not configured. Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and\n'
-      + 'GOOGLE_REFRESH_TOKEN (run `npm run google:auth` to mint the refresh token).',
+      'Google Calendar is not configured. Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and\n' +
+        'GOOGLE_REFRESH_TOKEN (run `npm run google:auth` to mint the refresh token).',
     );
     process.exit(1);
   }
@@ -42,12 +45,12 @@ async function main(): Promise<void> {
   const store = new CareStore(persistence);
   await store.init();
 
-  const result = await runGoogleCalendarSync(
-    store, householdId, config, new Date(), forMemberId,
-  );
+  const result = await runGoogleCalendarSync(store, householdId, config, new Date(), forMemberId);
 
   console.log(`\nGoogle Calendar sync for ${householdId} (${config.calendarId}):`);
-  console.log(`  fetched ${result.fetched}, applied ${result.applied.length}, skipped ${result.skipped.length}`);
+  console.log(
+    `  fetched ${result.fetched}, applied ${result.applied.length}, skipped ${result.skipped.length}`,
+  );
   for (const a of result.applied) {
     console.log(`  + ${a.kind} — ${a.proposals} proposal(s): ${a.spoken}`);
   }
@@ -56,4 +59,7 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

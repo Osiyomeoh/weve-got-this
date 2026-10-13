@@ -19,7 +19,9 @@ import { ScriptedModel, textIn, type Step } from './scripted-model.ts';
 
 const NOW = new Date('2026-10-01T20:30:00Z');
 const servers: Server[] = [];
-afterEach(() => { for (const s of servers.splice(0)) s.close(); });
+afterEach(() => {
+  for (const s of servers.splice(0)) s.close();
+});
 
 async function seeded(): Promise<CareStore> {
   const store = new CareStore();
@@ -49,14 +51,20 @@ const echo: Step = (messages) => ({ say: textIn(messages.at(-1)) });
 
 test('ping answers in the shape AgentCore expects', async () => {
   const { base } = await runtime(await seeded(), []);
-  const body = await (await fetch(`${base}/ping`)).json() as { status: string; time_of_last_update: number };
+  const body = (await (await fetch(`${base}/ping`)).json()) as {
+    status: string;
+    time_of_last_update: number;
+  };
   assert.equal(body.status, 'Healthy');
   assert.ok(Number.isInteger(body.time_of_last_update));
 });
 
 test('an invocation runs the real tools as the member speaking and returns what is spoken', async () => {
   const { invoke } = await runtime(await seeded(), [{ tool: 'get_care_summary' }, echo]);
-  const { status, body } = await invoke({ prompt: 'How is Daddy doing today?', actorId: 'm_david' });
+  const { status, body } = await invoke({
+    prompt: 'How is Daddy doing today?',
+    actorId: 'm_david',
+  });
   assert.equal(status, 200);
   assert.equal(body.outcome, 'answered');
   assert.deepEqual(body.tools, [{ name: 'get_care_summary', isError: false }]);
@@ -70,24 +78,39 @@ test('a reply that blames is never returned', async () => {
     { say: 'Daddy missed his evening eye drops.' },
     { say: 'He forgot them, I am afraid.' },
   ]);
-  const { body } = await invoke({ prompt: 'Did Daddy miss his evening drops?', actorId: 'm_david' });
+  const { body } = await invoke({
+    prompt: 'Did Daddy miss his evening drops?',
+    actorId: 'm_david',
+  });
   assert.doesNotMatch(body.spoken, BLAME);
-  assert.deepEqual(body.noBlame, { caught: ['missed', 'forgot'], corrected: false, replaced: true });
+  assert.deepEqual(body.noBlame, {
+    caught: ['missed', 'forgot'],
+    corrected: false,
+    replaced: true,
+  });
 });
 
 test('a session keeps its conversation; another session starts its own', async () => {
   const { invoke, model } = await runtime(await seeded(), [
-    { say: 'Hello David.' }, { say: 'Still here.' }, { say: 'Hello again.' },
+    { say: 'Hello David.' },
+    { say: 'Still here.' },
+    { say: 'Hello again.' },
   ]);
   await invoke({ prompt: 'Hi', actorId: 'm_david' }, 'session-a-00000000000000000000000000000');
-  await invoke({ prompt: 'Are you there?', actorId: 'm_david' }, 'session-a-00000000000000000000000000000');
+  await invoke(
+    { prompt: 'Are you there?', actorId: 'm_david' },
+    'session-a-00000000000000000000000000000',
+  );
   await invoke({ prompt: 'Hi', actorId: 'm_david' }, 'session-b-00000000000000000000000000000');
   assert.equal(model.seen[1]?.length, 3, 'the second turn saw the first, and its reply');
   assert.equal(model.seen[2]?.length, 1, 'the new session saw only its own utterance');
 });
 
 test('two members on one session do not share a conversation', async () => {
-  const { invoke, model } = await runtime(await seeded(), [{ say: 'Hello David.' }, { say: 'Hello Funmi.' }]);
+  const { invoke, model } = await runtime(await seeded(), [
+    { say: 'Hello David.' },
+    { say: 'Hello Funmi.' },
+  ]);
   await invoke({ prompt: 'Hi', actorId: 'm_david' });
   await invoke({ prompt: 'Hi', actorId: 'm_renee' });
   assert.equal(model.seen[1]?.length, 1);

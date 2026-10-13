@@ -27,33 +27,67 @@ const check = (ok: boolean, what: string) => {
   if (!ok) process.exitCode = 1;
 };
 const note = (detail: string) => ({
-  householdId: 'h_check', kind: 'note_added' as const, reportedBy: 'm_tolu', occurredAt: new Date().toISOString(), data: {}, detail,
+  householdId: 'h_check',
+  kind: 'note_added' as const,
+  reportedBy: 'm_tolu',
+  occurredAt: new Date().toISOString(),
+  data: {},
+  detail,
 });
 
 const a = await instance();
 check(a.householdCount() === 0, 'the scratch table starts empty');
 await a.addHousehold({ id: 'h_check', name: 'check', timezone: 'Africa/Lagos' });
-await a.addMember({ id: 'm_tolu', householdId: 'h_check', name: 'Tolu', role: 'primary_caregiver' });
+await a.addMember({
+  id: 'm_tolu',
+  householdId: 'h_check',
+  name: 'Tolu',
+  role: 'primary_caregiver',
+});
 await a.addMember({ id: 'm_funmi', householdId: 'h_check', name: 'Funmi', role: 'caregiver' });
 await a.createObligation({
-  id: 'o_ride', householdId: 'h_check', what: 'Take Daddy to his eye check-up', consequence: 'medical',
-  status: 'OPEN', ownerId: null, provenance: { kind: 'CONFIRMED', byMemberId: 'm_tolu', at: new Date().toISOString() },
+  id: 'o_ride',
+  householdId: 'h_check',
+  what: 'Take Daddy to his eye check-up',
+  consequence: 'medical',
+  status: 'OPEN',
+  ownerId: null,
+  provenance: { kind: 'CONFIRMED', byMemberId: 'm_tolu', at: new Date().toISOString() },
 } as never);
 
 const b = await instance();
-check(b.getObligation('o_ride', 'h_check').status === 'OPEN', 'a second instance loads what the first wrote');
+check(
+  b.getObligation('o_ride', 'h_check').status === 'OPEN',
+  'a second instance loads what the first wrote',
+);
 
 await a.transition('o_ride', 'h_check', 'ASSIGNED', 'm_funmi', { ownerId: 'm_funmi' });
 let refused = false;
-try { await b.transition('o_ride', 'h_check', 'ASSIGNED', 'm_tolu', { ownerId: 'm_tolu' }); } catch (err) { refused = err instanceof RecordChangedError; }
-check(refused, 'a write on a stale record is refused by DynamoDB (TransactionCanceledException -> RecordChangedError)');
-check(b.getObligation('o_ride', 'h_check').ownerId === 'm_funmi', 'the refused instance reads the record again: Funmi has the ride');
+try {
+  await b.transition('o_ride', 'h_check', 'ASSIGNED', 'm_tolu', { ownerId: 'm_tolu' });
+} catch (err) {
+  refused = err instanceof RecordChangedError;
+}
+check(
+  refused,
+  'a write on a stale record is refused by DynamoDB (TransactionCanceledException -> RecordChangedError)',
+);
+check(
+  b.getObligation('o_ride', 'h_check').ownerId === 'm_funmi',
+  'the refused instance reads the record again: Funmi has the ride',
+);
 const c = await instance();
-check(c.getObligation('o_ride', 'h_check').ownerId === 'm_funmi', 'nothing of the refused write reached the table');
+check(
+  c.getObligation('o_ride', 'h_check').ownerId === 'm_funmi',
+  'nothing of the refused write reached the table',
+);
 
 await a.appendEvent(note('Daddy slept well'));
 check(await b.refresh(), 'refresh sees the other instance wrote');
-check(b.getCareState('h_check').events.at(-1)?.detail === 'Daddy slept well', 'and reloads what it wrote');
+check(
+  b.getCareState('h_check').events.at(-1)?.detail === 'Daddy slept well',
+  'and reloads what it wrote',
+);
 check(!(await b.refresh()), 'a refresh with nothing new does not reload');
 
 for (let i = 0; i < 110; i += 1) await b.appendEvent(note(`note ${i}`));
@@ -65,7 +99,10 @@ check(d.householdCount() === 0, 'the scratch household is gone');
 
 // The loops' lease: one holder at a time, renewable, taken over once it lapses.
 check(await a.lease('check', 2_000), 'the first instance takes the lease');
-check(!(await b.lease('check', 2_000)), 'the second is refused while it is held (ConditionalCheckFailedException)');
+check(
+  !(await b.lease('check', 2_000)),
+  'the second is refused while it is held (ConditionalCheckFailedException)',
+);
 check(await a.lease('check', 2_000), 'the holder renews it');
 await new Promise((r) => setTimeout(r, 2_500));
 check(await b.lease('check', 2_000), 'once it lapses, the second takes it over');

@@ -56,7 +56,9 @@ const ROLE_ORDER: Record<Member['role'], number> = {
  * evidence that they are busy, so silence leaves them eligible.
  */
 export function statedUnavailable(
-  member: Member, state: CareState, dueAt: string | undefined,
+  member: Member,
+  state: CareState,
+  dueAt: string | undefined,
 ): boolean {
   if (!dueAt) return false;
   const due = new Date(dueAt).getTime();
@@ -79,9 +81,7 @@ export function statedUnavailable(
 
 /** How much work someone is already carrying. */
 export function loadOf(memberId: string, state: CareState): number {
-  return state.obligations.filter(
-    (o) => o.ownerId === memberId && o.status === 'ASSIGNED',
-  ).length;
+  return state.obligations.filter((o) => o.ownerId === memberId && o.status === 'ASSIGNED').length;
 }
 
 /**
@@ -120,12 +120,13 @@ export function candidatesFor(
 
   return eligible
     .map((m) => ({ member: m, load: loadOf(m.id, state) }))
-    .sort((a, b) => (
-      tierOf(a.member.role) - tierOf(b.member.role)
-      || a.load - b.load
-      || ROLE_ORDER[a.member.role] - ROLE_ORDER[b.member.role]
-      || a.member.name.localeCompare(b.member.name)
-    ))
+    .sort(
+      (a, b) =>
+        tierOf(a.member.role) - tierOf(b.member.role) ||
+        a.load - b.load ||
+        ROLE_ORDER[a.member.role] - ROLE_ORDER[b.member.role] ||
+        a.member.name.localeCompare(b.member.name),
+    )
     .map(({ member, load }) => ({
       memberId: member.id,
       name: member.spokenAs ?? member.name,

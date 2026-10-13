@@ -47,24 +47,48 @@ interface Spec {
 }
 
 const SPECS: Spec[] = [
-  { source: 'calendar', eventSource: 'calendar', label: 'Google Calendar',
+  {
+    source: 'calendar',
+    eventSource: 'calendar',
+    label: 'Google Calendar',
     required: ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_REFRESH_TOKEN'],
-    hint: 'add Google OAuth with the Calendar scope' },
-  { source: 'gmail', eventSource: 'email', label: 'Gmail',
+    hint: 'add Google OAuth with the Calendar scope',
+  },
+  {
+    source: 'gmail',
+    eventSource: 'email',
+    label: 'Gmail',
     required: ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_REFRESH_TOKEN'],
-    hint: 'add Google OAuth with the Gmail scope' },
-  { source: 'ring', eventSource: 'ring', label: 'Ring',
+    hint: 'add Google OAuth with the Gmail scope',
+  },
+  {
+    source: 'ring',
+    eventSource: 'ring',
+    label: 'Ring',
     required: ['RING_HMAC_KEY'],
-    hint: 'set RING_HMAC_KEY and point the Ring webhook here' },
-  { source: 'bee', eventSource: 'bee', label: 'Bee',
+    hint: 'set RING_HMAC_KEY and point the Ring webhook here',
+  },
+  {
+    source: 'bee',
+    eventSource: 'bee',
+    label: 'Bee',
     required: ['BEE_TOKEN', 'BEE_API_BASE'],
-    hint: 'set BEE_TOKEN and BEE_API_BASE' },
-  { source: 'whatsapp', eventSource: 'whatsapp', label: 'WhatsApp',
+    hint: 'set BEE_TOKEN and BEE_API_BASE',
+  },
+  {
+    source: 'whatsapp',
+    eventSource: 'whatsapp',
+    label: 'WhatsApp',
     required: ['WHATSAPP_TOKEN', 'WHATSAPP_PHONE_NUMBER_ID', 'WHATSAPP_RECIPIENTS'],
-    hint: 'set the WHATSAPP_* variables (going live needs Meta business verification)' },
-  { source: 'telegram', eventSource: 'telegram', label: 'Telegram',
+    hint: 'set the WHATSAPP_* variables (going live needs Meta business verification)',
+  },
+  {
+    source: 'telegram',
+    eventSource: 'telegram',
+    label: 'Telegram',
     required: ['TELEGRAM_BOT_TOKEN', 'TELEGRAM_RECIPIENTS'],
-    hint: 'set TELEGRAM_BOT_TOKEN and TELEGRAM_RECIPIENTS' },
+    hint: 'set TELEGRAM_BOT_TOKEN and TELEGRAM_RECIPIENTS',
+  },
 ];
 
 function present(env: NodeJS.ProcessEnv, key: string): boolean {
@@ -85,20 +109,31 @@ export function describeConnections(
     }
 
     const status: ConnectionStatus = configured
-      ? (lastEventAt ? 'live' : 'configured')
+      ? lastEventAt
+        ? 'live'
+        : 'configured'
       : 'not_configured';
 
     // Telegram alone has a mode worth naming: a private DM vs the whole family group.
-    const telegramMode = spec.source === 'telegram' && present(env, 'TELEGRAM_GROUP_CHAT_ID')
-      ? ' in family-group mode'
-      : '';
+    const telegramMode =
+      spec.source === 'telegram' && present(env, 'TELEGRAM_GROUP_CHAT_ID')
+        ? ' in family-group mode'
+        : '';
 
     const detail =
-      status === 'live' ? `${spec.label} is live${telegramMode} and receiving events.`
-      : status === 'configured' ? `${spec.label} is connected${telegramMode} but has not received an event yet.`
-      : `${spec.label} is not connected — ${spec.hint}.`;
+      status === 'live'
+        ? `${spec.label} is live${telegramMode} and receiving events.`
+        : status === 'configured'
+          ? `${spec.label} is connected${telegramMode} but has not received an event yet.`
+          : `${spec.label} is not connected — ${spec.hint}.`;
 
-    return { source: spec.source, label: spec.label, status, detail, ...(lastEventAt ? { lastEventAt } : {}) };
+    return {
+      source: spec.source,
+      label: spec.label,
+      status,
+      detail,
+      ...(lastEventAt ? { lastEventAt } : {}),
+    };
   });
 
   const live = connections.filter((c) => c.status === 'live').map((c) => c.label);

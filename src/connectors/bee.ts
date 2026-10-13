@@ -1,6 +1,9 @@
 import type { CareStore } from '../store/store.js';
 import {
-  parseFacts, parseTodos, beeTodoToProposal, beeFactToObservation,
+  parseFacts,
+  parseTodos,
+  beeTodoToProposal,
+  beeFactToObservation,
   type BeeItems,
 } from '../domain/bee.js';
 import { doseRecord } from '../domain/gaps.js';
@@ -71,7 +74,9 @@ async function getJson(url: string, token: string): Promise<unknown> {
  * and when they tick it done, the next sync records the dose as their word. Returns Bee's id.
  */
 export async function createBeeTodo(
-  config: BeeConfig, todo: { text: string; alarmAt: string }, fetchImpl: typeof fetch = fetch,
+  config: BeeConfig,
+  todo: { text: string; alarmAt: string },
+  fetchImpl: typeof fetch = fetch,
 ): Promise<string> {
   const res = await fetchImpl(`${config.apiBase}/v1/todos`, {
     method: 'POST',
@@ -123,7 +128,11 @@ export async function syncBeeItems(
   }
 
   const result: BeeSyncResult = {
-    fetched: items.facts.length + items.todos.length, proposed: [], observed: [], taken: [], skipped: [],
+    fetched: items.facts.length + items.todos.length,
+    proposed: [],
+    observed: [],
+    taken: [],
+    skipped: [],
   };
 
   const baseEvent = (beeId: string, text: string) => ({
@@ -139,24 +148,44 @@ export async function syncBeeItems(
   const ours = new Map<string, { medicationId: string; slot: string; to: string }>();
   for (const e of state.events) {
     if (e.kind !== 'reminder_sent' || typeof e.data['beeTodoId'] !== 'string') continue;
-    ours.set(e.data['beeTodoId'], { medicationId: String(e.data['medicationId']), slot: String(e.data['slot']), to: String(e.data['to']) });
+    ours.set(e.data['beeTodoId'], {
+      medicationId: String(e.data['medicationId']),
+      slot: String(e.data['slot']),
+      to: String(e.data['to']),
+    });
   }
 
   // Todos first: each open one is a proposal the family confirms.
   for (const todo of items.todos) {
-    if (seen.has(todo.id)) { result.skipped.push({ id: todo.id, reason: 'already applied' }); continue; }
+    if (seen.has(todo.id)) {
+      result.skipped.push({ id: todo.id, reason: 'already applied' });
+      continue;
+    }
     const mine = ours.get(todo.id);
     if (mine) {
       // Our own reminder is not something Bee overheard, so it never becomes a proposal.
       // Ticked done, it is their word, tapped by them: the same as "Taken" on Telegram.
       // That differs from a sentence Bee heard, which stays heard and unconfirmed.
-      if (!todo.completed) { result.skipped.push({ id: todo.id, reason: 'our reminder, still open' }); continue; }
+      if (!todo.completed) {
+        result.skipped.push({ id: todo.id, reason: 'our reminder, still open' });
+        continue;
+      }
       const med = state.medications.find((m) => m.id === mine.medicationId);
       if (med && !doseRecord(state, med.id, mine.slot, now)) {
         const event = await store.appendEvent({
-          householdId, kind: 'medication_taken', reportedBy: mine.to, occurredAt: now.toISOString(),
-          source: 'bee', confidence: 'reported', detail: `Ticked the ${med.name} reminder done in Bee`,
-          data: { medicationId: med.id, medicationName: med.name, aboutMemberId: med.forMemberId, beeId: todo.id },
+          householdId,
+          kind: 'medication_taken',
+          reportedBy: mine.to,
+          occurredAt: now.toISOString(),
+          source: 'bee',
+          confidence: 'reported',
+          detail: `Ticked the ${med.name} reminder done in Bee`,
+          data: {
+            medicationId: med.id,
+            medicationName: med.name,
+            aboutMemberId: med.forMemberId,
+            beeId: todo.id,
+          },
         });
         result.taken.push({ eventId: event.id, medicationId: med.id });
       } else result.skipped.push({ id: todo.id, reason: 'dose already on the record' });
@@ -164,7 +193,10 @@ export async function syncBeeItems(
       continue;
     }
     const proposal = beeTodoToProposal(todo, recipientName);
-    if (!proposal) { result.skipped.push({ id: todo.id, reason: 'completed or empty' }); continue; }
+    if (!proposal) {
+      result.skipped.push({ id: todo.id, reason: 'completed or empty' });
+      continue;
+    }
 
     const event = await store.appendEvent({
       ...baseEvent(todo.id, todo.text),
@@ -181,14 +213,24 @@ export async function syncBeeItems(
       sourceEventId: event.id,
     });
     seen.add(todo.id);
-    result.proposed.push({ obligationId: obligation.id, eventId: event.id, spoken: proposal.spoken });
+    result.proposed.push({
+      obligationId: obligation.id,
+      eventId: event.id,
+      spoken: proposal.spoken,
+    });
   }
 
   // Facts: recorded as observations. They act on nothing on their own.
   for (const fact of items.facts) {
-    if (seen.has(fact.id)) { result.skipped.push({ id: fact.id, reason: 'already applied' }); continue; }
+    if (seen.has(fact.id)) {
+      result.skipped.push({ id: fact.id, reason: 'already applied' });
+      continue;
+    }
     const observation = beeFactToObservation(fact, recipientName);
-    if (!observation) { result.skipped.push({ id: fact.id, reason: 'empty' }); continue; }
+    if (!observation) {
+      result.skipped.push({ id: fact.id, reason: 'empty' });
+      continue;
+    }
 
     const event = await store.appendEvent({
       ...baseEvent(fact.id, fact.text),

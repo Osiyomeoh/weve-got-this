@@ -11,7 +11,9 @@ import type { Persistence, StoreSnapshot } from './store.js';
 export class FilePersistence implements Persistence {
   readonly #path: string;
 
-  constructor(path: string) { this.#path = path; }
+  constructor(path: string) {
+    this.#path = path;
+  }
 
   async load(): Promise<StoreSnapshot | null> {
     try {

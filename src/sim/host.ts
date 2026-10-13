@@ -44,15 +44,18 @@ Rules:
 - Be brief. This is a voice conversation, not a chat window.`;
 
 /** Before every turn but the first: what was true a turn ago may not be now. */
-export const STALE_NOTE = '[Others may have changed the care record since your last reply. Read it again before you answer.]';
+export const STALE_NOTE =
+  '[Others may have changed the care record since your last reply. Read it again before you answer.]';
 
 /**
  * A reply that says it did something to the record. Late in a conversation the model can
  * echo its own earlier "I've asked Musa" as "I've already asked Funmi" without calling
  * anything - a promise nobody made, which is the exact failure this product exists to stop.
  */
-const CLAIMS_A_WRITE = /\bI(?:'ve| have)(?: already| just)? (?:asked|logged|recorded|noted|added|marked|assigned|told|let \w+ know|sent|scheduled|put)\b|\bthat's (?:yours|theirs|now with)\b/i;
-const UNBACKED_NOTE = '[Your reply says something was done, but no tool changed the record this turn. Nothing has happened yet. Call the tool that does it now - or, if it was done in an earlier turn, read the record and say what it shows.]';
+const CLAIMS_A_WRITE =
+  /\bI(?:'ve| have)(?: already| just)? (?:asked|logged|recorded|noted|added|marked|assigned|told|let \w+ know|sent|scheduled|put)\b|\bthat's (?:yours|theirs|now with)\b/i;
+const UNBACKED_NOTE =
+  '[Your reply says something was done, but no tool changed the record this turn. Nothing has happened yet. Call the tool that does it now - or, if it was done in an earlier turn, read the record and say what it shows.]';
 
 /** Whether a spoken reply claims a change that no successful write this turn backs. */
 export function unbackedClaim(text: string, calls: { name: string; isError: boolean }[]): boolean {
@@ -68,8 +71,19 @@ export function unbackedClaim(text: string, calls: { name: string; isError: bool
  * cannot resolve a relative date, and every appointment in this product is spoken
  * as a relative date.
  */
-export interface CircleMember { name: string; spokenAs?: string | null; role: string; livesAway?: string }
-export interface Speaker { name: string; role: string; spokenAs?: string | null; circle?: CircleMember[]; language?: LanguageCode }
+export interface CircleMember {
+  name: string;
+  spokenAs?: string | null;
+  role: string;
+  livesAway?: string;
+}
+export interface Speaker {
+  name: string;
+  role: string;
+  spokenAs?: string | null;
+  circle?: CircleMember[];
+  language?: LanguageCode;
+}
 
 /**
  * How the conversation reaches the person. Voice is Alexa: short, spoken as written.
@@ -91,26 +105,54 @@ This conversation is in the family's messaging app, not out loud. Replace the vo
 function circleLines(circle: CircleMember[] | undefined): string {
   if (!circle?.length) return '';
   const part: Record<string, string> = {
-    care_recipient: 'being cared for', primary_caregiver: 'coordinator', caregiver: 'family', helper: 'paid help',
+    care_recipient: 'being cared for',
+    primary_caregiver: 'coordinator',
+    caregiver: 'family',
+    helper: 'paid help',
   };
-  const lines = circle.map((m) => `- ${m.name}${m.spokenAs ? ` ("${m.spokenAs}")` : ''}: ${part[m.role] ?? m.role}${m.livesAway ? `, lives in ${m.livesAway}` : ''}`);
+  const lines = circle.map(
+    (m) =>
+      `- ${m.name}${m.spokenAs ? ` ("${m.spokenAs}")` : ''}: ${part[m.role] ?? m.role}${m.livesAway ? `, lives in ${m.livesAway}` : ''}`,
+  );
   return `\nThe people in this care circle (refer to them by these names when you call tools):\n${lines.join('\n')}\n`;
 }
 
 export function systemPrompt(
-  ctx: { now?: Date; timezone?: string; speaker?: Speaker | null; channel?: Channel; language?: LanguageCode | null } = {},
+  ctx: {
+    now?: Date;
+    timezone?: string;
+    speaker?: Speaker | null;
+    channel?: Channel;
+    language?: LanguageCode | null;
+  } = {},
 ): string {
   const now = ctx.now ?? new Date();
   const timezone = ctx.timezone ?? 'America/New_York';
   const stamp = new Intl.DateTimeFormat('en-US', {
-    timeZone: timezone, weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-    hour: 'numeric', minute: '2-digit', hour12: true,
+    timeZone: timezone,
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
   }).format(now);
   // Weekday arithmetic is where a planner slips ("Thursday" placed a day late), so the
   // coming week is spelled out rather than left to be worked out.
-  const day = new Intl.DateTimeFormat('en-CA', { timeZone: timezone, weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit' });
+  const day = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezone,
+    weekday: 'long',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
   const week = Array.from({ length: 7 }, (_, i) => {
-    const parts = Object.fromEntries(day.formatToParts(new Date(now.getTime() + (i + 1) * 86_400_000)).map((p) => [p.type, p.value]));
+    const parts = Object.fromEntries(
+      day
+        .formatToParts(new Date(now.getTime() + (i + 1) * 86_400_000))
+        .map((p) => [p.type, p.value]),
+    );
     return `${i === 0 ? 'tomorrow, ' : ''}${parts.weekday} is ${parts.year}-${parts.month}-${parts.day}`;
   }).join('; ');
   const who = ctx.speaker
@@ -120,9 +162,10 @@ export function systemPrompt(
     : '';
   // A chat follows the language on their record. The voice prompt is measured, so it stays
   // as it is unless a language was chosen for the turn itself.
-  const chat = ctx.channel === 'chat'
-    ? `${CHAT_RULES}${replyLanguageRule(ctx.language ?? ctx.speaker?.language)}\n${circleLines(ctx.speaker?.circle)}`
-    : replyLanguageRule(ctx.language ?? undefined);
+  const chat =
+    ctx.channel === 'chat'
+      ? `${CHAT_RULES}${replyLanguageRule(ctx.language ?? ctx.speaker?.language)}\n${circleLines(ctx.speaker?.circle)}`
+      : replyLanguageRule(ctx.language ?? undefined);
   return `${SYSTEM_PROMPT_RULES}
 ${chat}${who}
 Today is ${stamp}, and this household is in ${timezone}. In the coming week: ${week}.
@@ -186,19 +229,26 @@ export class SimulatedAlexa {
   #pressed = false;
   #realNow: () => Date = () => new Date();
   /** The planner's clock: story time when one is set, otherwise the injected or real time. */
-  #now: () => Date = () => (this.#story ? new Date(this.#story.at + (Date.now() - this.#story.setAt)) : this.#realNow());
+  #now: () => Date = () =>
+    this.#story ? new Date(this.#story.at + (Date.now() - this.#story.setAt)) : this.#realNow();
 
   private constructor(provider: ModelProvider, mcp: Client) {
     this.#provider = provider;
     this.#mcp = mcp;
   }
 
-  get provider(): string { return this.#provider.name; }
-  get modelId(): string { return this.#provider.modelId; }
+  get provider(): string {
+    return this.#provider.name;
+  }
+  get modelId(): string {
+    return this.#provider.modelId;
+  }
 
   /** Connect to the CareCircle server as one member of the care circle. */
   static async connect(opts: {
-    endpoint: string; token: string; provider: ModelProvider;
+    endpoint: string;
+    token: string;
+    provider: ModelProvider;
   }): Promise<SimulatedAlexa> {
     const mcp = new Client({ name: 'alexa-plus-simulator', version: '0.1.0' });
     // The story clock rides on every request, so the server answers in story time too.
@@ -211,7 +261,11 @@ export class SimulatedAlexa {
         const pressed = host ? host.#pressed : false;
         if (!story && !pressed) return fetch(url, init);
         const headers = new Headers(init?.headers);
-        if (story) headers.set(STORY_TIME_HEADER, new Date(story.at + (Date.now() - story.setAt)).toISOString());
+        if (story)
+          headers.set(
+            STORY_TIME_HEADER,
+            new Date(story.at + (Date.now() - story.setAt)).toISOString(),
+          );
         if (pressed) headers.set(CHANNEL_HEADER, 'tv');
         return fetch(url, { ...init, headers });
       },
@@ -241,7 +295,12 @@ export class SimulatedAlexa {
    * The same planner over an MCP client that is already connected - for example one
    * joined in-process to a server bound to one member, as the Telegram chat does.
    */
-  static async over(mcp: Client, provider: ModelProvider, channel: Channel = 'voice', now?: () => Date): Promise<SimulatedAlexa> {
+  static async over(
+    mcp: Client,
+    provider: ModelProvider,
+    channel: Channel = 'voice',
+    now?: () => Date,
+  ): Promise<SimulatedAlexa> {
     const host = new SimulatedAlexa(provider, mcp);
     host.#channel = channel;
     if (now) host.#realNow = now;
@@ -264,7 +323,9 @@ export class SimulatedAlexa {
       if (!text) return;
       const tz = (JSON.parse(text) as { household?: { timezone?: string } }).household?.timezone;
       if (tz) this.#timezone = tz;
-    } catch { /* keep the default */ }
+    } catch {
+      /* keep the default */
+    }
   }
 
   /**
@@ -282,12 +343,26 @@ export class SimulatedAlexa {
       if (!text) return;
       const me = JSON.parse(text) as Speaker & { name?: string; role?: string };
       if (me.name && me.role) this.#speaker = me;
-    } catch { /* an unnamed speaker is worse than none, but not fatal */ }
+    } catch {
+      /* an unnamed speaker is worse than none, but not fatal */
+    }
   }
 
   /** What the planner needs to resolve "Thursday", and who is asking. */
-  #context(): { now: Date; timezone: string; speaker: Speaker | null; channel: Channel; language: LanguageCode | null } {
-    return { now: this.#now(), timezone: this.#timezone, speaker: this.#speaker, channel: this.#channel, language: this.#language };
+  #context(): {
+    now: Date;
+    timezone: string;
+    speaker: Speaker | null;
+    channel: Channel;
+    language: LanguageCode | null;
+  } {
+    return {
+      now: this.#now(),
+      timezone: this.#timezone,
+      speaker: this.#speaker,
+      channel: this.#channel,
+      language: this.#language,
+    };
   }
 
   /**
@@ -305,7 +380,9 @@ export class SimulatedAlexa {
     }));
   }
 
-  get toolCount(): number { return this.#tools.length; }
+  get toolCount(): number {
+    return this.#tools.length;
+  }
 
   /** One conversational turn: what the person said in, what Alexa says out. */
   async say(utterance: string): Promise<TurnResult> {
@@ -313,7 +390,10 @@ export class SimulatedAlexa {
     // people write to the record in between (a dose said on the Echo, a yes from Musa), so
     // every turn after the first carries that reminder with it.
     const later = this.#conversation !== undefined;
-    const conversation = this.#conversation ??= this.#provider.start(systemPrompt(this.#context()), this.#tools);
+    const conversation = (this.#conversation ??= this.#provider.start(
+      systemPrompt(this.#context()),
+      this.#tools,
+    ));
     const turnStarted = Date.now();
     const toolCalls: ToolCallRecord[] = [];
     const steps: TraceStep[] = [];
@@ -327,8 +407,17 @@ export class SimulatedAlexa {
       const plannerMs = steps.reduce((sum, s) => sum + s.plannerMs, 0);
       const toolMs = toolCalls.reduce((sum, c) => sum + c.ms, 0);
       return {
-        spoken, toolCalls,
-        trace: { channel: this.#channel, model: this.#provider.modelId, outcome, steps, plannerMs, toolMs, totalMs: Date.now() - turnStarted },
+        spoken,
+        toolCalls,
+        trace: {
+          channel: this.#channel,
+          model: this.#provider.modelId,
+          outcome,
+          steps,
+          plannerMs,
+          toolMs,
+          totalMs: Date.now() - turnStarted,
+        },
       };
     };
     const said = later ? `${STALE_NOTE}\n${utterance}` : utterance;
@@ -346,9 +435,9 @@ export class SimulatedAlexa {
       }
       if (output.toolUses.length === 0) {
         return finish(
-          speakable(output.text)
-            || toolAnswer(toolCalls.filter((c) => !c.isError).map((c) => c.result))
-            || NOTHING_SAID,
+          speakable(output.text) ||
+            toolAnswer(toolCalls.filter((c) => !c.isError).map((c) => c.result)) ||
+            NOTHING_SAID,
           'answered',
         );
       }
@@ -361,9 +450,10 @@ export class SimulatedAlexa {
         let structured: unknown;
         let isError = false;
         try {
-          const out = await this.#mcp.callTool({
-            name: use.name, arguments: use.input,
-          }) as { content?: { text?: string }[]; structuredContent?: unknown; isError?: boolean };
+          const out = (await this.#mcp.callTool({
+            name: use.name,
+            arguments: use.input,
+          })) as { content?: { text?: string }[]; structuredContent?: unknown; isError?: boolean };
           text = out.content?.[0]?.text ?? '';
           structured = out.structuredContent;
           isError = out.isError === true;
@@ -372,9 +462,12 @@ export class SimulatedAlexa {
           isError = true;
         }
         const call: ToolCallRecord = {
-          name: use.name, arguments: use.input, result: text,
+          name: use.name,
+          arguments: use.input,
+          result: text,
           ...(structured !== undefined ? { structured } : {}),
-          isError, ms: Date.now() - started,
+          isError,
+          ms: Date.now() - started,
         };
         toolCalls.push(call);
         current.calls.push(call);
@@ -383,7 +476,10 @@ export class SimulatedAlexa {
       output = await plan(() => conversation.report(results));
     }
 
-    return finish("Sorry, I got stuck working that out. Could you say it another way?", 'step_limit');
+    return finish(
+      'Sorry, I got stuck working that out. Could you say it another way?',
+      'step_limit',
+    );
   }
 
   /**
@@ -392,12 +488,16 @@ export class SimulatedAlexa {
    * The turn is still recorded in the conversation history so the model knows what
    * happened; otherwise the next spoken turn would contradict the screen.
    */
-  async callToolDirect(name: string, args: Record<string, unknown>, opts: { via?: 'tv' } = {}): Promise<ToolCallRecord> {
+  async callToolDirect(
+    name: string,
+    args: Record<string, unknown>,
+    opts: { via?: 'tv' } = {},
+  ): Promise<ToolCallRecord> {
     const started = Date.now();
     this.#pressed = opts.via === 'tv';
     let out: { content?: { text?: string }[]; structuredContent?: unknown; isError?: boolean };
     try {
-      out = await this.#mcp.callTool({ name, arguments: args }) as typeof out;
+      out = (await this.#mcp.callTool({ name, arguments: args })) as typeof out;
     } finally {
       this.#pressed = false;
     }
@@ -406,11 +506,16 @@ export class SimulatedAlexa {
     // screen, so the conversation is told what happened.
     this.#conversation ??= this.#provider.start(systemPrompt(this.#context()), this.#tools);
     return {
-      name, arguments: args, result: text,
+      name,
+      arguments: args,
+      result: text,
       ...(out.structuredContent !== undefined ? { structured: out.structuredContent } : {}),
-      isError: out.isError === true, ms: Date.now() - started,
+      isError: out.isError === true,
+      ms: Date.now() - started,
     };
   }
 
-  async close(): Promise<void> { await this.#mcp.close(); }
+  async close(): Promise<void> {
+    await this.#mcp.close();
+  }
 }

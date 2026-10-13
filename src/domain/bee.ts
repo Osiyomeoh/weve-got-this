@@ -70,8 +70,7 @@ export interface BeeObservation {
 const asString = (v: unknown): string | undefined =>
   typeof v === 'string' && v.trim() ? v.trim() : undefined;
 
-const asBool = (v: unknown): boolean =>
-  v === true || v === 'true' || v === 1;
+const asBool = (v: unknown): boolean => v === true || v === 'true' || v === 1;
 
 /** Bee returns `alarm_at` as epoch milliseconds; keep it only when it is a real time. */
 function normaliseAlarm(v: unknown): string | undefined {
@@ -143,8 +142,9 @@ export function beeTodoToProposal(todo: BeeTodo, recipientName: string): BeeProp
     what,
     consequence: 'logistical',
     spoken: `Bee heard something for ${recipientName}: "${what}".`,
-    ask: `Bee overheard a to-do for ${recipientName}: "${what}". `
-      + `I haven't confirmed it with anyone - should I add it to the circle?`,
+    ask:
+      `Bee overheard a to-do for ${recipientName}: "${what}". ` +
+      `I haven't confirmed it with anyone - should I add it to the circle?`,
   };
 }
 

@@ -19,15 +19,18 @@ import type { IdentityResolver, IdentityLookup } from './identity.js';
  * below and each has a test named after the attack it prevents.
  */
 
-const CODE_TTL_MS = 60_000;          // an authorization code is a handoff, not a session
-const TOKEN_TTL_S = 3600;            // one hour, matching Alexa's ~4h refresh expectations
+const CODE_TTL_MS = 60_000; // an authorization code is a handoff, not a session
+const TOKEN_TTL_S = 3600; // one hour, matching Alexa's ~4h refresh expectations
 const REFRESH_TTL_S = 30 * 24 * 3600;
 
 // --- base64url + JWT (HS256), without a dependency -----------------------
 
 function b64url(input: Buffer | string): string {
-  return Buffer.from(input).toString('base64')
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return Buffer.from(input)
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
 }
 
 function unb64url(input: string): Buffer {
@@ -35,7 +38,7 @@ function unb64url(input: string): Buffer {
 }
 
 export interface TokenClaims {
-  sub: string;           // member id
+  sub: string; // member id
   iss: string;
   aud: string;
   exp: number;
@@ -77,7 +80,9 @@ export function verifyToken(token: string, secret: string, now = Date.now()): To
     const claims = JSON.parse(unb64url(payload).toString('utf8')) as TokenClaims;
     if (typeof claims.exp !== 'number' || claims.exp * 1000 <= now) return null;
     return claims;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 // --- PKCE ----------------------------------------------------------------
@@ -127,7 +132,9 @@ export function redirectAllowed(uri: string, allowed: string[]): boolean {
   try {
     const u = new URL(uri);
     return u.hostname === 'localhost' || u.hostname === '127.0.0.1';
-  } catch { return false; }
+  } catch {
+    return false;
+  }
 }
 
 export class OAuthProvider {
@@ -150,22 +157,28 @@ export class OAuthProvider {
       // known, and refusing to boot would leave no way to find it out. But an
       // unrestricted authorization endpoint is worth saying out loud.
       console.warn(
-        '[oauth] No redirect allowlist configured (CARECIRCLE_OAUTH_REDIRECTS). '
-        + 'Any redirect_uri will be honoured. Set it once the client\'s redirect URI is known.',
+        '[oauth] No redirect allowlist configured (CARECIRCLE_OAUTH_REDIRECTS). ' +
+          "Any redirect_uri will be honoured. Set it once the client's redirect URI is known.",
       );
     }
   }
 
-  get issuer(): string { return this.#opts.issuer; }
+  get issuer(): string {
+    return this.#opts.issuer;
+  }
 
-  #now(): number { return (this.#opts.now?.() ?? new Date()).getTime(); }
+  #now(): number {
+    return (this.#opts.now?.() ?? new Date()).getTime();
+  }
 
   /**
    * The resource identifier: the MCP endpoint a client actually connects to. RFC 8707
    * and the MCP auth spec name the server by its canonical URI, so a client that checks
    * the metadata against the URL it was given finds they agree.
    */
-  get resource(): string { return `${this.#opts.issuer}/mcp`; }
+  get resource(): string {
+    return `${this.#opts.issuer}/mcp`;
+  }
 
   /** Where the protected resource metadata lives, for the 401 challenge to point at. */
   get resourceMetadataUrl(): string {
@@ -228,11 +241,13 @@ export class OAuthProvider {
     if (method !== undefined && method !== 'none') {
       res.status(400).json({
         error: 'invalid_client_metadata',
-        error_description: 'Only public clients are supported: token_endpoint_auth_method must be "none".',
+        error_description:
+          'Only public clients are supported: token_endpoint_auth_method must be "none".',
       });
       return;
     }
-    const name = typeof body['client_name'] === 'string' ? body['client_name'].slice(0, 100) : undefined;
+    const name =
+      typeof body['client_name'] === 'string' ? body['client_name'].slice(0, 100) : undefined;
     res.status(201).json({
       client_id: `cc_${randomUUID()}`,
       client_id_issued_at: Math.floor(this.#now() / 1000),
@@ -256,12 +271,18 @@ export class OAuthProvider {
     const { client_id, redirect_uri, code_challenge, code_challenge_method, state, member } = q;
 
     if (!client_id || !redirect_uri) {
-      res.status(400).json({ error: 'invalid_request', error_description: 'client_id and redirect_uri are required.' });
+      res.status(400).json({
+        error: 'invalid_request',
+        error_description: 'client_id and redirect_uri are required.',
+      });
       return;
     }
     // PKCE is mandatory in OAuth 2.1 - a public client without it is interceptable.
     if (!code_challenge) {
-      res.status(400).json({ error: 'invalid_request', error_description: 'code_challenge is required (PKCE).' });
+      res.status(400).json({
+        error: 'invalid_request',
+        error_description: 'code_challenge is required (PKCE).',
+      });
       return;
     }
     if (code_challenge_method !== 'S256') {
@@ -277,7 +298,8 @@ export class OAuthProvider {
     // and no PHI.
     if (this.#allowed.length === 0) {
       console.warn('[oauth] authorize with unrestricted redirect_uri', {
-        client_id, redirect_uri,
+        client_id,
+        redirect_uri,
       });
     }
     // Checked BEFORE the consent screen is drawn: a person should never be asked to
@@ -303,11 +325,21 @@ export class OAuthProvider {
     }
 
     const iat = Math.floor(this.#now() / 1000);
-    const code = signToken({
-      sub: member, iss: this.#opts.issuer, aud: this.#opts.issuer, iat,
-      exp: Math.floor((this.#now() + CODE_TTL_MS) / 1000), typ: 'code',
-      cid: client_id, ru: redirect_uri, ch: code_challenge, jti: randomBytes(16).toString('hex'),
-    }, this.#opts.secret);
+    const code = signToken(
+      {
+        sub: member,
+        iss: this.#opts.issuer,
+        aud: this.#opts.issuer,
+        iat,
+        exp: Math.floor((this.#now() + CODE_TTL_MS) / 1000),
+        typ: 'code',
+        cid: client_id,
+        ru: redirect_uri,
+        ch: code_challenge,
+        jti: randomBytes(16).toString('hex'),
+      },
+      this.#opts.secret,
+    );
 
     const target = new URL(redirect_uri);
     target.searchParams.set('code', code);
@@ -320,7 +352,9 @@ export class OAuthProvider {
     const grant = body['grant_type'];
 
     if (grant === 'refresh_token') {
-      const claims = body['refresh_token'] ? verifyToken(body['refresh_token'], this.#opts.secret) : null;
+      const claims = body['refresh_token']
+        ? verifyToken(body['refresh_token'], this.#opts.secret)
+        : null;
       if (!claims || claims.typ !== 'refresh') {
         res.status(400).json({ error: 'invalid_grant' });
         return;
@@ -338,31 +372,42 @@ export class OAuthProvider {
     const verifier = body['code_verifier'];
     const redirectUri = body['redirect_uri'];
     if (!code || !verifier) {
-      res.status(400).json({ error: 'invalid_request', error_description: 'code and code_verifier are required.' });
+      res.status(400).json({
+        error: 'invalid_request',
+        error_description: 'code and code_verifier are required.',
+      });
       return;
     }
 
     const now = this.#now();
     const claims = verifyToken(code, this.#opts.secret, now);
-    const pending = claims?.typ === 'code' && claims.jti && !this.#spent.has(claims.jti)
-      ? { memberId: claims.sub, redirectUri: claims.ru, challenge: claims.ch ?? '' } : null;
+    const pending =
+      claims?.typ === 'code' && claims.jti && !this.#spent.has(claims.jti)
+        ? { memberId: claims.sub, redirectUri: claims.ru, challenge: claims.ch ?? '' }
+        : null;
     // Single use: consumed whether or not the rest validates, so a leaked code cannot
     // be retried against a guessed verifier.
     for (const [jti, until] of this.#spent) if (until <= now) this.#spent.delete(jti);
     if (claims?.jti) this.#spent.set(claims.jti, claims.exp * 1000);
 
     if (!pending) {
-      res.status(400).json({ error: 'invalid_grant', error_description: 'Code is unknown or expired.' });
+      res
+        .status(400)
+        .json({ error: 'invalid_grant', error_description: 'Code is unknown or expired.' });
       return;
     }
     // Exact match, not prefix. A registered redirect that merely starts the same way
     // is how tokens end up at an attacker's endpoint.
     if (redirectUri !== pending.redirectUri) {
-      res.status(400).json({ error: 'invalid_grant', error_description: 'redirect_uri does not match.' });
+      res
+        .status(400)
+        .json({ error: 'invalid_grant', error_description: 'redirect_uri does not match.' });
       return;
     }
     if (!pkceMatches(verifier, pending.challenge)) {
-      res.status(400).json({ error: 'invalid_grant', error_description: 'PKCE verification failed.' });
+      res
+        .status(400)
+        .json({ error: 'invalid_grant', error_description: 'PKCE verification failed.' });
       return;
     }
 
@@ -373,10 +418,21 @@ export class OAuthProvider {
     const iat = Math.floor(this.#now() / 1000);
     const base = { sub: memberId, iss: this.#opts.issuer, aud: this.#opts.issuer, iat };
     return {
-      access_token: signToken({ ...base, exp: iat + TOKEN_TTL_S, typ: 'access', scope: 'carecircle.read carecircle.write' }, this.#opts.secret),
+      access_token: signToken(
+        {
+          ...base,
+          exp: iat + TOKEN_TTL_S,
+          typ: 'access',
+          scope: 'carecircle.read carecircle.write',
+        },
+        this.#opts.secret,
+      ),
       token_type: 'Bearer',
       expires_in: TOKEN_TTL_S,
-      refresh_token: signToken({ ...base, exp: iat + REFRESH_TTL_S, typ: 'refresh' }, this.#opts.secret),
+      refresh_token: signToken(
+        { ...base, exp: iat + REFRESH_TTL_S, typ: 'refresh' },
+        this.#opts.secret,
+      ),
       scope: 'carecircle.read carecircle.write',
     };
   }
@@ -384,12 +440,15 @@ export class OAuthProvider {
   #consentPage(req: Request): string {
     const q = req.query as Record<string, string | undefined>;
     const keep = ['client_id', 'redirect_uri', 'code_challenge', 'code_challenge_method', 'state'];
-    const buttons = this.#opts.members().map((m) => {
-      const url = new URL(`${this.#opts.issuer}/oauth/authorize`);
-      for (const k of keep) if (q[k]) url.searchParams.set(k, q[k]!);
-      url.searchParams.set('member', m.id);
-      return `<a class="who" href="${url.pathname}${url.search}">${escapeHtml(m.name)}</a>`;
-    }).join('');
+    const buttons = this.#opts
+      .members()
+      .map((m) => {
+        const url = new URL(`${this.#opts.issuer}/oauth/authorize`);
+        for (const k of keep) if (q[k]) url.searchParams.set(k, q[k]!);
+        url.searchParams.set('member', m.id);
+        return `<a class="who" href="${url.pathname}${url.search}">${escapeHtml(m.name)}</a>`;
+      })
+      .join('');
     return `<!doctype html><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Connect CareCircle</title>
@@ -413,7 +472,11 @@ ${buttons}
 }
 
 function escapeHtml(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 /**
@@ -432,7 +495,9 @@ export function oauthResolver(secret: string, lookup?: IdentityLookup): Identity
       if (!claims || claims.typ !== 'access') return null;
       return claims.sub ? (lookup?.(claims.sub) ?? claims.sub) : null;
     },
-    principal() { return null; },
+    principal() {
+      return null;
+    },
   };
 }
 

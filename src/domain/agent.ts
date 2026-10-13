@@ -142,12 +142,14 @@ const FATIGUE_WINDOW_HOURS = 24;
 const NIGHT_MULTIPLIER = 9;
 
 const QUIET_START_HOUR = 21; // 9pm
-const QUIET_END_HOUR = 8;    // 8am
+const QUIET_END_HOUR = 8; // 8am
 
 /** The local hour in the household's own timezone, not the server's. */
 function localHour(at: Date, timezone: string): number {
   const parts = new Intl.DateTimeFormat('en-GB', {
-    timeZone: timezone, hour: '2-digit', hour12: false,
+    timeZone: timezone,
+    hour: '2-digit',
+    hour12: false,
   }).formatToParts(at);
   return Number(parts.find((p) => p.type === 'hour')?.value ?? '12');
 }
@@ -166,18 +168,17 @@ function isQuietHours(at: Date, timezone: string): boolean {
  */
 export function recentAsksOf(memberId: string, state: CareState, now: Date): number {
   const cutoff = now.getTime() - FATIGUE_WINDOW_HOURS * 3_600_000;
-  return state.events.filter((e) => (
-    e.kind === 'owner_requested'
-    && e.reportedBy === AGENT_ID
-    && e.data['askedOfId'] === memberId
-    && new Date(e.occurredAt).getTime() >= cutoff
-  )).length;
+  return state.events.filter(
+    (e) =>
+      e.kind === 'owner_requested' &&
+      e.reportedBy === AGENT_ID &&
+      e.data['askedOfId'] === memberId &&
+      new Date(e.occurredAt).getTime() >= cutoff,
+  ).length;
 }
 
 /** The cost of interrupting this person, now. */
-export function interruptionCost(
-  memberId: string, state: CareState, opts: PolicyOptions,
-): number {
+export function interruptionCost(memberId: string, state: CareState, opts: PolicyOptions): number {
   const fatigue = FATIGUE_BASE ** recentAsksOf(memberId, state, opts.now);
   const night = isQuietHours(opts.now, opts.timezone) ? NIGHT_MULTIPLIER : 1;
   return BASE_INTERRUPTION * fatigue * night;
@@ -207,7 +208,10 @@ function riskIndex(state: CareState, now: Date): Map<string, number> {
  * ranks on, so the agent and the ranking cannot disagree.
  */
 export function harmAvoided(
-  obligation: Obligation, candidate: Candidate, state: CareState, now: Date,
+  obligation: Obligation,
+  candidate: Candidate,
+  state: CareState,
+  now: Date,
 ): number {
   return valueOfAsk(riskIndex(state, now).get(obligation.id) ?? 0, candidate.load);
 }
@@ -245,8 +249,13 @@ function slipping(obligation: Obligation, now: Date): boolean {
 /** The agent's own follow-ups on one piece of work, oldest first. */
 function followUpsOn(obligationId: string, state: CareState): CareState['events'] {
   return state.events
-    .filter((e) => e.kind === 'owner_requested' && e.reportedBy === AGENT_ID
-      && e.data['followUp'] === true && e.data['obligationId'] === obligationId)
+    .filter(
+      (e) =>
+        e.kind === 'owner_requested' &&
+        e.reportedBy === AGENT_ID &&
+        e.data['followUp'] === true &&
+        e.data['obligationId'] === obligationId,
+    )
     .sort((a, b) => a.occurredAt.localeCompare(b.occurredAt));
 }
 
@@ -273,8 +282,7 @@ export function deliberate(state: CareState, opts: PolicyOptions): Deliberation 
   // repeating ourselves at the same person.
   for (const o of state.obligations.filter((x) => stalled(x, opts.now))) {
     const asked = o.request?.askedOfId;
-    const next = candidatesFor(o, state)
-      .find((c) => c.memberId !== asked);
+    const next = candidatesFor(o, state).find((c) => c.memberId !== asked);
     const boss = primaryCaregiver(state);
 
     if (next) {
@@ -282,8 +290,14 @@ export function deliberate(state: CareState, opts: PolicyOptions): Deliberation 
       const cost = interruptionCost(next.memberId, state, opts);
       const value = { harmAvoided: gain, interruptionCost: cost, net: gain - cost };
       const because = `Nobody answered about "${o.what}", so I asked ${next.name} instead.`;
-      if (value.net > 0) actions.push({ kind: 'ASK', obligationId: o.id, memberId: next.memberId, because, value });
-      else restraint.push({ obligationId: o.id, because: `Waiting rather than asking ${next.name}: ${reasonForQuiet(opts)}`, value });
+      if (value.net > 0)
+        actions.push({ kind: 'ASK', obligationId: o.id, memberId: next.memberId, because, value });
+      else
+        restraint.push({
+          obligationId: o.id,
+          because: `Waiting rather than asking ${next.name}: ${reasonForQuiet(opts)}`,
+          value,
+        });
       continue;
     }
 
@@ -293,7 +307,8 @@ export function deliberate(state: CareState, opts: PolicyOptions): Deliberation 
       const cost = interruptionCost(boss.id, state, opts);
       const value = { harmAvoided: gain, interruptionCost: cost, net: gain - cost };
       const because = `Everyone I could ask about "${o.what}" has declined or is unavailable.`;
-      if (value.net > 0) actions.push({ kind: 'ESCALATE', obligationId: o.id, memberId: boss.id, because, value });
+      if (value.net > 0)
+        actions.push({ kind: 'ESCALATE', obligationId: o.id, memberId: boss.id, because, value });
       else restraint.push({ obligationId: o.id, because, value });
       continue;
     }
@@ -320,8 +335,21 @@ export function deliberate(state: CareState, opts: PolicyOptions): Deliberation 
       const cost = interruptionCost(owner.id, state, opts);
       const value = { harmAvoided: gain, interruptionCost: cost, net: gain - cost };
       const because = `"${o.what}" is past its time and nothing is recorded, so I checked in with ${name}, who took it on.`;
-      if (value.net > 0) actions.push({ kind: 'CHECK_IN', obligationId: o.id, memberId: owner.id, because, value, followUp: true });
-      else restraint.push({ obligationId: o.id, because: `Not checking in with ${name} yet: ${reasonForQuiet(opts)}`, value });
+      if (value.net > 0)
+        actions.push({
+          kind: 'CHECK_IN',
+          obligationId: o.id,
+          memberId: owner.id,
+          because,
+          value,
+          followUp: true,
+        });
+      else
+        restraint.push({
+          obligationId: o.id,
+          because: `Not checking in with ${name} yet: ${reasonForQuiet(opts)}`,
+          value,
+        });
       continue;
     }
 
@@ -332,7 +360,15 @@ export function deliberate(state: CareState, opts: PolicyOptions): Deliberation 
     const cost = interruptionCost(boss.id, state, opts);
     const value = { harmAvoided: gain, interruptionCost: cost, net: gain - cost };
     const because = `${name} hasn't answered about "${o.what}", which is past its time with nothing recorded.`;
-    if (value.net > 0) actions.push({ kind: 'ESCALATE', obligationId: o.id, memberId: boss.id, because, value, followUp: true });
+    if (value.net > 0)
+      actions.push({
+        kind: 'ESCALATE',
+        obligationId: o.id,
+        memberId: boss.id,
+        because,
+        value,
+        followUp: true,
+      });
     else restraint.push({ obligationId: o.id, because, value });
   }
 
@@ -353,7 +389,10 @@ export function deliberate(state: CareState, opts: PolicyOptions): Deliberation 
 
     if (value.net > 0) {
       actions.push({
-        kind: 'ASK', obligationId: o.id, memberId: best.memberId, value,
+        kind: 'ASK',
+        obligationId: o.id,
+        memberId: best.memberId,
+        value,
         because: `Nobody has taken "${o.what}". I asked ${best.name} because they're the one who ${best.because}.`,
       });
     } else {
@@ -373,11 +412,15 @@ export function deliberate(state: CareState, opts: PolicyOptions): Deliberation 
 
 /** Why the agent is staying quiet, in words rather than numbers. */
 function reasonForQuiet(opts: PolicyOptions): string {
-  if (!isQuietHours(opts.now, opts.timezone)) return 'it is not yet worth interrupting somebody over';
+  if (!isQuietHours(opts.now, opts.timezone))
+    return 'it is not yet worth interrupting somebody over';
   // Said as the family would say it: 9:46 pm is late in the evening, not the middle of the night.
   const hour = localHour(opts.now, opts.timezone);
-  const when = hour >= QUIET_START_HOUR ? 'it is late in the evening'
-    : hour < 5 ? 'it is the middle of the night'
-      : 'it is early in the morning';
+  const when =
+    hour >= QUIET_START_HOUR
+      ? 'it is late in the evening'
+      : hour < 5
+        ? 'it is the middle of the night'
+        : 'it is early in the morning';
   return `${when}, and this is not urgent enough to disturb anyone`;
 }

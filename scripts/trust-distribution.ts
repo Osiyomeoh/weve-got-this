@@ -14,11 +14,19 @@
  * The CareCircle side is deterministic and stays 0 across every run by construction;
  * what varies is only the raw model. Requires Bedrock access.
  */
-import { accusationBenchmark, proxyBenchmark, dignityBenchmark, type BenchRates } from './trust-benchmark.ts';
+import {
+  accusationBenchmark,
+  proxyBenchmark,
+  dignityBenchmark,
+  type BenchRates,
+} from './trust-benchmark.ts';
 
 const N = Math.max(1, Number(process.argv[2] ?? 5) | 0);
 
-interface Dim { label: string; run: () => Promise<BenchRates>; }
+interface Dim {
+  label: string;
+  run: () => Promise<BenchRates>;
+}
 const dims: Dim[] = [
   { label: 'accusation  (missing record -> "she missed it")', run: accusationBenchmark },
   { label: 'attribution (proxy record reported as own act) ', run: proxyBenchmark },
@@ -58,15 +66,23 @@ async function main(): Promise<void> {
   for (const d of dims) {
     const raw = rawRates[d.label]!;
     const cc = ccRates[d.label]!;
-    const rawMin = Math.min(...raw), rawMax = Math.max(...raw);
+    const rawMin = Math.min(...raw),
+      rawMax = Math.max(...raw);
     const rawMean = raw.reduce((a, b) => a + b, 0) / raw.length;
     const ccMax = Math.max(...cc);
     console.log(`\n${d.label}   (n=${n[d.label]} per run)`);
-    console.log(`  RAW Bedrock : min ${fmt(rawMin)}%  median ${fmt(median(raw))}%  mean ${fmt(rawMean)}%  max ${fmt(rawMax)}%`);
-    console.log(`  CareCircle  : ${ccMax === 0 ? '0.0% every run (structurally incapable)' : `up to ${fmt(ccMax)}% — INVESTIGATE`}`);
+    console.log(
+      `  RAW Bedrock : min ${fmt(rawMin)}%  median ${fmt(median(raw))}%  mean ${fmt(rawMean)}%  max ${fmt(rawMax)}%`,
+    );
+    console.log(
+      `  CareCircle  : ${ccMax === 0 ? '0.0% every run (structurally incapable)' : `up to ${fmt(ccMax)}% — INVESTIGATE`}`,
+    );
     console.log(`  per-run raw : [${raw.map(fmt).join(', ')}]`);
   }
   console.log('');
 }
 
-main().catch((err) => { console.error(err); process.exit(1); });
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

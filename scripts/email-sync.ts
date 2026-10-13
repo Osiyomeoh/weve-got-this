@@ -20,8 +20,8 @@ async function main(): Promise<void> {
   const config = gmailConfigFromEnv();
   if (!config) {
     console.error(
-      'Gmail is not configured. Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and\n'
-      + 'GOOGLE_REFRESH_TOKEN (run `npm run google:auth`).',
+      'Gmail is not configured. Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and\n' +
+        'GOOGLE_REFRESH_TOKEN (run `npm run google:auth`).',
     );
     process.exit(1);
   }
@@ -48,4 +48,7 @@ async function main(): Promise<void> {
   for (const s of r.skipped) console.log(`  · skipped ${s.id}: ${s.reason}`);
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

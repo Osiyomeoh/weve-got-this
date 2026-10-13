@@ -3,7 +3,12 @@
 // and Polly speaks the answer in that language's voice. Where no service hears or speaks
 // it (Yoruba, Igbo, Hausa, Edo), you are heard in English and the answer is written.
 
-export interface SpeechLanguage { code: string; native: string; hears: boolean; voice: string | null }
+export interface SpeechLanguage {
+  code: string;
+  native: string;
+  hears: boolean;
+  voice: string | null;
+}
 
 export const SPEECH_LANGUAGES: SpeechLanguage[] = [
   { code: 'en', native: 'English', hears: true, voice: 'Ruth' },
@@ -22,13 +27,24 @@ export const SPEECH_LANGUAGES: SpeechLanguage[] = [
 ];
 
 const KEY = 'carecircle-speech-language';
-let current = (() => { try { return localStorage.getItem(KEY) ?? 'en'; } catch { return 'en'; } })();
+let current = (() => {
+  try {
+    return localStorage.getItem(KEY) ?? 'en';
+  } catch {
+    return 'en';
+  }
+})();
 if (!SPEECH_LANGUAGES.some((l) => l.code === current)) current = 'en';
 
-export const speechLanguage = (): SpeechLanguage => SPEECH_LANGUAGES.find((l) => l.code === current)!;
+export const speechLanguage = (): SpeechLanguage =>
+  SPEECH_LANGUAGES.find((l) => l.code === current)!;
 
 export function setSpeechLanguage(code: string): void {
   if (!SPEECH_LANGUAGES.some((l) => l.code === code)) return;
   current = code;
-  try { localStorage.setItem(KEY, code); } catch { /* the choice lasts this visit */ }
+  try {
+    localStorage.setItem(KEY, code);
+  } catch {
+    /* the choice lasts this visit */
+  }
 }

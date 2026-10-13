@@ -14,11 +14,19 @@ const notifier = new RecordOnlyNotifier();
 async function seed(): Promise<string> {
   await store.reset();
   await store.addHousehold({ id: HH, name: 'circle', timezone: 'America/New_York' });
-  await store.addMember({ id: 'm_david', householdId: HH, name: 'David', role: 'primary_caregiver' });
+  await store.addMember({
+    id: 'm_david',
+    householdId: HH,
+    name: 'David',
+    role: 'primary_caregiver',
+  });
   await store.addMember({ id: 'm_renee', householdId: HH, name: 'Renee', role: 'caregiver' });
   const o = await store.createObligation({
-    householdId: HH, what: 'Drive Margaret to cardiology', consequence: 'medical',
-    status: 'OPEN', ownerId: null,
+    householdId: HH,
+    what: 'Drive Margaret to cardiology',
+    consequence: 'medical',
+    status: 'OPEN',
+    ownerId: null,
     provenance: { kind: 'CONFIRMED', byMemberId: 'm_renee', at: '2026-10-12T12:00:00Z' },
     dueAt: '2026-10-15T14:00:00Z',
   });
@@ -28,8 +36,9 @@ async function seed(): Promise<string> {
 beforeEach(seed);
 
 test('a background pass moves unowned work to REQUESTED, owner still null', async () => {
-  const id = await runAgentOnce(HH, { store, notifier, now: () => DAYTIME })
-    .then((r) => r.performed[0]?.action.obligationId);
+  const id = await runAgentOnce(HH, { store, notifier, now: () => DAYTIME }).then(
+    (r) => r.performed[0]?.action.obligationId,
+  );
   assert.ok(id);
   const o = store.getObligation(id, HH);
   assert.equal(o.status, 'REQUESTED');
@@ -55,7 +64,11 @@ test('running twice in the fatigue window does not ask twice', async () => {
   // Idempotence is what makes it safe on a timer. The second pass sees its own
   // first ask and the fresh REQUESTED state, and stands down.
   await runAgentOnce(HH, { store, notifier, now: () => DAYTIME });
-  const second = await runAgentOnce(HH, { store, notifier, now: () => new Date(DAYTIME.getTime() + 60_000) });
+  const second = await runAgentOnce(HH, {
+    store,
+    notifier,
+    now: () => new Date(DAYTIME.getTime() + 60_000),
+  });
   assert.equal(second.performed.length, 0, 'asked again a minute later');
 });
 
@@ -68,15 +81,27 @@ test('a middle-of-the-night pass performs nothing and says why', async () => {
 
 test('a notification is delivered for the ask', async () => {
   const delivered: string[] = [];
-  const spy = { channel: 'spy', deliver: async (m: { to: string }) => { delivered.push(m.to); return { delivered: true }; } };
+  const spy = {
+    channel: 'spy',
+    deliver: async (m: { to: string }) => {
+      delivered.push(m.to);
+      return { delivered: true };
+    },
+  };
   await runAgentOnce(HH, { store, notifier: spy as never, now: () => DAYTIME });
   assert.equal(delivered.length, 1);
 });
 
-test('the agent\'s ask tells the person how to answer, like a human ask does', async () => {
+test("the agent's ask tells the person how to answer, like a human ask does", async () => {
   // Over a chat channel the reply IS the answer, so the ask must say what to type.
   const messages: string[] = [];
-  const spy = { channel: 'spy', deliver: async (m: { message: string }) => { messages.push(m.message); return { delivered: true }; } };
+  const spy = {
+    channel: 'spy',
+    deliver: async (m: { message: string }) => {
+      messages.push(m.message);
+      return { delivered: true };
+    },
+  };
   await runAgentOnce(HH, { store, notifier: spy as never, now: () => DAYTIME });
   assert.equal(messages.length, 1);
   assert.match(messages[0]!, /Drive Margaret to cardiology/);
@@ -86,22 +111,40 @@ test('the agent\'s ask tells the person how to answer, like a human ask does', a
 test('a slipped promise: the owner gets a question, keeps the work, and silence reaches the primary caregiver', async () => {
   await store.reset();
   await store.addHousehold({ id: HH, name: 'circle', timezone: 'America/New_York' });
-  await store.addMember({ id: 'm_david', householdId: HH, name: 'David', role: 'primary_caregiver' });
+  await store.addMember({
+    id: 'm_david',
+    householdId: HH,
+    name: 'David',
+    role: 'primary_caregiver',
+  });
   await store.addMember({ id: 'm_renee', householdId: HH, name: 'Renee', role: 'caregiver' });
   const o = await store.createObligation({
-    householdId: HH, what: 'Drive Margaret to cardiology', consequence: 'medical',
-    status: 'ASSIGNED', ownerId: 'm_renee',
+    householdId: HH,
+    what: 'Drive Margaret to cardiology',
+    consequence: 'medical',
+    status: 'ASSIGNED',
+    ownerId: 'm_renee',
     provenance: { kind: 'CONFIRMED', byMemberId: 'm_renee', at: '2026-10-12T12:00:00Z' },
     dueAt: '2026-10-14T13:30:00Z', // 09:30 New York; DAYTIME is 10:00
   });
   const sent: Array<{ to: string; message: string }> = [];
-  const spy = { channel: 'spy', deliver: async (m: { to: string; message: string }) => { sent.push(m); return { delivered: true }; } };
+  const spy = {
+    channel: 'spy',
+    deliver: async (m: { to: string; message: string }) => {
+      sent.push(m);
+      return { delivered: true };
+    },
+  };
 
   await runAgentOnce(HH, { store, notifier: spy as never, now: () => DAYTIME });
   assert.equal(sent.length, 1);
   assert.equal(sent[0]!.to, 'm_renee');
   assert.match(sent[0]!.message, /Still on\?/);
-  assert.doesNotMatch(sent[0]!.message, /miss|fail|forgot/i, 'no record is not the same as not done');
+  assert.doesNotMatch(
+    sent[0]!.message,
+    /miss|fail|forgot/i,
+    'no record is not the same as not done',
+  );
   const after = store.getCareState(HH).obligations.find((x) => x.id === o.id)!;
   assert.equal(after.status, 'ASSIGNED');
   assert.equal(after.ownerId, 'm_renee');
@@ -112,20 +155,39 @@ test('a slipped promise: the owner gets a question, keeps the work, and silence 
   assert.equal(sent[1]!.to, 'm_david');
   assert.match(sent[1]!.message, /Renee hasn't answered/);
 
-  await runAgentOnce(HH, { store, notifier: spy as never, now: () => new Date(later.getTime() + 60 * 60_000) });
+  await runAgentOnce(HH, {
+    store,
+    notifier: spy as never,
+    now: () => new Date(later.getTime() + 60 * 60_000),
+  });
   assert.equal(sent.length, 2, 'the primary caregiver hears once');
 });
 
-test('the background pass leaves a visitor\'s sandbox copy to its own story clock', async () => {
+test("the background pass leaves a visitor's sandbox copy to its own story clock", async () => {
   const copy = `${HH}~mgx1k2-0a1b2c3d`;
   await store.addHousehold({ id: copy, name: 'copy', timezone: 'America/New_York' });
-  await store.addMember({ id: 'm_david~mgx1k2-0a1b2c3d', householdId: copy, name: 'David', role: 'primary_caregiver' });
+  await store.addMember({
+    id: 'm_david~mgx1k2-0a1b2c3d',
+    householdId: copy,
+    name: 'David',
+    role: 'primary_caregiver',
+  });
   await store.createObligation({
-    householdId: copy, what: 'Pick up the refill', consequence: 'medical',
-    status: 'OPEN', ownerId: null,
-    provenance: { kind: 'CONFIRMED', byMemberId: 'm_david~mgx1k2-0a1b2c3d', at: '2026-10-12T12:00:00Z' },
+    householdId: copy,
+    what: 'Pick up the refill',
+    consequence: 'medical',
+    status: 'OPEN',
+    ownerId: null,
+    provenance: {
+      kind: 'CONFIRMED',
+      byMemberId: 'm_david~mgx1k2-0a1b2c3d',
+      at: '2026-10-12T12:00:00Z',
+    },
     dueAt: '2026-10-15T00:00:00Z',
   });
   const runs = await runAgentAll({ store, notifier, now: () => DAYTIME });
-  assert.deepEqual(runs.map((r) => r.householdId), [HH]);
+  assert.deepEqual(
+    runs.map((r) => r.householdId),
+    [HH],
+  );
 });

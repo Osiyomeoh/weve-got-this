@@ -22,7 +22,9 @@ const clientId = process.env['GOOGLE_CLIENT_ID']?.trim();
 const clientSecret = process.env['GOOGLE_CLIENT_SECRET']?.trim();
 
 if (!clientId || !clientSecret) {
-  console.error('Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET first (from your Desktop OAuth client).');
+  console.error(
+    'Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET first (from your Desktop OAuth client).',
+  );
   process.exit(1);
 }
 
@@ -45,7 +47,10 @@ const server = createServer(async (req, res) => {
     server.close();
     process.exit(1);
   }
-  if (!code) { res.end('Waiting for authorization…'); return; }
+  if (!code) {
+    res.end('Waiting for authorization…');
+    return;
+  }
 
   const { port } = server.address() as AddressInfo;
   try {

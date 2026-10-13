@@ -47,7 +47,7 @@ export const CARECIRCLE_SOURCE = 'carecircle';
 
 /** A calendar event mapped to the shared appointment path, or the reason it was skipped. */
 export type CalendarMapping =
-  | { apply: true; input: Omit<AppointmentInput, 'reportedBy' | 'forMemberId'>; }
+  | { apply: true; input: Omit<AppointmentInput, 'reportedBy' | 'forMemberId'> }
   | { apply: false; reason: string };
 
 /** The connector identity recorded as the reporter of a calendar-sourced appointment. */

@@ -28,9 +28,11 @@ const flag = (name: string): string | undefined => {
 const table = process.env['CARECIRCLE_TABLE']?.trim();
 const region = process.env['AWS_REGION']?.trim();
 
-const store = new CareStore(table
-  ? new DynamoPersistence({ tableName: table, ...(region ? { region } : {}) })
-  : new FilePersistence(process.env['CARECIRCLE_DB'] ?? 'carecircle.db.json'));
+const store = new CareStore(
+  table
+    ? new DynamoPersistence({ tableName: table, ...(region ? { region } : {}) })
+    : new FilePersistence(process.env['CARECIRCLE_DB'] ?? 'carecircle.db.json'),
+);
 await store.init();
 
 const households = [...new Set(store.allMembers().map((m) => m.householdId))];
@@ -38,12 +40,15 @@ let householdId = flag('--household');
 if (!householdId) {
   // Not the demo household or its per-visitor sandbox copies (`h_margaret~...`), and not
   // a household someone set up and never used.
-  const real = households.filter((h) => h !== DEMO && !h.startsWith(`${DEMO}~`)
-    && store.getCareState(h).events.length > 0);
+  const real = households.filter(
+    (h) => h !== DEMO && !h.startsWith(`${DEMO}~`) && store.getCareState(h).events.length > 0,
+  );
   if (real.length !== 1) {
-    console.error(real.length === 0
-      ? 'No household other than the demo one has any records yet. Pass --household to pick one.'
-      : `More than one household has records; pick one with --household: ${real.join(', ')}`);
+    console.error(
+      real.length === 0
+        ? 'No household other than the demo one has any records yet. Pass --household to pick one.'
+        : `More than one household has records; pick one with --household: ${real.join(', ')}`,
+    );
     process.exit(1);
   }
   householdId = real[0]!;
@@ -72,7 +77,9 @@ if (since && !/^\d{4}-\d{2}-\d{2}$/.test(since)) {
 const first = state.events.map((e) => e.occurredAt).sort()[0];
 const from = since
   ? startOf(since)
-  : first ? startOf(localParts(new Date(first), state.household.timezone).date) : to;
+  : first
+    ? startOf(localParts(new Date(first), state.household.timezone).date)
+    : to;
 
 const report = pilotReport(state, { from, to });
 if (args.includes('--json')) {

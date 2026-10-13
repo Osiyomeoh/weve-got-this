@@ -22,7 +22,12 @@ export interface DeliveryResult {
 
 export interface Notifier {
   readonly channel: DeliveryResult['channel'];
-  deliver(input: { to: string; toName: string; from: string; message: string }): Promise<DeliveryResult>;
+  deliver(input: {
+    to: string;
+    toName: string;
+    from: string;
+    message: string;
+  }): Promise<DeliveryResult>;
   /**
    * Something urgent, to everyone at once: each person's own phone, and the family group
    * once. Family groups are often muted; a private message is what makes a phone ring.
@@ -32,8 +37,16 @@ export interface Notifier {
    * A private message to one person, never the group, optionally with buttons to tap.
    * Reminders use it. Optional: a channel without private chats does not remind.
    */
-  direct?(input: { to: string; text: string; buttons?: { text: string; data: string }[][] }): Promise<DeliveryResult>;
-  broadcast?(input: { householdId: string; recipients: { id: string; name: string }[]; message: string }): Promise<{ reached: string[] }>;
+  direct?(input: {
+    to: string;
+    text: string;
+    buttons?: { text: string; data: string }[][];
+  }): Promise<DeliveryResult>;
+  broadcast?(input: {
+    householdId: string;
+    recipients: { id: string; name: string }[];
+    message: string;
+  }): Promise<{ reached: string[] }>;
 }
 
 /**
@@ -65,19 +78,34 @@ export class SnsNotifier implements Notifier {
     this.#sns = opts.client ?? new SNSClient(opts.region ? { region: opts.region } : {});
   }
 
-  async deliver(input: { to: string; toName: string; from: string; message: string }): Promise<DeliveryResult> {
+  async deliver(input: {
+    to: string;
+    toName: string;
+    from: string;
+    message: string;
+  }): Promise<DeliveryResult> {
     try {
-      const result = await this.#sns.send(new PublishCommand({
-        TopicArn: this.#topicArn,
-        Subject: `CareCircle: a message from ${input.from}`,
-        Message: `${input.from} for ${input.toName}:\n\n${input.message}`,
-        MessageAttributes: {
-          recipient: { DataType: 'String', StringValue: input.to },
-        },
-      }));
-      return { delivered: true, channel: 'sns', ...(result.MessageId ? { detail: result.MessageId } : {}) };
+      const result = await this.#sns.send(
+        new PublishCommand({
+          TopicArn: this.#topicArn,
+          Subject: `CareCircle: a message from ${input.from}`,
+          Message: `${input.from} for ${input.toName}:\n\n${input.message}`,
+          MessageAttributes: {
+            recipient: { DataType: 'String', StringValue: input.to },
+          },
+        }),
+      );
+      return {
+        delivered: true,
+        channel: 'sns',
+        ...(result.MessageId ? { detail: result.MessageId } : {}),
+      };
     } catch (err) {
-      return { delivered: false, channel: 'sns', detail: `delivery failed: ${(err as Error).message}` };
+      return {
+        delivered: false,
+        channel: 'sns',
+        detail: `delivery failed: ${(err as Error).message}`,
+      };
     }
   }
 }
@@ -90,7 +118,9 @@ export class SnsNotifier implements Notifier {
  * member who can answer "yes" in a chat they already have is the loop closing where the
  * family already lives.
  */
-export function notifierFromEnv(opts: { telegramLinked?: TelegramConfig['linked'] } = {}): Notifier {
+export function notifierFromEnv(
+  opts: { telegramLinked?: TelegramConfig['linked'] } = {},
+): Notifier {
   const tg = telegramConfigFromEnv(process.env, opts.telegramLinked);
   if (tg) return new TelegramNotifier(tg);
 

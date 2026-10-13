@@ -76,14 +76,23 @@ export function parseIcsDate(
 function zoneOffsetAt(at: Date, zone: string): number | null {
   try {
     const dtf = new Intl.DateTimeFormat('en-US', {
-      timeZone: zone, hour12: false,
-      year: 'numeric', month: '2-digit', day: '2-digit',
-      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      timeZone: zone,
+      hour12: false,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
     });
     const p = Object.fromEntries(dtf.formatToParts(at).map((x) => [x.type, x.value]));
     const asUTC = Date.UTC(
-      Number(p['year']), Number(p['month']) - 1, Number(p['day']),
-      Number(p['hour']) % 24, Number(p['minute']), Number(p['second']),
+      Number(p['year']),
+      Number(p['month']) - 1,
+      Number(p['day']),
+      Number(p['hour']) % 24,
+      Number(p['minute']),
+      Number(p['second']),
     );
     return asUTC - at.getTime();
   } catch {
@@ -103,7 +112,10 @@ export function parseIcs(ics: string, timezone: string): IcsEvent | null {
 
   for (const line of lines) {
     const trimmed = line.trim();
-    if (trimmed === 'BEGIN:VEVENT') { inEvent = true; continue; }
+    if (trimmed === 'BEGIN:VEVENT') {
+      inEvent = true;
+      continue;
+    }
     if (trimmed === 'END:VEVENT') break;
     if (!inEvent) continue;
 
@@ -119,10 +131,19 @@ export function parseIcs(ics: string, timezone: string): IcsEvent | null {
     }
 
     switch (name!.toUpperCase()) {
-      case 'UID': ev.uid = value; break;
-      case 'SUMMARY': ev.summary = value.replace(/\\,/g, ',').replace(/\\;/g, ';').trim(); break;
-      case 'LOCATION': ev.location = value.replace(/\\,/g, ',').trim(); break;
-      case 'DTSTART': ev.startsAt = parseIcsDate(value, params, timezone); sawStart = true; break;
+      case 'UID':
+        ev.uid = value;
+        break;
+      case 'SUMMARY':
+        ev.summary = value.replace(/\\,/g, ',').replace(/\\;/g, ';').trim();
+        break;
+      case 'LOCATION':
+        ev.location = value.replace(/\\,/g, ',').trim();
+        break;
+      case 'DTSTART':
+        ev.startsAt = parseIcsDate(value, params, timezone);
+        sawStart = true;
+        break;
     }
   }
 
@@ -155,7 +176,8 @@ export function emailToAppointment(email: EmailMessage, timezone: string): Email
   }
   const ev = parseIcs(email.icsText, timezone);
   if (!ev) return { apply: false, reason: 'invite had no readable event' };
-  if (!ev.startsAt) return { apply: false, reason: 'invite has no timed start (all-day or unparseable)' };
+  if (!ev.startsAt)
+    return { apply: false, reason: 'invite has no timed start (all-day or unparseable)' };
 
   const kind = (ev.summary ?? email.subject ?? '').trim();
   if (!kind) return { apply: false, reason: 'nothing to name the appointment' };

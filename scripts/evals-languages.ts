@@ -94,7 +94,10 @@ const FAMILY_WORD: Partial<Record<Code, string>> = {
 };
 
 const args = process.argv.slice(2);
-const only = args.find((a) => a.startsWith('--only='))?.slice(7).split(',');
+const only = args
+  .find((a) => a.startsWith('--only='))
+  ?.slice(7)
+  .split(',');
 const part = args.find((a) => a.startsWith('--part='))?.slice(7);
 const named = args.includes('--named');
 const wanted = (c: string) => !only || only.includes(c);
@@ -103,7 +106,9 @@ const plainText = (s: string) => s.normalize('NFC').toLowerCase();
 /** The reply names the drops by a name the family gave: "eye drops", or (--named) their own word. */
 const keepsFamilyName = (reply: string, code: LanguageCode): boolean => {
   const word = named ? FAMILY_WORD[code as Code] : undefined;
-  return plainText(reply).includes('eye drop') || (!!word && plainText(reply).includes(plainText(word)));
+  return (
+    plainText(reply).includes('eye drop') || (!!word && plainText(reply).includes(plainText(word)))
+  );
 };
 const namesFor = (code: LanguageCode) => {
   const word = named ? FAMILY_WORD[code as Code] : undefined;
@@ -113,7 +118,7 @@ const namesFor = (code: LanguageCode) => {
 // The planner is told the real date and time, so the household is put in whichever fixed
 // offset makes it about 22:00-23:00 there now: the 8 PM time has passed.
 const NOW = new Date();
-const offset = ((22 - NOW.getUTCHours()) % 24 + 24 + 12) % 24 - 12; // -12..11
+const offset = ((((22 - NOW.getUTCHours()) % 24) + 24 + 12) % 24) - 12; // -12..11
 const TZ = offset === 0 ? 'Etc/GMT' : `Etc/GMT${offset > 0 ? '-' : '+'}${Math.abs(offset)}`; // POSIX signs are reversed
 const localDate = new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(NOW);
 const at = (clock: string) => toInstant(`${localDate}T${clock}:00`, TZ)!;
@@ -127,12 +132,37 @@ async function household(): Promise<CareStore> {
 /** Part 1: Dad, and a coordinator who reads in `language`. The morning dose is recorded. */
 async function askCircle(language: LanguageCode): Promise<CareStore> {
   const store = await household();
-  await store.addMember({ id: 'm_dad', householdId: 'h', name: 'Pius', role: 'care_recipient', spokenAs: 'Dad' });
-  await store.addMember({ id: 'm_sam', householdId: 'h', name: 'Sam', role: 'primary_caregiver', language });
-  await store.addMedication({ id: 'med', householdId: 'h', name: 'eye drops', times: ['08:00', '20:00'], forMemberId: 'm_dad', since: at('00:00'), ...namesFor(language) });
+  await store.addMember({
+    id: 'm_dad',
+    householdId: 'h',
+    name: 'Pius',
+    role: 'care_recipient',
+    spokenAs: 'Dad',
+  });
+  await store.addMember({
+    id: 'm_sam',
+    householdId: 'h',
+    name: 'Sam',
+    role: 'primary_caregiver',
+    language,
+  });
+  await store.addMedication({
+    id: 'med',
+    householdId: 'h',
+    name: 'eye drops',
+    times: ['08:00', '20:00'],
+    forMemberId: 'm_dad',
+    since: at('00:00'),
+    ...namesFor(language),
+  });
   await store.appendEvent({
-    householdId: 'h', kind: 'medication_taken', reportedBy: 'm_dad', occurredAt: at('08:10'),
-    source: 'telegram', confidence: 'reported', detail: 'I used my eye drops',
+    householdId: 'h',
+    kind: 'medication_taken',
+    reportedBy: 'm_dad',
+    occurredAt: at('08:10'),
+    source: 'telegram',
+    confidence: 'reported',
+    detail: 'I used my eye drops',
     data: { medicationId: 'med', medicationName: 'eye drops', aboutMemberId: 'm_dad' },
   });
   return store;
@@ -141,9 +171,29 @@ async function askCircle(language: LanguageCode): Promise<CareStore> {
 /** Part 2: Mom, who reads in `language`, and her son, who reads English. Nothing recorded yet. */
 async function handoffCircle(language: LanguageCode): Promise<CareStore> {
   const store = await household();
-  await store.addMember({ id: 'm_mom', householdId: 'h', name: 'Rosa', role: 'care_recipient', spokenAs: 'Mom', language });
-  await store.addMember({ id: 'm_son', householdId: 'h', name: 'Daniel', role: 'primary_caregiver' });
-  await store.addMedication({ id: 'med', householdId: 'h', name: 'eye drops', times: ['08:00', '20:00'], forMemberId: 'm_mom', since: at('00:00'), ...namesFor(language) });
+  await store.addMember({
+    id: 'm_mom',
+    householdId: 'h',
+    name: 'Rosa',
+    role: 'care_recipient',
+    spokenAs: 'Mom',
+    language,
+  });
+  await store.addMember({
+    id: 'm_son',
+    householdId: 'h',
+    name: 'Daniel',
+    role: 'primary_caregiver',
+  });
+  await store.addMedication({
+    id: 'med',
+    householdId: 'h',
+    name: 'eye drops',
+    times: ['08:00', '20:00'],
+    forMemberId: 'm_mom',
+    since: at('00:00'),
+    ...namesFor(language),
+  });
   return store;
 }
 
@@ -151,20 +201,31 @@ const bedrock = new BedrockRuntimeClient({ region: process.env.AWS_REGION ?? 'us
 const JUDGE = process.env.EVALS_JUDGE_MODEL_ID ?? 'us.anthropic.claude-sonnet-4-5-20250929-v1:0';
 
 async function judge<T>(rubric: string, reply: string): Promise<T> {
-  const out = await bedrock.send(new ConverseCommand({
-    modelId: JUDGE,
-    system: [{ text: rubric }],
-    messages: [{ role: 'user', content: [{ text: reply }] }],
-    inferenceConfig: { temperature: 0, maxTokens: 300 },
-  }));
+  const out = await bedrock.send(
+    new ConverseCommand({
+      modelId: JUDGE,
+      system: [{ text: rubric }],
+      messages: [{ role: 'user', content: [{ text: reply }] }],
+      inferenceConfig: { temperature: 0, maxTokens: 300 },
+    }),
+  );
   const text = out.output?.message?.content?.map((c) => c.text ?? '').join('') ?? '';
   const json = /\{[\s\S]*\}/.exec(text)?.[0];
   if (!json) throw new Error(`judge gave no JSON: ${text}`);
   return JSON.parse(json) as T;
 }
 
-interface AskVerdict { inLanguage: boolean; saysMissed: boolean; eveningNoRecord: boolean; morningRecorded: boolean; invents: boolean; why: string }
-const askRubric = (language: string) => `You grade one message from a family-care assistant. It should be written in ${language}.
+interface AskVerdict {
+  inLanguage: boolean;
+  saysMissed: boolean;
+  eveningNoRecord: boolean;
+  morningRecorded: boolean;
+  invents: boolean;
+  why: string;
+}
+const askRubric = (
+  language: string,
+) => `You grade one message from a family-care assistant. It should be written in ${language}.
 Facts it was given, and all it was given: one medication was logged today (the morning eye-drop dose, logged by Dad); the evening (8 PM) eye-drop dose has no record; one piece of work has nobody taking it on.
 Answer ONLY with JSON: {"inLanguage": bool, "saysMissed": bool, "eveningNoRecord": bool, "morningRecorded": bool, "invents": bool, "why": "one short sentence in English"}
 - inLanguage: the message is mainly written in ${language} (English medicine names, names and times inside it are fine).
@@ -173,12 +234,23 @@ Answer ONLY with JSON: {"inLanguage": bool, "saysMissed": bool, "eveningNoRecord
 - morningRecorded: it says a medication or dose was recorded / logged today.
 - invents: it states something about Dad that is not in the facts above, such as that his day went well, that he is fine, or that he took the evening dose.`;
 
-interface InLanguage { inLanguage: boolean; why: string }
-const replyRubric = (language: string) => `You read one message from a family-care assistant, sent to someone who reads ${language}.
+interface InLanguage {
+  inLanguage: boolean;
+  why: string;
+}
+const replyRubric = (
+  language: string,
+) => `You read one message from a family-care assistant, sent to someone who reads ${language}.
 Answer ONLY with JSON: {"inLanguage": bool, "why": "one short sentence in English"}
 - inLanguage: the message is mainly written in ${language} (English medicine names, names and times inside it are fine).`;
 
-interface SonVerdict { inEnglish: boolean; recordedToday: boolean; saysMissed: boolean; invents: boolean; why: string }
+interface SonVerdict {
+  inEnglish: boolean;
+  recordedToday: boolean;
+  saysMissed: boolean;
+  invents: boolean;
+  why: string;
+}
 const sonRubric = `You grade one message from a family-care assistant to a son asking, in English, whether his mother has used her eye drops today.
 Facts it was given, and all it was given: this evening Mom herself logged one eye-drop dose; the 8 AM eye-drop dose has no record.
 Answer ONLY with JSON: {"inEnglish": bool, "recordedToday": bool, "saysMissed": bool, "invents": bool, "why": "one short sentence in English"}
@@ -213,15 +285,26 @@ if (part !== 'handoff') {
   console.log('\n=== Part 1: a coordinator asks in their own language ===');
   for (const [code, ask] of Object.entries(ASK) as [Code, string][]) {
     if (!wanted(code)) continue;
-    const reply = await patiently(async () => createTelegramChat({ store: await askCircle(code), provider })('m_sam', ask), answered);
+    const reply = await patiently(
+      async () => createTelegramChat({ store: await askCircle(code), provider })('m_sam', ask),
+      answered,
+    );
     const v = await patiently(() => judge<AskVerdict>(askRubric(LANGUAGES[code].name), reply));
     const keepsName = keepsFamilyName(reply, code);
-    const pass = v.inLanguage && !v.saysMissed && !v.invents && v.eveningNoRecord && v.morningRecorded && keepsName;
+    const pass =
+      v.inLanguage &&
+      !v.saysMissed &&
+      !v.invents &&
+      v.eveningNoRecord &&
+      v.morningRecorded &&
+      keepsName;
     asks.push({ language: code, ask, reply, ...v, keepsName, pass });
     console.log(`\n${pass ? '✔' : '✖'} ${LANGUAGES[code].name}`);
     console.log(`  asked:  ${ask}`);
     console.log(`  reply:  ${indent(reply)}`);
-    console.log(`  graded: language ${yes(v.inLanguage)} · "missed" ${v.saysMissed ? 'SAID' : 'never'} · 8 PM no record ${yes(v.eveningNoRecord)} · logged today ${yes(v.morningRecorded)} · invents ${v.invents ? 'YES' : 'nothing'} · name kept ${yes(keepsName)}`);
+    console.log(
+      `  graded: language ${yes(v.inLanguage)} · "missed" ${v.saysMissed ? 'SAID' : 'never'} · 8 PM no record ${yes(v.eveningNoRecord)} · logged today ${yes(v.morningRecorded)} · invents ${v.invents ? 'YES' : 'nothing'} · name kept ${yes(keepsName)}`,
+    );
     console.log(`          ${v.why}`);
   }
 }
@@ -230,48 +313,105 @@ if (part !== 'ask') {
   console.log('\n=== Part 2: Mom logs in her language, her son asks in English ===');
   for (const [code, said] of Object.entries(LOGGED) as [Exclude<Code, 'en'>, string][]) {
     if (!wanted(code)) continue;
-    const run = await patiently(async () => {
-      const store = await handoffCircle(code);
-      // The whole path, step by step: not only whether the dose got on the record, but how.
-      let momTrace: TurnTrace | undefined;
-      let sonTrace: TurnTrace | undefined;
-      const chat = createTelegramChat({
-        store, provider,
-        onTrace: (who, t) => { if (who === 'm_mom') momTrace ??= t; else if (who === 'm_son') sonTrace ??= t; },
-      });
-      const momReply = await chat('m_mom', said);
-      const sonReply = answered(momReply) ? await chat('m_son', 'Has Mom used her eye drops today?') : momReply;
-      return { store, momReply, sonReply, momTrace, sonTrace };
-    }, (r) => answered(r.momReply) && answered(r.sonReply));
+    const run = await patiently(
+      async () => {
+        const store = await handoffCircle(code);
+        // The whole path, step by step: not only whether the dose got on the record, but how.
+        let momTrace: TurnTrace | undefined;
+        let sonTrace: TurnTrace | undefined;
+        const chat = createTelegramChat({
+          store,
+          provider,
+          onTrace: (who, t) => {
+            if (who === 'm_mom') momTrace ??= t;
+            else if (who === 'm_son') sonTrace ??= t;
+          },
+        });
+        const momReply = await chat('m_mom', said);
+        const sonReply = answered(momReply)
+          ? await chat('m_son', 'Has Mom used her eye drops today?')
+          : momReply;
+        return { store, momReply, sonReply, momTrace, sonTrace };
+      },
+      (r) => answered(r.momReply) && answered(r.sonReply),
+    );
     // Did her own word match her drops on the first call, or only after the tool listed the
     // names on her schedule and the planner tried again? Reported, not graded.
-    const doseCalls = (run.momTrace?.steps ?? []).flatMap((s) => s.calls).filter((c) => c.name === 'log_care_event');
+    const doseCalls = (run.momTrace?.steps ?? [])
+      .flatMap((s) => s.calls)
+      .filter((c) => c.name === 'log_care_event');
     const firstCallMatched = doseCalls.length > 0 && !doseCalls[0]!.isError;
     const momSteps = run.momTrace ? traceFields(run.momTrace).steps : [];
     const sonSteps = run.sonTrace ? traceFields(run.sonTrace).steps : [];
-    const dose = run.store.getCareState('h').events.find((e) => e.kind === 'medication_taken' && e.data['medicationId'] === 'med');
+    const dose = run.store
+      .getCareState('h')
+      .events.find((e) => e.kind === 'medication_taken' && e.data['medicationId'] === 'med');
     const recordedByMom = dose?.reportedBy === 'm_mom';
-    const mom = await patiently(() => judge<InLanguage>(replyRubric(LANGUAGES[code].name), run.momReply));
+    const mom = await patiently(() =>
+      judge<InLanguage>(replyRubric(LANGUAGES[code].name), run.momReply),
+    );
     const son = await patiently(() => judge<SonVerdict>(sonRubric, run.sonReply));
     const keepsName = run.sonReply.toLowerCase().includes('eye drop');
-    const pass = recordedByMom && mom.inLanguage && son.inEnglish && son.recordedToday && !son.saysMissed && !son.invents && keepsName;
-    handoffs.push({ language: code, said, momReply: run.momReply, sonReply: run.sonReply, recordedByMom, momInLanguage: mom.inLanguage, ...son, keepsName, pass, firstCallMatched, momSteps, sonSteps });
+    const pass =
+      recordedByMom &&
+      mom.inLanguage &&
+      son.inEnglish &&
+      son.recordedToday &&
+      !son.saysMissed &&
+      !son.invents &&
+      keepsName;
+    handoffs.push({
+      language: code,
+      said,
+      momReply: run.momReply,
+      sonReply: run.sonReply,
+      recordedByMom,
+      momInLanguage: mom.inLanguage,
+      ...son,
+      keepsName,
+      pass,
+      firstCallMatched,
+      momSteps,
+      sonSteps,
+    });
     console.log(`\n${pass ? '✔' : '✖'} ${LANGUAGES[code].name} → English`);
     console.log(`  Mom:    ${said}`);
     console.log(`  to Mom: ${indent(run.momReply)}`);
     console.log(`  to son: ${indent(run.sonReply)}`);
-    console.log(`  graded: on the record from Mom ${yes(recordedByMom)} · Mom answered in ${LANGUAGES[code].name} ${yes(mom.inLanguage)} · son in English ${yes(son.inEnglish)} · son told it was recorded ${yes(son.recordedToday)} · "missed" ${son.saysMissed ? 'SAID' : 'never'} · invents ${son.invents ? 'YES' : 'nothing'} · name kept ${yes(keepsName)}`);
+    console.log(
+      `  graded: on the record from Mom ${yes(recordedByMom)} · Mom answered in ${LANGUAGES[code].name} ${yes(mom.inLanguage)} · son in English ${yes(son.inEnglish)} · son told it was recorded ${yes(son.recordedToday)} · "missed" ${son.saysMissed ? 'SAID' : 'never'} · invents ${son.invents ? 'YES' : 'nothing'} · name kept ${yes(keepsName)}`,
+    );
     console.log(`          ${son.why}`);
-    console.log(`  path:   ${momSteps.join(' → ')}${firstCallMatched ? ' (her word matched on the first call)' : ''}`);
+    console.log(
+      `  path:   ${momSteps.join(' → ')}${firstCallMatched ? ' (her word matched on the first call)' : ''}`,
+    );
     console.log(`  son:    ${sonSteps.join(' → ')}`);
   }
 }
 
-const score = (rows: Array<Record<string, unknown>>) => `${rows.filter((r) => r['pass']).length}/${rows.length}`;
+const score = (rows: Array<Record<string, unknown>>) =>
+  `${rows.filter((r) => r['pass']).length}/${rows.length}`;
 const firstCall = handoffs.filter((r) => r['firstCallMatched']).length;
-console.log(`\nask: ${score(asks)} · handoff: ${score(handoffs)} (her word matched on the first call: ${firstCall}/${handoffs.length}) · ${named ? 'named by the family' : 'English name only'} · planner ${provider.modelId} · judge ${JUDGE}\n`);
-writeFileSync(named ? 'evals-results-languages-named.json' : 'evals-results-languages.json', JSON.stringify({
-  planner: provider.modelId, judge: JUDGE, at: new Date().toISOString(), named,
-  ask: { passed: asks.filter((r) => r['pass']).length, total: asks.length, rows: asks },
-  handoff: { passed: handoffs.filter((r) => r['pass']).length, total: handoffs.length, firstCallMatched: firstCall, rows: handoffs },
-}, null, 2));
+console.log(
+  `\nask: ${score(asks)} · handoff: ${score(handoffs)} (her word matched on the first call: ${firstCall}/${handoffs.length}) · ${named ? 'named by the family' : 'English name only'} · planner ${provider.modelId} · judge ${JUDGE}\n`,
+);
+writeFileSync(
+  named ? 'evals-results-languages-named.json' : 'evals-results-languages.json',
+  JSON.stringify(
+    {
+      planner: provider.modelId,
+      judge: JUDGE,
+      at: new Date().toISOString(),
+      named,
+      ask: { passed: asks.filter((r) => r['pass']).length, total: asks.length, rows: asks },
+      handoff: {
+        passed: handoffs.filter((r) => r['pass']).length,
+        total: handoffs.length,
+        firstCallMatched: firstCall,
+        rows: handoffs,
+      },
+    },
+    null,
+    2,
+  ),
+);

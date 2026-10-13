@@ -15,15 +15,18 @@
 import { CareStore } from '../src/store/store.ts';
 import { FilePersistence } from '../src/store/persistence.ts';
 import { DynamoPersistence } from '../src/store/dynamo.ts';
-import { googleCalendarConfigFromEnv, runCalendarWriteback } from '../src/connectors/google-calendar.ts';
+import {
+  googleCalendarConfigFromEnv,
+  runCalendarWriteback,
+} from '../src/connectors/google-calendar.ts';
 
 async function main(): Promise<void> {
   const config = googleCalendarConfigFromEnv();
   if (!config) {
     console.error(
-      'Google Calendar is not configured. Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and\n'
-      + 'GOOGLE_REFRESH_TOKEN (run `npm run google:auth` to mint the refresh token with the\n'
-      + 'calendar.events scope needed for write-back).',
+      'Google Calendar is not configured. Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and\n' +
+        'GOOGLE_REFRESH_TOKEN (run `npm run google:auth` to mint the refresh token with the\n' +
+        'calendar.events scope needed for write-back).',
     );
     process.exit(1);
   }
@@ -48,4 +51,7 @@ async function main(): Promise<void> {
   console.log(`  created ${r.created}, updated ${r.updated}, unchanged ${r.unchanged}`);
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

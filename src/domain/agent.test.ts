@@ -1,9 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fc from 'fast-check';
-import {
-  AGENT_ID, deliberate, harmAvoided, interruptionCost, recentAsksOf,
-} from './agent.ts';
+import { AGENT_ID, deliberate, harmAvoided, interruptionCost, recentAsksOf } from './agent.ts';
 import { candidatesFor } from './delegation.ts';
 import type { CareEvent, CareState, Obligation } from './types.ts';
 
@@ -15,11 +13,14 @@ const TZ = 'America/New_York';
 
 function obligation(over: Partial<Obligation> = {}): Obligation {
   return {
-    id: 'o1', householdId: 'h1',
+    id: 'o1',
+    householdId: 'h1',
     what: 'Drive Margaret to cardiology',
-    status: 'OPEN', consequence: 'medical',
+    status: 'OPEN',
+    consequence: 'medical',
     provenance: { kind: 'CONFIRMED', byMemberId: 'm_renee', at: '2026-10-12T12:00:00Z' },
-    ownerId: null, createdAt: '2026-10-12T12:00:00Z',
+    ownerId: null,
+    createdAt: '2026-10-12T12:00:00Z',
     dueAt: '2026-10-15T14:00:00Z',
     ...over,
   };
@@ -29,7 +30,13 @@ function state(over: Partial<CareState> = {}): CareState {
   return {
     household: { id: 'h1', name: 'circle', timezone: TZ },
     members: [
-      { id: 'm_margaret', householdId: 'h1', name: 'Margaret', role: 'care_recipient', spokenAs: 'Mom' },
+      {
+        id: 'm_margaret',
+        householdId: 'h1',
+        name: 'Margaret',
+        role: 'care_recipient',
+        spokenAs: 'Mom',
+      },
       { id: 'm_david', householdId: 'h1', name: 'David', role: 'primary_caregiver' },
       { id: 'm_renee', householdId: 'h1', name: 'Renee', role: 'caregiver' },
       { id: 'm_aide', householdId: 'h1', name: 'Tasha', role: 'helper' },
@@ -43,8 +50,12 @@ function state(over: Partial<CareState> = {}): CareState {
 
 function askEvent(memberId: string, at: string, by = AGENT_ID): CareEvent {
   return {
-    id: `e_${memberId}_${at}`, householdId: 'h1', kind: 'owner_requested',
-    reportedBy: by, occurredAt: at, recordedAt: at,
+    id: `e_${memberId}_${at}`,
+    householdId: 'h1',
+    kind: 'owner_requested',
+    reportedBy: by,
+    occurredAt: at,
+    recordedAt: at,
     data: { obligationId: 'o1', askedOfId: memberId },
   };
 }
@@ -104,10 +115,12 @@ test('the night is a cost, not a prohibition', () => {
 });
 
 test('asking the same person again costs more each time', () => {
-  const asked = (n: number) => state({
-    events: Array.from({ length: n }, (_, i) =>
-      askEvent('m_david', new Date(DAYTIME.getTime() - (i + 1) * 3_600_000).toISOString())),
-  });
+  const asked = (n: number) =>
+    state({
+      events: Array.from({ length: n }, (_, i) =>
+        askEvent('m_david', new Date(DAYTIME.getTime() - (i + 1) * 3_600_000).toISOString()),
+      ),
+    });
   const costs = [0, 1, 2, 3].map((n) => interruptionCost('m_david', asked(n), opts(DAYTIME)));
   for (let i = 1; i < costs.length; i++) {
     assert.ok(costs[i]! > costs[i - 1]!, `ask ${i} did not cost more than ask ${i - 1}`);
@@ -119,7 +132,9 @@ test('the agent eventually stops rather than badgering', () => {
   const worn = state({
     events: ['m_david', 'm_renee', 'm_aide'].flatMap((m) =>
       Array.from({ length: 8 }, (_, i) =>
-        askEvent(m, new Date(DAYTIME.getTime() - (i + 1) * 600_000).toISOString()))),
+        askEvent(m, new Date(DAYTIME.getTime() - (i + 1) * 600_000).toISOString()),
+      ),
+    ),
   });
   const { actions, restraint } = deliberate(worn, opts(DAYTIME));
   assert.deepEqual(actions, [], 'kept asking people it had already worn out');
@@ -131,7 +146,8 @@ test('a human asking somebody does not make the agent go quiet', () => {
   // family is already trying to sort something out.
   const byHuman = state({
     events: Array.from({ length: 6 }, (_, i) =>
-      askEvent('m_david', new Date(DAYTIME.getTime() - (i + 1) * 600_000).toISOString(), 'm_renee')),
+      askEvent('m_david', new Date(DAYTIME.getTime() - (i + 1) * 600_000).toISOString(), 'm_renee'),
+    ),
   });
   assert.equal(recentAsksOf('m_david', byHuman, DAYTIME), 0);
 });
@@ -147,10 +163,16 @@ test('fatigue wears off', () => {
 
 test('an unanswered ask moves to the next person, not back to the same one', () => {
   const pending = state({
-    obligations: [obligation({
-      status: 'REQUESTED',
-      request: { askedOfId: 'm_renee', askedById: 'm_david', askedAt: new Date(DAYTIME.getTime() - 13 * 3_600_000).toISOString() },
-    })],
+    obligations: [
+      obligation({
+        status: 'REQUESTED',
+        request: {
+          askedOfId: 'm_renee',
+          askedById: 'm_david',
+          askedAt: new Date(DAYTIME.getTime() - 13 * 3_600_000).toISOString(),
+        },
+      }),
+    ],
   });
   const { actions } = deliberate(pending, opts(DAYTIME));
   const ask = actions.find((a) => a.kind === 'ASK');
@@ -160,10 +182,16 @@ test('an unanswered ask moves to the next person, not back to the same one', () 
 
 test('a fresh ask is left to breathe', () => {
   const justAsked = state({
-    obligations: [obligation({
-      status: 'REQUESTED',
-      request: { askedOfId: 'm_renee', askedById: 'm_david', askedAt: new Date(DAYTIME.getTime() - 30 * 60_000).toISOString() },
-    })],
+    obligations: [
+      obligation({
+        status: 'REQUESTED',
+        request: {
+          askedOfId: 'm_renee',
+          askedById: 'm_david',
+          askedAt: new Date(DAYTIME.getTime() - 30 * 60_000).toISOString(),
+        },
+      }),
+    ],
   });
   assert.deepEqual(deliberate(justAsked, opts(DAYTIME)).actions, []);
 });
@@ -178,11 +206,17 @@ test('somebody who declined is never asked again about that work', () => {
 
 test('when the circle runs out, it escalates once and then lets go', () => {
   const exhausted = state({
-    obligations: [obligation({
-      status: 'REQUESTED',
-      declinedBy: ['m_renee', 'm_aide'],
-      request: { askedOfId: 'm_david', askedById: 'm_renee', askedAt: new Date(DAYTIME.getTime() - 20 * 3_600_000).toISOString() },
-    })],
+    obligations: [
+      obligation({
+        status: 'REQUESTED',
+        declinedBy: ['m_renee', 'm_aide'],
+        request: {
+          askedOfId: 'm_david',
+          askedById: 'm_renee',
+          askedAt: new Date(DAYTIME.getTime() - 20 * 3_600_000).toISOString(),
+        },
+      }),
+    ],
   });
   const { actions, restraint } = deliberate(exhausted, opts(DAYTIME));
   assert.equal(actions.length, 0, 'kept going after everyone had been asked');
@@ -213,8 +247,14 @@ test('staying quiet is recorded, not just implied', () => {
 
 test('quiet hours are named as the family would say them', () => {
   // 9:45 pm and 7 am in New York (EDT, UTC-4).
-  assert.match(deliberate(state(), opts(new Date('2026-10-15T01:45:00Z'))).restraint[0]!.because, /late in the evening/);
-  assert.match(deliberate(state(), opts(new Date('2026-10-14T11:00:00Z'))).restraint[0]!.because, /early in the morning/);
+  assert.match(
+    deliberate(state(), opts(new Date('2026-10-15T01:45:00Z'))).restraint[0]!.because,
+    /late in the evening/,
+  );
+  assert.match(
+    deliberate(state(), opts(new Date('2026-10-14T11:00:00Z'))).restraint[0]!.because,
+    /early in the morning/,
+  );
 });
 
 test('the reason names a person and the work, not a rule number', () => {
@@ -227,32 +267,39 @@ test('the reason names a person and the work, not a rule number', () => {
 // --- Properties ------------------------------------------------------------
 
 test('the agent never acts on an action whose value is not positive', () => {
-  fc.assert(fc.property(
-    fc.integer({ min: 0, max: 23 }),
-    fc.integer({ min: 0, max: 12 }),
-    fc.constantFrom('medical' as const, 'logistical' as const, 'social' as const),
-    (hour, priorAsks, consequence) => {
-      const now = new Date(Date.UTC(2026, 9, 14, hour, 0, 0));
-      const s = state({
-        obligations: [obligation({ consequence })],
-        events: Array.from({ length: priorAsks }, (_, i) =>
-          askEvent('m_david', new Date(now.getTime() - (i + 1) * 600_000).toISOString())),
-      });
-      for (const a of deliberate(s, opts(now)).actions) {
-        assert.ok(a.value.net > 0);
-      }
-    },
-  ), { numRuns: 300 });
+  fc.assert(
+    fc.property(
+      fc.integer({ min: 0, max: 23 }),
+      fc.integer({ min: 0, max: 12 }),
+      fc.constantFrom('medical' as const, 'logistical' as const, 'social' as const),
+      (hour, priorAsks, consequence) => {
+        const now = new Date(Date.UTC(2026, 9, 14, hour, 0, 0));
+        const s = state({
+          obligations: [obligation({ consequence })],
+          events: Array.from({ length: priorAsks }, (_, i) =>
+            askEvent('m_david', new Date(now.getTime() - (i + 1) * 600_000).toISOString()),
+          ),
+        });
+        for (const a of deliberate(s, opts(now)).actions) {
+          assert.ok(a.value.net > 0);
+        }
+      },
+    ),
+    { numRuns: 300 },
+  );
 });
 
 test('the agent is bounded however much work piles up', () => {
-  fc.assert(fc.property(fc.integer({ min: 1, max: 60 }), (n) => {
-    const many = state({
-      obligations: Array.from({ length: n }, (_, i) => obligation({ id: `o${i}` })),
-    });
-    const { actions } = deliberate(many, opts(DAYTIME));
-    assert.ok(actions.length <= 3, `emitted ${actions.length} actions for ${n} obligations`);
-  }), { numRuns: 60 });
+  fc.assert(
+    fc.property(fc.integer({ min: 1, max: 60 }), (n) => {
+      const many = state({
+        obligations: Array.from({ length: n }, (_, i) => obligation({ id: `o${i}` })),
+      });
+      const { actions } = deliberate(many, opts(DAYTIME));
+      assert.ok(actions.length <= 3, `emitted ${actions.length} actions for ${n} obligations`);
+    }),
+    { numRuns: 60 },
+  );
 });
 
 test('the same state at the same instant always decides the same thing', () => {
@@ -287,12 +334,19 @@ test('harm avoided is discounted by how loaded the candidate already is', () => 
 // --- Broken promises: work somebody took on, past its time ----------------
 
 /** Renee took the ride; it was due at 09:00 New York, and it is now 09:30 (DAYTIME is 10:00). */
-const promised = (over: Partial<Obligation> = {}) => obligation({
-  status: 'ASSIGNED', ownerId: 'm_renee', dueAt: '2026-10-14T13:00:00Z', ...over,
-});
+const promised = (over: Partial<Obligation> = {}) =>
+  obligation({
+    status: 'ASSIGNED',
+    ownerId: 'm_renee',
+    dueAt: '2026-10-14T13:00:00Z',
+    ...over,
+  });
 
 function followUpEvent(memberId: string, at: string, escalation = false): CareEvent {
-  return { ...askEvent(memberId, at), data: { obligationId: 'o1', askedOfId: memberId, followUp: true, escalation } };
+  return {
+    ...askEvent(memberId, at),
+    data: { obligationId: 'o1', askedOfId: memberId, followUp: true, escalation },
+  };
 }
 
 test('a promise past its time gets the person who made it asked "still on?"', () => {
@@ -304,7 +358,9 @@ test('a promise past its time gets the person who made it asked "still on?"', ()
 });
 
 test('a few minutes late is not news', () => {
-  const justDue = state({ obligations: [promised({ dueAt: new Date(DAYTIME.getTime() - 5 * 60_000).toISOString() })] });
+  const justDue = state({
+    obligations: [promised({ dueAt: new Date(DAYTIME.getTime() - 5 * 60_000).toISOString() })],
+  });
   assert.deepEqual(deliberate(justDue, opts(DAYTIME)).actions, []);
 });
 
@@ -337,7 +393,9 @@ test('silence after the check-in tells the primary caregiver, once, and moves no
 });
 
 test('a slipped promise does not wake anyone at night over a social visit', () => {
-  const visit = state({ obligations: [promised({ consequence: 'social', dueAt: '2026-10-14T05:00:00Z' })] });
+  const visit = state({
+    obligations: [promised({ consequence: 'social', dueAt: '2026-10-14T05:00:00Z' })],
+  });
   const { actions, restraint } = deliberate(visit, opts(NIGHT));
   assert.deepEqual(actions, []);
   assert.ok(restraint.some((r) => r.obligationId === 'o1'));

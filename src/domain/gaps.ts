@@ -1,6 +1,12 @@
 import { activeMedications } from './care-changes.js';
 import type {
-  CareEvent, CareGap, CareState, ConsequenceClass, EntityAttributes, Obligation, Severity,
+  CareEvent,
+  CareGap,
+  CareState,
+  ConsequenceClass,
+  EntityAttributes,
+  Obligation,
+  Severity,
 } from './types.js';
 import { accessibilityUplift, dignityNote, resolveSubjectAttributes } from './accessibility.js';
 
@@ -43,9 +49,9 @@ const HARM_COST: Record<ConsequenceClass, number> = {
  * tau = urgency concentrates closer to the deadline.
  */
 const TAU_DEADLINE = 48; // how fast drop-risk rises as a due time approaches
-const TAU_STALE = 72;    // how fast unowned work accrues risk purely by aging
-const TAU_DOSE = 240;    // how fast an unlogged dose looks truly missed (minutes)
-const TAU_REPLY = 12;    // how fast an unanswered request stops counting for anything
+const TAU_STALE = 72; // how fast unowned work accrues risk purely by aging
+const TAU_DOSE = 240; // how fast an unlogged dose looks truly missed (minutes)
+const TAU_REPLY = 12; // how fast an unanswered request stops counting for anything
 
 /**
  * Confidence(the gap is real), a Bayesian posterior in (0,1]. This is the trust
@@ -56,9 +62,12 @@ const TAU_REPLY = 12;    // how fast an unanswered request stops counting for an
  */
 function confidenceOf(kind: 'CONFIRMED' | 'INFERRED' | 'NOT_LOGGED'): number {
   switch (kind) {
-    case 'CONFIRMED': return 1.0;
-    case 'NOT_LOGGED': return 0.75;
-    case 'INFERRED': return 0.6;
+    case 'CONFIRMED':
+      return 1.0;
+    case 'NOT_LOGGED':
+      return 0.75;
+    case 'INFERRED':
+      return 0.6;
   }
 }
 
@@ -76,8 +85,12 @@ function toScore(risk: number): number {
 export function localParts(at: Date, timezone: string): { date: string; minutes: number } {
   const fmt = new Intl.DateTimeFormat('en-CA', {
     timeZone: timezone,
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', hour12: false,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
   });
   const p = Object.fromEntries(fmt.formatToParts(at).map((x) => [x.type, x.value]));
   // en-CA renders midnight as "24" in some runtimes; normalise to 0.
@@ -150,10 +163,14 @@ function severityFor(score: number): Severity {
 function ordinal(day: number): string {
   if (day % 100 >= 11 && day % 100 <= 13) return `${day}th`;
   switch (day % 10) {
-    case 1: return `${day}st`;
-    case 2: return `${day}nd`;
-    case 3: return `${day}rd`;
-    default: return `${day}th`;
+    case 1:
+      return `${day}st`;
+    case 2:
+      return `${day}nd`;
+    case 3:
+      return `${day}rd`;
+    default:
+      return `${day}th`;
   }
 }
 
@@ -172,7 +189,10 @@ export function spokenDue(dueAt: string | undefined, timezone: string, now: Date
   if (Number.isNaN(due.getTime())) return '';
   const dayFmt = new Intl.DateTimeFormat('en-US', { timeZone: timezone, weekday: 'long' });
   const timeFmt = new Intl.DateTimeFormat('en-US', {
-    timeZone: timezone, hour: 'numeric', minute: '2-digit', hour12: true,
+    timeZone: timezone,
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
   });
   const time = timeFmt.format(due).replace(':00', '');
   const today = localParts(now, timezone).date;
@@ -195,7 +215,11 @@ export function spokenDue(dueAt: string | undefined, timezone: string, now: Date
 }
 
 function unclaimedGap(
-  o: Obligation, timezone: string, now: Date, attrs?: EntityAttributes, saidNo: string[] = [],
+  o: Obligation,
+  timezone: string,
+  now: Date,
+  attrs?: EntityAttributes,
+  saidNo: string[] = [],
 ): CareGap {
   // P(dropped) = deadline hazard OR aging hazard (either failure mode suffices), then
   // lifted by any accessibility need on the subject (a dropped accessible ride recovers
@@ -208,9 +232,10 @@ function unclaimedGap(
   const confidence = confidenceOf(o.provenance.kind);
   const score = toScore(cost * pDrop * confidence);
   const due = spokenDue(o.dueAt, timezone, now);
-  const base = o.provenance.kind === 'INFERRED'
-    ? `Confirmed as needed, originally inferred from ${o.provenance.from}. No owner assigned.`
-    : 'This was recorded as needed and no one has claimed it.';
+  const base =
+    o.provenance.kind === 'INFERRED'
+      ? `Confirmed as needed, originally inferred from ${o.provenance.from}. No owner assigned.`
+      : 'This was recorded as needed and no one has claimed it.';
   const note = dignityNote(attrs);
   return {
     id: `gap_unclaimed_${o.id}`,
@@ -237,7 +262,11 @@ function unclaimedGap(
  * "I asked Funmi" quietly becoming "nobody is doing this".
  */
 function awaitingReplyGap(
-  o: Obligation, askedOf: string, timezone: string, now: Date, attrs?: EntityAttributes,
+  o: Obligation,
+  askedOf: string,
+  timezone: string,
+  now: Date,
+  attrs?: EntityAttributes,
 ): CareGap {
   const cost = HARM_COST[o.consequence];
   const base = probOr(imminenceHazard(o.dueAt, now), stalenessHazard(o.createdAt, now));
@@ -267,7 +296,12 @@ function awaitingReplyGap(
   };
 }
 
-function followUpGap(o: Obligation, timezone: string, now: Date, attrs?: EntityAttributes): CareGap {
+function followUpGap(
+  o: Obligation,
+  timezone: string,
+  now: Date,
+  attrs?: EntityAttributes,
+): CareGap {
   // Assigned but past due: it has slipped (hazard -> 1). Still weighted by how bad
   // dropping it is, and by how sure we are the underlying need was real. An accessibility
   // need can only hold pDrop at its ceiling here, never lower it.
@@ -298,7 +332,10 @@ function followUpGap(o: Obligation, timezone: string, now: Date, attrs?: EntityA
  * whether a dose was logged.
  */
 export function doseRecord(
-  state: CareState, medicationId: string, time: string, now: Date,
+  state: CareState,
+  medicationId: string,
+  time: string,
+  now: Date,
 ): CareEvent | undefined {
   const expected = parseHHMM(time);
   if (expected === null) return undefined;
@@ -354,8 +391,9 @@ function unconfirmedMedicationGaps(state: CareState, now: Date): CareGap[] {
         severity: severityFor(score),
         // Deliberate phrasing: no record != did not happen.
         spoken: `There's no record of ${name}'s ${med.name} from ${spokenClock(time)}.`,
-        because: `A dose was expected at ${spokenClock(time)} and nothing has been logged. `
-          + `This means no one has confirmed it - not that it was missed.`,
+        because:
+          `A dose was expected at ${spokenClock(time)} and nothing has been logged. ` +
+          `This means no one has confirmed it - not that it was missed.`,
         score,
         factors: { cost: HARM_COST.medical, pDrop: pMissed, confidence },
       });
@@ -377,7 +415,9 @@ export interface GapOptions {
  * makes the "what's going to fall through the cracks?" answer trustworthy.
  */
 function joinNames(names: string[]): string {
-  return names.length <= 1 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+  return names.length <= 1
+    ? (names[0] ?? '')
+    : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 }
 
 export function detectCareGaps(state: CareState, options: GapOptions = {}): CareGap[] {
@@ -393,17 +433,19 @@ export function detectCareGaps(state: CareState, options: GapOptions = {}): Care
     // Surfacing them as work would be exactly the inference-as-fact error
     // the trust model forbids.
     if (o.status === 'OPEN' && o.ownerId === null) {
-      const saidNo = (o.declinedBy ?? []).map((id) => {
-        const m = state.members.find((x) => x.id === id);
-        return m?.spokenAs ?? m?.name;
-      }).filter((n): n is string => Boolean(n));
+      const saidNo = (o.declinedBy ?? [])
+        .map((id) => {
+          const m = state.members.find((x) => x.id === id);
+          return m?.spokenAs ?? m?.name;
+        })
+        .filter((n): n is string => Boolean(n));
       gaps.push(unclaimedGap(o, timezone, now, attrs, saidNo));
     } else if (o.status === 'REQUESTED' && o.ownerId === null) {
       // Still a gap. Someone was asked; nobody has agreed.
       const askedOf = state.members.find((m) => m.id === o.request?.askedOfId);
-      gaps.push(awaitingReplyGap(
-        o, askedOf?.spokenAs ?? askedOf?.name ?? 'Someone', timezone, now, attrs,
-      ));
+      gaps.push(
+        awaitingReplyGap(o, askedOf?.spokenAs ?? askedOf?.name ?? 'Someone', timezone, now, attrs),
+      );
     } else if (o.status === 'ASSIGNED' && o.dueAt && new Date(o.dueAt) < now) {
       gaps.push(followUpGap(o, timezone, now, attrs));
     }
@@ -411,13 +453,14 @@ export function detectCareGaps(state: CareState, options: GapOptions = {}): Care
 
   gaps.push(...unconfirmedMedicationGaps(state, now));
 
-  const filtered = options.withinDays === undefined
-    ? gaps
-    : gaps.filter((g) => {
-        if (!g.dueAt) return true;
-        const days = (new Date(g.dueAt).getTime() - now.getTime()) / (24 * HOUR);
-        return days <= options.withinDays!;
-      });
+  const filtered =
+    options.withinDays === undefined
+      ? gaps
+      : gaps.filter((g) => {
+          if (!g.dueAt) return true;
+          const days = (new Date(g.dueAt).getTime() - now.getTime()) / (24 * HOUR);
+          return days <= options.withinDays!;
+        });
 
   return filtered.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id));
 }

@@ -77,17 +77,29 @@ export function parseTelegramUpdate(payload: unknown): TelegramInbound[] {
   // Bot usernames always end in "bot", so a mention of one is a message for us. The
   // mention itself is not part of what the person said.
   const mention = /@\w*bot\b/i;
-  const text = raw.replace(new RegExp(mention.source, 'gi'), '').replace(/\s{2,}/g, ' ').trim();
+  const text = raw
+    .replace(new RegExp(mention.source, 'gi'), '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
   const v = u.message?.voice;
   const voice = v?.file_id ? { fileId: v.file_id, seconds: v.duration ?? 0 } : undefined;
   if (!updateId || !chatId || (!text && !voice)) return [];
   const isPrivate = u.message?.chat?.type === 'private';
-  const addressedToBot = isPrivate || mention.test(raw) || u.message?.reply_to_message?.from?.is_bot === true;
+  const addressedToBot =
+    isPrivate || mention.test(raw) || u.message?.reply_to_message?.from?.is_bot === true;
   const fromName = u.message?.from?.first_name;
-  return [{
-    chatId, fromId, text, updateId, isPrivate, addressedToBot,
-    ...(fromName ? { fromName } : {}), ...(voice ? { voice } : {}),
-  }];
+  return [
+    {
+      chatId,
+      fromId,
+      text,
+      updateId,
+      isPrivate,
+      addressedToBot,
+      ...(fromName ? { fromName } : {}),
+      ...(voice ? { voice } : {}),
+    },
+  ];
 }
 
 /** A tap on one of the bot's buttons (a reminder's "Taken", say). */
@@ -103,13 +115,29 @@ export interface TelegramTap {
 export function parseTelegramTap(payload: unknown): TelegramTap | null {
   const u = (payload ?? {}) as {
     update_id?: number;
-    callback_query?: { id?: string; data?: string; from?: { id?: number }; message?: { message_id?: number; chat?: { id?: number } } };
+    callback_query?: {
+      id?: string;
+      data?: string;
+      from?: { id?: number };
+      message?: { message_id?: number; chat?: { id?: number } };
+    };
   };
   const q = u.callback_query;
-  if (typeof u.update_id !== 'number' || !q?.id || !q.data || q.from?.id === undefined
-    || q.message?.chat?.id === undefined || q.message.message_id === undefined) return null;
+  if (
+    typeof u.update_id !== 'number' ||
+    !q?.id ||
+    !q.data ||
+    q.from?.id === undefined ||
+    q.message?.chat?.id === undefined ||
+    q.message.message_id === undefined
+  )
+    return null;
   return {
-    updateId: String(u.update_id), callbackId: q.id, fromId: String(q.from.id),
-    chatId: String(q.message.chat.id), messageId: String(q.message.message_id), data: q.data,
+    updateId: String(u.update_id),
+    callbackId: q.id,
+    fromId: String(q.from.id),
+    chatId: String(q.message.chat.id),
+    messageId: String(q.message.message_id),
+    data: q.data,
   };
 }

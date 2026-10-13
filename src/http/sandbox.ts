@@ -47,9 +47,11 @@ export function sandboxCreatedAt(householdId: string): number | null {
  * are never candidates. Returns how many copies were removed.
  */
 export async function sweepSandboxes(
-  store: CareStore, opts: { ttlMs: number; keepAtMost: number; now: Date },
+  store: CareStore,
+  opts: { ttlMs: number; keepAtMost: number; now: Date },
 ): Promise<number> {
-  const copies = store.householdIds()
+  const copies = store
+    .householdIds()
     .map((id) => ({ id, at: sandboxCreatedAt(id) }))
     .filter((c): c is { id: string; at: number } => c.at !== null)
     .sort((a, b) => a.at - b.at);
@@ -104,7 +106,11 @@ export function createSandboxRoute(opts: SandboxOptions) {
       const suffix = sandboxSuffix(at);
       // The 3D world's day opens at 7:42 with Daddy logging his eye drops by voice, so
       // its copy must not already hold the 8:10 dose (Alexa would call it a duplicate).
-      const body = (req.body ?? {}) as { liveMorning?: unknown; careCase?: unknown; names?: unknown };
+      const body = (req.body ?? {}) as {
+        liveMorning?: unknown;
+        careCase?: unknown;
+        names?: unknown;
+      };
       const liveMorning = body.liveMorning === true;
       const careCase = {
         ...(isCareCase(body.careCase) ? { careCase: body.careCase } : {}),
@@ -112,15 +118,32 @@ export function createSandboxRoute(opts: SandboxOptions) {
       };
       await seedDemoHousehold(opts.store, { suffix, ...careCase });
       await seedScenario(opts.store, `${DEMO_HOUSEHOLD_ID}${suffix}`, {
-        suffix, now: at, refillDueTonight: true, skipMorningEyeDrops: liveMorning, ...careCase,
+        suffix,
+        now: at,
+        refillDueTonight: true,
+        skipMorningEyeDrops: liveMorning,
+        ...careCase,
       });
 
       const iat = Math.floor(at.getTime() / 1000);
       const exp = Math.floor((at.getTime() + ttlMs) / 1000);
-      const tokens = Object.fromEntries(SANDBOX_MEMBERS.map((m) => [m, signToken({
-        sub: `${m}${suffix}`, iss: opts.issuer, aud: opts.issuer, iat, exp,
-        typ: 'access', scope: 'carecircle.read carecircle.write',
-      }, opts.secret)]));
+      const tokens = Object.fromEntries(
+        SANDBOX_MEMBERS.map((m) => [
+          m,
+          signToken(
+            {
+              sub: `${m}${suffix}`,
+              iss: opts.issuer,
+              aud: opts.issuer,
+              iat,
+              exp,
+              typ: 'access',
+              scope: 'carecircle.read carecircle.write',
+            },
+            opts.secret,
+          ),
+        ]),
+      );
 
       res.status(201).json({
         householdId: `${DEMO_HOUSEHOLD_ID}${suffix}`,

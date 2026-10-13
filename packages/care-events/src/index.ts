@@ -28,12 +28,12 @@ export type Provenance =
 
 /** What a signal is about, coarse enough to be shared across device types. */
 export type CareEventKind =
-  | 'medication'      // a dose was reported taken
-  | 'appointment'     // a future commitment
-  | 'observation'     // a note, a mood, a symptom
-  | 'delivery'        // something arrived
-  | 'presence'        // activity, or its absence, at a place
-  | 'message';        // a person told another person something
+  | 'medication' // a dose was reported taken
+  | 'appointment' // a future commitment
+  | 'observation' // a note, a mood, a symptom
+  | 'delivery' // something arrived
+  | 'presence' // activity, or its absence, at a place
+  | 'message'; // a person told another person something
 
 /** The uniform shape every device's signal becomes. */
 export interface CareEvent {

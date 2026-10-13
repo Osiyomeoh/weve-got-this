@@ -7,8 +7,7 @@ import { CareStore } from '../store/store.ts';
 import { seedDemoHousehold } from '../demo/seed.ts';
 import { seedScenario } from '../demo/scenario.ts';
 
-const member = (role: Role, id = 'm1'): Member =>
-  ({ id, householdId: 'h1', name: 'Test', role });
+const member = (role: Role, id = 'm1'): Member => ({ id, householdId: 'h1', name: 'Test', role });
 
 test('only the primary caregiver can assign work to others', () => {
   assert.ok(can(member('primary_caregiver'), 'assign_obligation'));
@@ -63,29 +62,53 @@ test('a non-medical event proposes nothing', () => {
 test('an unavailability orphans work that person was covering', () => {
   const thursday = '2026-10-15T14:00:00Z';
   const obligations = [
-    { id:'o1', ownerId:'m_renee', status:'ASSIGNED', dueAt:thursday, what:'Take Daddy to his eye check-up' },
-    { id:'o2', ownerId:'m_david', status:'ASSIGNED', dueAt:thursday, what:'Pick up prescription' },
-    { id:'o3', ownerId:'m_renee', status:'RESOLVED', dueAt:thursday, what:'Already done' },
+    {
+      id: 'o1',
+      ownerId: 'm_renee',
+      status: 'ASSIGNED',
+      dueAt: thursday,
+      what: 'Take Daddy to his eye check-up',
+    },
+    {
+      id: 'o2',
+      ownerId: 'm_david',
+      status: 'ASSIGNED',
+      dueAt: thursday,
+      what: 'Pick up prescription',
+    },
+    { id: 'o3', ownerId: 'm_renee', status: 'RESOLVED', dueAt: thursday, what: 'Already done' },
   ] as unknown as Obligation[];
 
   const orphaned = orphanedBy(
-    { memberId:'m_renee', from:'2026-10-15T00:00:00Z', to:'2026-10-15T23:59:00Z' },
+    { memberId: 'm_renee', from: '2026-10-15T00:00:00Z', to: '2026-10-15T23:59:00Z' },
     obligations,
     () => 'Funmi',
   );
 
   // Only Funmi's still-open work in that window. Nobody else's, nothing already done.
-  assert.deepEqual(orphaned.map((o) => o.obligationId), ['o1']);
+  assert.deepEqual(
+    orphaned.map((o) => o.obligationId),
+    ['o1'],
+  );
   assert.match(orphaned[0]!.ask, /Does someone else need to pick it up/);
 });
 
 test('an unavailability outside the window orphans nothing', () => {
   const obligations = [
-    { id:'o1', ownerId:'m_renee', status:'ASSIGNED', dueAt:'2026-11-20T14:00:00Z', what:'Drive Daddy' },
+    {
+      id: 'o1',
+      ownerId: 'm_renee',
+      status: 'ASSIGNED',
+      dueAt: '2026-11-20T14:00:00Z',
+      what: 'Drive Daddy',
+    },
   ] as unknown as Obligation[];
   assert.deepEqual(
-    orphanedBy({ memberId:'m_renee', from:'2026-10-15T00:00:00Z', to:'2026-10-15T23:59:00Z' },
-      obligations, () => 'Funmi'),
+    orphanedBy(
+      { memberId: 'm_renee', from: '2026-10-15T00:00:00Z', to: '2026-10-15T23:59:00Z' },
+      obligations,
+      () => 'Funmi',
+    ),
     [],
   );
 });
@@ -95,7 +118,11 @@ test('the scenario puts the check-up two days from whenever it is played, at 10:
   // time anyone offered to drive. Every hour of a week, on a fixed clock: reading the UTC day
   // once put a Lagos date a day out when reset between midnight and 1 AM there.
   const fmt = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'Africa/Lagos', weekday: 'long', hour: 'numeric', minute: '2-digit', hour12: false,
+    timeZone: 'Africa/Lagos',
+    weekday: 'long',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: false,
   });
   const weekday = new Intl.DateTimeFormat('en-US', { timeZone: 'Africa/Lagos', weekday: 'long' });
   for (let h = 0; h < 24 * 7; h += 1) {
@@ -111,8 +138,13 @@ test('the scenario puts the check-up two days from whenever it is played, at 10:
     assert.equal(Number(parts['hour']) % 24, 10, at);
     assert.equal(parts['minute'], '00', at);
     assert.ok(checkUpAt.getTime() > now.getTime(), `must be in the future: ${at}`);
-    const said = store.getCareState('h_margaret').events.find((e) => e.kind === 'appointment_scheduled')?.detail ?? '';
-    assert.ok(said.includes(day) && !(day !== 'Thursday' && said.includes('Thursday')), `the record names ${day}: ${said}`);
+    const said =
+      store.getCareState('h_margaret').events.find((e) => e.kind === 'appointment_scheduled')
+        ?.detail ?? '';
+    assert.ok(
+      said.includes(day) && !(day !== 'Thursday' && said.includes('Thursday')),
+      `the record names ${day}: ${said}`,
+    );
   }
 });
 

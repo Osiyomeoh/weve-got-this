@@ -5,14 +5,30 @@ import { ScriptedModel } from './scripted-model.ts';
 import { BedrockProvider, providerFromEnv } from '../sim/providers.ts';
 
 const TOOLS = [
-  { name: 'get_care_gaps', description: 'What is open.', inputSchema: { type: 'object', properties: {} } },
-  { name: 'claim_obligation', description: 'Take something on.', inputSchema: { type: 'object', properties: { obligationId: { type: 'string' } } } },
+  {
+    name: 'get_care_gaps',
+    description: 'What is open.',
+    inputSchema: { type: 'object', properties: {} },
+  },
+  {
+    name: 'claim_obligation',
+    description: 'Take something on.',
+    inputSchema: { type: 'object', properties: { obligationId: { type: 'string' } } },
+  },
 ];
 
 test('the first reply is measured, its tool call reported and not run', async () => {
-  const model = new ScriptedModel([{ tool: 'claim_obligation', input: { obligationId: 'o_ride' } }, { say: 'never reached' }]);
-  const out = await new StrandsProvider(model).start('You are Alexa.', TOOLS).say('I can take Daddy on Thursday');
-  assert.deepEqual(out.toolUses.map((u) => [u.name, u.input]), [['claim_obligation', { obligationId: 'o_ride' }]]);
+  const model = new ScriptedModel([
+    { tool: 'claim_obligation', input: { obligationId: 'o_ride' } },
+    { say: 'never reached' },
+  ]);
+  const out = await new StrandsProvider(model)
+    .start('You are Alexa.', TOOLS)
+    .say('I can take Daddy on Thursday');
+  assert.deepEqual(
+    out.toolUses.map((u) => [u.name, u.input]),
+    [['claim_obligation', { obligationId: 'o_ride' }]],
+  );
   assert.equal(model.seen.length, 1, 'stopped after the first reply');
   assert.equal(model.prompts[0], 'You are Alexa.');
 });
@@ -36,10 +52,14 @@ test('the Telegram chat runs on Strands unless CARECIRCLE_PROVIDER says otherwis
   try {
     delete process.env['CARECIRCLE_PROVIDER'];
     assert.ok(providerFromEnv('strands') instanceof StrandsProvider, 'what http/app.ts asks for');
-    assert.ok(providerFromEnv() instanceof BedrockProvider, 'everyone else keeps the hand-written loop');
+    assert.ok(
+      providerFromEnv() instanceof BedrockProvider,
+      'everyone else keeps the hand-written loop',
+    );
     process.env['CARECIRCLE_PROVIDER'] = 'bedrock';
     assert.ok(providerFromEnv('strands') instanceof BedrockProvider, 'the setting wins');
   } finally {
-    if (was === undefined) delete process.env['CARECIRCLE_PROVIDER']; else process.env['CARECIRCLE_PROVIDER'] = was;
+    if (was === undefined) delete process.env['CARECIRCLE_PROVIDER'];
+    else process.env['CARECIRCLE_PROVIDER'] = was;
   }
 });

@@ -12,7 +12,13 @@ const store = new CareStore();
 async function seed(): Promise<void> {
   await store.reset();
   await store.addHousehold({ id: HH, name: 'circle', timezone: 'America/New_York' });
-  await store.addMember({ id: 'm_margaret', householdId: HH, name: 'Margaret', role: 'care_recipient', spokenAs: 'Mum' });
+  await store.addMember({
+    id: 'm_margaret',
+    householdId: HH,
+    name: 'Margaret',
+    role: 'care_recipient',
+    spokenAs: 'Mum',
+  });
 }
 beforeEach(seed);
 
@@ -26,7 +32,9 @@ test('a bee todo enters as a PROPOSED, INFERRED obligation - never asserted work
   assert.equal(r.proposed.length, 1);
 
   const state = store.getCareState(HH);
-  const obl = state.obligations.find((o) => o.provenance.kind === 'INFERRED' && o.provenance.rule === 'bee:todo');
+  const obl = state.obligations.find(
+    (o) => o.provenance.kind === 'INFERRED' && o.provenance.rule === 'bee:todo',
+  );
   assert.ok(obl, 'the todo should have produced an INFERRED obligation');
   // The whole trust thesis: a thing Bee heard is heard, not known.
   assert.equal(obl!.status, 'PROPOSED');
@@ -51,9 +59,15 @@ test('a bee fact is recorded as an observation and creates no obligation', async
 });
 
 test('a completed todo is skipped, not re-proposed', async () => {
-  const r = await syncBeeItems(store, HH, items({
-    todos: [{ id: 't9', text: 'already handled', completed: true }], facts: [],
-  }), NOW);
+  const r = await syncBeeItems(
+    store,
+    HH,
+    items({
+      todos: [{ id: 't9', text: 'already handled', completed: true }],
+      facts: [],
+    }),
+    NOW,
+  );
   assert.equal(r.proposed.length, 0);
   assert.equal(r.skipped.find((s) => s.id === 't9')?.reason, 'completed or empty');
 });
@@ -70,8 +84,14 @@ test('re-running the same pull creates nothing (idempotent by bee id)', async ()
 
 test('config needs both a token and an explicit API base (no guessed host)', () => {
   assert.equal(beeConfigFromEnv({ BEE_TOKEN: 'x' } as NodeJS.ProcessEnv), null);
-  assert.equal(beeConfigFromEnv({ BEE_API_BASE: 'https://api.bee.computer' } as NodeJS.ProcessEnv), null);
-  const cfg = beeConfigFromEnv({ BEE_TOKEN: 'x', BEE_API_BASE: 'https://api.bee.computer/' } as NodeJS.ProcessEnv);
+  assert.equal(
+    beeConfigFromEnv({ BEE_API_BASE: 'https://api.bee.computer' } as NodeJS.ProcessEnv),
+    null,
+  );
+  const cfg = beeConfigFromEnv({
+    BEE_TOKEN: 'x',
+    BEE_API_BASE: 'https://api.bee.computer/',
+  } as NodeJS.ProcessEnv);
   assert.equal(cfg!.apiBase, 'https://api.bee.computer'); // trailing slash trimmed
 });
 
@@ -81,9 +101,23 @@ import { sendDueReminders } from '../domain/reminders.ts';
 import { RecordOnlyNotifier } from '../notify/notifier.ts';
 
 test('at dose time the reminder goes into their Bee; ticked done, the dose is on the record as theirs', async () => {
-  await store.addMedication({ id: 'med', householdId: HH, name: 'eye drops', times: ['10:00'], forMemberId: 'm_margaret', since: '2026-10-01T00:00:00Z' });
+  await store.addMedication({
+    id: 'med',
+    householdId: HH,
+    name: 'eye drops',
+    times: ['10:00'],
+    forMemberId: 'm_margaret',
+    since: '2026-10-01T00:00:00Z',
+  });
   const sent: { text: string; alarmAt: string }[] = [];
-  const bee = { config: { token: 't', apiBase: 'https://bee.test' }, memberId: 'm_margaret', create: async (_c: unknown, todo: { text: string; alarmAt: string }) => { sent.push(todo); return 'bee-1'; } };
+  const bee = {
+    config: { token: 't', apiBase: 'https://bee.test' },
+    memberId: 'm_margaret',
+    create: async (_c: unknown, todo: { text: string; alarmAt: string }) => {
+      sent.push(todo);
+      return 'bee-1';
+    },
+  };
   // 10:05 in New York.
   const at = new Date('2026-10-14T14:05:00Z');
   await sendDueReminders({ store, notifier: new RecordOnlyNotifier(), bee, now: at });
@@ -92,11 +126,21 @@ test('at dose time the reminder goes into their Bee; ticked done, the dose is on
   assert.match(sent[0]!.text, /eye drops/);
 
   // Still open in Bee: nothing recorded, and it is not mistaken for something Bee overheard.
-  let r = await syncBeeItems(store, HH, items({ facts: [], todos: [{ id: 'bee-1', text: sent[0]!.text, completed: false }] }), at);
+  let r = await syncBeeItems(
+    store,
+    HH,
+    items({ facts: [], todos: [{ id: 'bee-1', text: sent[0]!.text, completed: false }] }),
+    at,
+  );
   assert.equal(r.proposed.length, 0);
   assert.equal(r.taken.length, 0);
 
-  r = await syncBeeItems(store, HH, items({ facts: [], todos: [{ id: 'bee-1', text: sent[0]!.text, completed: true }] }), new Date('2026-10-14T14:09:00Z'));
+  r = await syncBeeItems(
+    store,
+    HH,
+    items({ facts: [], todos: [{ id: 'bee-1', text: sent[0]!.text, completed: true }] }),
+    new Date('2026-10-14T14:09:00Z'),
+  );
   assert.equal(r.taken.length, 1);
   const taken = store.getCareState(HH).events.filter((e) => e.kind === 'medication_taken');
   assert.equal(taken.length, 1);
@@ -104,15 +148,42 @@ test('at dose time the reminder goes into their Bee; ticked done, the dose is on
   assert.equal(taken[0]!.source, 'bee');
 
   // A second sync changes nothing.
-  r = await syncBeeItems(store, HH, items({ facts: [], todos: [{ id: 'bee-1', text: sent[0]!.text, completed: true }] }), new Date('2026-10-14T14:12:00Z'));
-  assert.equal(store.getCareState(HH).events.filter((e) => e.kind === 'medication_taken').length, 1);
+  r = await syncBeeItems(
+    store,
+    HH,
+    items({ facts: [], todos: [{ id: 'bee-1', text: sent[0]!.text, completed: true }] }),
+    new Date('2026-10-14T14:12:00Z'),
+  );
+  assert.equal(
+    store.getCareState(HH).events.filter((e) => e.kind === 'medication_taken').length,
+    1,
+  );
 });
 
 test('the Bee reminder goes only to the member whose Bee it is', async () => {
   await store.addMember({ id: 'm_son', householdId: HH, name: 'Sam', role: 'primary_caregiver' });
-  await store.addMedication({ id: 'med', householdId: HH, name: 'eye drops', times: ['10:00'], forMemberId: 'm_margaret', since: '2026-10-01T00:00:00Z' });
+  await store.addMedication({
+    id: 'med',
+    householdId: HH,
+    name: 'eye drops',
+    times: ['10:00'],
+    forMemberId: 'm_margaret',
+    since: '2026-10-01T00:00:00Z',
+  });
   let calls = 0;
-  const bee = { config: { token: 't', apiBase: 'https://bee.test' }, memberId: 'm_son', create: async () => { calls += 1; return 'x'; } };
-  await sendDueReminders({ store, notifier: new RecordOnlyNotifier(), bee, now: new Date('2026-10-14T14:05:00Z') });
+  const bee = {
+    config: { token: 't', apiBase: 'https://bee.test' },
+    memberId: 'm_son',
+    create: async () => {
+      calls += 1;
+      return 'x';
+    },
+  };
+  await sendDueReminders({
+    store,
+    notifier: new RecordOnlyNotifier(),
+    bee,
+    now: new Date('2026-10-14T14:05:00Z'),
+  });
   assert.equal(calls, 0);
 });

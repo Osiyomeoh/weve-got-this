@@ -3,14 +3,20 @@ import assert from 'node:assert/strict';
 import { ringEventToSignal, ringIdempotencyKey, type RingEvent } from './ring.ts';
 
 const ev = (over: Partial<RingEvent['data']> = {}, meta: RingEvent['meta'] = {}): RingEvent => ({
-  data: { type: 'motion_detected', id: 'evt_1',
+  data: {
+    type: 'motion_detected',
+    id: 'evt_1',
     attributes: { created_at: '2026-10-15T18:00:00Z' },
-    relationships: { device: { data: { id: 'dev_front' } } }, ...over },
+    relationships: { device: { data: { id: 'dev_front' } } },
+    ...over,
+  },
   meta: { request_id: 'req_1', ...meta },
 });
 
 test('a package-motion event becomes a delivery signal', () => {
-  const s = ringEventToSignal(ev({ attributes: { created_at: '2026-10-15T18:00:00Z', sub_type: 'package' } }));
+  const s = ringEventToSignal(
+    ev({ attributes: { created_at: '2026-10-15T18:00:00Z', sub_type: 'package' } }),
+  );
   assert.ok(s);
   assert.equal(s.kind, 'delivery_arrived');
   assert.equal(s.source, 'ring');
@@ -19,7 +25,9 @@ test('a package-motion event becomes a delivery signal', () => {
 });
 
 test('a human-motion event is a sign of life, not a delivery', () => {
-  const s = ringEventToSignal(ev({ attributes: { created_at: '2026-10-15T18:00:00Z', sub_type: 'human' } }));
+  const s = ringEventToSignal(
+    ev({ attributes: { created_at: '2026-10-15T18:00:00Z', sub_type: 'human' } }),
+  );
   assert.equal(s?.kind, 'motion');
 });
 

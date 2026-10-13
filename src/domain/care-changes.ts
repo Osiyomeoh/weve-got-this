@@ -56,8 +56,10 @@ export function appointmentsOf(state: CareState): Appointment[] {
 /** Appointments still going ahead, from now until `days` ahead. */
 export function upcomingAppointments(state: CareState, now: Date, days = 7): Appointment[] {
   const until = now.getTime() + days * 86_400_000;
-  return appointmentsOf(state).filter((a) => !a.cancelled
-    && Date.parse(a.at) >= now.getTime() - 60 * 60_000 && Date.parse(a.at) <= until);
+  return appointmentsOf(state).filter(
+    (a) =>
+      !a.cancelled && Date.parse(a.at) >= now.getTime() - 60 * 60_000 && Date.parse(a.at) <= until,
+  );
 }
 
 /**
@@ -66,7 +68,11 @@ export function upcomingAppointments(state: CareState, now: Date, days = 7): App
  */
 export function emergencyAdvice(timezone: string): string {
   if (timezone === 'Africa/Lagos') return 'call 112 now, or 767 in Lagos';
-  if (timezone.startsWith('America/') && !/Sao_Paulo|Argentina|Bogota|Lima|Santiago|Caracas/.test(timezone)) return 'call 911 now';
+  if (
+    timezone.startsWith('America/') &&
+    !/Sao_Paulo|Argentina|Bogota|Lima|Santiago|Caracas/.test(timezone)
+  )
+    return 'call 911 now';
   if (timezone === 'Europe/London') return 'call 999 now';
   if (timezone.startsWith('Europe/')) return 'call 112 now';
   return 'call your local emergency number now';

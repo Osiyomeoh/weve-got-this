@@ -20,7 +20,8 @@ test('a claim that someone missed a dose is caught in every voice', () => {
     'The dose is not taken.',
     'He failed to take them.',
     'He never took them.',
-  ]) assert.ok(blameIn(said), said);
+  ])
+    assert.ok(blameIn(said), said);
 });
 
 test('saying what the record shows is never caught', () => {
@@ -32,5 +33,6 @@ test('saying what the record shows is never caught', () => {
     'Has anyone given him the drops? I have no record of it.',
     'He takes his drops at 8 AM and 8 PM.',
     'The drops were given at 8:10 AM, Musa logged it.',
-  ]) assert.equal(blameIn(said), null, said);
+  ])
+    assert.equal(blameIn(said), null, said);
 });

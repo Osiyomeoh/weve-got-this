@@ -45,7 +45,9 @@ before(async () => {
   });
 });
 
-after(() => { server?.close(); });
+after(() => {
+  server?.close();
+});
 
 const HEADERS = (token: string, sessionId?: string) => ({
   'content-type': 'application/json',
@@ -56,11 +58,15 @@ const HEADERS = (token: string, sessionId?: string) => ({
 
 async function session(token: string): Promise<string> {
   const res = await fetch(base, {
-    method: 'POST', headers: HEADERS(token),
+    method: 'POST',
+    headers: HEADERS(token),
     body: JSON.stringify({
-      jsonrpc: '2.0', id: 1, method: 'initialize',
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'initialize',
       params: {
-        protocolVersion: '2025-11-25', capabilities: {},
+        protocolVersion: '2025-11-25',
+        capabilities: {},
         clientInfo: { name: 'modality', version: '1.0' },
       },
     }),
@@ -68,7 +74,8 @@ async function session(token: string): Promise<string> {
   const id = res.headers.get('mcp-session-id')!;
   await res.text();
   await fetch(base, {
-    method: 'POST', headers: HEADERS(token, id),
+    method: 'POST',
+    headers: HEADERS(token, id),
     body: JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }),
   });
   return id;
@@ -76,10 +83,13 @@ async function session(token: string): Promise<string> {
 
 async function call(token: string, id: string, name: string, args: Record<string, unknown> = {}) {
   const res = await fetch(base, {
-    method: 'POST', headers: HEADERS(token, id),
+    method: 'POST',
+    headers: HEADERS(token, id),
     body: JSON.stringify({
-      jsonrpc: '2.0', id: Math.floor(Math.random() * 1e6),
-      method: 'tools/call', params: { name, arguments: args },
+      jsonrpc: '2.0',
+      id: Math.floor(Math.random() * 1e6),
+      method: 'tools/call',
+      params: { name, arguments: args },
     }),
   });
   const body = JSON.parse(await res.text());
@@ -90,7 +100,8 @@ async function call(token: string, id: string, name: string, args: Record<string
 }
 
 /** Words that hand the listener off to something they may not be able to see. */
-const VISUAL_DEIXIS = /\b(tap|click|below|above|on (the )?screen|see the|look at|shown here|as displayed|press the button)\b/i;
+const VISUAL_DEIXIS =
+  /\b(tap|click|below|above|on (the )?screen|see the|look at|shown here|as displayed|press the button)\b/i;
 
 // --- A. the screen is never required -------------------------------------
 
@@ -139,16 +150,20 @@ test('B: every fact the voice conveys is present in the structured answer', asyn
 
   for (const gap of gaps) {
     for (const field of SPOKEN_FACTS) {
-      assert.ok(gap[field] !== undefined && gap[field] !== null,
-        `a reader would lose "${field}" - the voice would be required`);
+      assert.ok(
+        gap[field] !== undefined && gap[field] !== null,
+        `a reader would lose "${field}" - the voice would be required`,
+      );
     }
     // The ranking must be auditable by eye, not only by ear.
     for (const term of ['cost', 'pDrop', 'confidence']) {
       assert.equal(typeof gap.factors[term], 'number', `factors.${term} must be readable`);
     }
     // What the speaker heard must itself be readable, word for word.
-    assert.ok(spoken.includes(gap.spoken),
-      'the spoken line must appear verbatim in the data a reader sees');
+    assert.ok(
+      spoken.includes(gap.spoken),
+      'the spoken line must appear verbatim in the data a reader sees',
+    );
   }
 });
 
@@ -157,8 +172,10 @@ test('B: work that can be acted on carries the id needed to act on it', async ()
   const s = await session('renee-token');
   const { structured } = await call('renee-token', s, 'get_care_gaps');
   for (const gap of structured.gaps ?? []) {
-    assert.ok('obligationId' in gap,
-      'without an id, a reader can see the work but cannot claim it');
+    assert.ok(
+      'obligationId' in gap,
+      'without an id, a reader can see the work but cannot claim it',
+    );
   }
 });
 
@@ -166,8 +183,10 @@ test('B: the board can render every fact the voice carries', () => {
   // A field present in the payload but absent from the view is still a fact only
   // the listener receives.
   for (const field of SPOKEN_FACTS) {
-    assert.ok(CARE_BOARD_HTML.includes(field),
-      `the board never reads "${field}", so that fact reaches ears only`);
+    assert.ok(
+      CARE_BOARD_HTML.includes(field),
+      `the board never reads "${field}", so that fact reaches ears only`,
+    );
   }
 });
 
@@ -175,10 +194,12 @@ test('B: the state of a gap is conveyed in words, not by colour alone', () => {
   // Colour is invisible to a screen reader and ambiguous to a colour-blind reader.
   // "No record" is the single most important state on the card - it is the one a
   // family must not mistake for "she missed it".
-  assert.match(CARE_BOARD_HTML, /no record/i,
-    'the "no record" state must be written, not merely coloured');
-  assert.match(CARE_BOARD_HTML, /needs an owner/i,
-    'an unowned gap must say so in words');
+  assert.match(
+    CARE_BOARD_HTML,
+    /no record/i,
+    'the "no record" state must be written, not merely coloured',
+  );
+  assert.match(CARE_BOARD_HTML, /needs an owner/i, 'an unowned gap must say so in words');
 });
 
 test('B: the reader gets the reasoning, not just the headline', () => {
@@ -186,10 +207,16 @@ test('B: the reader gets the reasoning, not just the headline', () => {
   // inferred from cardiology appointment". The SPOKEN channel does not carry it
   // at all: speakGaps says only each gap's `spoken` line. So the reader is
   // strictly better served here, which is the direction the invariant allows.
-  assert.match(CARE_BOARD_HTML, /gap\.because/,
-    'the board must render the reasoning a listener never hears');
-  assert.match(CARE_BOARD_HTML, /gap\.spoken/,
-    'the board must also render exactly what a listener is told');
+  assert.match(
+    CARE_BOARD_HTML,
+    /gap\.because/,
+    'the board must render the reasoning a listener never hears',
+  );
+  assert.match(
+    CARE_BOARD_HTML,
+    /gap\.spoken/,
+    'the board must also render exactly what a listener is told',
+  );
 });
 
 // --- the guarantee, stated once ------------------------------------------
@@ -205,6 +232,7 @@ test('neither channel is load-bearing: both halves hold together', async () => {
 
   // Someone who can only read gets every gap, with its reasoning.
   const readable = gaps.filter((g: Record<string, unknown>) =>
-    SPOKEN_FACTS.every((f) => g[f] !== undefined && g[f] !== null));
+    SPOKEN_FACTS.every((f) => g[f] !== undefined && g[f] !== null),
+  );
   assert.equal(readable.length, gaps.length, 'a reader must not be told about fewer gaps');
 });

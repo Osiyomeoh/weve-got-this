@@ -15,24 +15,61 @@ import type { Gesture } from './models';
 // camera, who is speaking, and what each device shows. It never decides what Alexa or
 // the agent says: those words come back from the server, and the world only stages them.
 
-export interface Caption { who: string; text: string; tone: 'person' | 'aside' | 'alexa' | 'narration' | 'device' | 'agent'; color?: string; to?: string }
+export interface Caption {
+  who: string;
+  text: string;
+  tone: 'person' | 'aside' | 'alexa' | 'narration' | 'device' | 'agent';
+  color?: string;
+  to?: string;
+}
 
 /** What a person is attending to. The scene turns it into a point in the world. */
 export type LookAt = 'echo' | 'tv' | 'laptop' | 'door' | 'daddy' | 'musa' | 'tolu' | null;
 /** How a person is, moment to moment: where their eyes are, whether they are talking, the phone in their hand. */
-export interface Presence { look: LookAt; talking: boolean; phone: boolean; gesture: Gesture | null; at: 'home' | 'door' }
-export interface PhoneMessage { from: string; text: string; key: string }
-export interface TraceItem { id: number; who: string; call: ToolCall; at: string }
+export interface Presence {
+  look: LookAt;
+  talking: boolean;
+  phone: boolean;
+  gesture: Gesture | null;
+  at: 'home' | 'door';
+}
+export interface PhoneMessage {
+  from: string;
+  text: string;
+  key: string;
+}
+export interface TraceItem {
+  id: number;
+  who: string;
+  call: ToolCall;
+  at: string;
+}
 /** `remote`: their turn is buttons on the TV remote, not words. */
 /** Said in place of a line: decline it (with the step's own words), or let it go entirely. */
 export const SAY_NO = '\u0000no';
 export const STAY_QUIET = '\u0000quiet';
 export type Choice = 'yes' | 'no' | 'quiet';
 /** A moment that went another way than the script, and who chose it. */
-export interface Choosing { who: string; said: string; choice: Exclude<Choice, 'yes'>; yours: boolean }
-export interface Prompt { /** This moment can be declined, in these words. */ no?: string; who: PersonKey; suggestion: string; remote?: boolean; guest?: boolean; /** Alexa answered but the scene isn't there yet: say the next thing to her. */ reply?: boolean }
+export interface Choosing {
+  who: string;
+  said: string;
+  choice: Exclude<Choice, 'yes'>;
+  yours: boolean;
+}
+export interface Prompt {
+  /** This moment can be declined, in these words. */ no?: string;
+  who: PersonKey;
+  suggestion: string;
+  remote?: boolean;
+  guest?: boolean;
+  /** Alexa answered but the scene isn't there yet: say the next thing to her. */ reply?: boolean;
+}
 /** What the doorbell reported, drawn as the card a family would see: what it saw, and what it can't know. */
-export interface Evidence { at: Date; saw: string; cannot: string }
+export interface Evidence {
+  at: Date;
+  saw: string;
+  cannot: string;
+}
 export interface Stuck {
   reason: string;
   expected: string[];
@@ -84,9 +121,29 @@ const AT_REST: Record<PersonKey, Presence> = {
 };
 
 const START: WorldView = {
-  status: 'cast', beat: 0, clock: homeToday(7, 30), shot: 'overview', caption: null, press: null, choices: [], interrupts: 0,
-  glow: { daddy: 'idle', tolu: 'idle' }, phones: {}, phoneListening: null, point: null, trace: [], log: [], pulses: [],
-  musa: 'midday', ringActive: false, evidence: null, hubBusy: false, prompt: null, stuck: null, error: null, playing: null,
+  status: 'cast',
+  beat: 0,
+  clock: homeToday(7, 30),
+  shot: 'overview',
+  caption: null,
+  press: null,
+  choices: [],
+  interrupts: 0,
+  glow: { daddy: 'idle', tolu: 'idle' },
+  phones: {},
+  phoneListening: null,
+  point: null,
+  trace: [],
+  log: [],
+  pulses: [],
+  musa: 'midday',
+  ringActive: false,
+  evidence: null,
+  hubBusy: false,
+  prompt: null,
+  stuck: null,
+  error: null,
+  playing: null,
   people: AT_REST,
 };
 
@@ -101,25 +158,53 @@ function deviceOf(who: PersonKey): V3 {
 function personNamed(name: string): PersonKey | null {
   const n = name.toLowerCase();
   // The names this family goes by now (the US family, or a visitor's own), then the old ones.
-  for (const k of ['musa', 'tolu', 'daddy'] as PersonKey[]) if (CAST[k] && n.includes(CAST[k]!.name.toLowerCase())) return k;
+  for (const k of ['musa', 'tolu', 'daddy'] as PersonKey[])
+    if (CAST[k] && n.includes(CAST[k]!.name.toLowerCase())) return k;
   if (n.includes('musa') || n.includes('bisi')) return 'musa';
   if (n.includes('tolu')) return 'tolu';
   // The person cared for, by what the family calls them or the name on the record.
-  if (['daddy', 'joseph', 'mama', 'grace', 'baba', 'adewale', 'mummy', 'adunni', 'linda', 'folake', 'wambui'].some((k) => n.includes(k))) return 'daddy';
+  if (
+    [
+      'daddy',
+      'joseph',
+      'mama',
+      'grace',
+      'baba',
+      'adewale',
+      'mummy',
+      'adunni',
+      'linda',
+      'folake',
+      'wambui',
+    ].some((k) => n.includes(k))
+  )
+    return 'daddy';
   return null;
 }
 
-const noteKey = (n: { from: string; to: string; message: string; at?: string }) => `${n.at ?? ''}|${n.to}|${n.message}`;
+const noteKey = (n: { from: string; to: string; message: string; at?: string }) =>
+  `${n.at ?? ''}|${n.to}|${n.message}`;
 
-export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null | undefined; onStoryTime: (at: Date) => void }) {
+export function useDirector(opts: {
+  muted: boolean;
+  tvFrame: () => Window | null | undefined;
+  onStoryTime: (at: Date) => void;
+}) {
   const [view, setView] = useState<WorldView>(START);
-  const set = useCallback((patch: Partial<WorldView> | ((v: WorldView) => Partial<WorldView>)) =>
-    setView((v) => ({ ...v, ...(typeof patch === 'function' ? patch(v) : patch) })), []);
+  const set = useCallback(
+    (patch: Partial<WorldView> | ((v: WorldView) => Partial<WorldView>)) =>
+      setView((v) => ({ ...v, ...(typeof patch === 'function' ? patch(v) : patch) })),
+    [],
+  );
 
   // The story clock: a story instant, and the real moment it was set. It runs at real speed.
   const clock = useRef({ at: START.clock.getTime(), setAt: Date.now() });
   const storyNow = () => new Date(clock.current.at + (Date.now() - clock.current.setAt));
-  const setClock = (at: Date) => { clock.current = { at: at.getTime(), setAt: Date.now() }; set({ clock: at }); opts.onStoryTime(at); };
+  const setClock = (at: Date) => {
+    clock.current = { at: at.getTime(), setAt: Date.now() };
+    set({ clock: at });
+    opts.onStoryTime(at);
+  };
 
   const run = useRef(0); // bumps on restart, so a stale run stops at its next await
   const answer = useRef<((text: string) => void) | null>(null);
@@ -130,11 +215,15 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
   const retry = useRef<((again: boolean) => void) | null>(null);
   /** How each named moment went, so later steps follow from it. */
   const outcomes = useRef(new Map<string, Choice>());
-  const went = (id: string) => { const o = outcomes.current.get(id); return o !== 'no' && o !== 'quiet'; };
+  const went = (id: string) => {
+    const o = outcomes.current.get(id);
+    return o !== 'no' && o !== 'quiet';
+  };
   const remoteQuiet = useRef(false);
   const chose = (step: Step, who: PersonKey, choice: Choice, said: string, yours: boolean) => {
     if (step.id) outcomes.current.set(step.id, choice);
-    if (choice !== 'yes') set((v) => ({ choices: [...v.choices, { who: CAST[who]!.name, said, choice, yours }] }));
+    if (choice !== 'yes')
+      set((v) => ({ choices: [...v.choices, { who: CAST[who]!.name, said, choice, yours }] }));
   };
   /** The people family members are playing from their own phones (see room.ts). */
   const guests = useRef<Set<PersonKey>>(new Set());
@@ -150,9 +239,11 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
 
   const be = (who: PersonKey, patch: Partial<Presence>) =>
     set((v) => ({ people: { ...v.people, [who]: { ...v.people[who]!, ...patch } } }));
-  const gesture = (who: PersonKey, kind: Gesture['kind']) => be(who, { gesture: { kind, key: ++gestureId.current } });
+  const gesture = (who: PersonKey, kind: Gesture['kind']) =>
+    be(who, { gesture: { kind, key: ++gestureId.current } });
   /** Back to what they were doing before: Tolu to the laptop, the phone down. */
-  const settle = (who: PersonKey) => be(who, { look: AT_REST[who]!.look, phone: false, talking: false });
+  const settle = (who: PersonKey) =>
+    be(who, { look: AT_REST[who]!.look, phone: false, talking: false });
   /** How long a person takes to read a message: people read, they don't absorb. */
   const readingTime = (text: string) => Math.min(3600, Math.max(1300, text.length * 38));
 
@@ -171,7 +262,10 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     const spec: PulseSpec = { id: ++pulseId.current, from: v3(from), to: v3(to), color };
     set((v) => ({ pulses: [...v.pulses, spec] }));
   };
-  const pulseDone = useCallback((id: number) => set((v) => ({ pulses: v.pulses.filter((p) => p.id !== id) })), [set]);
+  const pulseDone = useCallback(
+    (id: number) => set((v) => ({ pulses: v.pulses.filter((p) => p.id !== id) })),
+    [set],
+  );
 
   const addTrace = (who: string, calls: ToolCall[]) => {
     if (!calls.length) return;
@@ -199,7 +293,12 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
       if (to === 'daddy') be(to, { look: 'echo' });
       else be(to, { phone: true });
       const stamp = lastNotice.current[to];
-      setTimeout(() => { if (!busy.current.has(to) && lastNotice.current[to] === stamp) settle(to); }, readingTime(n.message) + 2500);
+      setTimeout(
+        () => {
+          if (!busy.current.has(to) && lastNotice.current[to] === stamp) settle(to);
+        },
+        readingTime(n.message) + 2500,
+      );
     }
     return state;
   };
@@ -226,7 +325,12 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
   };
 
   /** One spoken turn, through the real planner, as that person. */
-  const line = async (step: Extract<Step, { kind: 'line' }>, token: number, followUps = 0, before: string[] = []): Promise<void> => {
+  const line = async (
+    step: Extract<Step, { kind: 'line' }>,
+    token: number,
+    followUps = 0,
+    before: string[] = [],
+  ): Promise<void> => {
     const person = CAST[step.who]!;
     const played = viewRef.current.playing === step.who;
     const guest = !played && guests.current.has(step.who);
@@ -235,14 +339,29 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     // words, rather than saying their line again; the line stands if the answer can't be had.
     const heard = viewRef.current.caption;
     if (followUps > 0 && !played && !guest && heard?.tone === 'alexa') {
-      text = await api.npc({ name: person.name, role: person.role, meant: step.text, alexa: heard.text })
-        .then((r) => r.text, () => step.text);
+      text = await api
+        .npc({ name: person.name, role: person.role, meant: step.text, alexa: heard.text })
+        .then(
+          (r) => r.text,
+          () => step.text,
+        );
       if (run.current !== token) return;
     }
 
     if (played || guest) {
-      set({ status: 'yourTurn', prompt: { who: step.who, suggestion: step.text, ...(step.no && !followUps ? { no: step.no } : {}), ...(guest ? { guest: true } : {}), ...(followUps ? { reply: true } : {}) } });
-      text = await new Promise<string>((resolve) => { answer.current = resolve; });
+      set({
+        status: 'yourTurn',
+        prompt: {
+          who: step.who,
+          suggestion: step.text,
+          ...(step.no && !followUps ? { no: step.no } : {}),
+          ...(guest ? { guest: true } : {}),
+          ...(followUps ? { reply: true } : {}),
+        },
+      });
+      text = await new Promise<string>((resolve) => {
+        answer.current = resolve;
+      });
       answer.current = null;
       if (run.current !== token) return;
       set({ status: 'playing', prompt: null });
@@ -250,7 +369,13 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     // Nothing said. Nothing goes to Alexa, and nothing goes on the record: the day goes on without it.
     if (text === STAY_QUIET) {
       chose(step, step.who, 'quiet', step.text, played);
-      set({ caption: { who: '', text: `${person.name} lets it go. Nobody tells Alexa, so the record never hears of it.`, tone: 'narration' } });
+      set({
+        caption: {
+          who: '',
+          text: `${person.name} lets it go. Nobody tells Alexa, so the record never hears of it.`,
+          tone: 'narration',
+        },
+      });
       gesture(step.who, 'shake');
       await wait(2600);
       return;
@@ -267,7 +392,11 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
       be(step.who, echo ? { look: 'echo' } : { phone: true });
       const notice = lastNotice.current[step.who];
       const fresh = notice && Date.now() - notice.at < 20_000;
-      await wait(fresh ? Math.max(600, readingTime(notice.text) - (Date.now() - notice.at)) : 450 + Math.random() * 650);
+      await wait(
+        fresh
+          ? Math.max(600, readingTime(notice.text) - (Date.now() - notice.at))
+          : 450 + Math.random() * 650,
+      );
       if (run.current !== token) return;
     } else {
       be(step.who, echo ? { look: 'echo' } : { phone: true });
@@ -291,7 +420,13 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
       turn = await api.say(person.memberId, text, storyNow());
     } catch (err) {
       busy.current.delete(step.who);
-      set({ hubBusy: false, status: 'error', error: (err as Error).message, phoneListening: null, glow: { daddy: 'idle', tolu: 'idle' } });
+      set({
+        hubBusy: false,
+        status: 'error',
+        error: (err as Error).message,
+        phoneListening: null,
+        glow: { daddy: 'idle', tolu: 'idle' },
+      });
       throw err;
     }
     if (run.current !== token) return;
@@ -304,9 +439,19 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
       caption: { who: 'Alexa', text: turn.spoken, tone: 'alexa' },
       ...(echo ? { glow: { ...v.glow, [echo]: 'speaking' } } : {}),
       // A phone reply lands on that person's phone.
-      ...(!echo ? { phones: { ...v.phones, [step.who]: { from: 'Alexa', text: turn.spoken, key: `reply-${traceId.current}` } } } : {}),
+      ...(!echo
+        ? {
+            phones: {
+              ...v.phones,
+              [step.who]: { from: 'Alexa', text: turn.spoken, key: `reply-${traceId.current}` },
+            },
+          }
+        : {}),
     }));
-    await Promise.all([speak(turn.spoken, speechLanguage().voice ?? ALEXA_VOICE, 1.15, opts.muted), deliver()]);
+    await Promise.all([
+      speak(turn.spoken, speechLanguage().voice ?? ALEXA_VOICE, 1.15, opts.muted),
+      deliver(),
+    ]);
     if (run.current !== token) return;
     set((v) => (echo ? { glow: { ...v.glow, [echo]: 'idle' } } : {}));
 
@@ -315,12 +460,15 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     const called = turn.toolCalls.filter((c) => !c.isError).map((c) => c.name);
     // What they set out to do may have happened a turn ago, with Alexa then asking about it.
     // A no is an answer: whatever Alexa made of it stands, and the day follows from it.
-    const landed = declined || !step.expect || step.expect.some((t) => called.includes(t) || before.includes(t));
+    const landed =
+      declined || !step.expect || step.expect.some((t) => called.includes(t) || before.includes(t));
     // A nod when it went the way they meant; a small shake of the head when it didn't.
     gesture(step.who, landed ? 'nod' : 'shake');
     busy.current.delete(step.who);
     const who = step.who;
-    setTimeout(() => { if (!busy.current.has(who)) settle(who); }, 1300);
+    setTimeout(() => {
+      if (!busy.current.has(who)) settle(who);
+    }, 1300);
     // A conversation, not a test: Alexa may ask back or answer something nearby first. The
     // same device keeps the same conversation, so the next thing said carries on from hers.
     if (!landed && step.expect && followUps < 2 && run.current === token) {
@@ -328,8 +476,19 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     }
     if (landed) chose(step, step.who, declined ? 'no' : 'yes', text, played || guest);
     if (!landed && step.expect) {
-      set({ status: 'stuck', stuck: { reason: called.length ? `Alexa used ${called.join(', ')}.` : 'Alexa answered without changing the record.', expected: step.expect, ...(played || guest ? { said: text, got: called } : {}) } });
-      const again = await new Promise<boolean>((resolve) => { retry.current = resolve; });
+      set({
+        status: 'stuck',
+        stuck: {
+          reason: called.length
+            ? `Alexa used ${called.join(', ')}.`
+            : 'Alexa answered without changing the record.',
+          expected: step.expect,
+          ...(played || guest ? { said: text, got: called } : {}),
+        },
+      });
+      const again = await new Promise<boolean>((resolve) => {
+        retry.current = resolve;
+      });
       retry.current = null;
       set({ status: 'playing', stuck: null });
       if (again && run.current === token) return line(step, token);
@@ -347,7 +506,15 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     be(step.who, { look: step.to as LookAt, phone: false });
     be(step.to, { look: step.who as LookAt });
     await wait(350);
-    set({ caption: { who: person.name, to: CAST[step.to]!.name, text: step.text, tone: 'aside', color: person.color } });
+    set({
+      caption: {
+        who: person.name,
+        to: CAST[step.to]!.name,
+        text: step.text,
+        tone: 'aside',
+        color: person.color,
+      },
+    });
     be(step.who, { talking: true });
     if (viewRef.current.playing === step.who) await wait(900 + step.text.length * 45);
     else await speak(step.text, person.voice, person.fallbackPitch, opts.muted);
@@ -359,7 +526,13 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
   };
 
   const signal = async (step: Extract<Step, { kind: 'signal' }>, token: number) => {
-    set({ caption: { who: step.source === 'ring' ? 'Ring' : 'CareCircle', text: step.caption, tone: step.source === 'ring' ? 'device' : 'agent' } });
+    set({
+      caption: {
+        who: step.source === 'ring' ? 'Ring' : 'CareCircle',
+        text: step.caption,
+        tone: step.source === 'ring' ? 'device' : 'agent',
+      },
+    });
     if (step.source === 'ring') {
       if (!opts.muted) chime();
       set({ ringActive: true });
@@ -376,7 +549,14 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     addTrace(step.source === 'ring' ? 'Ring' : 'Agent', [call]);
     set({ hubBusy: false });
     // What a family member would see on their phone: what the doorbell saw, and what it can't know.
-    if (step.source === 'ring' && !call.isError) set({ evidence: { at: storyNow(), saw: 'A person at the front door', cannot: 'Who it was, or what they brought' } });
+    if (step.source === 'ring' && !call.isError)
+      set({
+        evidence: {
+          at: storyNow(),
+          saw: 'A person at the front door',
+          cannot: 'Who it was, or what they brought',
+        },
+      });
     await wait(2200);
     set({ ringActive: false });
     await deliver();
@@ -396,10 +576,12 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
   const remote = async (step: Extract<Step, { kind: 'remote' }>, token: number): Promise<void> => {
     // Mornings, they may not be at the set at all. Then nothing rises on a screen nobody is
     // watching: the reminder goes to where they are, and they answer it there.
-    if (!atTv.current && storyNow().getTime() < homeToday(12, 0).getTime()) return reminded(step, token);
+    if (!atTv.current && storyNow().getTime() < homeToday(12, 0).getTime())
+      return reminded(step, token);
     // A set that never loaded (a slow phone, a tab in the background) can't be pressed: the
     // question goes to the reminder instead of waiting on a screen that isn't there.
-    if (!opts.tvFrame() && viewRef.current.playing !== step.who && !guests.current.has(step.who)) return reminded(step, token);
+    if (!opts.tvFrame() && viewRef.current.playing !== step.who && !guests.current.has(step.who))
+      return reminded(step, token);
     powerTv(opts.tvFrame(), true);
     const person = CAST[step.who]!;
     const guest = viewRef.current.playing !== step.who && guests.current.has(step.who);
@@ -409,15 +591,33 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     set({ caption: { who: '', text: step.caption, tone: 'narration' } });
     tvOff.current?.();
     const did = new Promise<{ call: ToolCall } | null>((resolve) => {
-      const off = onTvDid((_who, call) => { off(); tvOff.current = null; resolve({ call }); });
-      tvOff.current = () => { off(); resolve(null); };
+      const off = onTvDid((_who, call) => {
+        off();
+        tvOff.current = null;
+        resolve({ call });
+      });
+      tvOff.current = () => {
+        off();
+        resolve(null);
+      };
     });
     if (played) {
-      set({ status: 'yourTurn', prompt: { who: step.who, suggestion: step.caption, remote: true, ...(guest ? { guest: true } : {}) } });
+      set({
+        status: 'yourTurn',
+        prompt: {
+          who: step.who,
+          suggestion: step.caption,
+          remote: true,
+          ...(guest ? { guest: true } : {}),
+        },
+      });
     } else {
       await wait(1400);
       for (const key of step.keys) {
-        if (run.current !== token) { tvOff.current?.(); return; }
+        if (run.current !== token) {
+          tvOff.current?.();
+          return;
+        }
         click(key);
         gesture(step.who, 'nod');
         await wait(1300);
@@ -432,7 +632,13 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     if (remoteQuiet.current) {
       remoteQuiet.current = false;
       chose(step, step.who, 'quiet', step.caption, true);
-      set({ caption: { who: '', text: `${person.name} leaves the question on the TV. Nothing goes on the record.`, tone: 'narration' } });
+      set({
+        caption: {
+          who: '',
+          text: `${person.name} leaves the question on the TV. Nothing goes on the record.`,
+          tone: 'narration',
+        },
+      });
       settle(step.who);
       await wait(2600);
       return;
@@ -442,14 +648,34 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
       addTrace(`${person.name} · TV remote`, [call]);
       pulse(DEVICE.daddyTv, HUB, person.color);
       await wait(700);
-      set({ caption: { who: 'Fire TV', text: call.isError ? call.result : `${person.name}'s own word, pressed on the remote. On the record at ${clockText(storyNow())}.`, tone: 'device' } });
+      set({
+        caption: {
+          who: 'Fire TV',
+          text: call.isError
+            ? call.result
+            : `${person.name}'s own word, pressed on the remote. On the record at ${clockText(storyNow())}.`,
+          tone: 'device',
+        },
+      });
       await deliver();
       await wait(2600);
     }
-    setTimeout(() => { if (!busy.current.has(step.who)) settle(step.who); }, 800);
+    setTimeout(() => {
+      if (!busy.current.has(step.who)) settle(step.who);
+    }, 800);
     if (!call || call.isError || call.name !== step.expect) {
-      set({ status: 'stuck', stuck: { reason: call ? `The TV called ${call.name}${call.isError ? ', and it was refused' : ''}.` : 'The TV didn\'t change the record.', expected: [step.expect] } });
-      const again = await new Promise<boolean>((resolve) => { retry.current = resolve; });
+      set({
+        status: 'stuck',
+        stuck: {
+          reason: call
+            ? `The TV called ${call.name}${call.isError ? ', and it was refused' : ''}.`
+            : "The TV didn't change the record.",
+          expected: [step.expect],
+        },
+      });
+      const again = await new Promise<boolean>((resolve) => {
+        retry.current = resolve;
+      });
       retry.current = null;
       set({ status: 'playing', stuck: null });
       if (again && run.current === token) return remote(step, token);
@@ -462,19 +688,49 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
    * "Taken" does the same. The record
    * gets the same thing the remote would have given it: their word, at the time they said it.
    */
-  const reminded = async (step: Extract<Step, { kind: 'remote' }>, token: number): Promise<void> => {
+  const reminded = async (
+    step: Extract<Step, { kind: 'remote' }>,
+    token: number,
+  ): Promise<void> => {
     const w = family().words;
     const they = w.his === 'his' ? 'he' : 'she';
     powerTv(opts.tvFrame(), false);
     const when = storyNow().getTime() < homeToday(12, 0).getTime() ? 'this morning' : 'tonight';
-    set({ shot: 'daddy', point: `The reminder goes where ${they} is. Not at the TV ${when}, so it comes to ${w.his} phone on Telegram, and ${w.his} answer is ${w.his} own word.`, caption: { who: '', text: `${w.who} isn't in front of the TV ${when}, so the set stays off. The reminder goes where ${they} is: ${w.his} phone.`, tone: 'narration' } });
+    set({
+      shot: 'daddy',
+      point: `The reminder goes where ${they} is. Not at the TV ${when}, so it comes to ${w.his} phone on Telegram, and ${w.his} answer is ${w.his} own word.`,
+      caption: {
+        who: '',
+        text: `${w.who} isn't in front of the TV ${when}, so the set stays off. The reminder goes where ${they} is: ${w.his} phone.`,
+        tone: 'narration',
+      },
+    });
     await wait(2800);
     if (run.current !== token) return;
-    set((v) => ({ phones: { ...v.phones, [step.who]: { from: 'CareCircle on Telegram', text: `It's time for your ${w.evening}. [Taken] [In 15 minutes]`, key: `tg-${Date.now()}` } } }));
+    set((v) => ({
+      phones: {
+        ...v.phones,
+        [step.who]: {
+          from: 'CareCircle on Telegram',
+          text: `It's time for your ${w.evening}. [Taken] [In 15 minutes]`,
+          key: `tg-${Date.now()}`,
+        },
+      },
+    }));
     if (!opts.muted) chime();
     await wait(2600);
     if (run.current !== token) return;
-    await line({ kind: 'line', who: step.who, via: 'phone', text: w.logMorning, expect: [step.expect], shot: 'daddy' }, token);
+    await line(
+      {
+        kind: 'line',
+        who: step.who,
+        via: 'phone',
+        text: w.logMorning,
+        expect: [step.expect],
+        shot: 'daddy',
+      },
+      token,
+    );
   };
 
   const play = useCallback(async (from = viewRef.current.beat) => {
@@ -494,7 +750,10 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
         set({ beat: b, evidence: null, point: null });
         // A beat that opens with a lapse runs the clock there itself; any other starts at its time,
         // even if the clock runs on later in the beat (Mama asks again at 9:05).
-        if (storyNow().getTime() < homeToday(beat.at[0], beat.at[1]).getTime() && beat.steps[0]?.kind !== 'lapse') {
+        if (
+          storyNow().getTime() < homeToday(beat.at[0], beat.at[1]).getTime() &&
+          beat.steps[0]?.kind !== 'lapse'
+        ) {
           setClock(homeToday(beat.at[0], beat.at[1]));
         }
         for (const step of beat.steps) {
@@ -562,26 +821,48 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     outcomes.current.clear();
     // Re-read the days: a day started after midnight has a new "two days from now".
     setFamily(family().id, familyNames());
-    if (to === 'ready') await api.resetSandbox({ liveMorning: true, careCase: family().id, ...(familyNames() ? { names: familyNames()! } : {}) }).catch(() => undefined);
+    if (to === 'ready')
+      await api
+        .resetSandbox({
+          liveMorning: true,
+          careCase: family().id,
+          ...(familyNames() ? { names: familyNames()! } : {}),
+        })
+        .catch(() => undefined);
     // The day opens at 7:30 in their home, wherever that is.
     const dawn = homeToday(7, 30);
     clock.current = { at: dawn.getTime(), setAt: Date.now() };
-    setView((v) => ({ ...START, clock: dawn, playing: to === 'cast' ? null : v.playing, status: to }));
+    setView((v) => ({
+      ...START,
+      clock: dawn,
+      playing: to === 'cast' ? null : v.playing,
+      status: to,
+    }));
   }, []);
 
-  const choose = useCallback((who: PersonKey | null) => set({ playing: who, status: 'ready' }), [set]);
+  const choose = useCallback(
+    (who: PersonKey | null) => set({ playing: who, status: 'ready' }),
+    [set],
+  );
   /** Another family was chosen: their morning, in their zone. */
-  const reclock = useCallback(() => setClock(homeToday(7, 30)),
+  const reclock = useCallback(
+    () => setClock(homeToday(7, 30)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []);
+    [],
+  );
   const say = useCallback((text: string) => answer.current?.(text), []);
   /** The visitor's thumb on the remote, when they are the one holding it. */
-  const press = useCallback((key: Key) => click(key),
+  const press = useCallback(
+    (key: Key) => click(key),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []);
+    [],
+  );
   const decide = useCallback((again: boolean) => retry.current?.(again), []);
   /** Leave the TV's question unanswered. */
-  const leave = useCallback(() => { remoteQuiet.current = true; tvOff.current?.(); }, []);
+  const leave = useCallback(() => {
+    remoteQuiet.current = true;
+    tvOff.current?.();
+  }, []);
   /** Who family members hold now. A person let go mid-turn is played for them from the next line. */
   const setGuests = useCallback((who: PersonKey[]) => {
     guests.current = new Set(who);
@@ -602,25 +883,53 @@ export function useDirector(opts: { muted: boolean; tvFrame: () => Window | null
     else if (msg.key && p.remote) click(msg.key);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const skipTo = useCallback((b: number) => {
-    run.current++; hush(); answer.current = null; tvOff.current?.(); retry.current?.(false); busy.current.clear();
-    set({ people: AT_REST });
-    void play(b);
-  }, [play, set]);
+  const skipTo = useCallback(
+    (b: number) => {
+      run.current++;
+      hush();
+      answer.current = null;
+      tvOff.current?.();
+      retry.current?.(false);
+      busy.current.clear();
+      set({ people: AT_REST });
+      void play(b);
+    },
+    [play, set],
+  );
 
   /** Point the camera at a shot (the visitor's own choice, between beats). */
   const look = useCallback((shot: ShotName) => set({ shot }), [set]);
 
   /** Set how someone is, by hand (for checking a pose by eye). */
-  const pose = useCallback((who: PersonKey, patch: Partial<Presence> & { nod?: boolean; shake?: boolean }) => {
-    const { nod, shake, ...rest } = patch;
-    be(who, rest);
-    if (nod) gesture(who, 'nod');
-    if (shake) gesture(who, 'shake');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const pose = useCallback(
+    (who: PersonKey, patch: Partial<Presence> & { nod?: boolean; shake?: boolean }) => {
+      const { nod, shake, ...rest } = patch;
+      be(who, rest);
+      if (nod) gesture(who, 'nod');
+      if (shake) gesture(who, 'shake');
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [],
+  );
 
-  return { view, play, restart, choose, reclock, say, press, decide, leave, setGuests, fromGuest, skipTo, pulseDone, storyNow, look, pose };
+  return {
+    view,
+    play,
+    restart,
+    choose,
+    reclock,
+    say,
+    press,
+    decide,
+    leave,
+    setGuests,
+    fromGuest,
+    skipTo,
+    pulseDone,
+    storyNow,
+    look,
+    pose,
+  };
 }
 
 /** A doorbell's two notes, so the house hears someone at the door. */
@@ -641,7 +950,9 @@ function chime() {
       o.stop(t + 1.2);
     });
     setTimeout(() => void ctx.close(), 2000);
-  } catch { /* no audio: the doorbell still lights */ }
+  } catch {
+    /* no audio: the doorbell still lights */
+  }
 }
 
 export const shotOf = (name: ShotName) => SHOTS[name] ?? SHOTS.overview!;

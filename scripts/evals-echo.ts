@@ -31,7 +31,10 @@ import { DIALECT_CASES } from '../src/evals/dialects.ts';
 
 const run = promisify(execFile);
 const args = process.argv.slice(2);
-const opt = (name: string) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : undefined; };
+const opt = (name: string) => {
+  const i = args.indexOf(name);
+  return i >= 0 ? args[i + 1] : undefined;
+};
 const skill = opt('--skill') ?? process.env.ALEXA_SKILL_ID;
 if (!skill) throw new Error('pass --skill <skill id> or set ALEXA_SKILL_ID');
 const locale = opt('--locale') ?? 'en-US';
@@ -41,13 +44,19 @@ const cases: EvalCase[] = args.includes('--dialects') ? DIALECT_CASES : CORPUS;
 
 /** As the speech recogniser writes it: lower case, no punctuation but apostrophes, any script. */
 export const spoken = (s: string) =>
-  s.toLowerCase().replace(/[‘’]/g, "'").replace(/[^\p{L}\p{N}' ]+/gu, ' ').replace(/\s+/g, ' ').trim();
+  s
+    .toLowerCase()
+    .replace(/[‘’]/g, "'")
+    .replace(/[^\p{L}\p{N}' ]+/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 
 /** Every exact sentence the model was trained on: slot-free samples and catch-all values. */
 function trainedSentences(file: string): Set<string> {
   const lm = JSON.parse(readFileSync(file, 'utf8')).interactionModel.languageModel;
   const out = new Set<string>();
-  for (const i of lm.intents) for (const s of i.samples ?? []) if (!s.includes('{')) out.add(spoken(s));
+  for (const i of lm.intents)
+    for (const s of i.samples ?? []) if (!s.includes('{')) out.add(spoken(s));
   for (const t of lm.types ?? []) {
     for (const v of t.values ?? []) {
       out.add(spoken(v.name.value));
@@ -60,17 +69,40 @@ function trainedSentences(file: string): Set<string> {
 const CATCH_ALL = new Set(['SpokenRequestIntent', 'FreeTextIntent']);
 /** LogCareEventIntent -> log_care_event, as the bridge's generator names them. */
 const toolOf = (intent: string) =>
-  intent.endsWith('Intent') && !intent.startsWith('AMAZON.') && !CATCH_ALL.has(intent) && !/AnswerIntent$/.test(intent)
-    ? intent.slice(0, -'Intent'.length).replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase()
+  intent.endsWith('Intent') &&
+  !intent.startsWith('AMAZON.') &&
+  !CATCH_ALL.has(intent) &&
+  !/AnswerIntent$/.test(intent)
+    ? intent
+        .slice(0, -'Intent'.length)
+        .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+        .toLowerCase()
     : undefined;
 
 type Route = 'words' | 'right tool' | 'wrong tool' | 'dropped';
-interface Row { id: string; split: string; trained?: boolean; text: string; intent: string; route: Route; pass: boolean }
+interface Row {
+  id: string;
+  split: string;
+  trained?: boolean;
+  text: string;
+  intent: string;
+  route: Route;
+  pass: boolean;
+}
 
 async function profile(text: string): Promise<string> {
   for (let attempt = 0; ; attempt++) {
     try {
-      const { stdout } = await run('ask', ['smapi', 'profile-nlu', '-s', skill!, '-l', locale, '-u', text]);
+      const { stdout } = await run('ask', [
+        'smapi',
+        'profile-nlu',
+        '-s',
+        skill!,
+        '-l',
+        locale,
+        '-u',
+        text,
+      ]);
       return JSON.parse(stdout).selectedIntent?.name ?? 'none';
     } catch (e) {
       if (attempt >= 3) throw e;
@@ -89,7 +121,8 @@ function grade(c: EvalCase, intent: string): { route: Route; pass: boolean } {
 }
 
 const trained = modelFile ? trainedSentences(modelFile) : undefined;
-const splitOf = (c: EvalCase) => (!c.id.startsWith('h') ? 'authored' : c.seen ? 'seen' : 'held-out');
+const splitOf = (c: EvalCase) =>
+  !c.id.startsWith('h') ? 'authored' : c.seen ? 'seen' : 'held-out';
 const rows: Row[] = [];
 let next = 0;
 async function worker() {
@@ -97,7 +130,14 @@ async function worker() {
     const c = cases[next++];
     const text = spoken(c.utterance);
     const intent = await profile(text);
-    rows.push({ id: c.id, split: splitOf(c), ...(trained ? { trained: trained.has(text) } : {}), text, intent, ...grade(c, intent) });
+    rows.push({
+      id: c.id,
+      split: splitOf(c),
+      ...(trained ? { trained: trained.has(text) } : {}),
+      text,
+      intent,
+      ...grade(c, intent),
+    });
     if (!asJson) process.stdout.write(`\rProfiling on Alexa: ${rows.length}/${cases.length}   `);
   }
 }
@@ -107,8 +147,14 @@ rows.sort((a, b) => order.get(a.id)! - order.get(b.id)!);
 
 const tally = (rs: Row[]) => {
   const by = (r: Route) => rs.filter((x) => x.route === r).length;
-  return { total: rs.length, reached: rs.filter((x) => x.pass).length,
-    words: by('words'), rightTool: by('right tool'), wrongTool: by('wrong tool'), dropped: by('dropped') };
+  return {
+    total: rs.length,
+    reached: rs.filter((x) => x.pass).length,
+    words: by('words'),
+    rightTool: by('right tool'),
+    wrongTool: by('wrong tool'),
+    dropped: by('dropped'),
+  };
 };
 const groups: Record<string, Row[]> = { all: rows };
 for (const s of ['authored', 'held-out', 'seen']) groups[s] = rows.filter((r) => r.split === s);
@@ -116,18 +162,39 @@ if (trained) {
   groups['trained (exact words in the model)'] = rows.filter((r) => r.trained);
   groups['never shown to the Echo'] = rows.filter((r) => !r.trained);
 }
-const summary = Object.fromEntries(Object.entries(groups).filter(([, rs]) => rs.length).map(([k, rs]) => [k, tally(rs)]));
+const summary = Object.fromEntries(
+  Object.entries(groups)
+    .filter(([, rs]) => rs.length)
+    .map(([k, rs]) => [k, tally(rs)]),
+);
 
 if (asJson) {
-  console.log(JSON.stringify({ date: new Date().toISOString(), skill, locale, set: args.includes('--dialects') ? 'dialects' : 'corpus', summary, rows }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        date: new Date().toISOString(),
+        skill,
+        locale,
+        set: args.includes('--dialects') ? 'dialects' : 'corpus',
+        summary,
+        rows,
+      },
+      null,
+      2,
+    ),
+  );
 } else {
   console.log('\n');
   for (const [k, t] of Object.entries(summary)) {
     const pct = ((100 * t.reached) / t.total).toFixed(1);
-    console.log(`${k.padEnd(36)} reached ${t.reached}/${t.total} (${pct}%)  words ${t.words} · right tool ${t.rightTool} · wrong tool ${t.wrongTool} · dropped ${t.dropped}`);
+    console.log(
+      `${k.padEnd(36)} reached ${t.reached}/${t.total} (${pct}%)  words ${t.words} · right tool ${t.rightTool} · wrong tool ${t.wrongTool} · dropped ${t.dropped}`,
+    );
   }
   console.log('\nNot reached:');
   for (const r of rows.filter((x) => !x.pass)) {
-    console.log(`  ${r.id.padEnd(10)} ${r.route.padEnd(10)} ${r.intent.padEnd(26)} "${r.text}"${r.trained ? ' (trained)' : ''}`);
+    console.log(
+      `  ${r.id.padEnd(10)} ${r.route.padEnd(10)} ${r.intent.padEnd(26)} "${r.text}"${r.trained ? ' (trained)' : ''}`,
+    );
   }
 }

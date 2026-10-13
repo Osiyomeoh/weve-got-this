@@ -31,8 +31,12 @@ export function recipientsSpoken(state: CareState, fallback = 'the person you ca
 
 function byName(state: CareState, given: string): Member | undefined {
   const needle = given.trim().toLowerCase().replace(/'s$/, '');
-  return state.members.find((m) => m.id === given.trim())
-    ?? state.members.find((m) => m.name.toLowerCase() === needle || m.spokenAs?.toLowerCase() === needle);
+  return (
+    state.members.find((m) => m.id === given.trim()) ??
+    state.members.find(
+      (m) => m.name.toLowerCase() === needle || m.spokenAs?.toLowerCase() === needle,
+    )
+  );
 }
 
 export type Subject = { member: Member } | { problem: string };
@@ -47,8 +51,11 @@ export function subjectOf(state: CareState, given: string | undefined, what = 't
     if (m) return { member: m };
     const cared = careRecipients(state).map(called);
     return {
-      problem: `I don't know who "${given.trim()}" is in this circle.`
-        + (cared.length ? ` Ask whether they meant ${spokenList(cared, 'or')}.` : ' Ask who they meant.'),
+      problem:
+        `I don't know who "${given.trim()}" is in this circle.` +
+        (cared.length
+          ? ` Ask whether they meant ${spokenList(cared, 'or')}.`
+          : ' Ask who they meant.'),
     };
   }
   const cared = careRecipients(state);

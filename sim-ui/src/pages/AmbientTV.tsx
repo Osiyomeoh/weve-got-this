@@ -1,7 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { useBoard } from '../lib/useBoard';
 import { storyNow, useNow } from '../lib/storyTime';
-import { api, MEMBERS, type BoardMember, type BoardState, type DoseSlot, type Gap, type Member } from '../lib/api';
+import {
+  api,
+  MEMBERS,
+  type BoardMember,
+  type BoardState,
+  type DoseSlot,
+  type Gap,
+  type Member,
+} from '../lib/api';
 import { START, keyOf, reduce, type Key, type Nav } from '../lib/dpad';
 import { onPower, onRemote, onRing, onSound, reportToWorld } from '../lib/remote';
 import { regionOf } from '../tv/Show';
@@ -35,20 +43,40 @@ import { RingPip } from '../tv/RingPip';
  * the family's business, and stays on the family's phones.
  */
 
-interface AndroidBridge { notify(title: string, body: string): void; }
-declare global { interface Window { AndroidBridge?: AndroidBridge } }
+interface AndroidBridge {
+  notify(title: string, body: string): void;
+}
+declare global {
+  interface Window {
+    AndroidBridge?: AndroidBridge;
+  }
+}
 
 const ACCENT: Record<string, string> = {
-  HIGH: '#ff6b6b', MEDIUM: '#ffc234', LOW: '#5aa9ff',
+  HIGH: '#ff6b6b',
+  MEDIUM: '#ffc234',
+  LOW: '#5aa9ff',
 };
 
 /** Seeded demo household, shown only when the live board can't be reached (dead
  *  network, or no backend). Mirrors src/demo/scenario.ts and always carries a HIGH
  *  gap; the online dot stays red, so it never masquerades as live. */
 const DEMO_GAPS = [
-  { spoken: "There's no record of Daddy's evening eye drops from 20:00.", severity: 'HIGH', obligationId: 'demo_heart_pm' },
-  { spoken: "Pick up Daddy's eye drops refill - nobody has taken this yet.", severity: 'MEDIUM', obligationId: 'demo_rx' },
-  { spoken: 'Take Daddy to his eye check-up Thursday at 10 AM', severity: 'LOW', obligationId: 'demo_ride' },
+  {
+    spoken: "There's no record of Daddy's evening eye drops from 20:00.",
+    severity: 'HIGH',
+    obligationId: 'demo_heart_pm',
+  },
+  {
+    spoken: "Pick up Daddy's eye drops refill - nobody has taken this yet.",
+    severity: 'MEDIUM',
+    obligationId: 'demo_rx',
+  },
+  {
+    spoken: 'Take Daddy to his eye check-up Thursday at 10 AM',
+    severity: 'LOW',
+    obligationId: 'demo_ride',
+  },
 ];
 
 /**
@@ -64,16 +92,25 @@ const DEMO_GAPS = [
  */
 function choosersOf(members: BoardMember[] | undefined): Member[] {
   const list: Member[] = members?.length
-    ? members.map((m) => ({ id: m.id, label: m.role === 'care_recipient' ? m.spokenAs ?? m.name : m.name, sub: subOf(m) }))
+    ? members.map((m) => ({
+        id: m.id,
+        label: m.role === 'care_recipient' ? (m.spokenAs ?? m.name) : m.name,
+        sub: subOf(m),
+      }))
     : MEMBERS;
   return [...list].sort((a, b) => Number(a.id === 'm_margaret') - Number(b.id === 'm_margaret'));
 }
 
 /** Who someone is to the household, in a few words, and where they are if not here. */
 function subOf(m: BoardMember): string {
-  const part = m.role === 'care_recipient' ? 'at home · this TV'
-    : m.role === 'primary_caregiver' ? 'coordinates care'
-    : m.role === 'helper' ? 'helps in person' : 'family';
+  const part =
+    m.role === 'care_recipient'
+      ? 'at home · this TV'
+      : m.role === 'primary_caregiver'
+        ? 'coordinates care'
+        : m.role === 'helper'
+          ? 'helps in person'
+          : 'family';
   return m.livesAway ? `${part} · lives in ${m.livesAway}` : part;
 }
 
@@ -85,14 +122,25 @@ function recipientOf(state: BoardState | null): { id: string; spoken: string } {
 
 /** Minutes past local midnight in the household's own zone. */
 function localMinutes(at: Date, timeZone: string): number {
-  const [h, m] = new Intl.DateTimeFormat('en-GB', { timeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
-    .format(at).split(':').map(Number);
+  const [h, m] = new Intl.DateTimeFormat('en-GB', {
+    timeZone,
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  })
+    .format(at)
+    .split(':')
+    .map(Number);
   return (h ?? 0) * 60 + (m ?? 0);
 }
-const minutesOf = (hhmm: string) => { const [h, m] = hhmm.split(':').map(Number); return (h ?? 0) * 60 + (m ?? 0); };
+const minutesOf = (hhmm: string) => {
+  const [h, m] = hhmm.split(':').map(Number);
+  return (h ?? 0) * 60 + (m ?? 0);
+};
 const clockOf = (hhmm: string) => {
   const t = minutesOf(hhmm);
-  const h = Math.floor(t / 60), m = t % 60;
+  const h = Math.floor(t / 60),
+    m = t % 60;
   return `${((h + 11) % 12) + 1}${m ? `:${String(m).padStart(2, '0')}` : ''} ${h < 12 ? 'AM' : 'PM'}`;
 };
 
@@ -100,7 +148,11 @@ const clockOf = (hhmm: string) => {
  * Their doses the set can ask about: today's, for them, with no record yet, and due within
  * the hour or already past. One question at a time is asked; the screen lists the rest.
  */
-function dueDoses(schedule: DoseSlot[] | undefined, recipientId: string, nowMin: number): DoseSlot[] {
+function dueDoses(
+  schedule: DoseSlot[] | undefined,
+  recipientId: string,
+  nowMin: number,
+): DoseSlot[] {
   return (schedule ?? [])
     .filter((d) => d.forMemberId === recipientId && !d.recorded && minutesOf(d.time) <= nowMin + 60)
     .sort((a, b) => minutesOf(a.time) - minutesOf(b.time));
@@ -136,8 +188,9 @@ function Keys({ glyphs, label }: { glyphs: string[]; label: string }) {
 }
 
 /** Embedded in the world, or asked for: the set is playing something. */
-const WATCHING = typeof window !== 'undefined'
-  && (window.parent !== window || new URLSearchParams(window.location.search).has('watch'));
+const WATCHING =
+  typeof window !== 'undefined' &&
+  (window.parent !== window || new URLSearchParams(window.location.search).has('watch'));
 
 export default function AmbientTV() {
   const { state, online, refresh } = useBoard();
@@ -155,16 +208,33 @@ export default function AmbientTV() {
   // about is the same thing said twice, so it waits behind the question.
   const allGaps: Gap[] = state?.gaps ?? (online ? [] : (DEMO_GAPS as Gap[]));
   const gaps = doses.length ? allGaps.filter((g) => g.kind !== 'UNCONFIRMED') : allGaps;
-  const items: Item[] = [...doses.map((dose) => ({ type: 'dose' as const, dose })), ...(WATCHING ? [] : gaps.map((gap) => ({ type: 'gap' as const, gap })))];
+  const items: Item[] = [
+    ...doses.map((dose) => ({ type: 'dose' as const, dose })),
+    ...(WATCHING ? [] : gaps.map((gap) => ({ type: 'gap' as const, gap }))),
+  ];
 
   // The doorbell's live view, open over the programme until it times out or they press BACK.
   const [ring, setRing] = useState(0);
   useEffect(() => onRing(() => setRing(Date.now())), []);
   // The world's sound switch. Off until the world says otherwise: a set nobody asked to hear stays quiet.
   const [sound, setSound] = useState(false);
-  useEffect(() => onSound((on) => { setSound(on); if (!on) hush(); }), []);
+  useEffect(
+    () =>
+      onSound((on) => {
+        setSound(on);
+        if (!on) hush();
+      }),
+    [],
+  );
   const [power, setPower] = useState(true);
-  useEffect(() => onPower((on) => { setPower(on); if (!on) hush(); }), []);
+  useEffect(
+    () =>
+      onPower((on) => {
+        setPower(on);
+        if (!on) hush();
+      }),
+    [],
+  );
   useEffect(() => {
     if (!ring) return;
     const id = setTimeout(() => setRing(0), 16000);
@@ -180,9 +250,19 @@ export default function AmbientTV() {
 
   /** One button on the remote: a real one, or the world's, pressed for someone in the story. */
   const press = (key: Key) => {
-    const { nav: before, items: list, doses: n, choosers: people, recipient: them, ring: open } = live.current;
+    const {
+      nav: before,
+      items: list,
+      doses: n,
+      choosers: people,
+      recipient: them,
+      ring: open,
+    } = live.current;
     // BACK closes the doorbell's view first, as it does on the set.
-    if (open && key === 'back') { setRing(0); return; }
+    if (open && key === 'back') {
+      setRing(0);
+      return;
+    }
     const step = reduce(before, key, { gaps: list.length - n, doses: n, members: people.length });
     setNav(step.nav);
     const item = list[step.nav.gap];
@@ -190,10 +270,21 @@ export default function AmbientTV() {
     if (step.log && item?.type === 'dose') {
       // Their answer, about their own dose, recorded as theirs and as pressed on this set.
       setClaiming(null);
-      api.act(them.id, 'log_care_event', { kind: 'medication_taken', medicationName: item.dose.name }, storyNow(), 'tv')
+      api
+        .act(
+          them.id,
+          'log_care_event',
+          { kind: 'medication_taken', medicationName: item.dose.name },
+          storyNow(),
+          'tv',
+        )
         .then((call) => {
           reportToWorld(them.spoken, call);
-          setClaimed(call.isError ? call.result : `Thank you, ${them.spoken}. Your ${item.dose.name} is on the record.`);
+          setClaimed(
+            call.isError
+              ? call.result
+              : `Thank you, ${them.spoken}. Your ${item.dose.name} is on the record.`,
+          );
           refresh();
         })
         .catch((err) => setClaimed(`That didn't reach the record: ${String(err.message ?? err)}`));
@@ -213,9 +304,16 @@ export default function AmbientTV() {
     // Nothing about this is special-cased for the television: it is the same
     // claim_obligation the voice path calls, under the same identity rules.
     setClaiming(`${member.label} is taking it on…`);
-    api.act(member.id, 'claim_obligation', { obligationId: item.gap.obligationId }, storyNow(), 'tv')
-      .then((call) => { reportToWorld(member.label, call); setClaimed(`${member.label} has it.`); refresh(); })
-      .catch((err) => { setClaimed(`Couldn't claim that: ${String(err.message ?? err)}`); })
+    api
+      .act(member.id, 'claim_obligation', { obligationId: item.gap.obligationId }, storyNow(), 'tv')
+      .then((call) => {
+        reportToWorld(member.label, call);
+        setClaimed(`${member.label} has it.`);
+        refresh();
+      })
+      .catch((err) => {
+        setClaimed(`Couldn't claim that: ${String(err.message ?? err)}`);
+      })
       .finally(() => setClaiming(null));
   };
   const pressRef = useRef(press);
@@ -233,7 +331,10 @@ export default function AmbientTV() {
     window.addEventListener('keydown', onKey);
     // In the world, someone in the story is holding this remote.
     const off = onRemote((key) => pressRef.current(key));
-    return () => { window.removeEventListener('keydown', onKey); off(); };
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      off();
+    };
   }, []);
 
   // Put the remote down and the set goes back to being a set.
@@ -258,16 +359,26 @@ export default function AmbientTV() {
   const [cycle, setCycle] = useState(0);
   const [show, setShow] = useState(false);
   useEffect(() => {
-    if (!items.length) { setShow(false); return; }
+    if (!items.length) {
+      setShow(false);
+      return;
+    }
     // While someone is holding the remote the card must stay put; a surface that
     // slides away mid-press is unusable with a D-pad.
-    if (steering) { setShow(true); return; }
+    if (steering) {
+      setShow(true);
+      return;
+    }
     setShow(true);
-    const dwell = setTimeout(() => setShow(false), 6500);      // visible
-    const advance = setTimeout(() => {                          // then next cycle
+    const dwell = setTimeout(() => setShow(false), 6500); // visible
+    const advance = setTimeout(() => {
+      // then next cycle
       setCycle((c) => c + 1);
     }, 8000);
-    return () => { clearTimeout(dwell); clearTimeout(advance); };
+    return () => {
+      clearTimeout(dwell);
+      clearTimeout(advance);
+    };
   }, [cycle, items.length, steering]);
 
   // Ambient picks the next card on a timer; the remote picks it deliberately.
@@ -277,7 +388,11 @@ export default function AmbientTV() {
   const dose = focused?.type === 'dose' ? focused.dose : undefined;
   // Alexa says on the set what she shows: the question when it rises, and what their press did.
   const spoken = useRef('');
-  const say = WATCHING && sound && power ? (claimed ?? (dose ? `${recipient.spoken}, it's time for your ${dose.name}. Have you taken it?` : '')) : '';
+  const say =
+    WATCHING && sound && power
+      ? (claimed ??
+        (dose ? `${recipient.spoken}, it's time for your ${dose.name}. Have you taken it?` : ''))
+      : '';
   useEffect(() => {
     if (!say || say === spoken.current) return;
     spoken.current = say;
@@ -293,56 +408,97 @@ export default function AmbientTV() {
     const key = current.obligationId ?? current.spoken;
     if (notified.current.has(key)) return;
     notified.current.add(key);
-    try { bridge.notify('CareCircle', current.spoken); } catch { /* no bridge */ }
+    try {
+      bridge.notify('CareCircle', current.spoken);
+    } catch {
+      /* no bridge */
+    }
   }, [current?.obligationId, current?.spoken]);
 
   // In the world the TV is in their house, so it shows their time, not the visitor's.
   const zone = inStory ? { timeZone: zoneName } : {};
   const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', ...zone });
-  const day = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', ...zone });
-  const atTime = (iso: string) => new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: zoneName });
+  const day = now.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    ...zone,
+  });
+  const atTime = (iso: string) =>
+    new Date(iso).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZone: zoneName,
+    });
 
   const owned = (state?.obligations ?? []).filter((o) => o.status === 'ASSIGNED');
-  const today = (state?.schedule ?? []).filter((d) => d.forMemberId === recipient.id)
+  const today = (state?.schedule ?? [])
+    .filter((d) => d.forMemberId === recipient.id)
     .sort((a, b) => minutesOf(a.time) - minutesOf(b.time));
   const shown = show || steering;
 
   /** How a recorded dose came to be known, in their words: pressed here, said aloud, or someone's word. */
   const howKnown = (d: DoseSlot) => {
     const r = d.recorded!;
-    const theirs = !r.saidBy || r.saidBy === recipient.spoken || state?.members?.some((m) => m.id === recipient.id && m.name === r.saidBy);
+    const theirs =
+      !r.saidBy ||
+      r.saidBy === recipient.spoken ||
+      state?.members?.some((m) => m.id === recipient.id && m.name === r.saidBy);
     const how = r.via === 'tv' ? 'pressed on this TV' : r.via ? `by ${r.via}` : 'said to Alexa';
     return theirs ? `${atTime(r.at)} · ${how}` : `${atTime(r.at)} · ${r.saidBy} says so`;
   };
 
   if (WATCHING && !power) {
     // Standby: the set is off, so nothing rises on it. Only the little red light.
-    return <div className="relative h-screen bg-black"><span className="absolute bottom-[3vh] right-[3vw] h-[1vw] w-[1vw] rounded-full bg-red-600/80" aria-label="TV off" /></div>;
+    return (
+      <div className="relative h-screen bg-black">
+        <span
+          className="absolute bottom-[3vh] right-[3vw] h-[1vw] w-[1vw] rounded-full bg-red-600/80"
+          aria-label="TV off"
+        />
+      </div>
+    );
   }
   if (WATCHING) {
     const hour = Math.floor(localMinutes(now, zoneName) / 60);
     return (
       <div className="relative h-screen overflow-hidden bg-black text-white">
-        <Programme region={regionOf(zoneName)} hour={hour} raised={!!(claimed || dose)} sound={sound} ducked={!!(claimed || dose || ring)} />
+        <Programme
+          region={regionOf(zoneName)}
+          hour={hour}
+          raised={!!(claimed || dose)}
+          sound={sound}
+          ducked={!!(claimed || dose || ring)}
+        />
         {ring > 0 && <RingPip key={ring} dark={hour >= 18 || hour < 6} />}
 
         {/* Alexa, along the bottom, over the programme: their question, or what their press did. */}
         {(claimed || dose) && (
-          <div key={claimed ? 'done' : `${dose!.medicationId}-${dose!.time}`}
+          <div
+            key={claimed ? 'done' : `${dose!.medicationId}-${dose!.time}`}
             className={`tv-rise absolute inset-x-[3vw] bottom-[3vh] z-10 overflow-hidden rounded-[1.2vw] bg-[#0b1220]/88 backdrop-blur-xl transition-all duration-200
-              ${steering && !claimed ? 'border-[0.25vw] border-white shadow-[0_0_0_0.6vw_rgba(255,255,255,0.12),0_2vw_5vw_rgba(0,0,0,0.6)]' : 'border border-white/15 shadow-[0_2vw_5vw_rgba(0,0,0,0.55)]'}`}>
+              ${steering && !claimed ? 'border-[0.25vw] border-white shadow-[0_0_0_0.6vw_rgba(255,255,255,0.12),0_2vw_5vw_rgba(0,0,0,0.6)]' : 'border border-white/15 shadow-[0_2vw_5vw_rgba(0,0,0,0.55)]'}`}
+          >
             <div className="tv-alexa-bar h-[0.6vh]" />
             {claimed ? (
               <div className="flex items-center gap-[1.4vw] px-[2vw] py-[2.2vh]">
-                <span className="flex h-[3.4vw] w-[3.4vw] shrink-0 items-center justify-center rounded-full bg-confirmed text-[1.8vw] font-bold text-[#03050a]">✓</span>
+                <span className="flex h-[3.4vw] w-[3.4vw] shrink-0 items-center justify-center rounded-full bg-confirmed text-[1.8vw] font-bold text-[#03050a]">
+                  ✓
+                </span>
                 <span className="text-[2vw] font-medium leading-snug">{claimed}</span>
               </div>
             ) : nav.mode === 'confirming' ? (
               <div className="flex items-center gap-[2.4vw] px-[2vw] py-[2.4vh]">
                 <div className="min-w-0 flex-1">
-                  <div className="text-[1vw] uppercase tracking-[0.25em] text-white/50">CareCircle · for {recipient.spoken} · {clockOf(dose!.time)}</div>
-                  <div className="mt-[0.6vh] text-[2.6vw] font-light leading-tight">Have you taken your {dose!.name}?</div>
-                  <div className="mt-[0.8vh] text-[1vw] text-white/50">Your word, pressed on this TV. Your family sees it at once, wherever they are.</div>
+                  <div className="text-[1vw] uppercase tracking-[0.25em] text-white/50">
+                    CareCircle · for {recipient.spoken} · {clockOf(dose!.time)}
+                  </div>
+                  <div className="mt-[0.6vh] text-[2.6vw] font-light leading-tight">
+                    Have you taken your {dose!.name}?
+                  </div>
+                  <div className="mt-[0.8vh] text-[1vw] text-white/50">
+                    Your word, pressed on this TV. Your family sees it at once, wherever they are.
+                  </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-[1.2vw]">
                   <div className="flex flex-col items-center rounded-[1vw] border-[0.25vw] border-white bg-white/15 px-[1.8vw] py-[1.6vh]">
@@ -357,15 +513,27 @@ export default function AmbientTV() {
               </div>
             ) : (
               <div className="flex items-center gap-[1.4vw] px-[2vw] py-[1.8vh]">
-                <span className="flex h-[3.4vw] w-[3.4vw] shrink-0 items-center justify-center rounded-[0.8vw] bg-[#ffd27a]/20 text-[1.8vw] text-[#ffd27a]">✚</span>
+                <span className="flex h-[3.4vw] w-[3.4vw] shrink-0 items-center justify-center rounded-[0.8vw] bg-[#ffd27a]/20 text-[1.8vw] text-[#ffd27a]">
+                  ✚
+                </span>
                 <div className="min-w-0 flex-1">
-                  <div className="text-[1vw] uppercase tracking-[0.25em] text-white/50">CareCircle · via Alexa</div>
-                  <div className="mt-[0.3vh] text-[2vw] font-medium leading-snug">{recipient.spoken}, it's time for your {dose!.name}. Have you taken it?</div>
+                  <div className="text-[1vw] uppercase tracking-[0.25em] text-white/50">
+                    CareCircle · via Alexa
+                  </div>
+                  <div className="mt-[0.3vh] text-[2vw] font-medium leading-snug">
+                    {recipient.spoken}, it's time for your {dose!.name}. Have you taken it?
+                  </div>
                 </div>
                 <div className="shrink-0 text-right">
-                  {steering && <div className="mb-[0.5vh] text-[0.9vw] font-semibold uppercase tracking-[0.2em]">▶ Selected</div>}
+                  {steering && (
+                    <div className="mb-[0.5vh] text-[0.9vw] font-semibold uppercase tracking-[0.2em]">
+                      ▶ Selected
+                    </div>
+                  )}
                   <Keys glyphs={['OK']} label={steering ? 'answer' : 'to answer'} />
-                  <div className="mt-[0.6vh] text-[1vw] text-white/50">or say “Alexa, I took it”</div>
+                  <div className="mt-[0.6vh] text-[1vw] text-white/50">
+                    or say “Alexa, I took it”
+                  </div>
                 </div>
               </div>
             )}
@@ -394,7 +562,9 @@ export default function AmbientTV() {
           <span className="text-[1.5vw] font-semibold tracking-tight">CareCircle</span>
         </div>
         <div className="flex items-center gap-[0.7vw] text-[1.1vw] text-white/55">
-          <span className={`h-[0.6vw] w-[0.6vw] rounded-full ${online ? 'bg-confirmed' : 'bg-sevHigh'} animate-beat`} />
+          <span
+            className={`h-[0.6vw] w-[0.6vw] rounded-full ${online ? 'bg-confirmed' : 'bg-sevHigh'} animate-beat`}
+          />
           {state?.household?.name ?? "Daddy's care circle"}
         </div>
       </div>
@@ -414,19 +584,30 @@ export default function AmbientTV() {
           */}
           <div className="mt-[4vh] min-h-[5vh]">
             {claimed ? (
-              <div className="inline-block rounded-full border border-white/20 bg-white/10 px-[1.6vw] py-[1vh] text-[1.4vw] text-white/90">{claimed}</div>
-            ) : items.length > 0 && (
-              <div className="inline-flex items-center gap-[1.4vw] rounded-2xl border border-white/20 bg-white/[0.07] px-[1.4vw] py-[1.2vh] backdrop-blur-xl">
-                {steering ? (
-                  <>
-                    <Keys glyphs={['◀', '▶']} label="choose" />
-                    <Keys glyphs={['OK']} label={dose ? 'answer' : 'take it on'} />
-                    <Keys glyphs={['BACK']} label="the clock" />
-                  </>
-                ) : (
-                  <Keys glyphs={['OK']} label={doses.length ? `${recipient.spoken}, press when you've taken it` : 'on your remote to start'} />
-                )}
+              <div className="inline-block rounded-full border border-white/20 bg-white/10 px-[1.6vw] py-[1vh] text-[1.4vw] text-white/90">
+                {claimed}
               </div>
+            ) : (
+              items.length > 0 && (
+                <div className="inline-flex items-center gap-[1.4vw] rounded-2xl border border-white/20 bg-white/[0.07] px-[1.4vw] py-[1.2vh] backdrop-blur-xl">
+                  {steering ? (
+                    <>
+                      <Keys glyphs={['◀', '▶']} label="choose" />
+                      <Keys glyphs={['OK']} label={dose ? 'answer' : 'take it on'} />
+                      <Keys glyphs={['BACK']} label="the clock" />
+                    </>
+                  ) : (
+                    <Keys
+                      glyphs={['OK']}
+                      label={
+                        doses.length
+                          ? `${recipient.spoken}, press when you've taken it`
+                          : 'on your remote to start'
+                      }
+                    />
+                  )}
+                </div>
+              )
             )}
           </div>
         </div>
@@ -435,18 +616,28 @@ export default function AmbientTV() {
         <div className="flex min-h-0 flex-col justify-end gap-[2.2vh]">
           {today.length > 0 && (
             <div className="rounded-[1.6vw] border border-white/10 bg-white/[0.06] p-[1.6vw] backdrop-blur-2xl">
-              <div className="text-[1vw] font-medium uppercase tracking-[0.22em] text-white/50">For {recipient.spoken} today</div>
+              <div className="text-[1vw] font-medium uppercase tracking-[0.22em] text-white/50">
+                For {recipient.spoken} today
+              </div>
               <div className="mt-[1.2vh] space-y-[0.9vh]">
                 {today.slice(0, 4).map((d) => {
                   const on = dose === d && shown;
                   const due = doses.includes(d);
                   return (
-                    <div key={`${d.medicationId}-${d.time}`}
-                      className={`flex items-center gap-[1vw] rounded-[1vw] px-[1vw] py-[0.9vh] transition-all duration-300 ${on ? 'bg-white/[0.1]' : ''} ${steering && dose === d ? 'ring-[0.25vw] ring-white' : ''}`}>
-                      <span className="w-[5.5vw] shrink-0 text-[1.25vw] tabular-nums text-white/60">{clockOf(d.time)}</span>
-                      <span className="flex-1 text-[1.4vw] leading-snug text-white/90">{d.name}</span>
+                    <div
+                      key={`${d.medicationId}-${d.time}`}
+                      className={`flex items-center gap-[1vw] rounded-[1vw] px-[1vw] py-[0.9vh] transition-all duration-300 ${on ? 'bg-white/[0.1]' : ''} ${steering && dose === d ? 'ring-[0.25vw] ring-white' : ''}`}
+                    >
+                      <span className="w-[5.5vw] shrink-0 text-[1.25vw] tabular-nums text-white/60">
+                        {clockOf(d.time)}
+                      </span>
+                      <span className="flex-1 text-[1.4vw] leading-snug text-white/90">
+                        {d.name}
+                      </span>
                       {/* Words and a mark, never colour alone. */}
-                      <span className={`shrink-0 text-right text-[1.05vw] ${d.recorded ? 'text-confirmed' : due ? 'text-[#ffc234]' : 'text-white/40'}`}>
+                      <span
+                        className={`shrink-0 text-right text-[1.05vw] ${d.recorded ? 'text-confirmed' : due ? 'text-[#ffc234]' : 'text-white/40'}`}
+                      >
                         {d.recorded ? `✓ ${howKnown(d)}` : due ? 'Not on the record yet' : 'Later'}
                       </span>
                     </div>
@@ -458,18 +649,31 @@ export default function AmbientTV() {
 
           <div className="rounded-[1.6vw] border border-white/10 bg-white/[0.06] p-[1.6vw] backdrop-blur-2xl">
             <div className="flex items-baseline justify-between">
-              <div className="text-[1vw] font-medium uppercase tracking-[0.22em] text-white/50">Needs someone</div>
+              <div className="text-[1vw] font-medium uppercase tracking-[0.22em] text-white/50">
+                Needs someone
+              </div>
               <div className="text-[2.2vw] font-light tabular-nums">{gaps.length}</div>
             </div>
             <div className="mt-[1.2vh] space-y-[1vh]">
-              {gaps.length === 0 && <div className="text-[1.4vw] font-light text-white/70">Everything has an owner.</div>}
+              {gaps.length === 0 && (
+                <div className="text-[1.4vw] font-light text-white/70">
+                  Everything has an owner.
+                </div>
+              )}
               {gaps.slice(0, 3).map((g, i) => {
                 const on = i === gapIndex && shown;
                 return (
-                  <div key={g.obligationId ?? g.spoken}
-                    className={`flex items-center gap-[1vw] rounded-[1vw] px-[1vw] py-[1.1vh] transition-all duration-300 ${on ? 'bg-white/[0.1]' : ''} ${steering && i === gapIndex ? 'ring-[0.25vw] ring-white' : ''}`}>
-                    <span className="h-[2.6vw] w-[0.3vw] shrink-0 rounded-full" style={{ background: ACCENT[g.severity] }} />
-                    <span className="text-[1.45vw] leading-snug text-white/90">{alertText(g.spoken)}</span>
+                  <div
+                    key={g.obligationId ?? g.spoken}
+                    className={`flex items-center gap-[1vw] rounded-[1vw] px-[1vw] py-[1.1vh] transition-all duration-300 ${on ? 'bg-white/[0.1]' : ''} ${steering && i === gapIndex ? 'ring-[0.25vw] ring-white' : ''}`}
+                  >
+                    <span
+                      className="h-[2.6vw] w-[0.3vw] shrink-0 rounded-full"
+                      style={{ background: ACCENT[g.severity] }}
+                    />
+                    <span className="text-[1.45vw] leading-snug text-white/90">
+                      {alertText(g.spoken)}
+                    </span>
                   </div>
                 );
               })}
@@ -478,14 +682,20 @@ export default function AmbientTV() {
 
           {owned.length > 0 && (
             <div className="rounded-[1.6vw] border border-white/10 bg-white/[0.06] p-[1.6vw] backdrop-blur-2xl">
-              <div className="text-[1vw] font-medium uppercase tracking-[0.22em] text-white/50">Taken care of</div>
+              <div className="text-[1vw] font-medium uppercase tracking-[0.22em] text-white/50">
+                Taken care of
+              </div>
               <div className="mt-[1.2vh] space-y-[1.2vh]">
                 {owned.slice(0, 3).map((o) => (
                   <div key={o.id} className="flex items-center gap-[1vw]">
-                    <span className={`flex h-[2.6vw] w-[2.6vw] shrink-0 items-center justify-center rounded-full text-[1.2vw] font-semibold text-[#03050a] ${AVATAR[choosers.find((m) => m.label === o.owner)?.id ?? ''] ?? 'bg-confirmed'}`}>
+                    <span
+                      className={`flex h-[2.6vw] w-[2.6vw] shrink-0 items-center justify-center rounded-full text-[1.2vw] font-semibold text-[#03050a] ${AVATAR[choosers.find((m) => m.label === o.owner)?.id ?? ''] ?? 'bg-confirmed'}`}
+                    >
                       {(o.owner ?? '?')[0]}
                     </span>
-                    <span className="text-[1.35vw] leading-snug text-white/85"><b className="font-medium text-white">{o.owner ?? 'Someone'}</b> · {o.what}</span>
+                    <span className="text-[1.35vw] leading-snug text-white/85">
+                      <b className="font-medium text-white">{o.owner ?? 'Someone'}</b> · {o.what}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -495,53 +705,81 @@ export default function AmbientTV() {
       </div>
 
       {/* The notification: slides in from the top like a TV OS alert. */}
-      <div className={`absolute left-1/2 top-[4vh] w-[50vw] max-w-[1100px] -translate-x-1/2 transition-all duration-700 ease-out
-          ${shown && focused ? 'translate-y-0 opacity-100' : '-translate-y-24 opacity-0'}`}>
-        {focused && (() => {
-          const accent = dose ? '#ffd27a' : ACCENT[current!.severity]!;
-          return (
-            <div className={`flex items-center gap-[1.3vw] rounded-[1.6vw] bg-[#0d1424]/80 p-[1.2vw] backdrop-blur-2xl transition-all duration-200
-                ${steering
-                  ? 'border-[0.25vw] border-white shadow-[0_0_0_0.7vw_rgba(255,255,255,0.12),0_30px_80px_rgba(0,0,0,0.55)] scale-[1.03]'
-                  : 'border border-white/15 shadow-[0_30px_80px_rgba(0,0,0,0.55)]'}`}>
-              <div className="flex h-[4vw] w-[4vw] shrink-0 items-center justify-center rounded-[1vw] text-[2vw]"
-                style={{ background: `${accent}22`, color: accent }}>
-                {dose ? '✚' : '♥'}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-[0.7vw] text-[0.95vw] uppercase tracking-[0.2em] text-white/50">
-                  CareCircle
-                  <span className="h-[0.4vw] w-[0.4vw] rounded-full" style={{ background: accent }} />
-                  <span style={{ color: accent }}>{dose ? `for ${recipient.spoken} · ${clockOf(dose.time)}` : 'needs an owner'}</span>
+      <div
+        className={`absolute left-1/2 top-[4vh] w-[50vw] max-w-[1100px] -translate-x-1/2 transition-all duration-700 ease-out
+          ${shown && focused ? 'translate-y-0 opacity-100' : '-translate-y-24 opacity-0'}`}
+      >
+        {focused &&
+          (() => {
+            const accent = dose ? '#ffd27a' : ACCENT[current!.severity]!;
+            return (
+              <div
+                className={`flex items-center gap-[1.3vw] rounded-[1.6vw] bg-[#0d1424]/80 p-[1.2vw] backdrop-blur-2xl transition-all duration-200
+                ${
+                  steering
+                    ? 'border-[0.25vw] border-white shadow-[0_0_0_0.7vw_rgba(255,255,255,0.12),0_30px_80px_rgba(0,0,0,0.55)] scale-[1.03]'
+                    : 'border border-white/15 shadow-[0_30px_80px_rgba(0,0,0,0.55)]'
+                }`}
+              >
+                <div
+                  className="flex h-[4vw] w-[4vw] shrink-0 items-center justify-center rounded-[1vw] text-[2vw]"
+                  style={{ background: `${accent}22`, color: accent }}
+                >
+                  {dose ? '✚' : '♥'}
                 </div>
-                <div className="mt-[0.4vh] text-[1.7vw] font-medium leading-snug">
-                  {dose ? `${recipient.spoken}, your ${dose.name}. Have you taken it?` : alertText(current!.spoken)}
-                </div>
-              </div>
-              <div className="shrink-0 text-right">
-                {/* Focus is never colour alone: the word SELECTED and the position carry it. */}
-                {steering && (
-                  <div className="mb-[0.5vh] text-[0.9vw] font-semibold uppercase tracking-[0.2em] text-white">
-                    ▶ Selected · {index + 1} of {items.length}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-[0.7vw] text-[0.95vw] uppercase tracking-[0.2em] text-white/50">
+                    CareCircle
+                    <span
+                      className="h-[0.4vw] w-[0.4vw] rounded-full"
+                      style={{ background: accent }}
+                    />
+                    <span style={{ color: accent }}>
+                      {dose ? `for ${recipient.spoken} · ${clockOf(dose.time)}` : 'needs an owner'}
+                    </span>
                   </div>
-                )}
-                <div className="rounded-full border border-white/20 px-[1vw] py-[0.8vh] text-[0.95vw] text-white/70">
-                  {dose ? 'Press OK, or tell Alexa' : steering ? 'OK to take it on' : 'Say “Alexa, I’ll take it”'}
+                  <div className="mt-[0.4vh] text-[1.7vw] font-medium leading-snug">
+                    {dose
+                      ? `${recipient.spoken}, your ${dose.name}. Have you taken it?`
+                      : alertText(current!.spoken)}
+                  </div>
+                </div>
+                <div className="shrink-0 text-right">
+                  {/* Focus is never colour alone: the word SELECTED and the position carry it. */}
+                  {steering && (
+                    <div className="mb-[0.5vh] text-[0.9vw] font-semibold uppercase tracking-[0.2em] text-white">
+                      ▶ Selected · {index + 1} of {items.length}
+                    </div>
+                  )}
+                  <div className="rounded-full border border-white/20 px-[1vw] py-[0.8vh] text-[0.95vw] text-white/70">
+                    {dose
+                      ? 'Press OK, or tell Alexa'
+                      : steering
+                        ? 'OK to take it on'
+                        : 'Say “Alexa, I’ll take it”'}
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })()}
+            );
+          })()}
       </div>
 
       {/* The Alexa+ light along the bottom edge: present, quiet. */}
-      <div aria-hidden className="absolute inset-x-0 bottom-0 h-[0.5vh] opacity-60 animate-sweep-slow"
-        style={{ background: 'linear-gradient(90deg,#3b82f6,#00e0c6,#8b5cf6,#3b82f6)', backgroundSize: '200% 100%' }} />
+      <div
+        aria-hidden
+        className="absolute inset-x-0 bottom-0 h-[0.5vh] opacity-60 animate-sweep-slow"
+        style={{
+          background: 'linear-gradient(90deg,#3b82f6,#00e0c6,#8b5cf6,#3b82f6)',
+          backgroundSize: '200% 100%',
+        }}
+      />
 
       {/* Their own dose: one question, addressed to them by name, answered with one button. */}
       {nav.mode === 'confirming' && dose && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#03050a]/85 backdrop-blur-2xl">
-          <div className="text-[1.2vw] uppercase tracking-[0.3em] text-white/45">For {recipient.spoken} · {clockOf(dose.time)}</div>
+          <div className="text-[1.2vw] uppercase tracking-[0.3em] text-white/45">
+            For {recipient.spoken} · {clockOf(dose.time)}
+          </div>
           <div className="mt-[3vh] max-w-[70vw] text-center text-[4vw] font-light leading-tight text-white">
             Have you taken your {dose.name}?
           </div>
@@ -556,7 +794,8 @@ export default function AmbientTV() {
             </div>
           </div>
           <div className="mt-[5vh] max-w-[60vw] text-center text-[1.1vw] text-white/50">
-            It goes on the record as your word, pressed on this TV. Your family sees it at once, wherever they are.
+            It goes on the record as your word, pressed on this TV. Your family sees it at once,
+            wherever they are.
           </div>
         </div>
       )}
@@ -567,20 +806,30 @@ export default function AmbientTV() {
           <div className="max-w-[70vw] text-center text-[2.2vw] font-light leading-snug text-white/85">
             {alertText(current.spoken)}
           </div>
-          <div className="mt-[4vh] text-[1.2vw] uppercase tracking-[0.3em] text-white/45">Who is taking this on?</div>
+          <div className="mt-[4vh] text-[1.2vw] uppercase tracking-[0.3em] text-white/45">
+            Who is taking this on?
+          </div>
           <div className="mt-[4vh] flex flex-wrap items-stretch justify-center gap-[1.4vw]">
             {choosers.map((m, i) => {
               const on = i === nav.member;
               return (
-                <div key={m.id}
+                <div
+                  key={m.id}
                   className={`flex w-[14vw] flex-col items-center rounded-[1.4vw] px-[1vw] py-[2.4vh] text-center transition-all duration-150
-                    ${on ? 'scale-105 border-[0.25vw] border-white bg-white/15' : 'border border-white/15 bg-white/5'}`}>
-                  <span className={`flex h-[5vw] w-[5vw] items-center justify-center rounded-full text-[2.2vw] font-semibold text-[#03050a] ${AVATAR[m.id] ?? 'bg-white'} ${on ? '' : 'opacity-70'}`}>
+                    ${on ? 'scale-105 border-[0.25vw] border-white bg-white/15' : 'border border-white/15 bg-white/5'}`}
+                >
+                  <span
+                    className={`flex h-[5vw] w-[5vw] items-center justify-center rounded-full text-[2.2vw] font-semibold text-[#03050a] ${AVATAR[m.id] ?? 'bg-white'} ${on ? '' : 'opacity-70'}`}
+                  >
                     {m.label[0]}
                   </span>
                   <div className="mt-[1.4vh] text-[1.6vw] font-medium text-white">{m.label}</div>
                   <div className="mt-[0.4vh] text-[0.9vw] text-white/50">{m.sub}</div>
-                  <div className={`mt-[1vh] text-[0.85vw] font-semibold uppercase tracking-[0.2em] ${on ? 'text-white' : 'text-transparent'}`}>▶ Selected</div>
+                  <div
+                    className={`mt-[1vh] text-[0.85vw] font-semibold uppercase tracking-[0.2em] ${on ? 'text-white' : 'text-transparent'}`}
+                  >
+                    ▶ Selected
+                  </div>
                 </div>
               );
             })}
@@ -596,5 +845,9 @@ export default function AmbientTV() {
 
 /** Same colours as the console, so a person is the same colour on every screen. */
 const AVATAR: Record<string, string> = {
-  m_margaret: 'bg-[#ffd27a]', m_david: 'bg-[#7cf0c8]', m_renee: 'bg-[#f5a3d0]', m_aide: 'bg-[#9cc3ff]', m_kunle: 'bg-[#c5a8ff]',
+  m_margaret: 'bg-[#ffd27a]',
+  m_david: 'bg-[#7cf0c8]',
+  m_renee: 'bg-[#f5a3d0]',
+  m_aide: 'bg-[#9cc3ff]',
+  m_kunle: 'bg-[#c5a8ff]',
 };

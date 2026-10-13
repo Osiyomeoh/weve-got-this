@@ -78,7 +78,9 @@ export function dignityNote(attrs: EntityAttributes | undefined): string | undef
     parts.push('this needs accessible transport, so there are fewer fall-back rides if it slips');
   }
   if (attrs.requiresAssistance) {
-    parts.push('this needs someone who can give hands-on help, so not everyone in the circle can pick it up');
+    parts.push(
+      'this needs someone who can give hands-on help, so not everyone in the circle can pick it up',
+    );
   }
   if (parts.length === 0) return undefined;
   // Capitalise the first clause; join with "and" so it reads as one sentence aloud.

@@ -71,13 +71,18 @@ export function createAgentRuntime(opts: AgentRuntimeOptions): express.Express {
 
   const open = async (actorId: string): Promise<StrandsAlexa> => {
     const server = createCareCircleServer({
-      store: opts.store, actorId,
+      store: opts.store,
+      actorId,
       ...(opts.notifier ? { notifier: opts.notifier } : {}),
       ...(opts.now ? { now: opts.now } : {}),
     });
     const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
     await server.connect(serverSide);
-    return StrandsAlexa.over(clientSide, { model: opts.model, channel, ...(opts.now ? { now: opts.now } : {}) });
+    return StrandsAlexa.over(clientSide, {
+      model: opts.model,
+      channel,
+      ...(opts.now ? { now: opts.now } : {}),
+    });
   };
 
   const app = express();
@@ -101,17 +106,22 @@ export function createAgentRuntime(opts: AgentRuntimeOptions): express.Express {
       return;
     }
 
-    try { await opts.store.refresh(); } catch (err) {
+    try {
+      await opts.store.refresh();
+    } catch (err) {
       // As the MCP server does: serve on what this process holds; a stale write is still refused.
       log.warn('record refresh failed', { reason: (err as Error).name });
     }
-    try { opts.store.getMember(actorId); } catch {
+    try {
+      opts.store.getMember(actorId);
+    } catch {
       res.status(404).json({ error: 'No such member in the care record.' });
       return;
     }
 
     const at = Date.now();
-    for (const [k, c] of conversations) if (at - c.lastUsed > IDLE_MS || at - c.opened > MAX_AGE_MS) drop(k);
+    for (const [k, c] of conversations)
+      if (at - c.lastUsed > IDLE_MS || at - c.opened > MAX_AGE_MS) drop(k);
     // One conversation per session and speaker: a session is one microVM, which one device
     // may share between members of a household.
     const key = `${req.get(SESSION_HEADER) ?? 'local'}:${actorId}`;
@@ -140,7 +150,9 @@ export function createAgentRuntime(opts: AgentRuntimeOptions): express.Express {
       // A broken conversation is not kept: the next invocation starts a clean one.
       drop(key);
       log.warn('agentcore turn failed', { error: (err as Error).name });
-      res.status(500).json({ error: "Sorry, I couldn't do that just now. Please try again in a minute." });
+      res
+        .status(500)
+        .json({ error: "Sorry, I couldn't do that just now. Please try again in a minute." });
     } finally {
       busy--;
       lastUpdate = Math.floor(Date.now() / 1000);

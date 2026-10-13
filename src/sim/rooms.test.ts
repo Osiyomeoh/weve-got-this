@@ -7,23 +7,38 @@ test('a guest takes a free person, and their words reach the host once', () => {
   const code = rooms.open('host');
   assert.match(code, /^[A-HJ-NP-Z2-9]{6}$/);
   assert.equal(rooms.open('host'), code, 'the same host keeps one room');
-  assert.deepEqual(rooms.post(code, 'host', { caption: 'morning' }, 'tolu'), { seats: {}, inbox: [] });
+  assert.deepEqual(rooms.post(code, 'host', { caption: 'morning' }, 'tolu'), {
+    seats: {},
+    inbox: [],
+  });
 
-  assert.equal(rooms.seat(code, 'g1', 'tolu'), 'seat-taken', 'the host\'s own person');
+  assert.equal(rooms.seat(code, 'g1', 'tolu'), 'seat-taken', "the host's own person");
   assert.equal(rooms.seat(code, 'g1', 'musa'), true);
   assert.equal(rooms.seat(code, 'g2', 'musa'), 'seat-taken');
-  assert.deepEqual(rooms.view(code.toLowerCase(), 'g1'), { feed: { caption: 'morning' }, taken: ['musa', 'tolu'], mine: 'musa' });
+  assert.deepEqual(rooms.view(code.toLowerCase(), 'g1'), {
+    feed: { caption: 'morning' },
+    taken: ['musa', 'tolu'],
+    mine: 'musa',
+  });
 
   assert.equal(rooms.send(code, 'g2', { text: 'hi' }), 'no-seat');
-  assert.equal(rooms.send(code, 'g1', { text: '  Yes, I\'ll do it.  ' }), true);
+  assert.equal(rooms.send(code, 'g1', { text: "  Yes, I'll do it.  " }), true);
   assert.equal(rooms.send(code, 'g1', { key: 'ok' }), true);
   assert.equal(rooms.send(code, 'g1', { key: 'power' }), 'bad-message');
   assert.equal(rooms.send(code, 'g1', { text: 'x'.repeat(501) }), 'bad-message');
 
   assert.deepEqual(rooms.post(code, 'host', null, 'tolu'), {
-    seats: { musa: true }, inbox: [{ who: 'musa', text: 'Yes, I\'ll do it.' }, { who: 'musa', key: 'ok' }],
+    seats: { musa: true },
+    inbox: [
+      { who: 'musa', text: "Yes, I'll do it." },
+      { who: 'musa', key: 'ok' },
+    ],
   });
-  assert.deepEqual((rooms.post(code, 'host', null, 'tolu') as { inbox: unknown[] }).inbox, [], 'drained');
+  assert.deepEqual(
+    (rooms.post(code, 'host', null, 'tolu') as { inbox: unknown[] }).inbox,
+    [],
+    'drained',
+  );
   assert.equal(rooms.post(code, 'someone-else', null, null), 'not-host');
   assert.equal(rooms.post(code, 'host', { big: 'x'.repeat(20_000) }, null), 'too-big');
 });

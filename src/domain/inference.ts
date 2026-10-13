@@ -24,7 +24,8 @@ export interface InferenceRule {
   ask: (subject: string, appointmentKind: string) => string;
 }
 
-const MEDICAL = /cardiolog|doctor|clinic|hospital|dentist|physical therapy|oncolog|dialysis|surgery|specialist|appointment|checkup|check-up|lab|bloodwork|x-ray|scan|mri/i;
+const MEDICAL =
+  /cardiolog|doctor|clinic|hospital|dentist|physical therapy|oncolog|dialysis|surgery|specialist|appointment|checkup|check-up|lab|bloodwork|x-ray|scan|mri/i;
 
 /**
  * How to say where the ride goes. A department reads as-is ("to cardiology"); an event
@@ -33,8 +34,11 @@ const MEDICAL = /cardiolog|doctor|clinic|hospital|dentist|physical therapy|oncol
 export function destination(kind: string): string {
   const k = kind.trim();
   if (/^(the|a|an|his|her|their|my|our)\s/i.test(k)) return k;
-  return /(check-?up|appointment|test|scan|x-ray|mri|bloodwork|lab|visit|exam|review|follow-?up)$/i.test(k)
-    ? `the ${k}` : k;
+  return /(check-?up|appointment|test|scan|x-ray|mri|bloodwork|lab|visit|exam|review|follow-?up)$/i.test(
+    k,
+  )
+    ? `the ${k}`
+    : k;
 }
 
 export const RULES: InferenceRule[] = [
@@ -76,22 +80,19 @@ export function proposeFromAppointment(
   subject: string,
   startsAt: string,
 ): ProposalSeed[] {
-  return RULES
-    .filter((rule) => rule.appliesTo(appointmentKind))
-    .map((rule) => ({
-      what: rule.what(subject, appointmentKind),
-      consequence: rule.consequence,
-      provenance: {
-        kind: 'INFERRED' as const,
-        rule: rule.id,
-        from: `${appointmentKind} appointment`,
-      },
-      ask: rule.ask(subject, appointmentKind),
-      // The work is due when the appointment starts, not after it.
-      dueAt: startsAt,
-    }));
+  return RULES.filter((rule) => rule.appliesTo(appointmentKind)).map((rule) => ({
+    what: rule.what(subject, appointmentKind),
+    consequence: rule.consequence,
+    provenance: {
+      kind: 'INFERRED' as const,
+      rule: rule.id,
+      from: `${appointmentKind} appointment`,
+    },
+    ask: rule.ask(subject, appointmentKind),
+    // The work is due when the appointment starts, not after it.
+    dueAt: startsAt,
+  }));
 }
-
 
 /**
  * Constraints: obligations discovered from what someone says they *cannot* do.
@@ -149,7 +150,8 @@ export function orphanedBy(
     .map((o) => ({
       obligationId: o.id,
       what: o.what,
-      ask: `${who} has "${o.what}" but just said they aren't available then. `
-        + 'Does someone else need to pick it up?',
+      ask:
+        `${who} has "${o.what}" but just said they aren't available then. ` +
+        'Does someone else need to pick it up?',
     }));
 }

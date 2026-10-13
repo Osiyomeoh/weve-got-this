@@ -26,9 +26,11 @@ after(() => new Promise<void>((r) => server.close(() => r())));
 
 async function connect(token: string): Promise<Client> {
   const c = new Client({ name: 'onboarding-test', version: '1' });
-  await c.connect(new StreamableHTTPClientTransport(new URL(base), {
-    requestInit: { headers: { Authorization: `Bearer ${token}` } },
-  }) as never);
+  await c.connect(
+    new StreamableHTTPClientTransport(new URL(base), {
+      requestInit: { headers: { Authorization: `Bearer ${token}` } },
+    }) as never,
+  );
   return c;
 }
 const call = (c: Client, name: string, args: Record<string, unknown> = {}) =>
@@ -37,7 +39,9 @@ const call = (c: Client, name: string, args: Record<string, unknown> = {}) =>
 test('a validated-but-unmapped caller can create a household and becomes its primary caregiver', async () => {
   const founder = await connect('founder-tok');
   const res = await call(founder, 'create_household', {
-    name: "Grace's care circle", timezone: 'America/New_York', callerName: 'Dana',
+    name: "Grace's care circle",
+    timezone: 'America/New_York',
+    callerName: 'Dana',
   });
   assert.ok(res.structuredContent.householdId);
   assert.ok(res.structuredContent.memberId);
@@ -49,10 +53,16 @@ test('the founder then authenticates as a real member and can grow the circle', 
   const dana = await connect('founder-tok');
   const recipient = await call(dana, 'add_member', { name: 'Grace', role: 'care_recipient' });
   assert.ok(recipient.structuredContent.memberId);
-  const renee = await call(dana, 'add_member', { name: 'Renee', role: 'caregiver', subject: 'renee-tok' });
+  const renee = await call(dana, 'add_member', {
+    name: 'Renee',
+    role: 'caregiver',
+    subject: 'renee-tok',
+  });
   assert.ok(renee.structuredContent.memberId);
   const med = await call(dana, 'add_medication', {
-    name: 'heart pill', times: ['08:00', '20:00'], forMemberId: recipient.structuredContent.memberId,
+    name: 'heart pill',
+    times: ['08:00', '20:00'],
+    forMemberId: recipient.structuredContent.memberId,
   });
   assert.ok(med.structuredContent.medicationId);
   await dana.close();
@@ -71,7 +81,11 @@ test('the last primary caregiver cannot be removed, and nobody removes themselve
   const state = await call(dana, 'get_care_summary', {});
   assert.equal(state.isError ?? false, false);
   // Dana is the only primary caregiver; removing herself is refused twice over.
-  const me = await call(dana, 'add_member', { name: 'Tasha', role: 'helper', subject: 'tasha-tok' });
+  const me = await call(dana, 'add_member', {
+    name: 'Tasha',
+    role: 'helper',
+    subject: 'tasha-tok',
+  });
   const removed = await call(dana, 'remove_member', { memberId: me.structuredContent.memberId });
   assert.match(removed.content[0].text, /Removed Tasha/);
   await dana.close();
@@ -85,9 +99,11 @@ test('self-signup is off by default (the deployed demo behaviour is unchanged)',
   const b2 = `http://127.0.0.1:${(srv2.address() as AddressInfo).port}/mcp`;
   const c = new Client({ name: 'no-signup', version: '1' });
   await assert.rejects(
-    c.connect(new StreamableHTTPClientTransport(new URL(b2), {
-      requestInit: { headers: { Authorization: 'Bearer some-random-token' } },
-    }) as never),
+    c.connect(
+      new StreamableHTTPClientTransport(new URL(b2), {
+        requestInit: { headers: { Authorization: 'Bearer some-random-token' } },
+      }) as never,
+    ),
     /401|Unauthorized|HTTP/i,
   );
   await new Promise<void>((r) => srv2.close(() => r()));

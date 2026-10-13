@@ -81,7 +81,11 @@ export function interpretSignal(
     source: (signal.source === 'ring' ? 'ring' : 'device') as 'ring' | 'device',
     confidence: 'observed' as const,
     ...(signal.detail ? { detail: signal.detail } : {}),
-    data: { source: signal.source, signalKind: signal.kind, ...(signal.raw ? { raw: signal.raw } : {}) },
+    data: {
+      source: signal.source,
+      signalKind: signal.kind,
+      ...(signal.raw ? { raw: signal.raw } : {}),
+    },
   };
 
   switch (signal.kind) {
@@ -114,8 +118,9 @@ export function interpretSignal(
         proposeObligation: {
           what: `Check in on ${context.recipientName}`,
           consequence: 'medical',
-          ask: `There's been no activity at ${context.recipientName}'s door today, and nothing logged. `
-            + `I don't know that anything is wrong - do you want someone to check in?`,
+          ask:
+            `There's been no activity at ${context.recipientName}'s door today, and nothing logged. ` +
+            `I don't know that anything is wrong - do you want someone to check in?`,
         },
         spoken: `No activity at ${context.recipientName}'s door has been recorded today.`,
       };
@@ -138,7 +143,12 @@ export function noActivityWarranted(
   afterLocalHour = 14,
 ): boolean {
   const fmt = new Intl.DateTimeFormat('en-CA', {
-    timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hour12: false,
+    timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    hour12: false,
   });
   const parts = Object.fromEntries(fmt.formatToParts(now).map((p) => [p.type, p.value]));
   const today = `${parts['year']}-${parts['month']}-${parts['day']}`;
@@ -150,7 +160,10 @@ export function noActivityWarranted(
     const k = e.data['signalKind'];
     if (k !== 'door_activity' && k !== 'motion' && k !== 'delivery_arrived') return false;
     const d = new Intl.DateTimeFormat('en-CA', {
-      timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit',
+      timeZone: timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
     }).format(new Date(e.occurredAt));
     return d === today;
   });

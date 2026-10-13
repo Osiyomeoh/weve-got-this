@@ -37,7 +37,9 @@ function whenDue(iso: string, timezone: string, now: Date): string {
   const due = localParts(new Date(iso), timezone).date;
   if (due === localParts(now, timezone).date) return 'today';
   if (due === localParts(new Date(now.getTime() + 86_400_000), timezone).date) return 'tomorrow';
-  return new Intl.DateTimeFormat('en-GB', { timeZone: timezone, weekday: 'long' }).format(new Date(iso));
+  return new Intl.DateTimeFormat('en-GB', { timeZone: timezone, weekday: 'long' }).format(
+    new Date(iso),
+  );
 }
 
 /**
@@ -58,11 +60,15 @@ export function composeDailyUpdate(state: CareState, now: Date): string {
     return m ? ` (${called(m)})` : '';
   };
   const heading = new Intl.DateTimeFormat('en-GB', {
-    timeZone: timezone, weekday: 'long', day: 'numeric', month: 'long',
+    timeZone: timezone,
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
   }).format(now);
   const lines: string[] = [`${who} evening update - ${heading}.`];
 
-  const doses = activeMedications(state, now).flatMap((med) => med.times.map((time) => ({ med, time })))
+  const doses = activeMedications(state, now)
+    .flatMap((med) => med.times.map((time) => ({ med, time })))
     .sort((a, b) => a.time.localeCompare(b.time) || a.med.name.localeCompare(b.med.name));
   if (doses.length > 0) {
     lines.push('', 'Medication');
@@ -71,7 +77,9 @@ export function composeDailyUpdate(state: CareState, now: Date): string {
       const due = parseHHMM(time) ?? 0;
       const status = record
         ? sayWhoSaysSo(attributionOf(record), (id) => nameOf(state, id))
-        : today.minutes < due ? 'not due yet' : 'no record yet';
+        : today.minutes < due
+          ? 'not due yet'
+          : 'no record yet';
       lines.push(`- ${med.name}${whose(med.forMemberId)}, ${spokenClock(time)}: ${status}`);
     }
   }
@@ -85,9 +93,12 @@ export function composeDailyUpdate(state: CareState, now: Date): string {
     lines.push('', 'Coming up');
     for (const o of upcoming) {
       const owner = o.status === 'ASSIGNED' && o.ownerId ? nameOf(state, o.ownerId) : null;
-      const asked = o.status === 'REQUESTED' && o.request ? nameOf(state, o.request.askedOfId) : null;
-      const status = owner ? `${owner} has it`
-        : asked ? `${asked} has been asked, no answer yet`
+      const asked =
+        o.status === 'REQUESTED' && o.request ? nameOf(state, o.request.askedOfId) : null;
+      const status = owner
+        ? `${owner} has it`
+        : asked
+          ? `${asked} has been asked, no answer yet`
           : 'nobody has taken this on yet';
       lines.push(`- ${o.what} (${whenDue(o.dueAt!, timezone, now)}): ${status}`);
     }
@@ -103,7 +114,7 @@ export function composeDailyUpdate(state: CareState, now: Date): string {
   }
 
   if (doses.length > 0) {
-    lines.push('', "\"No record\" means nobody logged it - not that it didn't happen.");
+    lines.push('', '"No record" means nobody logged it - not that it didn\'t happen.');
   }
   return lines.join('\n');
 }
@@ -113,10 +124,16 @@ export function dueDailyUpdates(state: CareState, now: Date): Member[] {
   const { timezone } = state.household;
   const today = localParts(now, timezone);
   if (today.minutes < (parseHHMM(DAILY_UPDATE_AT) ?? 0)) return [];
-  const sent = new Set(state.events
-    .filter((e) => e.kind === 'member_notified' && e.data['update'] === 'daily'
-      && e.data['localDate'] === today.date)
-    .map((e) => e.data['recipientId']));
+  const sent = new Set(
+    state.events
+      .filter(
+        (e) =>
+          e.kind === 'member_notified' &&
+          e.data['update'] === 'daily' &&
+          e.data['localDate'] === today.date,
+      )
+      .map((e) => e.data['recipientId']),
+  );
   return state.members.filter((m) => m.dailyUpdate && !sent.has(m.id));
 }
 
@@ -127,7 +144,8 @@ export function dueDailyUpdates(state: CareState, now: Date): Member[] {
  * tick tries again.
  */
 export async function sendDailyUpdates(
-  deps: { store: CareStore; notifier: Notifier }, now: Date = new Date(),
+  deps: { store: CareStore; notifier: Notifier },
+  now: Date = new Date(),
 ): Promise<number> {
   let sent = 0;
   for (const householdId of deps.store.householdIds()) {
@@ -135,17 +153,26 @@ export async function sendDailyUpdates(
     for (const member of dueDailyUpdates(state, now)) {
       const message = composeDailyUpdate(state, now);
       const delivery = await deps.notifier.deliver({
-        to: member.id, toName: member.name, from: 'CareCircle', message,
+        to: member.id,
+        toName: member.name,
+        from: 'CareCircle',
+        message,
       });
       if (!delivery.delivered && delivery.channel !== 'none') continue;
       await deps.store.appendEvent({
-        householdId, kind: 'member_notified', reportedBy: AGENT_ID,
-        occurredAt: now.toISOString(), source: 'system', confidence: 'confirmed',
+        householdId,
+        kind: 'member_notified',
+        reportedBy: AGENT_ID,
+        occurredAt: now.toISOString(),
+        source: 'system',
+        confidence: 'confirmed',
         detail: `Evening update for ${member.name}`,
         data: {
-          recipientId: member.id, update: 'daily',
+          recipientId: member.id,
+          update: 'daily',
           localDate: localParts(now, state.household.timezone).date,
-          delivered: delivery.delivered, channel: delivery.channel,
+          delivered: delivery.delivered,
+          channel: delivery.channel,
         },
       });
       sent += 1;

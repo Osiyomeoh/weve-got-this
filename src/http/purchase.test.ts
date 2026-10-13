@@ -34,11 +34,17 @@ after(() => server?.close());
 type Result = { isError?: boolean; text: string; structured: Record<string, unknown> };
 
 /** One call in its own session, like a new conversation with Alexa. */
-async function call(token: string, name: string, args: Record<string, unknown> = {}): Promise<Result> {
+async function call(
+  token: string,
+  name: string,
+  args: Record<string, unknown> = {},
+): Promise<Result> {
   const c = new Client({ name: 'purchase-test', version: '1' });
-  await c.connect(new StreamableHTTPClientTransport(new URL(base), {
-    requestInit: { headers: { Authorization: `Bearer ${token}` } },
-  }));
+  await c.connect(
+    new StreamableHTTPClientTransport(new URL(base), {
+      requestInit: { headers: { Authorization: `Bearer ${token}` } },
+    }),
+  );
   try {
     await c.listTools(); // so the SDK validates structured output, as a host does
     const out = await c.callTool({ name, arguments: args });
@@ -53,8 +59,12 @@ async function call(token: string, name: string, args: Record<string, unknown> =
   }
 }
 
-const pickupOpen = () => store.getCareState('h_margaret').obligations
-  .some((o) => o.what === "Pick up Daddy's eye drops refill" && o.status !== 'RESOLVED');
+const pickupOpen = () =>
+  store
+    .getCareState('h_margaret')
+    .obligations.some(
+      (o) => o.what === "Pick up Daddy's eye drops refill" && o.status !== 'RESOLVED',
+    );
 
 test('"yes, place the order" with nothing waiting says so, and buys nothing', async () => {
   const r = await call('david-token', 'confirm_purchase', { confirmed: true });
@@ -63,7 +73,9 @@ test('"yes, place the order" with nothing waiting says so, and buys nothing', as
 });
 
 test('"refill his prescription" prices the refill already waiting, without asking which', async () => {
-  const r = await call('david-token', 'reorder_prescription', { medicationName: 'his prescription' });
+  const r = await call('david-token', 'reorder_prescription', {
+    medicationName: 'his prescription',
+  });
   assert.notEqual(r.isError, true, r.text);
   assert.match(r.text, /eye drops refill/);
   assert.match(r.text, /Nothing is charged/);

@@ -33,9 +33,11 @@ afterEach(() => server?.close());
 
 async function call(token: string, name: string, args: Record<string, unknown>) {
   const c = new Client({ name: 'obligation-ref-test', version: '1' });
-  await c.connect(new StreamableHTTPClientTransport(new URL(base), {
-    requestInit: { headers: { Authorization: `Bearer ${token}` } },
-  }));
+  await c.connect(
+    new StreamableHTTPClientTransport(new URL(base), {
+      requestInit: { headers: { Authorization: `Bearer ${token}` } },
+    }),
+  );
   try {
     await c.listTools(); // so the SDK validates structured output, as a host does
     const out = await c.callTool({ name, arguments: args });
@@ -49,8 +51,10 @@ async function call(token: string, name: string, args: Record<string, unknown>) 
   }
 }
 
-const ride = () => store.getCareState('h_margaret').obligations
-  .find((o) => o.what === 'Take Daddy to his eye check-up')!;
+const ride = () =>
+  store
+    .getCareState('h_margaret')
+    .obligations.find((o) => o.what === 'Take Daddy to his eye check-up')!;
 
 test('asking Funmi works when the planner passes the spoken gap line instead of the id', async () => {
   const r = await call('david-token', 'request_owner', {
@@ -66,15 +70,23 @@ test('asking Funmi works when the planner passes the spoken gap line instead of 
 test('claiming "the refill" takes the refill', async () => {
   const r = await call('renee-token', 'claim_obligation', { obligationId: 'the refill' });
   assert.equal(r.isError, false, r.text);
-  const refill = store.getCareState('h_margaret').obligations.find((o) => o.what.includes('refill'))!;
+  const refill = store
+    .getCareState('h_margaret')
+    .obligations.find((o) => o.what.includes('refill'))!;
   assert.equal(refill.ownerId, 'm_renee');
 });
 
 test('words that fit two things change nothing, and give the choices with their ids', async () => {
   const before = JSON.stringify(store.getCareState('h_margaret').obligations);
-  const r = await call('david-token', 'request_owner', { obligationId: 'the eye one', assigneeName: 'Funmi' });
+  const r = await call('david-token', 'request_owner', {
+    obligationId: 'the eye one',
+    assigneeName: 'Funmi',
+  });
   assert.equal(r.isError, true);
-  assert.match(r.text, /That could be 2 things: .*Take Daddy to his eye check-up" \(obligationId obl_/);
+  assert.match(
+    r.text,
+    /That could be 2 things: .*Take Daddy to his eye check-up" \(obligationId obl_/,
+  );
   assert.match(r.text, /Ask the person which one they mean/);
   assert.equal(JSON.stringify(store.getCareState('h_margaret').obligations), before);
 });

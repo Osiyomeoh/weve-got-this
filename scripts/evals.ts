@@ -35,7 +35,9 @@ const paceMs = Number(process.env.EVALS_PACE_MS ?? (provider.name === 'gemini' ?
 process.stdout.write(`Running ${filter ? `"${filter}" ` : ''}cases on ${provider.name}...`);
 const promptFile = process.env.EVALS_SYSTEM_PROMPT_FILE;
 const results = await runEvals({
-  endpoint, provider, paceMs,
+  endpoint,
+  provider,
+  paceMs,
   ...(promptFile ? { systemPrompt: readFileSync(promptFile, 'utf8') } : {}),
   ...(filter ? { filter } : {}),
   ...(dialects ? { cases: DIALECT_CASES } : {}),
@@ -63,11 +65,17 @@ if (asJson) {
   }
   console.log('');
 
-  const label = { authored: 'authored (tuned)', 'held-out': 'held-out, unseen', seen: 'held-out, since used' };
+  const label = {
+    authored: 'authored (tuned)',
+    'held-out': 'held-out, unseen',
+    seen: 'held-out, since used',
+  };
   for (const x of s.splits) {
     if (x.total === 0) continue;
-    console.log(`  ${label[x.split].padEnd(22)} ${String(x.passed).padStart(3)}/${x.total}`
-      + ` · ${((x.passed / x.total) * 100).toFixed(1)}%`);
+    console.log(
+      `  ${label[x.split].padEnd(22)} ${String(x.passed).padStart(3)}/${x.total}` +
+        ` · ${((x.passed / x.total) * 100).toFixed(1)}%`,
+    );
   }
   console.log('');
 
@@ -96,7 +104,8 @@ if (dialects && !asJson) {
     if (r.errored) continue;
     const k = r.case.id.split('-')[1]!;
     const e = by.get(k) ?? { passed: 0, total: 0 };
-    e.total += 1; if (r.pass) e.passed += 1;
+    e.total += 1;
+    if (r.pass) e.passed += 1;
     by.set(k, e);
   }
   console.log('  By way of speaking');
@@ -104,13 +113,31 @@ if (dialects && !asJson) {
   console.log('');
 }
 
-writeFileSync(promises ? 'evals-results-promises.json' : dialects ? 'evals-results-dialects.json' : 'evals-results.json', JSON.stringify({
-  provider: provider.name, modelId, at: new Date().toISOString(),
-  systemPrompt: promptFile ?? 'console', ...s,
-  results: results.map((r) => ({
-    id: r.case.id, utterance: r.case.utterance, member: r.case.member,
-    chosen: r.chosen, pass: r.pass, reason: r.reason,
-  })),
-}, null, 2));
+writeFileSync(
+  promises
+    ? 'evals-results-promises.json'
+    : dialects
+      ? 'evals-results-dialects.json'
+      : 'evals-results.json',
+  JSON.stringify(
+    {
+      provider: provider.name,
+      modelId,
+      at: new Date().toISOString(),
+      systemPrompt: promptFile ?? 'console',
+      ...s,
+      results: results.map((r) => ({
+        id: r.case.id,
+        utterance: r.case.utterance,
+        member: r.case.member,
+        chosen: r.chosen,
+        pass: r.pass,
+        reason: r.reason,
+      })),
+    },
+    null,
+    2,
+  ),
+);
 
 process.exit(s.failures.length > 0 && process.env.EVALS_STRICT === '1' ? 1 : 0);

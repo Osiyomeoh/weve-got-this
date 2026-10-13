@@ -3,16 +3,28 @@ import assert from 'node:assert/strict';
 import { interpretSignal, noActivityWarranted, type CareSignal } from './signals.ts';
 import type { CareEvent } from './types.ts';
 
-const ctx = { recipientId: 'm_margaret', recipientName: 'Mom', now: new Date('2026-10-15T18:00:00Z') };
-const sig = (over: Partial<CareSignal>): CareSignal =>
-  ({ source: 'ring', kind: 'motion', at: '2026-10-15T18:00:00Z', ...over });
+const ctx = {
+  recipientId: 'm_margaret',
+  recipientName: 'Mom',
+  now: new Date('2026-10-15T18:00:00Z'),
+};
+const sig = (over: Partial<CareSignal>): CareSignal => ({
+  source: 'ring',
+  kind: 'motion',
+  at: '2026-10-15T18:00:00Z',
+  ...over,
+});
 
 test('a delivery is evidence toward the prescription, and asks - never auto-resolves', () => {
   // The beat: "Was Mom's prescription picked up?" answered by the doorbell.
   const out = interpretSignal(sig({ kind: 'delivery_arrived' }), ctx);
   assert.ok(out.resolvesObligationLike);
   // However the family named the errand, a delivery is evidence toward it.
-  for (const what of ["Pick up Mom's prescription", "Pick up Daddy's eye drops refill", 'Pharmacy run']) {
+  for (const what of [
+    "Pick up Mom's prescription",
+    "Pick up Daddy's eye drops refill",
+    'Pharmacy run',
+  ]) {
     assert.match(what, out.resolvesObligationLike.match);
   }
   assert.doesNotMatch('Take Daddy to his eye check-up', out.resolvesObligationLike.match);
@@ -53,15 +65,23 @@ test('door activity is recorded but proposes nothing', () => {
 });
 
 test('a signal is attributed to the device, never to a person', () => {
-  const out = interpretSignal(sig({ kind: 'delivery_arrived', raw: { ringEventId: 'evt_9' } }), ctx);
+  const out = interpretSignal(
+    sig({ kind: 'delivery_arrived', raw: { ringEventId: 'evt_9' } }),
+    ctx,
+  );
   assert.equal(out.event.reportedBy, 'device:ring');
   assert.equal(out.event.data['source'], 'ring');
   assert.deepEqual(out.event.data['raw'], { ringEventId: 'evt_9' });
 });
 
 const signalEvent = (kind: string, at: string): CareEvent => ({
-  id: 'e', householdId: 'h', kind: 'external_signal', reportedBy: 'device:ring',
-  occurredAt: at, recordedAt: at, data: { signalKind: kind },
+  id: 'e',
+  householdId: 'h',
+  kind: 'external_signal',
+  reportedBy: 'device:ring',
+  occurredAt: at,
+  recordedAt: at,
+  data: { signalKind: kind },
 });
 
 test('no-activity concern only after enough of the day has passed', () => {

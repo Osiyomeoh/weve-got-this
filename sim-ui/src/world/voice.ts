@@ -31,7 +31,12 @@ export function prepare(text: string, voice: string, muted = false): void {
 }
 
 /** Speak a line and resolve when it has been said. */
-export async function speak(text: string, voice: string, fallbackPitch = 1, muted = false): Promise<void> {
+export async function speak(
+  text: string,
+  voice: string,
+  fallbackPitch = 1,
+  muted = false,
+): Promise<void> {
   if (muted || !text.trim()) return wait(Math.min(6000, 900 + text.length * 45));
   if (Date.now() >= pollyDownUntil) {
     const audio = await fetchPolly(text, voice);
@@ -54,7 +59,12 @@ function play(blob: Blob): Promise<void> {
     const el = new Audio(url);
     current = el;
     duck(true);
-    const done = () => { duck(false); URL.revokeObjectURL(url); if (current === el) current = null; resolve(); };
+    const done = () => {
+      duck(false);
+      URL.revokeObjectURL(url);
+      if (current === el) current = null;
+      resolve();
+    };
     el.onended = done;
     el.onerror = done;
     el.play().catch(done);
@@ -71,8 +81,14 @@ function browserVoice(text: string, pitch: number): Promise<void> {
     u.rate = 1;
     // Some browsers never fire onend; never let a voice hold the story hostage.
     const guard = setTimeout(resolve, 2500 + text.length * 90);
-    u.onend = () => { clearTimeout(guard); resolve(); };
-    u.onerror = () => { clearTimeout(guard); resolve(); };
+    u.onend = () => {
+      clearTimeout(guard);
+      resolve();
+    };
+    u.onerror = () => {
+      clearTimeout(guard);
+      resolve();
+    };
     window.speechSynthesis.speak(u);
   }).finally(() => duck(false));
 }

@@ -3,14 +3,34 @@ import assert from 'node:assert/strict';
 import { systemPrompt, unbackedClaim } from './host.ts';
 
 test('a reply that says it asked someone, with no write behind it, is caught', () => {
-  assert.equal(unbackedClaim("I've already asked Funmi whether they can take Baba to physiotherapy.", []), true);
-  assert.equal(unbackedClaim("Thanks, that's yours now: take Baba to physiotherapy.", [{ name: 'get_care_gaps', isError: false }]), true);
-  assert.equal(unbackedClaim("I've asked Funmi.", [{ name: 'request_owner', isError: true }]), true, 'a failed write backs nothing');
+  assert.equal(
+    unbackedClaim("I've already asked Funmi whether they can take Baba to physiotherapy.", []),
+    true,
+  );
+  assert.equal(
+    unbackedClaim("Thanks, that's yours now: take Baba to physiotherapy.", [
+      { name: 'get_care_gaps', isError: false },
+    ]),
+    true,
+  );
+  assert.equal(
+    unbackedClaim("I've asked Funmi.", [{ name: 'request_owner', isError: true }]),
+    true,
+    'a failed write backs nothing',
+  );
 });
 
 test('a backed claim, or a plain answer, passes', () => {
-  assert.equal(unbackedClaim("I've asked Funmi.", [{ name: 'request_owner', isError: false }]), false);
-  assert.equal(unbackedClaim('Nobody has taken it yet. Musa said no.', [{ name: 'get_care_gaps', isError: false }]), false);
+  assert.equal(
+    unbackedClaim("I've asked Funmi.", [{ name: 'request_owner', isError: false }]),
+    false,
+  );
+  assert.equal(
+    unbackedClaim('Nobody has taken it yet. Musa said no.', [
+      { name: 'get_care_gaps', isError: false },
+    ]),
+    false,
+  );
   assert.equal(unbackedClaim('Yes, you took your tablet at 7:42 this morning.', []), false);
 });
 

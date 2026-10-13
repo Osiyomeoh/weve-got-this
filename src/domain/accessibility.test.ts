@@ -1,9 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fc from 'fast-check';
-import {
-  accessibilityUplift, dignityNote, resolveSubjectAttributes,
-} from './accessibility.ts';
+import { accessibilityUplift, dignityNote, resolveSubjectAttributes } from './accessibility.ts';
 import { detectCareGaps } from './gaps.ts';
 import type { CareState, Entity, EntityAttributes, Member, Obligation } from './types.ts';
 
@@ -23,7 +21,14 @@ const DEMEANING =
   /\bburden\b|helpless|\binvalid\b|wheelchair[- ]?bound|confined to|\bsuffers?\b|\bvictim\b|can'?t cope|incapable|pitiful|special needs|poor (thing|dear)|\bafflicted\b/i;
 
 function member(over: Partial<Member> = {}): Member {
-  return { id: 'm_margaret', householdId: 'h1', name: 'Margaret', role: 'care_recipient', spokenAs: 'Mom', ...over };
+  return {
+    id: 'm_margaret',
+    householdId: 'h1',
+    name: 'Margaret',
+    role: 'care_recipient',
+    spokenAs: 'Mom',
+    ...over,
+  };
 }
 
 test('no attributes changes nothing - zero uplift, no note', () => {
@@ -61,7 +66,15 @@ test('both needs combine into one sentence, still never demeaning', () => {
 test('the subject resolves from a member, and a member wins over an entity of the same id', () => {
   const state = {
     members: [member({ id: 's1', attributes: { requiresAssistance: true } })],
-    entities: [{ id: 's1', householdId: 'h1', type: 'service', name: 'x', attributes: { needsAccessibleTransport: true } } as Entity],
+    entities: [
+      {
+        id: 's1',
+        householdId: 'h1',
+        type: 'service',
+        name: 'x',
+        attributes: { needsAccessibleTransport: true },
+      } as Entity,
+    ],
   };
   const o = { aboutEntityId: 's1' } as Obligation;
   assert.deepEqual(resolveSubjectAttributes(state, o), { requiresAssistance: true });
@@ -70,7 +83,15 @@ test('the subject resolves from a member, and a member wins over an entity of th
 test('the subject resolves from a non-person entity when no member matches', () => {
   const state = {
     members: [] as Member[],
-    entities: [{ id: 'e_ride', householdId: 'h1', type: 'service', name: 'Access-A-Ride', attributes: { needsAccessibleTransport: true } } as Entity],
+    entities: [
+      {
+        id: 'e_ride',
+        householdId: 'h1',
+        type: 'service',
+        name: 'Access-A-Ride',
+        attributes: { needsAccessibleTransport: true },
+      } as Entity,
+    ],
   };
   const o = { aboutEntityId: 'e_ride' } as Obligation;
   assert.deepEqual(resolveSubjectAttributes(state, o), { needsAccessibleTransport: true });
@@ -83,13 +104,20 @@ function rideState(attrs?: EntityAttributes): CareState {
     household: { id: 'h1', name: 'circle', timezone: 'America/New_York' },
     members: [member(attrs ? { attributes: attrs } : {})],
     events: [],
-    obligations: [{
-      id: 'o_ride', householdId: 'h1', what: 'Drive Mom to cardiology',
-      status: 'OPEN', consequence: 'medical',
-      provenance: { kind: 'CONFIRMED', byMemberId: 'm_david', at: '2026-03-10T09:00:00Z' },
-      ownerId: null, aboutEntityId: 'm_margaret',
-      dueAt: '2026-03-12T14:00:00Z', createdAt: '2026-03-10T09:00:00Z',
-    }],
+    obligations: [
+      {
+        id: 'o_ride',
+        householdId: 'h1',
+        what: 'Drive Mom to cardiology',
+        status: 'OPEN',
+        consequence: 'medical',
+        provenance: { kind: 'CONFIRMED', byMemberId: 'm_david', at: '2026-03-10T09:00:00Z' },
+        ownerId: null,
+        aboutEntityId: 'm_margaret',
+        dueAt: '2026-03-12T14:00:00Z',
+        createdAt: '2026-03-10T09:00:00Z',
+      },
+    ],
     medications: [],
     entities: [],
   };
@@ -123,19 +151,25 @@ const arbAttrs: fc.Arbitrary<EntityAttributes> = fc.record({
 });
 
 test('property: uplift stays a probability and the note never demeans', () => {
-  fc.assert(fc.property(arbAttrs, (attrs) => {
-    const u = accessibilityUplift(attrs);
-    assert.ok(u >= 0 && u < 1, `uplift ${u} out of [0,1)`);
-    const note = dignityNote(attrs);
-    if (note !== undefined) assert.doesNotMatch(note, DEMEANING);
-  }), { numRuns: 200 });
+  fc.assert(
+    fc.property(arbAttrs, (attrs) => {
+      const u = accessibilityUplift(attrs);
+      assert.ok(u >= 0 && u < 1, `uplift ${u} out of [0,1)`);
+      const note = dignityNote(attrs);
+      if (note !== undefined) assert.doesNotMatch(note, DEMEANING);
+    }),
+    { numRuns: 200 },
+  );
 });
 
 test('property: attaching any accessibility need never lowers the gap score', () => {
-  fc.assert(fc.property(arbAttrs, (attrs) => {
-    const plain = detectCareGaps(rideState(), { now: NOW })[0]!;
-    const withAttrs = detectCareGaps(rideState(attrs), { now: NOW })[0]!;
-    assert.ok(withAttrs.score >= plain.score);
-    assert.doesNotMatch(withAttrs.because, DEMEANING);
-  }), { numRuns: 200 });
+  fc.assert(
+    fc.property(arbAttrs, (attrs) => {
+      const plain = detectCareGaps(rideState(), { now: NOW })[0]!;
+      const withAttrs = detectCareGaps(rideState(attrs), { now: NOW })[0]!;
+      assert.ok(withAttrs.score >= plain.score);
+      assert.doesNotMatch(withAttrs.because, DEMEANING);
+    }),
+    { numRuns: 200 },
+  );
 });

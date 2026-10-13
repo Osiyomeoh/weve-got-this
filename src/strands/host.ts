@@ -11,7 +11,15 @@ import {
   type Model,
 } from '@strands-agents/sdk';
 import type { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { STALE_NOTE, systemPrompt, type Channel, type Speaker, type ToolCallRecord, type TraceStep, type TurnResult } from '../sim/host.js';
+import {
+  STALE_NOTE,
+  systemPrompt,
+  type Channel,
+  type Speaker,
+  type ToolCallRecord,
+  type TraceStep,
+  type TurnResult,
+} from '../sim/host.js';
 import { NOTHING_SAID, speakable, toolAnswer } from '../domain/speakable.js';
 import { NoBlame, type NoBlameReport } from './no-blame.js';
 
@@ -32,7 +40,12 @@ export interface StrandsTurnResult extends TurnResult {
   noBlame: NoBlameReport;
 }
 
-interface Turn { steps: TraceStep[]; calls: ToolCallRecord[]; started: Map<string, number>; modelStarted: number }
+interface Turn {
+  steps: TraceStep[];
+  calls: ToolCallRecord[];
+  started: Map<string, number>;
+  modelStarted: number;
+}
 
 /** Bounded so a confused model cannot loop forever: model calls per turn, as the console's host. */
 const STEPS: Record<Channel, number> = { voice: 7, chat: 11 };
@@ -53,8 +66,10 @@ async function resource<T>(client: Client, uri: string): Promise<T | null> {
   try {
     const res = await client.readResource({ uri });
     const text = (res.contents?.[0] as { text?: string } | undefined)?.text;
-    return text ? JSON.parse(text) as T : null;
-  } catch { return null; }
+    return text ? (JSON.parse(text) as T) : null;
+  } catch {
+    return null;
+  }
 }
 
 export class StrandsAlexa {
@@ -68,7 +83,13 @@ export class StrandsAlexa {
   /** Whether this conversation has had a turn: later turns must read the record again. */
   #spoken = false;
 
-  private constructor(opts: { agent: Agent; mcp: McpClient; noBlame: NoBlame; channel: Channel; modelId: string }) {
+  private constructor(opts: {
+    agent: Agent;
+    mcp: McpClient;
+    noBlame: NoBlame;
+    channel: Channel;
+    modelId: string;
+  }) {
     this.#agent = opts.agent;
     this.#mcp = opts.mcp;
     this.#noBlame = opts.noBlame;
@@ -76,19 +97,31 @@ export class StrandsAlexa {
     this.#modelId = opts.modelId;
   }
 
-  get modelId(): string { return this.#modelId; }
+  get modelId(): string {
+    return this.#modelId;
+  }
 
   /**
    * A planner over a CareCircle server, speaking as the member the transport's credential
    * belongs to. `transport` is not yet started; Strands' McpClient starts it.
    */
-  static async over(transport: McpTransport, opts: { model?: Model; channel?: Channel; now?: () => Date } = {}): Promise<StrandsAlexa> {
+  static async over(
+    transport: McpTransport,
+    opts: { model?: Model; channel?: Channel; now?: () => Date } = {},
+  ): Promise<StrandsAlexa> {
     const channel = opts.channel ?? 'voice';
-    const mcp = new McpClient({ transport, applicationName: 'carecircle-strands', disableMcpInstrumentation: true });
+    const mcp = new McpClient({
+      transport,
+      applicationName: 'carecircle-strands',
+      disableMcpInstrumentation: true,
+    });
     await mcp.connect();
     // Who is speaking and where the family lives come from the server, never the person.
     const me = await resource<Speaker>(mcp.client as unknown as Client, 'carecircle://session/me');
-    const state = await resource<{ household?: { timezone?: string } }>(mcp.client as unknown as Client, 'carecircle://household/state');
+    const state = await resource<{ household?: { timezone?: string } }>(
+      mcp.client as unknown as Client,
+      'carecircle://household/state',
+    );
     const speaker = me?.name && me.role ? me : null;
     const timezone = state?.household?.timezone ?? 'America/New_York';
     const model = opts.model ?? bedrockModel();
@@ -102,7 +135,13 @@ export class StrandsAlexa {
       conversationManager: new SlidingWindowConversationManager({ windowSize: HISTORY }),
       toolExecutor: 'sequential',
     });
-    const host = new StrandsAlexa({ agent, mcp, noBlame, channel, modelId: String(model.getConfig().modelId ?? 'unknown') });
+    const host = new StrandsAlexa({
+      agent,
+      mcp,
+      noBlame,
+      channel,
+      modelId: String(model.getConfig().modelId ?? 'unknown'),
+    });
     host.#trace();
     return host;
   }
@@ -114,7 +153,8 @@ export class StrandsAlexa {
       if (!turn) return;
       turn.steps.push({ plannerMs: Date.now() - turn.modelStarted, calls: [] });
       turn.modelStarted = Date.now();
-      if (turn.steps.length >= STEPS[this.#channel] && event.stopData?.stopReason === 'toolUse') this.#agent.cancel();
+      if (turn.steps.length >= STEPS[this.#channel] && event.stopData?.stopReason === 'toolUse')
+        this.#agent.cancel();
     });
     this.#agent.addHook(BeforeToolCallEvent, (event) => {
       this.#turn?.started.set(event.toolUse.toolUseId, Date.now());
@@ -125,7 +165,10 @@ export class StrandsAlexa {
       const call: ToolCallRecord = {
         name: event.toolUse.name,
         arguments: (event.toolUse.input ?? {}) as Record<string, unknown>,
-        result: event.result.content.map((b) => (b instanceof TextBlock ? b.text : '')).join(' ').trim(),
+        result: event.result.content
+          .map((b) => (b instanceof TextBlock ? b.text : ''))
+          .join(' ')
+          .trim(),
         isError: event.result.status === 'error',
         ms: Date.now() - (turn.started.get(event.toolUse.toolUseId) ?? Date.now()),
       };
@@ -148,10 +191,12 @@ export class StrandsAlexa {
       const result = await this.#agent.invoke(said);
       const cut = result.stopReason === 'cancelled';
       const spoken = cut
-        ? "Sorry, I got stuck working that out. Could you say it another way?"
-        : speakable(result.lastMessage.content.map((b) => (b instanceof TextBlock ? b.text : '')).join(' '))
-          || toolAnswer(turn.calls.filter((c) => !c.isError).map((c) => c.result))
-          || NOTHING_SAID;
+        ? 'Sorry, I got stuck working that out. Could you say it another way?'
+        : speakable(
+            result.lastMessage.content.map((b) => (b instanceof TextBlock ? b.text : '')).join(' '),
+          ) ||
+          toolAnswer(turn.calls.filter((c) => !c.isError).map((c) => c.result)) ||
+          NOTHING_SAID;
       const plannerMs = turn.steps.reduce((sum, s) => sum + s.plannerMs, 0);
       const toolMs = turn.calls.reduce((sum, c) => sum + c.ms, 0);
       return {
@@ -159,8 +204,13 @@ export class StrandsAlexa {
         toolCalls: turn.calls,
         noBlame: this.#noBlame.report,
         trace: {
-          channel: this.#channel, model: this.#modelId, outcome: cut ? 'step_limit' : 'answered',
-          steps: turn.steps, plannerMs, toolMs, totalMs: Date.now() - started,
+          channel: this.#channel,
+          model: this.#modelId,
+          outcome: cut ? 'step_limit' : 'answered',
+          steps: turn.steps,
+          plannerMs,
+          toolMs,
+          totalMs: Date.now() - started,
         },
       };
     } finally {
@@ -168,5 +218,7 @@ export class StrandsAlexa {
     }
   }
 
-  async close(): Promise<void> { await this.#mcp.disconnect(); }
+  async close(): Promise<void> {
+    await this.#mcp.disconnect();
+  }
 }

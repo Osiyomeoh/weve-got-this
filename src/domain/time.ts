@@ -16,14 +16,23 @@
 /** How far ahead of UTC `timezone` is at this instant, in milliseconds. */
 function zoneOffsetMs(at: Date, timezone: string): number {
   const dtf = new Intl.DateTimeFormat('en-US', {
-    timeZone: timezone, hour12: false,
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    timeZone: timezone,
+    hour12: false,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
   });
   const p = Object.fromEntries(dtf.formatToParts(at).map((x) => [x.type, x.value]));
   const asUTC = Date.UTC(
-    Number(p['year']), Number(p['month']) - 1, Number(p['day']),
-    Number(p['hour']) % 24, Number(p['minute']), Number(p['second']),
+    Number(p['year']),
+    Number(p['month']) - 1,
+    Number(p['day']),
+    Number(p['hour']) % 24,
+    Number(p['minute']),
+    Number(p['second']),
   );
   return asUTC - at.getTime();
 }
@@ -84,15 +93,17 @@ export function implausible(iso: string, now: Date): Implausible | null {
   if (days < -PAST_GRACE_DAYS) {
     return {
       reason: 'too-far-past',
-      spoken: 'That date has already passed, so I want to check I heard it right. '
-        + 'Which day did you mean?',
+      spoken:
+        'That date has already passed, so I want to check I heard it right. ' +
+        'Which day did you mean?',
     };
   }
   if (days > FUTURE_LIMIT_DAYS) {
     return {
       reason: 'too-far-future',
-      spoken: "That's more than a year away, so I want to check I heard it right. "
-        + 'Which day did you mean?',
+      spoken:
+        "That's more than a year away, so I want to check I heard it right. " +
+        'Which day did you mean?',
     };
   }
   return null;

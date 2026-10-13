@@ -52,11 +52,16 @@ interface OfferContext {
  * behind the same return type.
  */
 export function offerFor(kind: OfferKind, ctx: OfferContext): PurchaseOffer {
-  const item = ctx.itemName ? `${ctx.itemName} refill - 30-day supply` : 'Prescription refill - 30-day supply';
+  const item = ctx.itemName
+    ? `${ctx.itemName} refill - 30-day supply`
+    : 'Prescription refill - 30-day supply';
   return {
-    offerId: ctx.offerId, kind, item,
+    offerId: ctx.offerId,
+    kind,
+    item,
     merchant: 'Cornerside Pharmacy',
-    amountCents: 1200, currency: 'USD',
+    amountCents: 1200,
+    currency: 'USD',
     etaText: 'delivered to the door by tomorrow evening',
     simulated: true,
     ...(ctx.obligationId ? { obligationId: ctx.obligationId } : {}),
@@ -65,19 +70,25 @@ export function offerFor(kind: OfferKind, ctx: OfferContext): PurchaseOffer {
 
 /** The single sentence the assistant speaks when it presents an offer. */
 export function offerSpoken(offer: PurchaseOffer): string {
-  return `${offer.item} from ${offer.merchant} is ${formatPrice(offer.amountCents, offer.currency)}, `
-    + `${offer.etaText}. Want me to place it? Nothing is charged until you confirm.`;
+  return (
+    `${offer.item} from ${offer.merchant} is ${formatPrice(offer.amountCents, offer.currency)}, ` +
+    `${offer.etaText}. Want me to place it? Nothing is charged until you confirm.`
+  );
 }
 
 /** Work a refill would close: "Pick up Daddy's eye drops refill", "Pharmacy run". */
 const REFILL_WORK = /refill|prescription|pharmacy/i;
 
 /** Words that ask for "a prescription" without saying which one. */
-const GENERIC_ITEM = /^(?:prescriptions?|medicines?|medications?|meds|pills?|drugs|tablets|refills?)$/;
+const GENERIC_ITEM =
+  /^(?:prescriptions?|medicines?|medications?|meds|pills?|drugs|tablets|refills?)$/;
 
 /** "his prescription", "Daddy's meds", "the usual" -> "" when nothing specific was named. */
 function specificPart(said: string): string {
-  const words = said.toLowerCase().trim().split(/\s+/)
+  const words = said
+    .toLowerCase()
+    .trim()
+    .split(/\s+/)
     .filter((w) => !/^(?:his|her|my|their|the|a|usual|own|\S+'s|\S+’s)$/.test(w));
   const rest = words.join(' ');
   return GENERIC_ITEM.test(rest) ? '' : rest;
@@ -121,13 +132,14 @@ export function chooseRefill(
     if (waiting.length === 1) itemName = waiting[0]!.name;
     else if (medications.length === 1) itemName = medications[0]!.name;
     else if (medications.length > 1) {
-      return { ok: false, choices: (waiting.length > 1 ? waiting : medications).map((m) => m.name) };
+      return {
+        ok: false,
+        choices: (waiting.length > 1 ? waiting : medications).map((m) => m.name),
+      };
     }
   }
 
-  const closes = itemName
-    ? refillWork.filter((o) => mentions(o.what, itemName!))
-    : refillWork;
+  const closes = itemName ? refillWork.filter((o) => mentions(o.what, itemName!)) : refillWork;
   return {
     ok: true,
     ...(itemName ? { itemName } : {}),
@@ -147,16 +159,25 @@ export const OFFER_TTL_MS = 24 * 60 * 60 * 1000;
  * price is not something to commit money against without reading it again.
  */
 export function waitingOffers(
-  events: readonly { kind: string; reportedBy: string; occurredAt: string; data: Record<string, unknown> }[],
+  events: readonly {
+    kind: string;
+    reportedBy: string;
+    occurredAt: string;
+    data: Record<string, unknown>;
+  }[],
   at: Date,
 ): { offer: PurchaseOffer; offeredBy: string }[] {
-  const answered = new Set(events
-    .filter((e) => e.kind === 'purchase_completed')
-    .map((e) => e.data['offerId']));
+  const answered = new Set(
+    events.filter((e) => e.kind === 'purchase_completed').map((e) => e.data['offerId']),
+  );
   return events
     .filter((e) => e.kind === 'purchase_offered')
     .filter((e) => at.getTime() - Date.parse(e.occurredAt) <= OFFER_TTL_MS)
-    .map((e) => ({ offer: e.data['offer'] as unknown as PurchaseOffer, offeredBy: e.reportedBy, at: e.occurredAt }))
+    .map((e) => ({
+      offer: e.data['offer'] as unknown as PurchaseOffer,
+      offeredBy: e.reportedBy,
+      at: e.occurredAt,
+    }))
     .filter(({ offer }) => offer && !answered.has(offer.offerId))
     .sort((a, b) => b.at.localeCompare(a.at))
     .map(({ offer, offeredBy }) => ({ offer, offeredBy }));

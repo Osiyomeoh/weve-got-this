@@ -23,19 +23,47 @@ const store = new CareStore(new DynamoPersistence({ tableName: table, region }))
 await store.init();
 
 await store.addHousehold({ id: hh, name: 'Round trip', timezone: 'America/New_York' });
-await store.addMember({ id: `${hh}_mom`, householdId: hh, name: 'Margaret', role: 'care_recipient', spokenAs: 'Mom' });
-await store.addMember({ id: `${hh}_david`, householdId: hh, name: 'David', role: 'primary_caregiver' });
-await store.addMedication({ id: `${hh}_med`, householdId: hh, name: 'heart pill', times: ['08:00', '20:00'], forMemberId: `${hh}_mom` });
+await store.addMember({
+  id: `${hh}_mom`,
+  householdId: hh,
+  name: 'Margaret',
+  role: 'care_recipient',
+  spokenAs: 'Mom',
+});
+await store.addMember({
+  id: `${hh}_david`,
+  householdId: hh,
+  name: 'David',
+  role: 'primary_caregiver',
+});
+await store.addMedication({
+  id: `${hh}_med`,
+  householdId: hh,
+  name: 'heart pill',
+  times: ['08:00', '20:00'],
+  forMemberId: `${hh}_mom`,
+});
 
 const due = new Date(Date.now() + 36 * 3600 * 1000).toISOString();
 const ride = await store.createObligation({
-  householdId: hh, what: 'Drive Mom to cardiology', status: 'OPEN', consequence: 'medical',
-  provenance: { kind: 'INFERRED', rule: 'medical-appointment-transport', from: 'cardiology appointment' },
-  ownerId: null, dueAt: due,
+  householdId: hh,
+  what: 'Drive Mom to cardiology',
+  status: 'OPEN',
+  consequence: 'medical',
+  provenance: {
+    kind: 'INFERRED',
+    rule: 'medical-appointment-transport',
+    from: 'cardiology appointment',
+  },
+  ownerId: null,
+  dueAt: due,
 });
 await store.appendEvent({
-  householdId: hh, kind: 'note_added', reportedBy: `${hh}_david`,
-  occurredAt: new Date().toISOString(), detail: 'Mom sounded tired on the phone.',
+  householdId: hh,
+  kind: 'note_added',
+  reportedBy: `${hh}_david`,
+  occurredAt: new Date().toISOString(),
+  detail: 'Mom sounded tired on the phone.',
   data: { aboutMemberId: `${hh}_mom` },
 });
 say('wrote household, 2 members, 1 medication, 1 obligation, 1 event');
@@ -55,7 +83,10 @@ say('reloaded through a fresh adapter - all entities intact');
 
 // The gap engine must reach the same conclusion from persisted state.
 const gaps = detectCareGaps(state);
-assert.ok(gaps.some((g) => g.kind === 'UNCLAIMED'), 'expected the unowned ride to be a gap');
+assert.ok(
+  gaps.some((g) => g.kind === 'UNCLAIMED'),
+  'expected the unowned ride to be a gap',
+);
 say(`gap engine agrees: ${gaps.length} gap(s), including the unclaimed ride`);
 
 // --- mutate, and confirm the diff only writes what changed ---------------
@@ -92,8 +123,11 @@ await counted.init();
 itemsWritten = 0;
 
 await counted.appendEvent({
-  householdId: hh, kind: 'note_added', reportedBy: `${hh}_david`,
-  occurredAt: new Date().toISOString(), detail: 'One more note.',
+  householdId: hh,
+  kind: 'note_added',
+  reportedBy: `${hh}_david`,
+  occurredAt: new Date().toISOString(),
+  detail: 'One more note.',
   data: { aboutMemberId: `${hh}_mom` },
 });
 

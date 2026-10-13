@@ -28,7 +28,8 @@ export const DEMO_TOKENS: Record<string, string> = {
 export const DEMO_HOUSEHOLD_ID = 'h_margaret';
 
 export async function seedDemoHousehold(
-  store: CareStore, options: { suffix?: string; careCase?: CareCaseId; names?: FamilyNames } = {},
+  store: CareStore,
+  options: { suffix?: string; careCase?: CareCaseId; names?: FamilyNames } = {},
 ): Promise<void> {
   const c = careCaseFor(options.careCase, options.names);
   // A suffix gives a per-visitor sandbox copy ids of its own; ids are global keys.
@@ -37,7 +38,9 @@ export async function seedDemoHousehold(
   try {
     store.getCareState(HOUSEHOLD_ID);
     return; // already seeded
-  } catch { /* not seeded yet */ }
+  } catch {
+    /* not seeded yet */
+  }
 
   await store.addHousehold({
     id: HOUSEHOLD_ID,
@@ -46,8 +49,11 @@ export async function seedDemoHousehold(
   });
 
   await store.addMember({
-    id: sid('m_margaret'), householdId: HOUSEHOLD_ID, name: c.recipient.name,
-    role: 'care_recipient', spokenAs: c.recipient.spokenAs,
+    id: sid('m_margaret'),
+    householdId: HOUSEHOLD_ID,
+    name: c.recipient.name,
+    role: 'care_recipient',
+    spokenAs: c.recipient.spokenAs,
     // Standing needs (see cases.ts): logistics facts that rank a dropped task higher,
     // never a label the system may editorialise about.
     attributes: c.recipient.attributes,
@@ -56,37 +62,58 @@ export async function seedDemoHousehold(
   const f = c.family;
   const where = (p?: { livesAway?: string }) => (p?.livesAway ? { livesAway: p.livesAway } : away);
   await store.addMember({
-    id: sid('m_david'), householdId: HOUSEHOLD_ID, name: f?.primary.name ?? 'Tolu',
-    role: 'primary_caregiver', ...where(f?.primary),
+    id: sid('m_david'),
+    householdId: HOUSEHOLD_ID,
+    name: f?.primary.name ?? 'Tolu',
+    role: 'primary_caregiver',
+    ...where(f?.primary),
   });
   await store.addMember({
-    id: sid('m_renee'), householdId: HOUSEHOLD_ID, name: f?.caregiver.name ?? 'Funmi',
-    role: 'caregiver', ...where(f?.caregiver),
+    id: sid('m_renee'),
+    householdId: HOUSEHOLD_ID,
+    name: f?.caregiver.name ?? 'Funmi',
+    role: 'caregiver',
+    ...where(f?.caregiver),
   });
   await store.addMember({
-    id: sid('m_aide'), householdId: HOUSEHOLD_ID, name: c.helper ?? 'Musa',
+    id: sid('m_aide'),
+    householdId: HOUSEHOLD_ID,
+    name: c.helper ?? 'Musa',
     role: 'helper',
   });
   // A brother in London: wants to know how the day went, and can't drive anyone to a
   // clinic in Lagos. He gets the evening update and is never picked for in-person work.
   await store.addMember({
-    id: sid('m_kunle'), householdId: HOUSEHOLD_ID, name: f?.away.name ?? 'Kunle',
-    role: 'caregiver', livesAway: f?.away.livesAway ?? 'London', dailyUpdate: true,
+    id: sid('m_kunle'),
+    householdId: HOUSEHOLD_ID,
+    name: f?.away.name ?? 'Kunle',
+    role: 'caregiver',
+    livesAway: f?.away.livesAway ?? 'London',
+    dailyUpdate: true,
   });
 
   await store.addMedication({
-    id: sid('med_heart'), householdId: HOUSEHOLD_ID, name: c.medication,
-    times: ['08:00', '20:00'], forMemberId: sid('m_margaret'),
+    id: sid('med_heart'),
+    householdId: HOUSEHOLD_ID,
+    name: c.medication,
+    times: ['08:00', '20:00'],
+    forMemberId: sid('m_margaret'),
   });
   await store.addMedication({
-    id: sid('med_thyroid'), householdId: HOUSEHOLD_ID, name: c.supplement,
-    times: ['08:00'], forMemberId: sid('m_margaret'),
+    id: sid('med_thyroid'),
+    householdId: HOUSEHOLD_ID,
+    name: c.supplement,
+    times: ['08:00'],
+    forMemberId: sid('m_margaret'),
   });
 
   // The eye clinic as a first-class non-person node. The ride obligation points its
   // subject at Daddy (whose mobility need drives risk); this entity is here so the graph
   // names the destination the ride is *to*.
   await store.addEntity({
-    id: sid('e_cardiology'), householdId: HOUSEHOLD_ID, type: 'service', name: c.appointment.place,
+    id: sid('e_cardiology'),
+    householdId: HOUSEHOLD_ID,
+    type: 'service',
+    name: c.appointment.place,
   });
 }

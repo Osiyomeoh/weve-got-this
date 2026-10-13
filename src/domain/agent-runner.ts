@@ -40,9 +40,7 @@ export interface RunnerDeps {
  * does not produce a request every fifteen minutes. Safe to call on a timer, on a
  * webhook, or by hand in a demo.
  */
-export async function runAgentOnce(
-  householdId: string, deps: RunnerDeps,
-): Promise<AgentRun> {
+export async function runAgentOnce(householdId: string, deps: RunnerDeps): Promise<AgentRun> {
   const now = deps.now?.() ?? new Date();
   const state = deps.store.getCareState(householdId);
   const deliberation = deliberate(state, { now, timezone: state.household.timezone });
@@ -62,15 +60,32 @@ export async function runAgentOnce(
     // being asked to do the driving.
     if (action.kind === 'ASK') {
       await deps.store.transition(
-        action.obligationId, householdId, 'REQUESTED', AGENT_ID,
-        { ownerId: null, request: { askedOfId: member.id, askedById: AGENT_ID, askedAt: now.toISOString() } },
+        action.obligationId,
+        householdId,
+        'REQUESTED',
+        AGENT_ID,
+        {
+          ownerId: null,
+          request: { askedOfId: member.id, askedById: AGENT_ID, askedAt: now.toISOString() },
+        },
         `CareCircle asked ${name}`,
       );
     }
 
-    const message = messageFor(action, obligation.what, state.members.find((m) => m.id === obligation.ownerId),
-      action.followUp ? checkInEvidence(obligation, state.events, now, state.household.timezone) : '');
-    const delivery = await deps.notifier.deliver({ to: member.id, toName: name, from: 'CareCircle', message });
+    const message = messageFor(
+      action,
+      obligation.what,
+      state.members.find((m) => m.id === obligation.ownerId),
+      action.followUp
+        ? checkInEvidence(obligation, state.events, now, state.household.timezone)
+        : '',
+    );
+    const delivery = await deps.notifier.deliver({
+      to: member.id,
+      toName: name,
+      from: 'CareCircle',
+      message,
+    });
 
     await deps.store.appendEvent({
       householdId,
@@ -110,7 +125,10 @@ export async function runAgentOnce(
  * recorded does not mean it did not happen, so the wording cannot say it did not.
  */
 function messageFor(
-  action: AgentAction, what: string, owner?: { name: string; spokenAs?: string }, seen = '',
+  action: AgentAction,
+  what: string,
+  owner?: { name: string; spokenAs?: string },
+  seen = '',
 ): string {
   if (action.kind === 'CHECK_IN') {
     return `"${what}" was due a little while ago and nothing's been marked yet.${seen} Still on?\n\nReply "done" if it's handled, or "can't" and I'll find someone.`;
@@ -130,7 +148,9 @@ export async function runAgentAll(deps: RunnerDeps): Promise<AgentRun[]> {
   // A visitor's sandbox copy (`<household>~<suffix>`) lives on its own story clock: the
   // story runs CareCircle's pass when its day reaches it. Run on the server's clock, the
   // pass would ask the helper about tonight's refill before the story's own asking does.
-  const householdIds = [...new Set(deps.store.allMembers().map((m) => m.householdId))].filter((id) => !id.includes('~'));
+  const householdIds = [...new Set(deps.store.allMembers().map((m) => m.householdId))].filter(
+    (id) => !id.includes('~'),
+  );
   const runs: AgentRun[] = [];
   for (const id of householdIds) runs.push(await runAgentOnce(id, deps));
   return runs;

@@ -4,17 +4,20 @@ import { parseIcs, parseIcsDate, emailToAppointment, type EmailMessage } from '.
 
 const TZ = 'America/New_York';
 
-const ics = (over: { dtstart?: string; summary?: string; uid?: string; location?: string } = {}): string => [
-  'BEGIN:VCALENDAR',
-  'VERSION:2.0',
-  'BEGIN:VEVENT',
-  `UID:${over.uid ?? 'abc@clinic'}`,
-  `SUMMARY:${over.summary ?? 'Cardiology'}`,
-  ...(over.location ? [`LOCATION:${over.location}`] : []),
-  over.dtstart ?? 'DTSTART:20261016T180000Z',
-  'END:VEVENT',
-  'END:VCALENDAR',
-].join('\r\n');
+const ics = (
+  over: { dtstart?: string; summary?: string; uid?: string; location?: string } = {},
+): string =>
+  [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'BEGIN:VEVENT',
+    `UID:${over.uid ?? 'abc@clinic'}`,
+    `SUMMARY:${over.summary ?? 'Cardiology'}`,
+    ...(over.location ? [`LOCATION:${over.location}`] : []),
+    over.dtstart ?? 'DTSTART:20261016T180000Z',
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].join('\r\n');
 
 test('a UTC DTSTART parses to that instant', () => {
   assert.equal(parseIcsDate('20261016T180000Z', {}, TZ), '2026-10-16T18:00:00.000Z');
@@ -27,7 +30,10 @@ test('a floating local DTSTART is read in the household zone', () => {
 
 test('a zoned DTSTART uses its TZID, not the household zone', () => {
   // 14:00 Los Angeles (PDT, -07:00) is 21:00 UTC, regardless of the NY household.
-  assert.equal(parseIcsDate('20261016T140000', { TZID: 'America/Los_Angeles' }, TZ), '2026-10-16T21:00:00.000Z');
+  assert.equal(
+    parseIcsDate('20261016T140000', { TZID: 'America/Los_Angeles' }, TZ),
+    '2026-10-16T21:00:00.000Z',
+  );
 });
 
 test('an all-day (date-only) DTSTART is not a timed appointment', () => {
@@ -45,12 +51,18 @@ test('parseIcs pulls summary, uid and start from the first VEVENT', () => {
 });
 
 test('line folding is unfolded before properties are read', () => {
-  const folded = 'BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nSUMMARY:Cardiology fol\r\n low-up\r\nDTSTART:20261016T180000Z\r\nEND:VEVENT\r\nEND:VCALENDAR';
+  const folded =
+    'BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nSUMMARY:Cardiology fol\r\n low-up\r\nDTSTART:20261016T180000Z\r\nEND:VEVENT\r\nEND:VCALENDAR';
   assert.equal(parseIcs(folded, TZ)!.summary, 'Cardiology follow-up');
 });
 
 test('an email with an invite becomes an observed, email-sourced appointment', () => {
-  const email: EmailMessage = { messageId: 'm1', from: 'clinic@mercy.com', subject: 'Your visit', icsText: ics() };
+  const email: EmailMessage = {
+    messageId: 'm1',
+    from: 'clinic@mercy.com',
+    subject: 'Your visit',
+    icsText: ics(),
+  };
   const m = emailToAppointment(email, TZ);
   assert.equal(m.apply, true);
   if (!m.apply) return;
@@ -69,14 +81,26 @@ test('an email with no invite is skipped, never date-guessed from prose', () => 
 });
 
 test('an all-day invite is skipped rather than turned into a timed appointment', () => {
-  const m = emailToAppointment({ messageId: 'm3', icsText: ics({ dtstart: 'DTSTART;VALUE=DATE:20261016' }) }, TZ);
+  const m = emailToAppointment(
+    { messageId: 'm3', icsText: ics({ dtstart: 'DTSTART;VALUE=DATE:20261016' }) },
+    TZ,
+  );
   assert.equal(m.apply, false);
 });
 
 test('the subject names the appointment when the invite has no summary', () => {
   // No UID in this invite, so idempotency must fall back to the Gmail message id.
-  const noSummary = ['BEGIN:VCALENDAR', 'BEGIN:VEVENT', 'DTSTART:20261016T180000Z', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
-  const m = emailToAppointment({ messageId: 'm4', subject: 'Dentist cleaning', icsText: noSummary }, TZ);
+  const noSummary = [
+    'BEGIN:VCALENDAR',
+    'BEGIN:VEVENT',
+    'DTSTART:20261016T180000Z',
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].join('\r\n');
+  const m = emailToAppointment(
+    { messageId: 'm4', subject: 'Dentist cleaning', icsText: noSummary },
+    TZ,
+  );
   assert.equal(m.apply, true);
   if (!m.apply) return;
   assert.equal(m.input.kind, 'Dentist cleaning');

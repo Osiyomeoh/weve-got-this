@@ -17,7 +17,14 @@ import { isCareCase, isFamilyNames, type CareCaseId, type FamilyNames } from '..
  */
 
 /** Logical ids the UI uses, which a sandbox copy has under its own suffix. */
-const LOGICAL_IDS = ['h_margaret', 'm_margaret', 'm_david', 'm_renee', 'm_aide', 'm_kunle'] as const;
+const LOGICAL_IDS = [
+  'h_margaret',
+  'm_margaret',
+  'm_david',
+  'm_renee',
+  'm_aide',
+  'm_kunle',
+] as const;
 const LOGICAL = new Set<string>(LOGICAL_IDS);
 
 export const VISITOR_COOKIE = 'cc_visitor';
@@ -30,7 +37,11 @@ export function parseCookies(header: string | undefined): Record<string, string>
     const i = part.indexOf('=');
     if (i <= 0) continue;
     const k = part.slice(0, i).trim();
-    try { out[k] = decodeURIComponent(part.slice(i + 1).trim()); } catch { /* skip malformed */ }
+    try {
+      out[k] = decodeURIComponent(part.slice(i + 1).trim());
+    } catch {
+      /* skip malformed */
+    }
   }
   return out;
 }
@@ -51,7 +62,9 @@ export function toSandbox<T>(value: T, suffix: string): T {
     if (typeof v === 'string') return LOGICAL.has(v) ? `${v}${suffix}` : v;
     if (Array.isArray(v)) return v.map(walk);
     if (v && typeof v === 'object') {
-      return Object.fromEntries(Object.entries(v as Record<string, unknown>).map(([k, x]) => [k, walk(x)]));
+      return Object.fromEntries(
+        Object.entries(v as Record<string, unknown>).map(([k, x]) => [k, walk(x)]),
+      );
     }
     return v;
   };
@@ -108,7 +121,11 @@ export class VisitorSandboxes {
   readonly #create: (kind: SandboxKind) => Promise<SandboxGrant>;
   readonly #now: () => number;
 
-  constructor(opts: { create: (kind: SandboxKind) => Promise<SandboxGrant>; limit?: number; now?: () => number }) {
+  constructor(opts: {
+    create: (kind: SandboxKind) => Promise<SandboxGrant>;
+    limit?: number;
+    now?: () => number;
+  }) {
     this.#create = opts.create;
     this.#limit = opts.limit ?? 500;
     this.#now = opts.now ?? Date.now;

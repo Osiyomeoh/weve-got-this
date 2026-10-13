@@ -15,14 +15,17 @@
  * asked again, and an honest "the clinic run hasn't been given to anyone" comes back as "the
  * clinic run has no owner yet". "Missing" is left out: "a missing record" is the honest one.
  */
-export const BLAME = new RegExp([
-  String.raw`\bmissed\b`,
-  String.raw`\bskip(?:ped|ping)\b`,
-  String.raw`\bforg(?:ot|otten|etting)\b`,
-  String.raw`\b(?:did|has|have|had|was|were|is|are)(?:n['’]t| not)(?: yet)?(?: been)? (?:take|taken|give|given)\b`,
-  String.raw`\bfailed to (?:take|give)\b`,
-  String.raw`\bnever (?:took|taken|gave|given)\b`,
-].join('|'), 'i');
+export const BLAME = new RegExp(
+  [
+    String.raw`\bmissed\b`,
+    String.raw`\bskip(?:ped|ping)\b`,
+    String.raw`\bforg(?:ot|otten|etting)\b`,
+    String.raw`\b(?:did|has|have|had|was|were|is|are)(?:n['’]t| not)(?: yet)?(?: been)? (?:take|taken|give|given)\b`,
+    String.raw`\bfailed to (?:take|give)\b`,
+    String.raw`\bnever (?:took|taken|gave|given)\b`,
+  ].join('|'),
+  'i',
+);
 
 /** The blaming words in `text`, or null when there are none. */
 export function blameIn(text: string): string | null {

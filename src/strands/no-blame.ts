@@ -40,17 +40,23 @@ export interface NoBlameReport {
 }
 
 /** Spoken when the model blamed twice and no tool said anything this turn. */
-export const ONLY_THE_RECORD = "I can only tell you what's been recorded, and I won't say more than the record shows.";
+export const ONLY_THE_RECORD =
+  "I can only tell you what's been recorded, and I won't say more than the record shows.";
 
 function textOf(message: Message): string {
-  return message.content.map((b) => (b instanceof TextBlock ? b.text : '')).join(' ').trim();
+  return message.content
+    .map((b) => (b instanceof TextBlock ? b.text : ''))
+    .join(' ')
+    .trim();
 }
 
 function correction(phrase: string): string {
-  return `[CareCircle check, not from the person] Your reply said "${phrase}". CareCircle only knows what someone `
-    + 'recorded: a dose or task with no record may have been done and not logged, so nobody can be said to '
-    + 'have missed, skipped or forgotten it, and nothing can be said to have been missed either. Answer again '
-    + 'using only what the tool results say. Where there is no record, say there is no record.';
+  return (
+    `[CareCircle check, not from the person] Your reply said "${phrase}". CareCircle only knows what someone ` +
+    'recorded: a dose or task with no record may have been done and not logged, so nobody can be said to ' +
+    'have missed, skipped or forgotten it, and nothing can be said to have been missed either. Answer again ' +
+    'using only what the tool results say. Where there is no record, say there is no record.'
+  );
 }
 
 export class NoBlame implements Plugin {
@@ -68,7 +74,9 @@ export class NoBlame implements Plugin {
   }
 
   /** What happened in the last turn. */
-  get report(): NoBlameReport { return { ...this.#report, caught: [...this.#report.caught] }; }
+  get report(): NoBlameReport {
+    return { ...this.#report, caught: [...this.#report.caught] };
+  }
 
   initAgent(agent: LocalAgent): void {
     agent.addHook(BeforeInvocationEvent, () => {
@@ -82,7 +90,8 @@ export class NoBlame implements Plugin {
       // A refusal is written for the model (it names the tool to call instead), not for the person.
       if (event.result.status === 'error') return;
       for (const block of event.result.content) {
-        if (block instanceof TextBlock && block.text.trim()) this.#toolTexts.push(block.text.trim());
+        if (block instanceof TextBlock && block.text.trim())
+          this.#toolTexts.push(block.text.trim());
       }
     });
 
@@ -114,7 +123,10 @@ export class NoBlame implements Plugin {
         const last = messages[index];
         if (last) {
           this.#noted = { index, original: last };
-          messages[index] = new Message({ role: last.role, content: [...last.content, new TextBlock(correction(phrase))] });
+          messages[index] = new Message({
+            role: last.role,
+            content: [...last.content, new TextBlock(correction(phrase))],
+          });
         }
         return;
       }

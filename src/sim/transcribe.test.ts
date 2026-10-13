@@ -1,7 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
-import { frames, hasEnoughAudio, signature, unhyphenate, vocabularyPhrases, SAMPLE_RATE } from './transcribe.ts';
+import {
+  frames,
+  hasEnoughAudio,
+  signature,
+  unhyphenate,
+  vocabularyPhrases,
+  SAMPLE_RATE,
+} from './transcribe.ts';
 
 /**
  * The parts worth testing without calling AWS: how audio is cut up, and how a
@@ -20,7 +27,10 @@ test('frames never split a 16-bit sample', () => {
 
 test('frames cover the whole buffer', () => {
   const pcm = Buffer.alloc(10_000);
-  assert.equal(frames(pcm).reduce((n, f) => n + f.length, 0), 10_000);
+  assert.equal(
+    frames(pcm).reduce((n, f) => n + f.length, 0),
+    10_000,
+  );
 });
 
 test('a stray tap on the mic is not sent anywhere', () => {
@@ -37,10 +47,7 @@ test('names that a vocabulary cannot hold are dropped rather than corrupting it'
 });
 
 test('hyphenated names come back as they are spoken', () => {
-  assert.equal(
-    unhyphenate('she took her heart-pill', ['heart pill']),
-    'she took her heart pill',
-  );
+  assert.equal(unhyphenate('she took her heart-pill', ['heart pill']), 'she took her heart pill');
 });
 
 test('single-word names are left alone by unhyphenation', () => {

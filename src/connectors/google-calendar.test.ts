@@ -11,8 +11,18 @@ const store = new CareStore();
 async function seed(): Promise<void> {
   await store.reset();
   await store.addHousehold({ id: HH, name: 'circle', timezone: 'America/New_York' });
-  await store.addMember({ id: 'm_margaret', householdId: HH, name: 'Margaret', role: 'care_recipient' });
-  await store.addMember({ id: 'm_david', householdId: HH, name: 'David', role: 'primary_caregiver' });
+  await store.addMember({
+    id: 'm_margaret',
+    householdId: HH,
+    name: 'Margaret',
+    role: 'care_recipient',
+  });
+  await store.addMember({
+    id: 'm_david',
+    householdId: HH,
+    name: 'David',
+    role: 'primary_caregiver',
+  });
 }
 beforeEach(seed);
 
@@ -59,17 +69,25 @@ test('re-polling the same unchanged event applies nothing (idempotent)', async (
 test('an edited event (new updated stamp) re-applies', async () => {
   await syncCalendarEvents(store, HH, [cardiology()], NOW);
   const r2 = await syncCalendarEvents(
-    store, HH, [cardiology({ updated: '2026-10-12T09:00:00Z' })], NOW,
+    store,
+    HH,
+    [cardiology({ updated: '2026-10-12T09:00:00Z' })],
+    NOW,
   );
   assert.equal(r2.applied.length, 1, 'a genuine change comes back through');
 });
 
 test('cancelled, all-day, and declined events are skipped with reasons', async () => {
-  const r = await syncCalendarEvents(store, HH, [
-    cardiology({ id: 'c1', status: 'cancelled' }),
-    cardiology({ id: 'c2', start: { date: '2026-10-16' } }),
-    cardiology({ id: 'c3', attendees: [{ self: true, responseStatus: 'declined' }] }),
-  ], NOW);
+  const r = await syncCalendarEvents(
+    store,
+    HH,
+    [
+      cardiology({ id: 'c1', status: 'cancelled' }),
+      cardiology({ id: 'c2', start: { date: '2026-10-16' } }),
+      cardiology({ id: 'c3', attendees: [{ self: true, responseStatus: 'declined' }] }),
+    ],
+    NOW,
+  );
   assert.equal(r.applied.length, 0);
   assert.equal(r.skipped.length, 3);
   assert.equal(store.getCareState(HH).obligations.length, 0);
@@ -78,5 +96,9 @@ test('cancelled, all-day, and declined events are skipped with reasons', async (
 test('a non-medical appointment is recorded but proposes no ride', async () => {
   const r = await syncCalendarEvents(store, HH, [cardiology({ summary: 'Book club' })], NOW);
   assert.equal(r.applied.length, 1);
-  assert.equal(store.getCareState(HH).obligations.length, 0, 'book club needs no medical transport');
+  assert.equal(
+    store.getCareState(HH).obligations.length,
+    0,
+    'book club needs no medical transport',
+  );
 });

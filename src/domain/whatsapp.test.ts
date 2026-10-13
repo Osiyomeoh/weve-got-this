@@ -8,17 +8,21 @@ const payload = (msgs: Array<Record<string, unknown>>): unknown => ({
 });
 
 test('parseInboundMessages pulls text messages and ignores the rest', () => {
-  const out = parseInboundMessages(payload([
-    { from: '2348012345678', id: 'wamid.1', type: 'text', text: { body: 'Yes I can' } },
-    { from: '2348099999999', id: 'wamid.2', type: 'image', image: { id: 'x' } }, // not text
-    { from: '2348012345678', id: 'wamid.3', type: 'text', text: { body: '' } },   // empty
-  ]));
+  const out = parseInboundMessages(
+    payload([
+      { from: '2348012345678', id: 'wamid.1', type: 'text', text: { body: 'Yes I can' } },
+      { from: '2348099999999', id: 'wamid.2', type: 'image', image: { id: 'x' } }, // not text
+      { from: '2348012345678', id: 'wamid.3', type: 'text', text: { body: '' } }, // empty
+    ]),
+  );
   assert.equal(out.length, 1);
   assert.deepEqual(out[0], { from: '2348012345678', text: 'Yes I can', messageId: 'wamid.1' });
 });
 
 test('parseInboundMessages tolerates a status-only callback (no messages)', () => {
-  const out = parseInboundMessages({ entry: [{ changes: [{ value: { statuses: [{ status: 'read' }] } }] }] });
+  const out = parseInboundMessages({
+    entry: [{ changes: [{ value: { statuses: [{ status: 'read' }] } }] }],
+  });
   assert.deepEqual(out, []);
 });
 

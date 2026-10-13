@@ -27,14 +27,16 @@ export const beeAdapter: SignalAdapter<BeeFact> = {
   source: 'bee',
   adapt(raw: BeeFact): CareEvent[] {
     if (!raw.text?.trim()) return [];
-    return [careEvent({
-      ...(raw.id ? { id: `ce_bee_${raw.id}` } : {}),
-      source: 'bee',
-      kind: 'observation',
-      ...(raw.occurredAt ? { occurredAt: raw.occurredAt } : {}),
-      detail: raw.text.trim(),
-      provenance: { kind: 'INFERRED', rule: 'bee:conversation-fact', from: 'bee' },
-      data: { confidence: raw.confidence ?? null },
-    })];
+    return [
+      careEvent({
+        ...(raw.id ? { id: `ce_bee_${raw.id}` } : {}),
+        source: 'bee',
+        kind: 'observation',
+        ...(raw.occurredAt ? { occurredAt: raw.occurredAt } : {}),
+        detail: raw.text.trim(),
+        provenance: { kind: 'INFERRED', rule: 'bee:conversation-fact', from: 'bee' },
+        data: { confidence: raw.confidence ?? null },
+      }),
+    ];
   },
 };

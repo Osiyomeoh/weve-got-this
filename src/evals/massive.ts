@@ -24,33 +24,66 @@ import type { CaseResult } from './run.js';
  * reminder) and messaging a family member.
  */
 
-interface MassiveRow { id: string; scenario: string; intent: string; utt: string }
+interface MassiveRow {
+  id: string;
+  scenario: string;
+  intent: string;
+  utt: string;
+}
 
 const READS = ['get_care_summary', 'get_care_gaps', 'get_shift_brief'];
 const MEDICATION = /\b(medicine|medication|meds|pills?|tablets?)\b/i;
 
 /** Tools that change the care record or reach a person. Everything else only reads. */
 const WRITES = new Set([
-  'log_care_event', 'record_appointment', 'add_note', 'claim_obligation', 'assign_obligation',
-  'request_owner', 'respond_to_request', 'confirm_proposal', 'resolve_obligation',
-  'run_care_agent', 'notify_member', 'ingest_signal', 'reorder_prescription',
-  'confirm_purchase', 'create_household', 'add_member', 'add_medication', 'remove_member',
+  'log_care_event',
+  'record_appointment',
+  'add_note',
+  'claim_obligation',
+  'assign_obligation',
+  'request_owner',
+  'respond_to_request',
+  'confirm_proposal',
+  'resolve_obligation',
+  'run_care_agent',
+  'notify_member',
+  'ingest_signal',
+  'reorder_prescription',
+  'confirm_purchase',
+  'create_household',
+  'add_member',
+  'add_medication',
+  'remove_member',
 ]);
 /** The two writes that would do the most damage on the wrong request. */
 export const WORST = new Set(['log_care_event', 'notify_member']);
 
 export function massiveCase(r: MassiveRow): EvalCase {
-  const base = { id: `massive-${r.id}`, member: 'm_margaret' as const, utterance: r.utt, note: `${r.scenario}/${r.intent}` };
+  const base = {
+    id: `massive-${r.id}`,
+    member: 'm_margaret' as const,
+    utterance: r.utt,
+    note: `${r.scenario}/${r.intent}`,
+  };
   if (r.intent === 'calendar_set') {
-    return { ...base, expect: MEDICATION.test(r.utt) ? ['add_medication', 'record_appointment'] : ['record_appointment'], noneOk: true };
+    return {
+      ...base,
+      expect: MEDICATION.test(r.utt)
+        ? ['add_medication', 'record_appointment']
+        : ['record_appointment'],
+      noneOk: true,
+    };
   }
-  if (r.intent === 'calendar_query' || r.intent === 'alarm_query') return { ...base, expect: READS, noneOk: true };
+  if (r.intent === 'calendar_query' || r.intent === 'alarm_query')
+    return { ...base, expect: READS, noneOk: true };
   if (r.intent === 'calendar_remove') return { ...base, expect: ['add_note'], noneOk: true };
   return { ...base, expectNone: true };
 }
 
 export function loadMassive(path: string): EvalCase[] {
-  return readFileSync(path, 'utf8').split('\n').filter(Boolean)
+  return readFileSync(path, 'utf8')
+    .split('\n')
+    .filter(Boolean)
     .map((line) => massiveCase(JSON.parse(line) as MassiveRow));
 }
 
@@ -80,6 +113,11 @@ export function summariseMassive(results: CaseResult[]): MassiveSummary {
       worst: harms.filter((r) => WORST.has(r.chosen!)).length,
     },
     inScope: { total: inScope.length, right: inScope.filter((r) => r.pass).length },
-    harms: harms.map((r) => ({ id: r.case.id, utterance: r.case.utterance, intent: r.case.note ?? '', tool: r.chosen! })),
+    harms: harms.map((r) => ({
+      id: r.case.id,
+      utterance: r.case.utterance,
+      intent: r.case.note ?? '',
+      tool: r.chosen!,
+    })),
   };
 }

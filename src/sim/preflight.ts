@@ -1,5 +1,7 @@
 import {
-  ServiceQuotasClient, ListServiceQuotasCommand, GetServiceQuotaCommand,
+  ServiceQuotasClient,
+  ListServiceQuotasCommand,
+  GetServiceQuotaCommand,
 } from '@aws-sdk/client-service-quotas';
 
 /**
@@ -55,21 +57,21 @@ export function classify(quotas: QuotaFact[]): Diagnosis {
       state: 'account_hold',
       quotas: accountLevel,
       advice:
-        'This account has an ACCOUNT-level applied override of 0 on Bedrock inference '
-        + 'quotas. Nothing has been consumed and retrying will never succeed. Service '
-        + 'Quotas cannot fix it: RequestServiceQuotaIncrease only accepts values above '
-        + 'the default, so a zero override cannot be raised back to it. Open an AWS '
-        + 'Support case for Amazon Bedrock asking for the account-level hold to be '
-        + 'reviewed and lifted.',
+        'This account has an ACCOUNT-level applied override of 0 on Bedrock inference ' +
+        'quotas. Nothing has been consumed and retrying will never succeed. Service ' +
+        'Quotas cannot fix it: RequestServiceQuotaIncrease only accepts values above ' +
+        'the default, so a zero override cannot be raised back to it. Open an AWS ' +
+        'Support case for Amazon Bedrock asking for the account-level hold to be ' +
+        'reviewed and lifted.',
     };
   }
   return {
     state: 'zero_quota',
     quotas: zeroed,
     advice:
-      'Bedrock inference quotas are 0 for this account, so no inference is possible. '
-      + 'Retrying will not help. Check that model access is granted, then contact AWS '
-      + 'Support if the quotas remain at zero.',
+      'Bedrock inference quotas are 0 for this account, so no inference is possible. ' +
+      'Retrying will not help. Check that model access is granted, then contact AWS ' +
+      'Support if the quotas remain at zero.',
   };
 }
 
@@ -134,9 +136,12 @@ export async function diagnoseBedrock(options: PreflightOptions): Promise<Diagno
     if (codes && codes.length > 0) {
       // Fast path: direct lookups, one call per quota.
       for (const code of codes) {
-        const { Quota: q } = await client.send(new GetServiceQuotaCommand({
-          ServiceCode: 'bedrock', QuotaCode: code,
-        }));
+        const { Quota: q } = await client.send(
+          new GetServiceQuotaCommand({
+            ServiceCode: 'bedrock',
+            QuotaCode: code,
+          }),
+        );
         if (!q?.QuotaName || !q.QuotaCode || q.Value === undefined) continue;
         facts.push({
           code: q.QuotaCode,
@@ -152,11 +157,13 @@ export async function diagnoseBedrock(options: PreflightOptions): Promise<Diagno
       const matches = relevantTo(options.modelId);
       let token: string | undefined;
       do {
-        const page = await client.send(new ListServiceQuotasCommand({
-          ServiceCode: 'bedrock',
-          MaxResults: 100,
-          ...(token ? { NextToken: token } : {}),
-        }));
+        const page = await client.send(
+          new ListServiceQuotasCommand({
+            ServiceCode: 'bedrock',
+            MaxResults: 100,
+            ...(token ? { NextToken: token } : {}),
+          }),
+        );
         for (const q of page.Quotas ?? []) {
           if (!q.QuotaName || !q.QuotaCode || q.Value === undefined) continue;
           if (!matches(q.QuotaName)) continue;
@@ -176,8 +183,8 @@ export async function diagnoseBedrock(options: PreflightOptions): Promise<Diagno
     return {
       state: 'unknown',
       reason: /not authorized|AccessDenied/i.test(message)
-        ? 'This principal cannot read Service Quotas (servicequotas:ListServiceQuotas), '
-          + 'so the Bedrock quota state could not be checked.'
+        ? 'This principal cannot read Service Quotas (servicequotas:ListServiceQuotas), ' +
+          'so the Bedrock quota state could not be checked.'
         : `Could not read Service Quotas: ${message}`,
     };
   }
@@ -191,8 +198,10 @@ export function describe(d: Diagnosis): string {
     case 'ok':
       return `Bedrock quotas look healthy (${d.checked} checked).`;
     case 'account_hold':
-      return `BEDROCK ACCOUNT HOLD - ${d.quotas.length} quota(s) applied at 0 at ACCOUNT level: `
-        + `${d.quotas.map((q) => q.code).join(', ')}.\n${d.advice}`;
+      return (
+        `BEDROCK ACCOUNT HOLD - ${d.quotas.length} quota(s) applied at 0 at ACCOUNT level: ` +
+        `${d.quotas.map((q) => q.code).join(', ')}.\n${d.advice}`
+      );
     case 'zero_quota':
       return `BEDROCK QUOTA IS ZERO - ${d.quotas.map((q) => q.code).join(', ')}.\n${d.advice}`;
     case 'unknown':

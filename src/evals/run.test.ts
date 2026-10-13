@@ -3,8 +3,16 @@ import assert from 'node:assert/strict';
 import { summarise, type CaseResult } from './run.ts';
 import { CORPUS, type EvalCase } from './corpus.ts';
 
-const result = (c: Partial<EvalCase> & { id: string }, pass: boolean, errored = false): CaseResult => ({
-  case: { member: 'm_david', utterance: '', ...c }, chosen: null, args: {}, pass, reason: '',
+const result = (
+  c: Partial<EvalCase> & { id: string },
+  pass: boolean,
+  errored = false,
+): CaseResult => ({
+  case: { member: 'm_david', utterance: '', ...c },
+  chosen: null,
+  args: {},
+  pass,
+  reason: '',
   ...(errored ? { errored: true } : {}),
 });
 

@@ -10,7 +10,13 @@ function baseState(over: Partial<CareState> = {}): CareState {
   return {
     household: { id: 'h1', name: "Margaret's circle", timezone: 'America/New_York' },
     members: [
-      { id: 'm_margaret', householdId: 'h1', name: 'Margaret', role: 'care_recipient', spokenAs: 'Mom' },
+      {
+        id: 'm_margaret',
+        householdId: 'h1',
+        name: 'Margaret',
+        role: 'care_recipient',
+        spokenAs: 'Mom',
+      },
       { id: 'm_david', householdId: 'h1', name: 'David', role: 'primary_caregiver' },
       { id: 'm_renee', householdId: 'h1', name: 'Renee', role: 'caregiver' },
     ],
@@ -48,7 +54,9 @@ test('an unowned obligation becomes an UNCLAIMED care gap', () => {
 test('an owned obligation produces no gap', () => {
   const gaps = detectCareGaps(
     baseState({
-      obligations: [obligation({ status: 'ASSIGNED', ownerId: 'm_david', dueAt: '2026-10-16T14:00:00Z' })],
+      obligations: [
+        obligation({ status: 'ASSIGNED', ownerId: 'm_david', dueAt: '2026-10-16T14:00:00Z' }),
+      ],
     }),
     { now: NOW },
   );
@@ -58,10 +66,16 @@ test('an owned obligation produces no gap', () => {
 test('PROPOSED obligations are never reported as care gaps', () => {
   // The trust model in reverse: the system must not present its own guess as work.
   const state = baseState({
-    obligations: [obligation({
-      status: 'PROPOSED',
-      provenance: { kind: 'INFERRED', rule: 'medical-appointment-transport', from: 'cardiology appointment' },
-    })],
+    obligations: [
+      obligation({
+        status: 'PROPOSED',
+        provenance: {
+          kind: 'INFERRED',
+          rule: 'medical-appointment-transport',
+          from: 'cardiology appointment',
+        },
+      }),
+    ],
   });
   assert.deepEqual(detectCareGaps(state, { now: NOW }), []);
   assert.equal(pendingProposals(state).length, 1);
@@ -70,7 +84,15 @@ test('PROPOSED obligations are never reported as care gaps', () => {
 test('a missing dose is reported as missing, never as not taken', () => {
   const gaps = detectCareGaps(
     baseState({
-      medications: [{ id: 'med1', householdId: 'h1', name: 'heart pill', times: ['08:00'], forMemberId: 'm_margaret' }],
+      medications: [
+        {
+          id: 'med1',
+          householdId: 'h1',
+          name: 'heart pill',
+          times: ['08:00'],
+          forMemberId: 'm_margaret',
+        },
+      ],
     }),
     { now: NOW },
   );
@@ -86,12 +108,26 @@ test('a missing dose is reported as missing, never as not taken', () => {
 test('a logged dose clears the unconfirmed gap', () => {
   const gaps = detectCareGaps(
     baseState({
-      medications: [{ id: 'med1', householdId: 'h1', name: 'heart pill', times: ['08:00'], forMemberId: 'm_margaret' }],
-      events: [{
-        id: 'e1', householdId: 'h1', kind: 'medication_taken', reportedBy: 'm_margaret',
-        occurredAt: '2026-10-15T12:10:00Z', // 08:10 New York
-        recordedAt: '2026-10-15T12:10:00Z', data: { medicationId: 'med1' },
-      }],
+      medications: [
+        {
+          id: 'med1',
+          householdId: 'h1',
+          name: 'heart pill',
+          times: ['08:00'],
+          forMemberId: 'm_margaret',
+        },
+      ],
+      events: [
+        {
+          id: 'e1',
+          householdId: 'h1',
+          kind: 'medication_taken',
+          reportedBy: 'm_margaret',
+          occurredAt: '2026-10-15T12:10:00Z', // 08:10 New York
+          recordedAt: '2026-10-15T12:10:00Z',
+          data: { medicationId: 'med1' },
+        },
+      ],
     }),
     { now: NOW },
   );
@@ -101,7 +137,15 @@ test('a logged dose clears the unconfirmed gap', () => {
 test('a dose is not flagged before its time plus grace period', () => {
   const gaps = detectCareGaps(
     baseState({
-      medications: [{ id: 'med1', householdId: 'h1', name: 'evening pill', times: ['20:00'], forMemberId: 'm_margaret' }],
+      medications: [
+        {
+          id: 'med1',
+          householdId: 'h1',
+          name: 'evening pill',
+          times: ['20:00'],
+          forMemberId: 'm_margaret',
+        },
+      ],
     }),
     { now: NOW }, // 14:00 local - the evening dose is not due yet
   );
@@ -112,8 +156,18 @@ test('medical work outranks social work of the same urgency', () => {
   const gaps = detectCareGaps(
     baseState({
       obligations: [
-        obligation({ id: 'o_social', what: 'Call Mom for her birthday', consequence: 'social', dueAt: '2026-10-16T14:00:00Z' }),
-        obligation({ id: 'o_med', what: 'Drive Margaret to cardiology', consequence: 'medical', dueAt: '2026-10-16T14:00:00Z' }),
+        obligation({
+          id: 'o_social',
+          what: 'Call Mom for her birthday',
+          consequence: 'social',
+          dueAt: '2026-10-16T14:00:00Z',
+        }),
+        obligation({
+          id: 'o_med',
+          what: 'Drive Margaret to cardiology',
+          consequence: 'medical',
+          dueAt: '2026-10-16T14:00:00Z',
+        }),
       ],
     }),
     { now: NOW },
@@ -125,10 +179,15 @@ test('medical work outranks social work of the same urgency', () => {
 test('assigned work past its due time needs follow-up', () => {
   const gaps = detectCareGaps(
     baseState({
-      obligations: [obligation({
-        what: 'Pick up prescription', status: 'ASSIGNED', ownerId: 'm_renee',
-        consequence: 'logistical', dueAt: '2026-10-14T14:00:00Z',
-      })],
+      obligations: [
+        obligation({
+          what: 'Pick up prescription',
+          status: 'ASSIGNED',
+          ownerId: 'm_renee',
+          consequence: 'logistical',
+          dueAt: '2026-10-14T14:00:00Z',
+        }),
+      ],
     }),
     { now: NOW },
   );
@@ -152,22 +211,35 @@ test('a confirmed gap outranks the identical gap when only inferred (Known != As
   // it, so an assumption can never outrank the same fact.
   const shared = { dueAt: '2026-10-16T14:00:00Z' as const };
   const confirmed = detectCareGaps(
-    baseState({ obligations: [obligation({ id: 'o_c', ...shared,
-      provenance: { kind: 'CONFIRMED', byMemberId: 'm_renee', at: '2026-10-13T12:00:00Z' } })] }),
+    baseState({
+      obligations: [
+        obligation({
+          id: 'o_c',
+          ...shared,
+          provenance: { kind: 'CONFIRMED', byMemberId: 'm_renee', at: '2026-10-13T12:00:00Z' },
+        }),
+      ],
+    }),
     { now: NOW },
   )[0]!;
   const inferred = detectCareGaps(
-    baseState({ obligations: [obligation({ id: 'o_i', ...shared,
-      provenance: { kind: 'INFERRED', rule: 'r', from: 'x' } })] }),
+    baseState({
+      obligations: [
+        obligation({
+          id: 'o_i',
+          ...shared,
+          provenance: { kind: 'INFERRED', rule: 'r', from: 'x' },
+        }),
+      ],
+    }),
     { now: NOW },
   )[0]!;
   assert.ok(confirmed.score > inferred.score, `${confirmed.score} !> ${inferred.score}`);
 });
 
 test('a nearer deadline never lowers the score (imminence is monotone)', () => {
-  const scoreAt = (dueAt: string) => detectCareGaps(
-    baseState({ obligations: [obligation({ dueAt })] }), { now: NOW },
-  )[0]!.score;
+  const scoreAt = (dueAt: string) =>
+    detectCareGaps(baseState({ obligations: [obligation({ dueAt })] }), { now: NOW })[0]!.score;
   const week = scoreAt('2026-10-22T18:00:00Z');
   const tomorrow = scoreAt('2026-10-16T18:00:00Z');
   const soon = scoreAt('2026-10-15T20:00:00Z');
@@ -177,7 +249,15 @@ test('a nearer deadline never lowers the score (imminence is monotone)', () => {
 test('gap detection is deterministic for a fixed now', () => {
   const state = baseState({
     obligations: [obligation({ dueAt: '2026-10-16T14:00:00Z' })],
-    medications: [{ id: 'med1', householdId: 'h1', name: 'heart pill', times: ['08:00'], forMemberId: 'm_margaret' }],
+    medications: [
+      {
+        id: 'med1',
+        householdId: 'h1',
+        name: 'heart pill',
+        times: ['08:00'],
+        forMemberId: 'm_margaret',
+      },
+    ],
   });
   assert.deepEqual(detectCareGaps(state, { now: NOW }), detectCareGaps(state, { now: NOW }));
 });
@@ -186,9 +266,8 @@ test('gap detection is deterministic for a fixed now', () => {
 
 /** NOW is Thursday 2026-10-15, 14:00 in New York. */
 function spokenFor(dueAt: string): string {
-  return detectCareGaps(
-    baseState({ obligations: [obligation({ dueAt })] }), { now: NOW },
-  )[0]!.spoken;
+  return detectCareGaps(baseState({ obligations: [obligation({ dueAt })] }), { now: NOW })[0]!
+    .spoken;
 }
 
 test('a bare weekday is never spoken on its own', () => {

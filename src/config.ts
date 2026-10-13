@@ -26,7 +26,10 @@ export interface Config {
 }
 
 class ConfigError extends Error {
-  constructor(message: string) { super(message); this.name = 'ConfigError'; }
+  constructor(message: string) {
+    super(message);
+    this.name = 'ConfigError';
+  }
 }
 
 function parsePort(raw: string | undefined): number {
@@ -54,7 +57,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   // A DynamoDB table with no region is the classic silent-failure config: the SDK
   // picks an unexpected default and the data lands nowhere the operator expects.
   if (persistence === 'dynamodb' && !region) {
-    throw new ConfigError('CARECIRCLE_TABLE is set but AWS_REGION is not; refusing to start with an ambiguous DynamoDB region.');
+    throw new ConfigError(
+      'CARECIRCLE_TABLE is set but AWS_REGION is not; refusing to start with an ambiguous DynamoDB region.',
+    );
   }
 
   const identity: IdentityStrategy = env['CARECIRCLE_JWT_CLAIM']?.trim() ? 'jwt' : 'static';
@@ -63,12 +68,17 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const seedOverride = parseBool(env['CARECIRCLE_SEED_DEMO']);
   const seedDemo = identity === 'jwt' ? false : (seedOverride ?? true);
   if (seedOverride === true && identity === 'jwt') {
-    throw new ConfigError('CARECIRCLE_SEED_DEMO=true with JWT identity: refusing to seed demo data into a production store.');
+    throw new ConfigError(
+      'CARECIRCLE_SEED_DEMO=true with JWT identity: refusing to seed demo data into a production store.',
+    );
   }
 
   return {
-    port, persistence, dbPath: env['CARECIRCLE_DB'] ?? 'carecircle.db.json',
-    identity, seedDemo,
+    port,
+    persistence,
+    dbPath: env['CARECIRCLE_DB'] ?? 'carecircle.db.json',
+    identity,
+    seedDemo,
     ...(tableName ? { tableName } : {}),
     ...(region ? { region } : {}),
   };

@@ -10,19 +10,19 @@ import type { Member, Obligation, Role } from './types.js';
  */
 
 export type Capability =
-  | 'log_own_event'      // record something about yourself
-  | 'log_others_event'   // record something on someone else's behalf
-  | 'read_full_state'    // see the whole care picture
-  | 'read_shift'         // see only what this shift needs
+  | 'log_own_event' // record something about yourself
+  | 'log_others_event' // record something on someone else's behalf
+  | 'read_full_state' // see the whole care picture
+  | 'read_shift' // see only what this shift needs
   | 'create_obligation'
-  | 'claim_obligation'   // take work yourself
-  | 'assign_obligation'  // give work to someone else
-  | 'request_owner'      // ASK someone to take work on - they still have to agree
-  | 'confirm_proposal'   // turn an inference into real work
+  | 'claim_obligation' // take work yourself
+  | 'assign_obligation' // give work to someone else
+  | 'request_owner' // ASK someone to take work on - they still have to agree
+  | 'confirm_proposal' // turn an inference into real work
   | 'resolve_obligation'
-  | 'escalate'           // pull a human in urgently
-  | 'manage_circle'      // add or remove members, edit medication schedules
-  | 'make_purchase';     // offer and confirm a purchase that commits money
+  | 'escalate' // pull a human in urgently
+  | 'manage_circle' // add or remove members, edit medication schedules
+  | 'make_purchase'; // offer and confirm a purchase that commits money
 
 const CAPABILITIES: Record<Role, ReadonlySet<Capability>> = {
   // The person being cared for: full authority over their own life, and they can
@@ -32,23 +32,40 @@ const CAPABILITIES: Record<Role, ReadonlySet<Capability>> = {
     // person being cared for asking "could Tolu drive me?" is the most ordinary
     // sentence in this whole system, and refusing it would make him a subject
     // rather than a participant.
-    'log_own_event', 'read_shift', 'create_obligation', 'request_owner',
+    'log_own_event',
+    'read_shift',
+    'create_obligation',
+    'request_owner',
   ]),
   primary_caregiver: new Set([
-    'log_own_event', 'log_others_event', 'read_full_state', 'read_shift',
-    'create_obligation', 'claim_obligation', 'assign_obligation', 'request_owner',
-    'confirm_proposal', 'resolve_obligation', 'escalate', 'manage_circle',
+    'log_own_event',
+    'log_others_event',
+    'read_full_state',
+    'read_shift',
+    'create_obligation',
+    'claim_obligation',
+    'assign_obligation',
+    'request_owner',
+    'confirm_proposal',
+    'resolve_obligation',
+    'escalate',
+    'manage_circle',
     'make_purchase',
   ]),
   caregiver: new Set([
-    'log_own_event', 'log_others_event', 'read_full_state', 'read_shift',
-    'create_obligation', 'claim_obligation', 'request_owner', 'confirm_proposal',
-    'resolve_obligation', 'make_purchase',
+    'log_own_event',
+    'log_others_event',
+    'read_full_state',
+    'read_shift',
+    'create_obligation',
+    'claim_obligation',
+    'request_owner',
+    'confirm_proposal',
+    'resolve_obligation',
+    'make_purchase',
   ]),
   // A paid helper: scoped to the work in front of them.
-  helper: new Set([
-    'log_others_event', 'read_shift', 'claim_obligation', 'resolve_obligation',
-  ]),
+  helper: new Set(['log_others_event', 'read_shift', 'claim_obligation', 'resolve_obligation']),
 };
 
 export function can(member: Member, capability: Capability): boolean {
@@ -87,9 +104,9 @@ export function capabilitiesOf(member: Member): Capability[] {
 const DENIAL_BY_ROLE: Partial<Record<Capability, Partial<Record<Role, string>>>> = {
   read_full_state: {
     care_recipient:
-      "I keep the full care record for the people looking after you, but this is your day "
-      + "too - I can tell you what's on it, or ask someone in the family to take something on. "
-      + '(To tell them about their day - what is on, and which doses are recorded today - call get_shift_brief.)',
+      'I keep the full care record for the people looking after you, but this is your day ' +
+      "too - I can tell you what's on it, or ask someone in the family to take something on. " +
+      '(To tell them about their day - what is on, and which doses are recorded today - call get_shift_brief.)',
   },
   log_others_event: {
     care_recipient: 'You can log things about yourself here.',
@@ -98,19 +115,17 @@ const DENIAL_BY_ROLE: Partial<Record<Capability, Partial<Record<Role, string>>>>
 
 const DENIAL: Partial<Record<Capability, string>> = {
   assign_obligation:
-    'Only the primary caregiver can put work on someone else\'s name. You can take it on '
-    + 'yourself, or I can ask them whether they will.',
+    "Only the primary caregiver can put work on someone else's name. You can take it on " +
+    'yourself, or I can ask them whether they will.',
   request_owner:
     'Asking the family to take something on is for the family to do. You can take it on yourself instead.',
   escalate:
     'Only the primary caregiver can raise an urgent alert. You could add a note so they see it.',
   read_full_state:
-    "The full care record is the family's. I can tell you what this shift needs, "
-    + "and you can log anything you do.",
-  confirm_proposal:
-    'Only a family caregiver can confirm whether this is really needed.',
-  log_others_event:
-    'You can log things about yourself here.',
+    "The full care record is the family's. I can tell you what this shift needs, " +
+    'and you can log anything you do.',
+  confirm_proposal: 'Only a family caregiver can confirm whether this is really needed.',
+  log_others_event: 'You can log things about yourself here.',
   make_purchase:
     'Placing an order is something a family caregiver does. I can tell one of them it is needed.',
 };
@@ -129,9 +144,9 @@ export function require(member: Member, capability: Capability): void {
   if (can(member, capability)) return;
   throw new NotPermittedError(
     capability,
-    DENIAL_BY_ROLE[capability]?.[member.role]
-      ?? DENIAL[capability]
-      ?? `You don't have permission to do that.`,
+    DENIAL_BY_ROLE[capability]?.[member.role] ??
+      DENIAL[capability] ??
+      `You don't have permission to do that.`,
   );
 }
 

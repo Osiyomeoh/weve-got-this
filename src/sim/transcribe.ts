@@ -1,10 +1,14 @@
 import { createHash } from 'node:crypto';
 import { Buffer } from 'node:buffer';
 import {
-  TranscribeStreamingClient, StartStreamTranscriptionCommand,
+  TranscribeStreamingClient,
+  StartStreamTranscriptionCommand,
 } from '@aws-sdk/client-transcribe-streaming';
 import {
-  TranscribeClient, CreateVocabularyCommand, GetVocabularyCommand, UpdateVocabularyCommand,
+  TranscribeClient,
+  CreateVocabularyCommand,
+  GetVocabularyCommand,
+  UpdateVocabularyCommand,
 } from '@aws-sdk/client-transcribe';
 
 /**
@@ -66,11 +70,13 @@ export function hasEnoughAudio(pcm: Buffer): boolean {
  * caller undoes.
  */
 export function vocabularyPhrases(terms: string[]): string[] {
-  return [...new Set(
-    terms
-      .map((t) => t.trim().replace(/\s+/g, '-'))
-      .filter((t) => /^[\p{L}\p{N}'-]+$/u.test(t) && t.length > 1),
-  )];
+  return [
+    ...new Set(
+      terms
+        .map((t) => t.trim().replace(/\s+/g, '-'))
+        .filter((t) => /^[\p{L}\p{N}'-]+$/u.test(t) && t.length > 1),
+    ),
+  ];
 }
 
 /** Undo the hyphenation Transcribe returns for multi-word vocabulary entries. */
@@ -88,7 +94,10 @@ let applied: string | undefined;
 
 /** Order-independent fingerprint, so a reordered vocabulary is not a change. */
 export function signature(phrases: string[]): string {
-  return [...phrases].map((p) => p.toLowerCase()).sort().join('\u0000');
+  return [...phrases]
+    .map((p) => p.toLowerCase())
+    .sort()
+    .join('\u0000');
 }
 
 /** Read back what Amazon actually has, so we can tell whether it is current. */
@@ -96,8 +105,15 @@ async function phrasesOf(downloadUri?: string): Promise<string | undefined> {
   if (!downloadUri) return undefined;
   try {
     const body = await (await fetch(downloadUri)).text();
-    return signature(body.split(/\r?\n/).map((l) => l.trim()).filter(Boolean));
-  } catch { return undefined; }
+    return signature(
+      body
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter(Boolean),
+    );
+  } catch {
+    return undefined;
+  }
 }
 
 /**
@@ -126,26 +142,40 @@ export async function ensureVocabulary(terms: string[]): Promise<string | undefi
       // read it back once rather than assuming it is current.
       applied ??= await phrasesOf(existing.DownloadUri);
       if (applied === wanted) return VOCABULARY_NAME;
-      await controlClient().send(new UpdateVocabularyCommand({
-        VocabularyName: VOCABULARY_NAME, LanguageCode: 'en-US', Phrases: phrases,
-      }));
+      await controlClient().send(
+        new UpdateVocabularyCommand({
+          VocabularyName: VOCABULARY_NAME,
+          LanguageCode: 'en-US',
+          Phrases: phrases,
+        }),
+      );
       applied = wanted;
       return undefined; // rebuilding - go without it for a moment
     }
 
     if (existing.VocabularyState === 'FAILED') {
-      await controlClient().send(new UpdateVocabularyCommand({
-        VocabularyName: VOCABULARY_NAME, LanguageCode: 'en-US', Phrases: phrases,
-      }));
+      await controlClient().send(
+        new UpdateVocabularyCommand({
+          VocabularyName: VOCABULARY_NAME,
+          LanguageCode: 'en-US',
+          Phrases: phrases,
+        }),
+      );
       applied = wanted;
     }
     return undefined; // PENDING - use it next time
   } catch (err) {
     if ((err as { name?: string }).name !== 'BadRequestException') return undefined;
     // Not found yet: create it, and go without one for this turn.
-    await controlClient().send(new CreateVocabularyCommand({
-      VocabularyName: VOCABULARY_NAME, LanguageCode: 'en-US', Phrases: phrases,
-    })).catch(() => undefined);
+    await controlClient()
+      .send(
+        new CreateVocabularyCommand({
+          VocabularyName: VOCABULARY_NAME,
+          LanguageCode: 'en-US',
+          Phrases: phrases,
+        }),
+      )
+      .catch(() => undefined);
     applied = wanted;
     return undefined;
   }
@@ -166,14 +196,24 @@ export async function ensureFamilyVocabulary(terms: string[]): Promise<string | 
   if (familyVocabularies.get(name) === 'ready') return name;
   try {
     const got = await controlClient().send(new GetVocabularyCommand({ VocabularyName: name }));
-    if (got.VocabularyState === 'READY') { familyVocabularies.set(name, 'ready'); return name; }
+    if (got.VocabularyState === 'READY') {
+      familyVocabularies.set(name, 'ready');
+      return name;
+    }
     return undefined;
   } catch (err) {
-    if ((err as { name?: string }).name !== 'BadRequestException' || familyVocabularies.has(name)) return undefined;
+    if ((err as { name?: string }).name !== 'BadRequestException' || familyVocabularies.has(name))
+      return undefined;
     familyVocabularies.set(name, 'pending');
-    await controlClient().send(new CreateVocabularyCommand({
-      VocabularyName: name, LanguageCode: 'en-US', Phrases: phrases,
-    })).catch(() => undefined);
+    await controlClient()
+      .send(
+        new CreateVocabularyCommand({
+          VocabularyName: name,
+          LanguageCode: 'en-US',
+          Phrases: phrases,
+        }),
+      )
+      .catch(() => undefined);
     return undefined;
   }
 }
@@ -184,19 +224,25 @@ export async function ensureFamilyVocabulary(terms: string[]): Promise<string | 
  * Only finalised results are kept; partials exist to drive a live caption and
  * would otherwise duplicate the sentence.
  */
-export async function transcribePcm(pcm: Buffer, vocabularyName?: string, languageCode = 'en-US'): Promise<string> {
+export async function transcribePcm(
+  pcm: Buffer,
+  vocabularyName?: string,
+  languageCode = 'en-US',
+): Promise<string> {
   const chunks = frames(pcm);
   const audio = (async function* () {
     for (const chunk of chunks) yield { AudioEvent: { AudioChunk: chunk } };
   })();
 
-  const response = await streamingClient().send(new StartStreamTranscriptionCommand({
-    LanguageCode: languageCode as never,
-    MediaEncoding: 'pcm',
-    MediaSampleRateHertz: SAMPLE_RATE,
-    AudioStream: audio,
-    ...(vocabularyName ? { VocabularyName: vocabularyName } : {}),
-  }));
+  const response = await streamingClient().send(
+    new StartStreamTranscriptionCommand({
+      LanguageCode: languageCode as never,
+      MediaEncoding: 'pcm',
+      MediaSampleRateHertz: SAMPLE_RATE,
+      AudioStream: audio,
+      ...(vocabularyName ? { VocabularyName: vocabularyName } : {}),
+    }),
+  );
 
   let text = '';
   for await (const event of response.TranscriptResultStream ?? []) {
@@ -213,17 +259,22 @@ export async function transcribePcm(pcm: Buffer, vocabularyName?: string, langua
  * A voice note from a messaging app, as it arrives: Ogg/Opus, which Transcribe takes
  * directly, so nothing is transcoded. Telegram records at 48 kHz.
  */
-export async function transcribeOggOpus(audio: Buffer, opts: { languageCode?: string; sampleRate?: number } = {}): Promise<string> {
+export async function transcribeOggOpus(
+  audio: Buffer,
+  opts: { languageCode?: string; sampleRate?: number } = {},
+): Promise<string> {
   const chunks = frames(audio, 8_000);
   const stream = (async function* () {
     for (const chunk of chunks) yield { AudioEvent: { AudioChunk: chunk } };
   })();
-  const response = await streamingClient().send(new StartStreamTranscriptionCommand({
-    LanguageCode: (opts.languageCode ?? 'en-US') as never,
-    MediaEncoding: 'ogg-opus',
-    MediaSampleRateHertz: opts.sampleRate ?? 48_000,
-    AudioStream: stream,
-  }));
+  const response = await streamingClient().send(
+    new StartStreamTranscriptionCommand({
+      LanguageCode: (opts.languageCode ?? 'en-US') as never,
+      MediaEncoding: 'ogg-opus',
+      MediaSampleRateHertz: opts.sampleRate ?? 48_000,
+      AudioStream: stream,
+    }),
+  );
   let text = '';
   for await (const event of response.TranscriptResultStream ?? []) {
     for (const result of event.TranscriptEvent?.Transcript?.Results ?? []) {

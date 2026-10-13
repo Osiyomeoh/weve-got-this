@@ -14,9 +14,19 @@ class ScriptedProvider implements ModelProvider {
   start(): Conversation {
     return {
       say: async (): Promise<TurnOutput> => ({
-        text: '', toolUses: [{ id: 't1', name: 'log_care_event', input: { kind: 'medication_taken', medicationName: 'eye drops' } }],
+        text: '',
+        toolUses: [
+          {
+            id: 't1',
+            name: 'log_care_event',
+            input: { kind: 'medication_taken', medicationName: 'eye drops' },
+          },
+        ],
       }),
-      report: async (results: ToolResult[]): Promise<TurnOutput> => ({ text: results[0]!.text, toolUses: [] }),
+      report: async (results: ToolResult[]): Promise<TurnOutput> => ({
+        text: results[0]!.text,
+        toolUses: [],
+      }),
     };
   }
 }
@@ -24,8 +34,20 @@ class ScriptedProvider implements ModelProvider {
 test('a Telegram message is recorded as the member Telegram says sent it', async () => {
   const store = new CareStore();
   await store.addHousehold({ id: 'h1', name: 'circle', timezone: 'Africa/Lagos' });
-  await store.addMember({ id: 'm_dad', householdId: 'h1', name: 'Joseph', role: 'care_recipient', spokenAs: 'Daddy' });
-  await store.addMedication({ id: 'med_eye', householdId: 'h1', name: 'eye drops', times: ['08:00', '20:00'], forMemberId: 'm_dad' });
+  await store.addMember({
+    id: 'm_dad',
+    householdId: 'h1',
+    name: 'Joseph',
+    role: 'care_recipient',
+    spokenAs: 'Daddy',
+  });
+  await store.addMedication({
+    id: 'med_eye',
+    householdId: 'h1',
+    name: 'eye drops',
+    times: ['08:00', '20:00'],
+    forMemberId: 'm_dad',
+  });
 
   const chat = createTelegramChat({ store, provider: new ScriptedProvider() });
   const reply = await chat('m_dad', 'I used my eye drops');
@@ -39,14 +61,35 @@ test('a Telegram message is recorded as the member Telegram says sent it', async
 test('on the Strands planner, a reply that blames Daddy never reaches the family', async () => {
   const store = new CareStore();
   await store.addHousehold({ id: 'h1', name: 'circle', timezone: 'Africa/Lagos' });
-  await store.addMember({ id: 'm_dad', householdId: 'h1', name: 'Joseph', role: 'care_recipient', spokenAs: 'Daddy' });
-  await store.addMember({ id: 'm_tolu', householdId: 'h1', name: 'Tolu', role: 'primary_caregiver' });
-  await store.addMedication({ id: 'med_eye', householdId: 'h1', name: 'eye drops', times: ['08:00', '20:00'], forMemberId: 'm_dad' });
+  await store.addMember({
+    id: 'm_dad',
+    householdId: 'h1',
+    name: 'Joseph',
+    role: 'care_recipient',
+    spokenAs: 'Daddy',
+  });
+  await store.addMember({
+    id: 'm_tolu',
+    householdId: 'h1',
+    name: 'Tolu',
+    role: 'primary_caregiver',
+  });
+  await store.addMedication({
+    id: 'med_eye',
+    householdId: 'h1',
+    name: 'eye drops',
+    times: ['08:00', '20:00'],
+    forMemberId: 'm_dad',
+  });
 
   const model = new ScriptedModel([
     { tool: 'get_care_summary' },
     { say: 'Daddy forgot his evening eye drops.' },
-    (messages) => ({ say: /CareCircle check/.test(textIn(messages.at(-1))) ? "There's no record of Daddy's evening eye drops yet." : 'Daddy forgot them.' }),
+    (messages) => ({
+      say: /CareCircle check/.test(textIn(messages.at(-1)))
+        ? "There's no record of Daddy's evening eye drops yet."
+        : 'Daddy forgot them.',
+    }),
   ]);
   const now = () => new Date('2026-10-01T20:30:00Z');
   const chat = createTelegramChat({ store, provider: new StrandsProvider(model), now });

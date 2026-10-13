@@ -14,52 +14,102 @@ async function seed(): Promise<void> {
   await store.reset();
   await store.addHousehold({ id: HH, name: 'circle', timezone: 'America/New_York' });
   await store.addMember({ id: 'm_mum', householdId: HH, name: 'Grace', role: 'care_recipient' });
-  await store.addMember({ id: 'm_renee', householdId: HH, name: 'Renee', role: 'family_caregiver' });
-  const o = await store.createObligation({
-    householdId: HH, what: 'Drive Grace to cardiology', status: 'OPEN', consequence: 'medical',
-    provenance: { kind: 'CONFIRMED', byMemberId: 'm_mum', at: NOW.toISOString() }, ownerId: null,
+  await store.addMember({
+    id: 'm_renee',
+    householdId: HH,
+    name: 'Renee',
+    role: 'family_caregiver',
   });
-  await store.transition(o.id, HH, 'REQUESTED', 'system:carecircle',
-    { ownerId: null, request: { askedOfId: 'm_renee', askedById: 'system:carecircle', askedAt: NOW.toISOString() } }, 'asked');
+  const o = await store.createObligation({
+    householdId: HH,
+    what: 'Drive Grace to cardiology',
+    status: 'OPEN',
+    consequence: 'medical',
+    provenance: { kind: 'CONFIRMED', byMemberId: 'm_mum', at: NOW.toISOString() },
+    ownerId: null,
+  });
+  await store.transition(
+    o.id,
+    HH,
+    'REQUESTED',
+    'system:carecircle',
+    {
+      ownerId: null,
+      request: { askedOfId: 'm_renee', askedById: 'system:carecircle', askedAt: NOW.toISOString() },
+    },
+    'asked',
+  );
 }
 beforeEach(seed);
 
 function mockRes(): Response & { statusCode: number; body: unknown; text: string } {
   const res = {
-    statusCode: 0, body: undefined as unknown, text: '',
-    status(code: number) { this.statusCode = code; return this; },
-    json(payload: unknown) { this.body = payload; return this; },
-    send(payload: string) { this.text = payload; return this; },
+    statusCode: 0,
+    body: undefined as unknown,
+    text: '',
+    status(code: number) {
+      this.statusCode = code;
+      return this;
+    },
+    json(payload: unknown) {
+      this.body = payload;
+      return this;
+    },
+    send(payload: string) {
+      this.text = payload;
+      return this;
+    },
   };
   return res as unknown as Response & { statusCode: number; body: unknown; text: string };
 }
 
-const sign = (raw: Buffer): string => 'sha256=' + createHmac('sha256', SECRET).update(raw).digest('hex');
+const sign = (raw: Buffer): string =>
+  'sha256=' + createHmac('sha256', SECRET).update(raw).digest('hex');
 
 const inboundPayload = (from: string, body: string, id = 'wamid.1'): Buffer =>
-  Buffer.from(JSON.stringify({
-    object: 'whatsapp_business_account',
-    entry: [{ changes: [{ value: { messages: [{ from, id, type: 'text', text: { body } }] } }] }],
-  }));
+  Buffer.from(
+    JSON.stringify({
+      object: 'whatsapp_business_account',
+      entry: [{ changes: [{ value: { messages: [{ from, id, type: 'text', text: { body } }] } }] }],
+    }),
+  );
 
 function postReq(raw: Buffer, sig: string | undefined): Request {
-  return { body: raw, header: (n: string) => (n.toLowerCase() === 'x-hub-signature-256' ? sig : undefined) } as unknown as Request;
+  return {
+    body: raw,
+    header: (n: string) => (n.toLowerCase() === 'x-hub-signature-256' ? sig : undefined),
+  } as unknown as Request;
 }
 
-const handler = () => createWhatsAppWebhook({
-  store, appSecret: SECRET, verifyToken: 'vt',
-  memberByPhone: new Map([['+2348012345678', 'm_renee']]), householdId: HH, now: () => NOW,
-});
+const handler = () =>
+  createWhatsAppWebhook({
+    store,
+    appSecret: SECRET,
+    verifyToken: 'vt',
+    memberByPhone: new Map([['+2348012345678', 'm_renee']]),
+    householdId: HH,
+    now: () => NOW,
+  });
 
 test('GET verification echoes the challenge only for the right token', () => {
   const verify = createWhatsAppVerify({ verifyToken: 'vt' });
   const ok = mockRes();
-  verify({ query: { 'hub.mode': 'subscribe', 'hub.verify_token': 'vt', 'hub.challenge': '12345' } } as unknown as Request, ok);
+  verify(
+    {
+      query: { 'hub.mode': 'subscribe', 'hub.verify_token': 'vt', 'hub.challenge': '12345' },
+    } as unknown as Request,
+    ok,
+  );
   assert.equal(ok.statusCode, 200);
   assert.equal(ok.text, '12345');
 
   const bad = mockRes();
-  verify({ query: { 'hub.mode': 'subscribe', 'hub.verify_token': 'wrong', 'hub.challenge': '12345' } } as unknown as Request, bad);
+  verify(
+    {
+      query: { 'hub.mode': 'subscribe', 'hub.verify_token': 'wrong', 'hub.challenge': '12345' },
+    } as unknown as Request,
+    bad,
+  );
   assert.equal(bad.statusCode, 403);
 });
 
@@ -86,7 +136,10 @@ test('a signed reply from an unknown number is acknowledged but acts on nothing'
   const res = mockRes();
   await handler()(postReq(raw, sign(raw)), res);
   assert.equal(res.statusCode, 200);
-  assert.equal((res.body as { results: Array<{ status: string }> }).results[0]!.status, 'unknown-sender');
+  assert.equal(
+    (res.body as { results: Array<{ status: string }> }).results[0]!.status,
+    'unknown-sender',
+  );
   assert.equal(store.getCareState(HH).obligations[0]!.status, 'REQUESTED');
 });
 
@@ -97,6 +150,13 @@ test('a redelivered message id is not acted on twice', async () => {
   const afterFirst = store.getCareState(HH).events.length;
   const res2 = mockRes();
   await h(postReq(raw, sign(raw)), res2);
-  assert.equal((res2.body as { results: Array<{ status: string }> }).results[0]!.status, 'duplicate');
-  assert.equal(store.getCareState(HH).events.length, afterFirst, 'no second event for a redelivery');
+  assert.equal(
+    (res2.body as { results: Array<{ status: string }> }).results[0]!.status,
+    'duplicate',
+  );
+  assert.equal(
+    store.getCareState(HH).events.length,
+    afterFirst,
+    'no second event for a redelivery',
+  );
 });

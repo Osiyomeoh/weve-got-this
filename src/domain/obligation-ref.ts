@@ -22,21 +22,46 @@ const LIVE = new Set<Obligation['status']>(['PROPOSED', 'OPEN', 'REQUESTED', 'AS
 
 /** Lower case, words only, so punctuation and dashes from a spoken line don't matter. */
 function words(s: string): string {
-  return s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
 }
 
 /** Words that say nothing about which task is meant. */
 const FILLER = new Set([
-  'the', 'a', 'an', 'to', 'his', 'her', 'their', 'for', 'of', 'up', 'at', 'on', 'in', 'my',
-  'one', 'thing', 'task', 'job', 'that', 'this',
+  'the',
+  'a',
+  'an',
+  'to',
+  'his',
+  'her',
+  'their',
+  'for',
+  'of',
+  'up',
+  'at',
+  'on',
+  'in',
+  'my',
+  'one',
+  'thing',
+  'task',
+  'job',
+  'that',
+  'this',
 ]);
 
 function significant(s: string): string[] {
-  return words(s).split(' ').filter((w) => w.length > 2 && !FILLER.has(w));
+  return words(s)
+    .split(' ')
+    .filter((w) => w.length > 2 && !FILLER.has(w));
 }
 
 export function matchObligation(
-  ref: string, obligations: Obligation[], opts: { finished?: boolean } = {},
+  ref: string,
+  obligations: Obligation[],
+  opts: { finished?: boolean } = {},
 ): ObligationMatch {
   const byId = obligations.find((o) => o.id === ref);
   if (byId) return { kind: 'found', obligation: byId };
@@ -47,12 +72,16 @@ export function matchObligation(
   // A question about what happened ("where does it say the refill was picked up?") is
   // about finished work. Only read-only callers ask for it; nothing acts on a closed task.
   if (opts.finished) {
-    const done = matchIn(ref, obligations.filter((o) => !LIVE.has(o.status)));
+    const done = matchIn(
+      ref,
+      obligations.filter((o) => !LIVE.has(o.status)),
+    );
     if (done?.kind === 'found') return done;
     // The same errand done more than once: the latest is the one being asked about.
     if (done?.kind === 'ambiguous') {
       const latest = [...done.options].sort((a, b) =>
-        (b.resolvedAt ?? b.createdAt).localeCompare(a.resolvedAt ?? a.createdAt))[0]!;
+        (b.resolvedAt ?? b.createdAt).localeCompare(a.resolvedAt ?? a.createdAt),
+      )[0]!;
       return { kind: 'found', obligation: latest };
     }
   }

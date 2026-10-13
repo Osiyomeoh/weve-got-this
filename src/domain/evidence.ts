@@ -41,8 +41,15 @@ export function evidenceFor(o: Obligation, events: CareEvent[], at: Date): CareE
   const anchor = o.dueAt ? new Date(o.dueAt).getTime() : to;
   return events
     .filter((e) => isPresence(e))
-    .filter((e) => { const t = new Date(e.occurredAt).getTime(); return t >= from && t <= to; })
-    .sort((a, b) => Math.abs(new Date(a.occurredAt).getTime() - anchor) - Math.abs(new Date(b.occurredAt).getTime() - anchor))
+    .filter((e) => {
+      const t = new Date(e.occurredAt).getTime();
+      return t >= from && t <= to;
+    })
+    .sort(
+      (a, b) =>
+        Math.abs(new Date(a.occurredAt).getTime() - anchor) -
+        Math.abs(new Date(b.occurredAt).getTime() - anchor),
+    )
     .slice(0, MOST);
 }
 
@@ -53,15 +60,19 @@ function hasDoorSensor(events: CareEvent[]): boolean {
 
 /** "9:04 AM", in the household's own time, written the way every other answer writes it. */
 function clockAt(at: string, timezone: string): string {
-  return new Date(at).toLocaleTimeString('en-US', { timeZone: timezone, hour: 'numeric', minute: '2-digit' })
+  return new Date(at)
+    .toLocaleTimeString('en-US', { timeZone: timezone, hour: 'numeric', minute: '2-digit' })
     .replace(/\s/g, ' ');
 }
 
 /** One signal as a plain line: what was seen and when, nothing about what it means. */
 export function evidenceLine(e: CareEvent, timezone: string): string {
-  const what = e.data['signalKind'] === 'delivery_arrived' ? 'a delivery at the door'
-    : e.data['signalKind'] === 'door_activity' ? 'the doorbell pressed'
-      : 'activity at the door';
+  const what =
+    e.data['signalKind'] === 'delivery_arrived'
+      ? 'a delivery at the door'
+      : e.data['signalKind'] === 'door_activity'
+        ? 'the doorbell pressed'
+        : 'activity at the door';
   return `${what} at ${clockAt(e.occurredAt, timezone)}`;
 }
 
@@ -70,10 +81,19 @@ export function evidenceLine(e: CareEvent, timezone: string): string {
  * door sensor: "no activity recorded" from a house with no doorbell would be a false
  * signal dressed as a fact.
  */
-export function checkInEvidence(o: Obligation, events: CareEvent[], now: Date, timezone: string): string {
+export function checkInEvidence(
+  o: Obligation,
+  events: CareEvent[],
+  now: Date,
+  timezone: string,
+): string {
   if (!hasDoorSensor(events)) return '';
   const seen = evidenceFor(o, events, now);
   if (seen.length) return ` The doorbell saw ${evidenceLine(seen[0]!, timezone)}.`;
-  const since = o.dueAt ? new Date(new Date(o.dueAt).getTime() - BEFORE_MINUTES * 60_000).toISOString() : undefined;
-  return since ? ` No activity at the door has been recorded since ${clockAt(since, timezone)}.` : '';
+  const since = o.dueAt
+    ? new Date(new Date(o.dueAt).getTime() - BEFORE_MINUTES * 60_000).toISOString()
+    : undefined;
+  return since
+    ? ` No activity at the door has been recorded since ${clockAt(since, timezone)}.`
+    : '';
 }

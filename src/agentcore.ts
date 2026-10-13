@@ -32,9 +32,13 @@ const config = (() => {
   }
 })();
 
-const persistence = config.persistence === 'dynamodb'
-  ? new DynamoPersistence({ tableName: config.tableName!, ...(config.region ? { region: config.region } : {}) })
-  : new FilePersistence(config.dbPath);
+const persistence =
+  config.persistence === 'dynamodb'
+    ? new DynamoPersistence({
+        tableName: config.tableName!,
+        ...(config.region ? { region: config.region } : {}),
+      })
+    : new FilePersistence(config.dbPath);
 const store = new CareStore(persistence);
 const notifier = notifierFromEnv({ telegramLinked: (memberId) => store.telegramLinkOf(memberId) });
 const model = bedrockModel();
@@ -42,7 +46,9 @@ const model = bedrockModel();
 const app = createAgentRuntime({ store, model, notifier });
 const server: Server = app.listen(config.port, '0.0.0.0', () => {
   log.info('carecircle agent runtime listening', {
-    port: config.port, storage: config.persistence, model: String(model.getConfig().modelId),
+    port: config.port,
+    storage: config.persistence,
+    model: String(model.getConfig().modelId),
     ...(config.tableName ? { table: config.tableName } : {}),
   });
 });
@@ -52,7 +58,9 @@ try {
   if (config.persistence === 'file' && config.seedDemo) await seedDemoHousehold(store);
   log.info('care record ready', { households: store.householdCount() });
 } catch (err) {
-  log.error('storage init failed; serving with an empty record', { reason: (err as Error).message });
+  log.error('storage init failed; serving with an empty record', {
+    reason: (err as Error).message,
+  });
 }
 
 const shutdown = (signal: string) => {

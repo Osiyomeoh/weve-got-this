@@ -59,9 +59,11 @@ function bearer(req: Request): string | null {
  * while tests can be explicit and isolated.
  */
 export function staticTokens(
-  tokens: Map<string, string>, lookup?: IdentityLookup, selfSignup?: boolean,
+  tokens: Map<string, string>,
+  lookup?: IdentityLookup,
+  selfSignup?: boolean,
 ): IdentityResolver {
-  const allowSignup = selfSignup ?? (process.env['CARECIRCLE_ALLOW_SELF_SIGNUP'] === 'true');
+  const allowSignup = selfSignup ?? process.env['CARECIRCLE_ALLOW_SELF_SIGNUP'] === 'true';
   return {
     strategy: 'static',
     resolve(req) {
@@ -114,14 +116,17 @@ function decodeClaims(token: string): Record<string, unknown> | null {
   const parts = token.split('.');
   if (parts.length !== 3) return null;
   try {
-    const payload = Buffer.from(parts[1]!.replace(/-/g, '+').replace(/_/g, '/'), 'base64')
-      .toString('utf8');
+    const payload = Buffer.from(parts[1]!.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString(
+      'utf8',
+    );
     const claims = JSON.parse(payload) as Record<string, unknown>;
     // Even behind a validating gateway, an expired token should not be honoured.
     const exp = typeof claims['exp'] === 'number' ? claims['exp'] : null;
     if (exp !== null && exp * 1000 < Date.now()) return null;
     return claims;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 export interface JwtIdentityOptions {
@@ -145,7 +150,12 @@ export interface JwtIdentityOptions {
  * validated-yet-unmapped subject IS a bootstrap `principal` - it may create a new
  * household and, in doing so, become that household's first member.
  */
-export function jwtClaims({ claim, members, lookup, selfSignup }: JwtIdentityOptions): IdentityResolver {
+export function jwtClaims({
+  claim,
+  members,
+  lookup,
+  selfSignup,
+}: JwtIdentityOptions): IdentityResolver {
   const subjectOf = (req: Request): string | null => {
     const token = bearer(req);
     if (!token) return null;
@@ -176,7 +186,10 @@ export function jwtClaims({ claim, members, lookup, selfSignup }: JwtIdentityOpt
  * it - see the warning above. `CARECIRCLE_MEMBER_MAP` is JSON mapping claim values
  * to member ids.
  */
-export function resolverFromEnv(fallbackTokens: Map<string, string>, lookup?: IdentityLookup): IdentityResolver {
+export function resolverFromEnv(
+  fallbackTokens: Map<string, string>,
+  lookup?: IdentityLookup,
+): IdentityResolver {
   // OAuth first when configured: an access token this server signed is the only
   // credential here we can actually verify. It composes with whatever follows, so
   // enabling OAuth never switches off the demo tokens a judge is using.
@@ -188,7 +201,7 @@ export function resolverFromEnv(fallbackTokens: Map<string, string>, lookup?: Id
   // choose.
   const oauthSecret = process.env['CARECIRCLE_OAUTH_SECRET'] ?? '';
   const withOAuth = (base: IdentityResolver): IdentityResolver =>
-    (oauthSecret ? firstOf(oauthTokens(oauthSecret, lookup), base) : base);
+    oauthSecret ? firstOf(oauthTokens(oauthSecret, lookup), base) : base;
 
   const claim = process.env['CARECIRCLE_JWT_CLAIM'];
   if (!claim) return withOAuth(staticTokens(fallbackTokens, lookup));
@@ -197,14 +210,18 @@ export function resolverFromEnv(fallbackTokens: Map<string, string>, lookup?: Id
   try {
     members = new Map(Object.entries(JSON.parse(raw) as Record<string, string>));
   } catch {
-    throw new Error('CARECIRCLE_MEMBER_MAP is not valid JSON; refusing to start with an unusable identity map.');
+    throw new Error(
+      'CARECIRCLE_MEMBER_MAP is not valid JSON; refusing to start with an unusable identity map.',
+    );
   }
   // An empty env map is only viable if self-signup is on, so a validated-but-unmapped
   // principal can bootstrap the first household. Without either, nobody could ever
   // authenticate - refuse to start rather than boot a server no one can use.
   const selfSignup = process.env['CARECIRCLE_ALLOW_SELF_SIGNUP'] === 'true';
   if (members.size === 0 && !selfSignup) {
-    throw new Error('CARECIRCLE_JWT_CLAIM is set but CARECIRCLE_MEMBER_MAP is empty and CARECIRCLE_ALLOW_SELF_SIGNUP is not enabled; nobody could authenticate.');
+    throw new Error(
+      'CARECIRCLE_JWT_CLAIM is set but CARECIRCLE_MEMBER_MAP is empty and CARECIRCLE_ALLOW_SELF_SIGNUP is not enabled; nobody could authenticate.',
+    );
   }
   return withOAuth(jwtClaims({ claim, members, selfSignup, ...(lookup ? { lookup } : {}) }));
 }

@@ -34,16 +34,22 @@ const TZ = 'Africa/Lagos';
 /** The UTC instant for a wall-clock time today in a timezone (same helper as story.ts). */
 function wallClockToday(hour: number, minute: number, tz: string, base = new Date()): Date {
   const ymd = new Intl.DateTimeFormat('en-CA', {
-    timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit',
+    timeZone: tz,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
   }).format(base);
   const [y, mo, d] = ymd.split('-').map(Number);
   const guess = new Date(Date.UTC(y!, mo! - 1, d!, hour, minute, 0, 0));
   const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: tz, hour: '2-digit', hour12: false, minute: '2-digit',
+    timeZone: tz,
+    hour: '2-digit',
+    hour12: false,
+    minute: '2-digit',
   }).formatToParts(guess);
   const h = Number(parts.find((p) => p.type === 'hour')?.value ?? '0') % 24;
   const m = Number(parts.find((p) => p.type === 'minute')?.value ?? '0');
-  const drift = (h * 60 + m) - (hour * 60 + minute);
+  const drift = h * 60 + m - (hour * 60 + minute);
   return new Date(guess.getTime() - drift * 60_000);
 }
 
@@ -67,7 +73,10 @@ function alexa(r: any): any {
 function surfaces(label: string, gaps: any[]): void {
   // Both windows read the same store; one board stands in for both here.
   console.log(dim(`    ── both surfaces · ${label} ─────────────`));
-  if (gaps.length === 0) { console.log(dim('    (no open Care Gaps)')); return; }
+  if (gaps.length === 0) {
+    console.log(dim('    (no open Care Gaps)'));
+    return;
+  }
   for (const g of gaps) {
     console.log(dim(`    • [${String(g.severity).padEnd(6)}] ${g.spoken}`));
   }
@@ -87,8 +96,8 @@ async function connect(baseUrl: string, token: string): Promise<Client> {
 }
 
 async function main(): Promise<void> {
-  const clock = () => wallClockToday(9, 0, TZ);   // morning of the shot
-  const seedNow = wallClockToday(12, 0, TZ);       // anchor scenario dates to today
+  const clock = () => wallClockToday(9, 0, TZ); // morning of the shot
+  const seedNow = wallClockToday(12, 0, TZ); // anchor scenario dates to today
 
   // A clean opening state in a throwaway store: the ride to the eye check-up is OPEN
   // and unowned, its subject Daddy (who needs accessible transport).
@@ -106,9 +115,9 @@ async function main(): Promise<void> {
   const { port } = http.address() as AddressInfo;
   const url = `http://127.0.0.1:${port}/mcp`;
 
-  const tolu = await connect(url, 'david-token');   // primary caregiver
-  const funmi = await connect(url, 'renee-token');    // caregiver (family)
-  const musa = await connect(url, 'aide-token');     // paid driver
+  const tolu = await connect(url, 'david-token'); // primary caregiver
+  const funmi = await connect(url, 'renee-token'); // caregiver (family)
+  const musa = await connect(url, 'aide-token'); // paid driver
 
   console.log(bold('\n  CareCircle · the 40-second beat  (real server, append-only log)'));
   console.log(dim('  ═══════════════════════════════════════════════════════════'));
@@ -118,8 +127,9 @@ async function main(): Promise<void> {
   say('Tolu', "What's going to fall through the cracks this week?");
   const gaps0 = alexa(await call(tolu, 'get_care_gaps', { withinDays: 7 }));
   surfaces('open', gapsOf(gaps0));
-  const ride = gapsOf(gaps0).find((g) => g.obligationId === rideObligationId)
-    ?? gapsOf(gaps0).find((g) => /check-up|take daddy/i.test(g.spoken));
+  const ride =
+    gapsOf(gaps0).find((g) => g.obligationId === rideObligationId) ??
+    gapsOf(gaps0).find((g) => /check-up|take daddy/i.test(g.spoken));
   if (!ride) throw new Error('the ride gap did not surface - check the opening state');
   const rideId = ride.obligationId as string;
   console.log(dim(`    why it ranks: ${ride.because}`));
@@ -133,9 +143,13 @@ async function main(): Promise<void> {
   // 0:16 - a "no" is information, not a failure
   beat('0:16', 'A "no" is information, not a failure');
   say('Funmi', "I can't, I'm working Thursday.");
-  alexa(await call(funmi, 'respond_to_request', {
-    obligationId: rideId, accepted: false, note: 'working Thursday',
-  }));
+  alexa(
+    await call(funmi, 'respond_to_request', {
+      obligationId: rideId,
+      accepted: false,
+      note: 'working Thursday',
+    }),
+  );
   say('Tolu', 'Then ask Musa, the driver.');
   alexa(await call(tolu, 'request_owner', { obligationId: rideId, assigneeName: 'Musa' }));
   surfaces('after asking Musa', gapsOf(await call(tolu, 'get_care_gaps', { withinDays: 7 })));
@@ -147,9 +161,13 @@ async function main(): Promise<void> {
   const cleared = gapsOf(await call(tolu, 'get_care_gaps', { withinDays: 7 }));
   surfaces('after Musa accepts', cleared);
   const stillOpen = cleared.some((g) => g.obligationId === rideId);
-  console.log(stillOpen
-    ? amber('    ⚠ ride still shows as a gap - unexpected')
-    : green('    ✓ the ride is owned - it is gone from both surfaces, and cannot come back within the shot'));
+  console.log(
+    stillOpen
+      ? amber('    ⚠ ride still shows as a gap - unexpected')
+      : green(
+          '    ✓ the ride is owned - it is gone from both surfaces, and cannot come back within the shot',
+        ),
+  );
 
   // 0:34 - the proof you cannot fake
   beat('0:34', 'The proof you cannot fake');
@@ -168,4 +186,7 @@ async function main(): Promise<void> {
   http.close();
 }
 
-main().catch((err) => { console.error(err); process.exit(1); });
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

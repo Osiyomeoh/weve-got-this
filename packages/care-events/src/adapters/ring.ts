@@ -30,22 +30,32 @@ export const ringAdapter: SignalAdapter<RingWebhookEvent> = {
 
     const isDelivery = raw.type === 'motion_detected' && raw.sub_type === 'package_delivery';
     if (isDelivery) {
-      return [careEvent({
-        ...(id ? { id } : {}), source: 'ring', kind: 'delivery', occurredAt: at,
-        detail: 'A package arrived at the door.',
-        // Evidence toward an errand, not proof it is done.
-        provenance: { kind: 'INFERRED', rule: 'ring:package_delivery', from: seed },
-        data: { deviceId: raw.device_id },
-      })];
+      return [
+        careEvent({
+          ...(id ? { id } : {}),
+          source: 'ring',
+          kind: 'delivery',
+          occurredAt: at,
+          detail: 'A package arrived at the door.',
+          // Evidence toward an errand, not proof it is done.
+          provenance: { kind: 'INFERRED', rule: 'ring:package_delivery', from: seed },
+          data: { deviceId: raw.device_id },
+        }),
+      ];
     }
 
     if (raw.type === 'motion_detected' || raw.type === 'ding') {
-      return [careEvent({
-        ...(id ? { id } : {}), source: 'ring', kind: 'presence', occurredAt: at,
-        detail: 'Activity at the door.',
-        provenance: { kind: 'INFERRED', rule: `ring:${raw.type}`, from: seed },
-        data: { deviceId: raw.device_id },
-      })];
+      return [
+        careEvent({
+          ...(id ? { id } : {}),
+          source: 'ring',
+          kind: 'presence',
+          occurredAt: at,
+          detail: 'Activity at the door.',
+          provenance: { kind: 'INFERRED', rule: `ring:${raw.type}`, from: seed },
+          data: { deviceId: raw.device_id },
+        }),
+      ];
     }
 
     // Unknown event types are ignored, never mismapped.

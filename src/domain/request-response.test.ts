@@ -11,22 +11,44 @@ async function seed(): Promise<string> {
   await store.reset();
   await store.addHousehold({ id: HH, name: 'circle', timezone: 'America/New_York' });
   await store.addMember({ id: 'm_mum', householdId: HH, name: 'Grace', role: 'care_recipient' });
-  await store.addMember({ id: 'm_renee', householdId: HH, name: 'Renee', role: 'family_caregiver' });
+  await store.addMember({
+    id: 'm_renee',
+    householdId: HH,
+    name: 'Renee',
+    role: 'family_caregiver',
+  });
   const o = await store.createObligation({
-    householdId: HH, what: 'Drive Grace to cardiology', status: 'OPEN', consequence: 'medical',
+    householdId: HH,
+    what: 'Drive Grace to cardiology',
+    status: 'OPEN',
+    consequence: 'medical',
     provenance: { kind: 'CONFIRMED', byMemberId: 'm_mum', at: NOW.toISOString() },
     ownerId: null,
   });
   // Ask Renee, as the request flow does.
-  await store.transition(o.id, HH, 'REQUESTED', 'system:carecircle',
-    { ownerId: null, request: { askedOfId: 'm_renee', askedById: 'system:carecircle', askedAt: NOW.toISOString() } },
-    'asked');
+  await store.transition(
+    o.id,
+    HH,
+    'REQUESTED',
+    'system:carecircle',
+    {
+      ownerId: null,
+      request: { askedOfId: 'm_renee', askedById: 'system:carecircle', askedAt: NOW.toISOString() },
+    },
+    'asked',
+  );
   return o.id;
 }
-beforeEach(async () => { await seed(); });
+beforeEach(async () => {
+  await seed();
+});
 
 test('an accept from the asked member makes them the owner, over the whatsapp channel', async () => {
-  const r = await applyRequestResponse(store, { householdId: HH, memberId: 'm_renee', accepted: true, note: 'Yes I can' }, NOW);
+  const r = await applyRequestResponse(
+    store,
+    { householdId: HH, memberId: 'm_renee', accepted: true, note: 'Yes I can' },
+    NOW,
+  );
   assert.equal(r.ok, true);
   assert.equal(r.status, 'ASSIGNED');
   const o = store.getCareState(HH).obligations[0]!;
@@ -39,7 +61,11 @@ test('an accept from the asked member makes them the owner, over the whatsapp ch
 });
 
 test('a decline puts it back with no owner and records who said no', async () => {
-  const r = await applyRequestResponse(store, { householdId: HH, memberId: 'm_renee', accepted: false, note: "Can't this week" }, NOW);
+  const r = await applyRequestResponse(
+    store,
+    { householdId: HH, memberId: 'm_renee', accepted: false, note: "Can't this week" },
+    NOW,
+  );
   assert.equal(r.status, 'OPEN');
   const o = store.getCareState(HH).obligations[0]!;
   assert.equal(o.status, 'OPEN');
@@ -49,7 +75,11 @@ test('a decline puts it back with no owner and records who said no', async () =>
 
 test('a reply from someone who was not asked assigns nothing', async () => {
   // Nobody asked Mum; her "yes" answers no request of hers.
-  const r = await applyRequestResponse(store, { householdId: HH, memberId: 'm_mum', accepted: true }, NOW);
+  const r = await applyRequestResponse(
+    store,
+    { householdId: HH, memberId: 'm_mum', accepted: true },
+    NOW,
+  );
   assert.equal(r.ok, false);
   assert.match(r.spoken, /no open request/i);
   const o = store.getCareState(HH).obligations[0]!;

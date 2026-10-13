@@ -56,11 +56,20 @@ export class WhatsAppNotifier implements Notifier {
     this.#fetch = cfg.fetchImpl ?? fetch;
   }
 
-  async deliver(input: { to: string; toName: string; from: string; message: string }): Promise<DeliveryResult> {
+  async deliver(input: {
+    to: string;
+    toName: string;
+    from: string;
+    message: string;
+  }): Promise<DeliveryResult> {
     const phone = this.#cfg.recipients.get(input.to);
     if (!phone) {
       // Honest: we did not message someone we have no agreed number for.
-      return { delivered: false, channel: 'whatsapp', detail: 'no WhatsApp number for this member' };
+      return {
+        delivered: false,
+        channel: 'whatsapp',
+        detail: 'no WhatsApp number for this member',
+      };
     }
     try {
       const res = await this.#fetch(
@@ -81,13 +90,21 @@ export class WhatsAppNotifier implements Notifier {
       );
       if (!res.ok) {
         const text = await res.text().catch(() => '');
-        return { delivered: false, channel: 'whatsapp', detail: `send failed (${res.status}): ${text.slice(0, 200)}` };
+        return {
+          delivered: false,
+          channel: 'whatsapp',
+          detail: `send failed (${res.status}): ${text.slice(0, 200)}`,
+        };
       }
       const json = (await res.json().catch(() => ({}))) as { messages?: Array<{ id?: string }> };
       const id = json.messages?.[0]?.id;
       return { delivered: true, channel: 'whatsapp', ...(id ? { detail: id } : {}) };
     } catch (err) {
-      return { delivered: false, channel: 'whatsapp', detail: `send failed: ${(err as Error).message}` };
+      return {
+        delivered: false,
+        channel: 'whatsapp',
+        detail: `send failed: ${(err as Error).message}`,
+      };
     }
   }
 }

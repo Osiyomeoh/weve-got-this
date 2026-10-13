@@ -4,7 +4,9 @@ import { jwtClaims, staticTokens, resolverFromEnv } from './identity.ts';
 import type { Request } from 'express';
 
 const req = (authorization?: string) =>
-  ({ header: (n: string) => (n.toLowerCase() === 'authorization' ? authorization : undefined) }) as Request;
+  ({
+    header: (n: string) => (n.toLowerCase() === 'authorization' ? authorization : undefined),
+  }) as Request;
 
 const jwt = (claims: Record<string, unknown>) => {
   const b64 = (o: unknown) => Buffer.from(JSON.stringify(o)).toString('base64url');
@@ -51,7 +53,9 @@ test('a custom claim can carry the member identity', () => {
     members: new Map([['margaret@example.com', 'm_margaret']]),
   });
   assert.equal(
-    r.resolve(req(`Bearer ${jwt({ sub: 'x', 'custom:carecircle_member': 'margaret@example.com' })}`)),
+    r.resolve(
+      req(`Bearer ${jwt({ sub: 'x', 'custom:carecircle_member': 'margaret@example.com' })}`),
+    ),
     'm_margaret',
   );
 });

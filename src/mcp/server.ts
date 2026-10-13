@@ -1,4 +1,8 @@
-import { registerChangeAppointment, registerChangeMedication, registerRaiseUrgent } from './tools/changes.js';
+import {
+  registerChangeAppointment,
+  registerChangeMedication,
+  registerRaiseUrgent,
+} from './tools/changes.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { McpServer as McpServerV2 } from '@modelcontextprotocol/server';
 import { z } from 'zod';
@@ -78,11 +82,11 @@ const SERVER_INFO = { name: 'carecircle', version: '0.1.0' };
 const SERVER_OPTIONS = {
   capabilities: { tools: {}, resources: {}, prompts: {} },
   instructions:
-    'CareCircle tracks what needs to happen for someone being cared for, and who is '
-    + 'responsible for it. Speak results as written - they are phrased for a voice '
-    + 'assistant. Never say that someone did not take a medication or did not do '
-    + 'something: the system only knows what has been recorded, and an absent record '
-    + 'is not evidence. When a tool returns an error, follow the instruction in it.',
+    'CareCircle tracks what needs to happen for someone being cared for, and who is ' +
+    'responsible for it. Speak results as written - they are phrased for a voice ' +
+    'assistant. Never say that someone did not take a medication or did not do ' +
+    'something: the system only knows what has been recorded, and an absent record ' +
+    'is not evidence. When a tool returns an error, follow the instruction in it.',
 };
 
 /** For MCP 2025-11-25 and earlier: one server per session (v1 SDK). */
@@ -97,11 +101,13 @@ export function createCareCircleServer(context: ServerContext): McpServer {
  */
 export function createCareCircleServerV2(context: ServerContext): McpServerV2 {
   // The v2 McpServer takes the same register* calls this module makes; the type is v1's.
-  return populate(new McpServerV2(SERVER_INFO, SERVER_OPTIONS) as unknown as McpServer, context) as unknown as McpServerV2;
+  return populate(
+    new McpServerV2(SERVER_INFO, SERVER_OPTIONS) as unknown as McpServer,
+    context,
+  ) as unknown as McpServerV2;
 }
 
 function populate(server: McpServer, { store, actorId, ...opts }: ServerContext): McpServer {
-
   // Hosts check a tool's structured result against its declared output schema and
   // reject any field it does not declare. A field added to a result but not to OUT
   // therefore breaks that tool for every real client while handler-level tests still
@@ -112,25 +118,41 @@ function populate(server: McpServer, { store, actorId, ...opts }: ServerContext)
   // zod 3, while an extra one it sends anyway is still dropped rather than refused. zod 4
   // only writes `additionalProperties: false` for an input object marked so.
   const registerTool = server.registerTool.bind(server);
-  server.registerTool = ((name: string, config: { inputSchema?: z.ZodRawShape; outputSchema?: z.ZodRawShape }, handler: Handler) =>
-    registerTool(name, {
-      ...config,
-      ...(config.inputSchema && Object.keys(config.inputSchema).length > 0 ? { inputSchema: closed(config.inputSchema) } : {}),
-    } as never, (async (...args: unknown[]) => {
-      const result = await handler(...args) as { structuredContent?: unknown };
-      if (config.outputSchema && result.structuredContent !== undefined) {
-        const check = z.object(config.outputSchema).strict().safeParse(result.structuredContent);
-        if (!check.success) {
-          throw new Error(`${name} returned a result its output schema does not declare: ${check.error.message}`);
+  server.registerTool = ((
+    name: string,
+    config: { inputSchema?: z.ZodRawShape; outputSchema?: z.ZodRawShape },
+    handler: Handler,
+  ) =>
+    registerTool(
+      name,
+      {
+        ...config,
+        ...(config.inputSchema && Object.keys(config.inputSchema).length > 0
+          ? { inputSchema: closed(config.inputSchema) }
+          : {}),
+      } as never,
+      (async (...args: unknown[]) => {
+        const result = (await handler(...args)) as { structuredContent?: unknown };
+        if (config.outputSchema && result.structuredContent !== undefined) {
+          const check = z.object(config.outputSchema).strict().safeParse(result.structuredContent);
+          if (!check.success) {
+            throw new Error(
+              `${name} returned a result its output schema does not declare: ${check.error.message}`,
+            );
+          }
         }
-      }
-      return result;
-    }) as never)) as typeof server.registerTool;
+        return result;
+      }) as never,
+    )) as typeof server.registerTool;
 
   const actor = (): Member => store.getMember(actorId);
   const household = () => actor().householdId;
   const ctx: ToolContext = {
-    server, store, actorId, actor, household,
+    server,
+    store,
+    actorId,
+    actor,
+    household,
     now: opts.now ?? (() => new Date()),
     notifier: opts.notifier ?? new RecordOnlyNotifier(),
     state: () => store.getCareState(household()),
@@ -142,7 +164,9 @@ function populate(server: McpServer, { store, actorId, ...opts }: ServerContext)
       try {
         const m = store.getMember(id);
         return m.spokenAs ?? m.name;
-      } catch { return undefined; }
+      } catch {
+        return undefined;
+      }
     },
   };
 

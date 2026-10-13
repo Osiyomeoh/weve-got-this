@@ -13,9 +13,14 @@ type Fields = Record<string, unknown>;
 
 const ORDER: Record<Level, number> = { debug: 10, info: 20, warn: 30, error: 40 };
 const isProd = process.env['NODE_ENV'] === 'production';
-const threshold = ORDER[(process.env['LOG_LEVEL'] as Level) in ORDER
-  ? (process.env['LOG_LEVEL'] as Level)
-  : (isProd ? 'info' : 'debug')];
+const threshold =
+  ORDER[
+    (process.env['LOG_LEVEL'] as Level) in ORDER
+      ? (process.env['LOG_LEVEL'] as Level)
+      : isProd
+        ? 'info'
+        : 'debug'
+  ];
 
 function emit(level: Level, msg: string, fields?: Fields): void {
   if (ORDER[level] < threshold) return;
@@ -23,9 +28,12 @@ function emit(level: Level, msg: string, fields?: Fields): void {
   if (isProd) {
     stream.write(`${JSON.stringify({ t: new Date().toISOString(), level, msg, ...fields })}\n`);
   } else {
-    const extra = fields && Object.keys(fields).length
-      ? ` ${Object.entries(fields).map(([k, v]) => `${k}=${format(v)}`).join(' ')}`
-      : '';
+    const extra =
+      fields && Object.keys(fields).length
+        ? ` ${Object.entries(fields)
+            .map(([k, v]) => `${k}=${format(v)}`)
+            .join(' ')}`
+        : '';
     stream.write(`${level.toUpperCase().padEnd(5)} ${msg}${extra}\n`);
   }
 }
@@ -33,7 +41,11 @@ function emit(level: Level, msg: string, fields?: Fields): void {
 function format(v: unknown): string {
   if (v instanceof Error) return v.message;
   if (typeof v === 'string') return v;
-  try { return JSON.stringify(v); } catch { return String(v); }
+  try {
+    return JSON.stringify(v);
+  } catch {
+    return String(v);
+  }
 }
 
 export const log = {

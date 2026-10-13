@@ -20,7 +20,19 @@ export function joinSpoken(parts: string[]): string {
 }
 
 /** Small numbers read better as words when spoken aloud. */
-const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+const WORDS = [
+  'zero',
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+  'ten',
+];
 
 function numberWord(n: number): string {
   return WORDS[n] ?? String(n);
@@ -46,13 +58,14 @@ export function speakGaps(gaps: CareGap[]): string {
     return "Nothing is unassigned right now - everything that's been recorded has someone on it.";
   }
   const shown = gaps.slice(0, SPOKEN_LIST_LIMIT);
-  const lead = gaps.length === 1
-    ? "There's one thing that needs an owner."
-    : `There are ${numberWord(gaps.length)} things that need attention.`;
+  const lead =
+    gaps.length === 1
+      ? "There's one thing that needs an owner."
+      : `There are ${numberWord(gaps.length)} things that need attention.`;
   const body = shown.map((g) => g.spoken).join(' ');
-  const rest = gaps.length > shown.length
-    ? ` There ${gaps.length - shown.length === 1 ? 'is' : 'are'} ${numberWord(gaps.length - shown.length)} more if you want to hear them.`
-    : '';
+  const rest =
+    gaps.length > shown.length
+      ? ` There ${gaps.length - shown.length === 1 ? 'is' : 'are'} ${numberWord(gaps.length - shown.length)} more if you want to hear them.`
+      : '';
   return `${lead} ${body}${rest}`;
 }
-

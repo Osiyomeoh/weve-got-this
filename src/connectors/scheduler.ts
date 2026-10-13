@@ -1,6 +1,8 @@
 import type { CareStore } from '../store/store.js';
 import {
-  googleCalendarConfigFromEnv, runGoogleCalendarSync, runCalendarWriteback,
+  googleCalendarConfigFromEnv,
+  runGoogleCalendarSync,
+  runCalendarWriteback,
 } from './google-calendar.js';
 import { gmailConfigFromEnv, runGmailSync } from './gmail.js';
 import { beeConfigFromEnv, runBeeSync } from './bee.js';
@@ -55,7 +57,11 @@ export async function runConnectorsOnce(deps: ConnectorSyncDeps): Promise<void> 
   if (calCfg) {
     try {
       const r = await (deps.calendarSync ?? runGoogleCalendarSync)(
-        deps.store, deps.householdId, calCfg, now, deps.forMemberId,
+        deps.store,
+        deps.householdId,
+        calCfg,
+        now,
+        deps.forMemberId,
       );
       if (r.applied.length) deps.log.info('calendar sync applied', { applied: r.applied.length });
     } catch (err) {
@@ -63,9 +69,12 @@ export async function runConnectorsOnce(deps: ConnectorSyncDeps): Promise<void> 
     }
     try {
       const w = await (deps.calendarWriteback ?? runCalendarWriteback)(
-        deps.store, deps.householdId, calCfg,
+        deps.store,
+        deps.householdId,
+        calCfg,
       );
-      if (w.created || w.updated) deps.log.info('calendar write-back', { created: w.created, updated: w.updated });
+      if (w.created || w.updated)
+        deps.log.info('calendar write-back', { created: w.created, updated: w.updated });
     } catch (err) {
       deps.log.error('calendar write-back failed', { reason: (err as Error).message });
     }
@@ -74,7 +83,11 @@ export async function runConnectorsOnce(deps: ConnectorSyncDeps): Promise<void> 
   if (mailCfg) {
     try {
       const r = await (deps.gmailSync ?? runGmailSync)(
-        deps.store, deps.householdId, mailCfg, now, deps.forMemberId,
+        deps.store,
+        deps.householdId,
+        mailCfg,
+        now,
+        deps.forMemberId,
       );
       if (r.applied.length) deps.log.info('gmail sync applied', { applied: r.applied.length });
     } catch (err) {
@@ -84,11 +97,12 @@ export async function runConnectorsOnce(deps: ConnectorSyncDeps): Promise<void> 
 
   if (beeCfg) {
     try {
-      const r = await (deps.beeSync ?? runBeeSync)(
-        deps.store, deps.householdId, beeCfg, now,
-      );
+      const r = await (deps.beeSync ?? runBeeSync)(deps.store, deps.householdId, beeCfg, now);
       if (r.proposed.length || r.observed.length) {
-        deps.log.info('bee sync applied', { proposed: r.proposed.length, observed: r.observed.length });
+        deps.log.info('bee sync applied', {
+          proposed: r.proposed.length,
+          observed: r.observed.length,
+        });
       }
     } catch (err) {
       deps.log.error('bee sync failed', { reason: (err as Error).message });
@@ -97,13 +111,17 @@ export async function runConnectorsOnce(deps: ConnectorSyncDeps): Promise<void> 
 }
 
 /** Schedule {@link runConnectorsOnce} on an interval. Returns a stop function. */
-export function startConnectorSync(deps: Omit<ConnectorSyncDeps, 'householdId'> & { householdId?: string }): () => void {
+export function startConnectorSync(
+  deps: Omit<ConnectorSyncDeps, 'householdId'> & { householdId?: string },
+): () => void {
   const ms = Number(process.env['CARECIRCLE_CONNECTOR_INTERVAL_MS'] ?? 0);
   const householdId = deps.householdId ?? process.env['CARECIRCLE_HOUSEHOLD']?.trim();
   const configured = googleCalendarConfigFromEnv() || gmailConfigFromEnv() || beeConfigFromEnv();
 
   if (!Number.isFinite(ms) || ms <= 0) {
-    deps.log.info('connector sync disabled', { reason: 'CARECIRCLE_CONNECTOR_INTERVAL_MS not set' });
+    deps.log.info('connector sync disabled', {
+      reason: 'CARECIRCLE_CONNECTOR_INTERVAL_MS not set',
+    });
     return () => {};
   }
   if (!configured) {
@@ -131,7 +149,9 @@ export function startConnectorSync(deps: Omit<ConnectorSyncDeps, 'householdId'> 
   };
 
   deps.log.info('connector sync enabled', { intervalMs: ms, householdId });
-  const handle = setInterval(() => { void tick(); }, ms);
+  const handle = setInterval(() => {
+    void tick();
+  }, ms);
   handle.unref?.();
   return () => clearInterval(handle);
 }

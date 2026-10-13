@@ -17,7 +17,15 @@ import type { EntityAttributes } from '../domain/types.js';
 
 export type CareCaseId = 'eyes' | 'memory' | 'wheelchair' | 'hometown' | 'us' | 'abroad' | 'ke';
 
-export const CARE_CASES: readonly CareCaseId[] = ['eyes', 'memory', 'wheelchair', 'hometown', 'us', 'abroad', 'ke'];
+export const CARE_CASES: readonly CareCaseId[] = [
+  'eyes',
+  'memory',
+  'wheelchair',
+  'hometown',
+  'us',
+  'abroad',
+  'ke',
+];
 
 export interface CareCase {
   household: string;
@@ -56,12 +64,19 @@ export const CASES: Record<CareCaseId, CareCase> = {
     // Getting around is no longer easy for him, so a ride to a check-up needs care and
     // an accessible vehicle. A logistics fact the graph carries so a dropped ride ranks
     // with the weight it deserves - never a label the system may editorialise about.
-    recipient: { name: 'Joseph', spokenAs: 'Daddy', attributes: { needsAccessibleTransport: true } },
+    recipient: {
+      name: 'Joseph',
+      spokenAs: 'Daddy',
+      attributes: { needsAccessibleTransport: true },
+    },
     medication: 'eye drops',
     supplement: 'supplement',
     appointment: {
-      kind: 'eye check-up', detail: 'Eye check-up, Thursday at 10', place: 'Eye clinic',
-      ride: 'Take Daddy to his eye check-up', inferredFrom: 'eye check-up appointment',
+      kind: 'eye check-up',
+      detail: 'Eye check-up, Thursday at 10',
+      place: 'Eye clinic',
+      ride: 'Take Daddy to his eye check-up',
+      inferredFrom: 'eye check-up appointment',
     },
     refill: "Pick up Daddy's eye drops refill",
     note: 'Daddy asked who is taking him on Thursday.',
@@ -73,20 +88,30 @@ export const CASES: Record<CareCaseId, CareCase> = {
     medication: 'blood pressure tablet',
     supplement: 'supplement',
     appointment: {
-      kind: 'memory clinic appointment', detail: 'Memory clinic, Thursday at 10', place: 'Memory clinic',
-      ride: 'Take Mama to her memory clinic appointment', inferredFrom: 'memory clinic appointment',
+      kind: 'memory clinic appointment',
+      detail: 'Memory clinic, Thursday at 10',
+      place: 'Memory clinic',
+      ride: 'Take Mama to her memory clinic appointment',
+      inferredFrom: 'memory clinic appointment',
     },
     refill: "Pick up Mama's blood pressure tablets refill",
     note: 'Mama asked who is taking her on Thursday.',
   },
   wheelchair: {
     household: "Baba's care circle",
-    recipient: { name: 'Adewale', spokenAs: 'Baba', attributes: { needsAccessibleTransport: true } },
+    recipient: {
+      name: 'Adewale',
+      spokenAs: 'Baba',
+      attributes: { needsAccessibleTransport: true },
+    },
     medication: 'blood pressure tablet',
     supplement: 'supplement',
     appointment: {
-      kind: 'physiotherapy session', detail: 'Physiotherapy, Thursday at 10', place: 'Physiotherapy clinic',
-      ride: 'Take Baba to physiotherapy', inferredFrom: 'physiotherapy appointment',
+      kind: 'physiotherapy session',
+      detail: 'Physiotherapy, Thursday at 10',
+      place: 'Physiotherapy clinic',
+      ride: 'Take Baba to physiotherapy',
+      inferredFrom: 'physiotherapy appointment',
     },
     refill: "Pick up Baba's blood pressure tablets refill",
     note: 'Baba asked who is taking him on Thursday.',
@@ -99,8 +124,11 @@ export const CASES: Record<CareCaseId, CareCase> = {
     medication: 'blood pressure tablet',
     supplement: 'supplement',
     appointment: {
-      kind: 'hospital check-up', detail: 'Check-up at the general hospital, Thursday at 10', place: 'General hospital, Abeokuta',
-      ride: 'Take Mummy to her hospital check-up', inferredFrom: 'hospital check-up appointment',
+      kind: 'hospital check-up',
+      detail: 'Check-up at the general hospital, Thursday at 10',
+      place: 'General hospital, Abeokuta',
+      ride: 'Take Mummy to her hospital check-up',
+      inferredFrom: 'hospital check-up appointment',
     },
     refill: "Pick up Mummy's blood pressure tablets refill",
     note: 'Mummy asked who is taking her on Thursday.',
@@ -116,8 +144,11 @@ export const CASES: Record<CareCaseId, CareCase> = {
     medication: 'blood pressure pill',
     supplement: 'vitamin D',
     appointment: {
-      kind: 'cardiology follow-up', detail: 'Cardiology follow-up, Thursday at 10', place: 'Heart center, Dayton',
-      ride: 'Drive Mom to her cardiology follow-up', inferredFrom: 'cardiology follow-up appointment',
+      kind: 'cardiology follow-up',
+      detail: 'Cardiology follow-up, Thursday at 10',
+      place: 'Heart center, Dayton',
+      ride: 'Drive Mom to her cardiology follow-up',
+      inferredFrom: 'cardiology follow-up appointment',
     },
     refill: "Pick up Mom's blood pressure pills from the pharmacy",
     note: 'Mom asked who is driving her on Thursday.',
@@ -137,8 +168,11 @@ export const CASES: Record<CareCaseId, CareCase> = {
     medication: 'blood pressure tablet',
     supplement: 'supplement',
     appointment: {
-      kind: 'hospital check-up', detail: 'Check-up at University College Hospital, Thursday at 10', place: 'University College Hospital, Ibadan',
-      ride: 'Take Mummy to her hospital check-up', inferredFrom: 'hospital check-up appointment',
+      kind: 'hospital check-up',
+      detail: 'Check-up at University College Hospital, Thursday at 10',
+      place: 'University College Hospital, Ibadan',
+      ride: 'Take Mummy to her hospital check-up',
+      inferredFrom: 'hospital check-up appointment',
     },
     refill: "Pick up Mummy's blood pressure tablets refill",
     note: 'Mummy asked who is taking her on Thursday.',
@@ -157,8 +191,11 @@ export const CASES: Record<CareCaseId, CareCase> = {
     medication: 'diabetes tablet',
     supplement: 'supplement',
     appointment: {
-      kind: 'diabetes clinic visit', detail: 'Diabetes clinic, Thursday at 10', place: 'Nyeri County Referral Hospital',
-      ride: 'Take Mum to her diabetes clinic visit', inferredFrom: 'diabetes clinic appointment',
+      kind: 'diabetes clinic visit',
+      detail: 'Diabetes clinic, Thursday at 10',
+      place: 'Nyeri County Referral Hospital',
+      ride: 'Take Mum to her diabetes clinic visit',
+      inferredFrom: 'diabetes clinic appointment',
     },
     refill: "Pick up Mum's diabetes tablets refill",
     note: 'Mum asked who is taking her on Thursday.',
@@ -224,12 +261,18 @@ export function caseNames(c: CareCase): FamilyNames {
  */
 export function renameAll<T>(value: T, from: FamilyNames, to: FamilyNames): T {
   const map = new Map(NAME_KEYS.map((k) => [from[k], to[k]]));
-  const words = [...map.keys()].sort((a, b) => b.length - a.length).map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const words = [...map.keys()]
+    .sort((a, b) => b.length - a.length)
+    .map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
   const re = new RegExp(`(?<![\\p{L}])(${words.join('|')})(?![\\p{L}])`, 'gu');
-  const walk = (x: unknown): unknown => typeof x === 'string' ? x.replace(re, (w) => map.get(w) ?? w)
-    : Array.isArray(x) ? x.map(walk)
-    : x && typeof x === 'object' ? Object.fromEntries(Object.entries(x).map(([k, v]) => [k, walk(v)]))
-    : x;
+  const walk = (x: unknown): unknown =>
+    typeof x === 'string'
+      ? x.replace(re, (w) => map.get(w) ?? w)
+      : Array.isArray(x)
+        ? x.map(walk)
+        : x && typeof x === 'object'
+          ? Object.fromEntries(Object.entries(x).map(([k, v]) => [k, walk(v)]))
+          : x;
   return walk(value) as T;
 }
 
@@ -244,8 +287,14 @@ export function careCaseFor(id: CareCaseId = 'eyes', names?: FamilyNames): CareC
     recipient: { ...c.recipient, name: names.recipient, spokenAs: names.recipient },
     helper: names.helper,
     family: {
-      primary: { name: names.primary, ...(base.family?.primary.livesAway ? { livesAway: base.family.primary.livesAway } : {}) },
-      caregiver: { name: names.caregiver, ...(base.family?.caregiver.livesAway ? { livesAway: base.family.caregiver.livesAway } : {}) },
+      primary: {
+        name: names.primary,
+        ...(base.family?.primary.livesAway ? { livesAway: base.family.primary.livesAway } : {}),
+      },
+      caregiver: {
+        name: names.caregiver,
+        ...(base.family?.caregiver.livesAway ? { livesAway: base.family.caregiver.livesAway } : {}),
+      },
       away: { name: names.away, livesAway: base.family?.away.livesAway ?? 'London' },
     },
   };

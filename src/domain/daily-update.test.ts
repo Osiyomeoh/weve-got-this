@@ -46,11 +46,18 @@ test('the evening update says what the record says, and never "missed"', async (
 test('a dose someone else logged says who logged it', async () => {
   const store = await family();
   await store.appendEvent({
-    householdId: H, kind: 'medication_taken', reportedBy: 'm_aide',
-    occurredAt: '2026-09-23T19:05:00Z', source: 'voice', confidence: 'reported',
+    householdId: H,
+    kind: 'medication_taken',
+    reportedBy: 'm_aide',
+    occurredAt: '2026-09-23T19:05:00Z',
+    source: 'voice',
+    confidence: 'reported',
     data: { medicationId: 'med_heart', aboutMemberId: 'm_margaret' },
   });
-  assert.match(composeDailyUpdate(store.getCareState(H), EVENING), /- eye drops, 8 PM: Musa logged it for Daddy/);
+  assert.match(
+    composeDailyUpdate(store.getCareState(H), EVENING),
+    /- eye drops, 8 PM: Musa logged it for Daddy/,
+  );
 });
 
 test('a dose whose time has not come says so, rather than "no record"', async () => {
@@ -61,15 +68,24 @@ test('a dose whose time has not come says so, rather than "no record"', async ()
 test('the update is due in the evening, only to people who asked for it', async () => {
   const store = await family();
   assert.deepEqual(dueDailyUpdates(store.getCareState(H), AFTERNOON), []);
-  assert.deepEqual(dueDailyUpdates(store.getCareState(H), EVENING).map((m) => m.name), ['Kunle']);
+  assert.deepEqual(
+    dueDailyUpdates(store.getCareState(H), EVENING).map((m) => m.name),
+    ['Kunle'],
+  );
 });
 
 test('it goes out once a day, and is in the care log', async () => {
   const store = await family();
   const notifier = new FakeNotifier();
   assert.equal(await sendDailyUpdates({ store, notifier }, EVENING), 1);
-  assert.equal(await sendDailyUpdates({ store, notifier }, new Date(EVENING.getTime() + 15 * 60_000)), 0);
-  assert.deepEqual(notifier.sent.map((s) => s.to), ['m_kunle']);
+  assert.equal(
+    await sendDailyUpdates({ store, notifier }, new Date(EVENING.getTime() + 15 * 60_000)),
+    0,
+  );
+  assert.deepEqual(
+    notifier.sent.map((s) => s.to),
+    ['m_kunle'],
+  );
   const logged = store.getCareState(H).events.filter((e) => e.data['update'] === 'daily');
   assert.equal(logged.length, 1);
   assert.equal(logged[0]!.data['localDate'], '2026-09-23');
@@ -86,5 +102,8 @@ test('the brother in London is never picked automatically for a ride', async () 
   const s = (await family()).getCareState(H);
   const ride = s.obligations.find((o) => o.what === 'Take Daddy to his eye check-up')!;
   // Family before paid help would otherwise put Kunle ahead of Musa.
-  assert.deepEqual(candidatesFor(ride, s, { askerId: 'm_david' }).map((c) => c.name), ['Funmi', 'Musa']);
+  assert.deepEqual(
+    candidatesFor(ride, s, { askerId: 'm_david' }).map((c) => c.name),
+    ['Funmi', 'Musa'],
+  );
 });

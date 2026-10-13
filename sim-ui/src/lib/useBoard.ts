@@ -15,9 +15,20 @@ export function useBoard(intervalMs = 4000) {
       try {
         const s = await api.state(storyNow());
         if (!alive) return;
-        const fp = JSON.stringify([s.gaps, s.obligations, s.offers, s.notifications, s.schedule, s.members, s.household]);
+        const fp = JSON.stringify([
+          s.gaps,
+          s.obligations,
+          s.offers,
+          s.notifications,
+          s.schedule,
+          s.members,
+          s.household,
+        ]);
         setOnline(true);
-        if (fp !== fingerprint.current) { fingerprint.current = fp; setState(s); }
+        if (fp !== fingerprint.current) {
+          fingerprint.current = fp;
+          setState(s);
+        }
       } catch {
         if (alive) setOnline(false);
       }
@@ -25,7 +36,10 @@ export function useBoard(intervalMs = 4000) {
     refreshRef.current = () => void tick();
     tick();
     const id = setInterval(tick, intervalMs);
-    return () => { alive = false; clearInterval(id); };
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
   }, [intervalMs]);
 
   /** Read again now, after this surface changed the record itself. */

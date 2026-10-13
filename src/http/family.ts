@@ -28,8 +28,16 @@ export interface FamilyOptions {
 }
 
 const ACTIONS = new Set([
-  'record_appointment', 'change_appointment', 'claim_obligation', 'resolve_obligation', 'request_owner',
-  'confirm_proposal', 'log_care_event', 'add_medication', 'change_medication', 'add_note',
+  'record_appointment',
+  'change_appointment',
+  'claim_obligation',
+  'resolve_obligation',
+  'request_owner',
+  'confirm_proposal',
+  'log_care_event',
+  'add_medication',
+  'change_medication',
+  'add_note',
 ]);
 
 type Viewer = { memberId: string; readOnly: boolean } | { error: string; status: number };
@@ -44,13 +52,21 @@ export function createFamilyRoutes(opts: FamilyOptions): express.Router {
       const user = telegramUserFromInitData(initData, opts.botToken ?? '', now());
       if (!user) return { error: 'This did not come from Telegram.', status: 401 };
       const link = opts.store.telegramLinkFor(user.id);
-      if (!link) return { error: 'Tap the personal link your family sent you first, then open the calendar again.', status: 403 };
+      if (!link)
+        return {
+          error: 'Tap the personal link your family sent you first, then open the calendar again.',
+          status: 403,
+        };
       return { memberId: link.memberId, readOnly: false };
     }
     const token = req.header('x-family-token');
     if (token) {
       const memberId = memberFromCalendarToken(opts.secret ?? '', token, now());
-      if (!memberId) return { error: 'This link has expired. Ask the bot for a new one with /calendar.', status: 401 };
+      if (!memberId)
+        return {
+          error: 'This link has expired. Ask the bot for a new one with /calendar.',
+          status: 401,
+        };
       return { memberId, readOnly: false };
     }
     if (req.query['demo'] !== undefined && opts.demoHouseholdId) {
@@ -58,19 +74,29 @@ export function createFamilyRoutes(opts: FamilyOptions): express.Router {
       const lead = state.members.find((m) => m.role === 'primary_caregiver') ?? state.members[0];
       if (lead) return { memberId: lead.id, readOnly: true };
     }
-    return { error: 'Open the calendar from CareCircle in Telegram (type /calendar).', status: 401 };
+    return {
+      error: 'Open the calendar from CareCircle in Telegram (type /calendar).',
+      status: 401,
+    };
   };
 
   router.get('/family', (_req, res) => {
     // The page carries a person's family record once they are in: keep it out of caches
     // and never send the link (which may carry their token) to another site.
-    res.set({ 'cache-control': 'no-store', 'referrer-policy': 'no-referrer', 'x-content-type-options': 'nosniff' });
+    res.set({
+      'cache-control': 'no-store',
+      'referrer-policy': 'no-referrer',
+      'x-content-type-options': 'nosniff',
+    });
     res.type('html').send(FAMILY_PAGE);
   });
 
   router.get('/family/api/view', (req: Request, res: Response) => {
     const v = viewer(req);
-    if ('error' in v) { res.status(v.status).json({ error: v.error }); return; }
+    if ('error' in v) {
+      res.status(v.status).json({ error: v.error });
+      return;
+    }
     try {
       const me = opts.store.getMember(v.memberId);
       const state = opts.store.getCareState(me.householdId);
@@ -88,14 +114,27 @@ export function createFamilyRoutes(opts: FamilyOptions): express.Router {
 
   router.post('/family/api/act', async (req: Request, res: Response) => {
     const v = viewer(req);
-    if ('error' in v) { res.status(v.status).json({ error: v.error }); return; }
-    if (v.readOnly) { res.status(403).json({ error: 'This is the demo: look around, nothing here can be changed.' }); return; }
+    if ('error' in v) {
+      res.status(v.status).json({ error: v.error });
+      return;
+    }
+    if (v.readOnly) {
+      res
+        .status(403)
+        .json({ error: 'This is the demo: look around, nothing here can be changed.' });
+      return;
+    }
     const { tool, args } = (req.body ?? {}) as { tool?: string; args?: Record<string, unknown> };
-    if (!tool || !ACTIONS.has(tool)) { res.status(400).json({ error: 'That is not something the calendar can do.' }); return; }
+    if (!tool || !ACTIONS.has(tool)) {
+      res.status(400).json({ error: 'That is not something the calendar can do.' });
+      return;
+    }
     try {
       const server = createCareCircleServer({
-        store: opts.store, actorId: v.memberId,
-        ...(opts.notifier ? { notifier: opts.notifier } : {}), ...(opts.now ? { now: opts.now } : {}),
+        store: opts.store,
+        actorId: v.memberId,
+        ...(opts.notifier ? { notifier: opts.notifier } : {}),
+        ...(opts.now ? { now: opts.now } : {}),
       });
       const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
       await server.connect(serverSide);
@@ -103,7 +142,10 @@ export function createFamilyRoutes(opts: FamilyOptions): express.Router {
       await client.connect(clientSide);
       try {
         const out = await client.callTool({ name: tool, arguments: args ?? {} });
-        const text = (out.content as { type: string; text?: string }[]).map((c) => c.text ?? '').join(' ').trim();
+        const text = (out.content as { type: string; text?: string }[])
+          .map((c) => c.text ?? '')
+          .join(' ')
+          .trim();
         res.json({ text, isError: out.isError === true });
       } finally {
         await client.close();

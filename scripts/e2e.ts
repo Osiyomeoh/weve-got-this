@@ -34,13 +34,17 @@ const tools = await tolu.listTools();
 console.log(`Server exposes ${tools.tools.length} tools, protocol negotiated OK.`);
 
 say('Daddy (Echo at home)', 'I used my eye drops.');
-alexa(await call(daddy, 'log_care_event', { kind: 'medication_taken', medicationName: 'eye drops' }));
+alexa(
+  await call(daddy, 'log_care_event', { kind: 'medication_taken', medicationName: 'eye drops' }),
+);
 
 say('Funmi (phone)', 'Daddy has his eye check-up Thursday at 10.');
-const appt = alexa(await call(funmi, 'record_appointment', {
-  kind: 'eye check-up',
-  startsAt: new Date(Date.now() + 2 * 86400000).toISOString(),
-}));
+const appt = alexa(
+  await call(funmi, 'record_appointment', {
+    kind: 'eye check-up',
+    startsAt: new Date(Date.now() + 2 * 86400000).toISOString(),
+  }),
+);
 const proposalId = appt.structuredContent?.proposals?.[0]?.id;
 
 say('Funmi', 'Yes, he will need a ride.');
@@ -51,9 +55,12 @@ alexa(await call(funmi, 'add_note', { note: 'Daddy asked who is taking him on Th
 
 say('Tolu (driving)', "What's going to fall through the cracks this week?");
 const gaps = alexa(await call(tolu, 'get_care_gaps', { withinDays: 7 }));
-console.log('  [structured]', JSON.stringify(
-  gaps.structuredContent.gaps.map((g: any) => ({ severity: g.severity, kind: g.kind })),
-));
+console.log(
+  '  [structured]',
+  JSON.stringify(
+    gaps.structuredContent.gaps.map((g: any) => ({ severity: g.severity, kind: g.kind })),
+  ),
+);
 
 say('Tolu', "I'll take the check-up one.");
 const first = gaps.structuredContent.gaps.find((g: any) => g.obligationId);
@@ -64,7 +71,12 @@ alexa(await call(tolu, 'get_care_summary'));
 
 console.log('\n--- authority checks ---');
 say('Funmi (caregiver)', 'Assign the pharmacy run to Tolu.');
-alexa(await call(funmi, 'assign_obligation', { obligationId: first.obligationId, assigneeName: 'Tolu' }));
+alexa(
+  await call(funmi, 'assign_obligation', {
+    obligationId: first.obligationId,
+    assigneeName: 'Tolu',
+  }),
+);
 
 say('Musa (driver)', "What's going on with the family?");
 alexa(await call(musa, 'get_care_gaps'));

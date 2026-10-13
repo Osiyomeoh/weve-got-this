@@ -45,7 +45,9 @@ export function ringEventToSignal(event: RingEvent): CareSignal | null {
   const subType = event.data?.attributes?.sub_type?.toLowerCase();
   const raw: Record<string, unknown> = {
     ...(event.data?.id ? { ringEventId: event.data.id } : {}),
-    ...(event.data?.relationships?.device?.data?.id ? { deviceId: event.data.relationships.device.data.id } : {}),
+    ...(event.data?.relationships?.device?.data?.id
+      ? { deviceId: event.data.relationships.device.data.id }
+      : {}),
     ...(event.meta?.request_id ? { requestId: event.meta.request_id } : {}),
     ...(type ? { ringType: type } : {}),
     ...(subType ? { subType } : {}),
@@ -56,11 +58,29 @@ export function ringEventToSignal(event: RingEvent): CareSignal | null {
       // A package/delivery sub_type is evidence toward a pickup; other motion is
       // simply a sign of life at the door.
       if (subType && /package|delivery/.test(subType)) {
-        return { source: 'ring', kind: 'delivery_arrived', at, detail: 'Package detected at the door', raw };
+        return {
+          source: 'ring',
+          kind: 'delivery_arrived',
+          at,
+          detail: 'Package detected at the door',
+          raw,
+        };
       }
-      return { source: 'ring', kind: 'motion', at, detail: `Motion detected${subType ? ` (${subType})` : ''}`, raw };
+      return {
+        source: 'ring',
+        kind: 'motion',
+        at,
+        detail: `Motion detected${subType ? ` (${subType})` : ''}`,
+        raw,
+      };
     case 'button_press':
-      return { source: 'ring', kind: 'door_activity', at, detail: 'Someone pressed the doorbell', raw };
+      return {
+        source: 'ring',
+        kind: 'door_activity',
+        at,
+        detail: 'Someone pressed the doorbell',
+        raw,
+      };
     default:
       // device_online, subscription_activated, etc. - not care-relevant.
       return null;

@@ -72,8 +72,8 @@ export function onboardingProgress(
       done: [],
       complete: false,
       spoken:
-        "Let's set up your care circle. What would you like to call it, and who are "
-        + 'you looking after?',
+        "Let's set up your care circle. What would you like to call it, and who are " +
+        'you looking after?',
     };
   }
 
@@ -85,16 +85,13 @@ export function onboardingProgress(
       step: 'add_recipient',
       done: priorSteps('add_recipient'),
       complete: false,
-      spoken:
-        `${lead}Who is the circle caring for? Tell me their name, and I'll add them.`,
+      spoken: `${lead}Who is the circle caring for? Tell me their name, and I'll add them.`,
     };
   }
 
   const recipient = state.members.find((m) => m.role === 'care_recipient')!;
   const name = recipient.spokenAs ?? recipient.name;
-  const hasSomethingToWatch =
-    state.medications.length > 0
-    || state.obligations.length > 0;
+  const hasSomethingToWatch = state.medications.length > 0 || state.obligations.length > 0;
 
   if (!hasSomethingToWatch) {
     return {
@@ -102,9 +99,9 @@ export function onboardingProgress(
       done: priorSteps('add_care_detail'),
       complete: false,
       spoken:
-        `Good - the circle is set up for ${name}. Now give me one thing to keep an `
-        + `eye on: a medication and the times it's due, or an appointment coming up. `
-        + `That's when ${name}'s care board starts working.`,
+        `Good - the circle is set up for ${name}. Now give me one thing to keep an ` +
+        `eye on: a medication and the times it's due, or an appointment coming up. ` +
+        `That's when ${name}'s care board starts working.`,
     };
   }
 
@@ -116,10 +113,10 @@ export function onboardingProgress(
     : undefined;
 
   const spoken = top
-    ? `You're all set. Here's the first thing that needs someone: ${top.spoken} `
-      + `Say "I'll take it", or ask me to find who's free.`
-    : `You're all set up for ${name}. Nothing needs anyone yet - I'll keep watch and `
-      + `let the circle know the moment something does.`;
+    ? `You're all set. Here's the first thing that needs someone: ${top.spoken} ` +
+      `Say "I'll take it", or ask me to find who's free.`
+    : `You're all set up for ${name}. Nothing needs anyone yet - I'll keep watch and ` +
+      `let the circle know the moment something does.`;
 
   return {
     step: 'ready',

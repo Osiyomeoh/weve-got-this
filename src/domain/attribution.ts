@@ -41,9 +41,10 @@ export type Attribution =
  * case, so its absence means the speaker is also the subject.
  */
 export function attributionOf(event: CareEvent): Attribution {
-  const about = typeof event.data['aboutMemberId'] === 'string'
-    ? (event.data['aboutMemberId'] as string)
-    : event.reportedBy;
+  const about =
+    typeof event.data['aboutMemberId'] === 'string'
+      ? (event.data['aboutMemberId'] as string)
+      : event.reportedBy;
   return about === event.reportedBy
     ? { kind: 'FIRST_HAND', memberId: about }
     : { kind: 'REPORTED', byMemberId: event.reportedBy, aboutMemberId: about };

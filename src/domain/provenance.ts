@@ -18,11 +18,11 @@ import { clockTime, isLocalToday } from './local-time.js';
 /** How sure the record is at a given link. Deliberately not a single scalar - a chain
  *  can mix a confirmed origin with an inferred source, and flattening that loses the point. */
 export type LinkCertainty =
-  | 'confirmed'   // a named human asserted it
-  | 'no_record'   // expected and not logged - NOT evidence of absence
-  | 'inferred'    // the system guessed it, by a named rule
-  | 'observed'    // a sensor saw it (still not a verdict about meaning)
-  | 'recorded';   // a plain logged action (an ownership move)
+  | 'confirmed' // a named human asserted it
+  | 'no_record' // expected and not logged - NOT evidence of absence
+  | 'inferred' // the system guessed it, by a named rule
+  | 'observed' // a sensor saw it (still not a verdict about meaning)
+  | 'recorded'; // a plain logged action (an ownership move)
 
 export interface ProvenanceStep {
   at?: string;
@@ -45,7 +45,10 @@ export interface ProvenanceExplanation {
 type NameOf = (id: string | null) => string | undefined;
 
 /** When the question is asked, and where: so something from today can be said by the clock. */
-interface Clock { now?: Date; timezone: string }
+interface Clock {
+  now?: Date;
+  timezone: string;
+}
 
 /**
  * "at 8:16 PM" for something earlier today, "on March 12" otherwise. Kept coarse on
@@ -60,7 +63,11 @@ function fmt(at: string | undefined, clock: Clock): { text: string; phrase: stri
     const text = clockTime(at, clock.timezone);
     return { text, phrase: ` at ${text}` };
   }
-  const text = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', timeZone: clock.timezone });
+  const text = d.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    timeZone: clock.timezone,
+  });
   return { text, phrase: ` on ${text}` };
 }
 
@@ -80,8 +87,8 @@ function origin(p: Provenance, nameOf: NameOf, clock: Clock): ProvenanceStep {
         certainty: 'inferred',
         // The load-bearing sentence: named as a guess, and explicitly not yet a fact.
         detail:
-          `CareCircle proposed this, guessing from ${p.from}. Nobody has confirmed it yet, `
-          + `so it is still a suggestion, not a fact.`,
+          `CareCircle proposed this, guessing from ${p.from}. Nobody has confirmed it yet, ` +
+          `so it is still a suggestion, not a fact.`,
       };
     case 'NOT_LOGGED': {
       const when = fmt(p.expectedAt, clock)?.text;
@@ -90,8 +97,8 @@ function origin(p: Provenance, nameOf: NameOf, clock: Clock): ProvenanceStep {
         certainty: 'no_record',
         // Never an accusation: absence of a record is stated as exactly that.
         detail:
-          `There is no record for this${when ? `, which was expected around ${when}` : ''}. `
-          + `No record is not the same as it not happening - it only means nobody has logged it.`,
+          `There is no record for this${when ? `, which was expected around ${when}` : ''}. ` +
+          `No record is not the same as it not happening - it only means nobody has logged it.`,
       };
     }
   }
@@ -100,17 +107,23 @@ function origin(p: Provenance, nameOf: NameOf, clock: Clock): ProvenanceStep {
 const PERSON_CHANNELS = new Set(['voice', 'tv', 'telegram', 'whatsapp', 'system']);
 
 /** The source event the obligation was raised from, if we still have it. */
-function sourceStep(event: CareEvent | undefined, nameOf: NameOf, clock: Clock): ProvenanceStep | undefined {
+function sourceStep(
+  event: CareEvent | undefined,
+  nameOf: NameOf,
+  clock: Clock,
+): ProvenanceStep | undefined {
   if (!event) return undefined;
   const what = event.detail ?? event.kind.replace(/_/g, ' ');
   const on = fmt(event.occurredAt, clock)?.phrase ?? '';
   // Prefer the event's own first-class source/confidence; fall back to the legacy
   // data.source and the actor for events written before those fields existed.
-  const src = event.source ?? (typeof event.data?.source === 'string' ? event.data.source : undefined);
+  const src =
+    event.source ?? (typeof event.data?.source === 'string' ? event.data.source : undefined);
   // A person's word stays a person's word whichever channel carried it: spoken, pressed on
   // the TV remote, or typed in a family chat. Only a device reports what it sensed.
-  const observed = event.confidence === 'observed'
-    || (event.confidence !== 'reported' && src !== undefined && !PERSON_CHANNELS.has(src));
+  const observed =
+    event.confidence === 'observed' ||
+    (event.confidence !== 'reported' && src !== undefined && !PERSON_CHANNELS.has(src));
 
   if (observed) {
     // A sensed signal: observed, never interpreted as meaning by itself.
@@ -142,7 +155,10 @@ function sourceStep(event: CareEvent | undefined, nameOf: NameOf, clock: Clock):
  * transition record only tells us the status and who recorded it - never that anyone failed.
  */
 function ownershipStep(
-  t: ObligationTransition, ownerId: string | null, nameOf: NameOf, clock: Clock,
+  t: ObligationTransition,
+  ownerId: string | null,
+  nameOf: NameOf,
+  clock: Clock,
 ): ProvenanceStep | undefined {
   const who = nameOf(t.byMemberId) ?? 'someone';
   const on = fmt(t.at, clock)?.phrase ?? '';
@@ -153,12 +169,17 @@ function ownershipStep(
       return {
         at: t.at,
         certainty: 'recorded',
-        detail: t.from === 'REQUESTED'
-          ? `A request for this came back without a yes${on}, so it is open for someone else again${note}.`
-          : `It was confirmed as real work that someone needs to own${on}${note}.`,
+        detail:
+          t.from === 'REQUESTED'
+            ? `A request for this came back without a yes${on}, so it is open for someone else again${note}.`
+            : `It was confirmed as real work that someone needs to own${on}${note}.`,
       };
     case 'REQUESTED':
-      return { at: t.at, certainty: 'recorded', detail: `${who} asked for someone to take this on${on}${note}.` };
+      return {
+        at: t.at,
+        certainty: 'recorded',
+        detail: `${who} asked for someone to take this on${on}${note}.`,
+      };
     case 'ASSIGNED':
       // Who owns it is authoritative from the obligation. When the person who wrote this
       // row is that owner, they took it on themselves and we can say so; otherwise we only
@@ -170,7 +191,11 @@ function ownershipStep(
     case 'RESOLVED':
       return { at: t.at, certainty: 'recorded', detail: `${who} marked it done${on}${note}.` };
     case 'DISMISSED':
-      return { at: t.at, certainty: 'recorded', detail: `${who} recorded that it was not needed${on}${note}.` };
+      return {
+        at: t.at,
+        certainty: 'recorded',
+        detail: `${who} recorded that it was not needed${on}${note}.`,
+      };
     default:
       return undefined;
   }
@@ -185,7 +210,10 @@ function currentOwnership(o: Obligation, nameOf: NameOf): ProvenanceStep {
     return { certainty: 'recorded', detail: `It was set aside as not needed.` };
   }
   if (o.ownerId) {
-    return { certainty: 'confirmed', detail: `Right now ${nameOf(o.ownerId) ?? 'someone'} owns it.` };
+    return {
+      certainty: 'confirmed',
+      detail: `Right now ${nameOf(o.ownerId) ?? 'someone'} owns it.`,
+    };
   }
   if (o.status === 'REQUESTED') {
     return {
@@ -201,7 +229,11 @@ function currentOwnership(o: Obligation, nameOf: NameOf): ProvenanceStep {
  * verdict, beside it, never as it. With no device evidence nothing is said: a person's
  * word is the record, and saying "only" would quietly doubt them.
  */
-function closingEvidence(o: Obligation, events: CareEvent[], timezone: string): ProvenanceStep | undefined {
+function closingEvidence(
+  o: Obligation,
+  events: CareEvent[],
+  timezone: string,
+): ProvenanceStep | undefined {
   if (o.status !== 'RESOLVED') return undefined;
   const closed = events
     .filter((e) => e.kind === 'obligation_resolved' && e.data['obligationId'] === o.id)
@@ -214,8 +246,9 @@ function closingEvidence(o: Obligation, events: CareEvent[], timezone: string): 
   return {
     at: seen[0]!.occurredAt,
     certainty: 'observed',
-    detail: `Around then the doorbell saw ${lines.length > 1 ? `${lines.slice(0, -1).join(', ')} and ${lines.at(-1)}` : lines[0]}. `
-      + 'A signal is evidence beside the record, not proof on its own.',
+    detail:
+      `Around then the doorbell saw ${lines.length > 1 ? `${lines.slice(0, -1).join(', ')} and ${lines.at(-1)}` : lines[0]}. ` +
+      'A signal is evidence beside the record, not proof on its own.',
   };
 }
 

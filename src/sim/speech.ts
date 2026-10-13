@@ -53,14 +53,16 @@ function polly(): PollyClient {
  * which is precisely how a dead accessibility control passed its tests.
  */
 const PACES = {
-  slow:   { rate: '75%',  breathMs: 900 },
+  slow: { rate: '75%', breathMs: 900 },
   gentle: { rate: '100%', breathMs: 600 },
   normal: { rate: '100%', breathMs: 350 },
 } as const;
 
 /** Kept as a name because callers and docs speak of rates. */
 export const RATES = {
-  slow: PACES.slow.rate, gentle: PACES.gentle.rate, normal: PACES.normal.rate,
+  slow: PACES.slow.rate,
+  gentle: PACES.gentle.rate,
+  normal: PACES.normal.rate,
 } as const;
 export type Rate = keyof typeof PACES;
 
@@ -71,8 +73,11 @@ export function isRate(value: unknown): value is Rate {
 /** XML-escape, so a care note containing an ampersand cannot break the markup. */
 function escapeXml(text: string): string {
   return text
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
 }
 
 /**
@@ -83,8 +88,10 @@ function escapeXml(text: string): string {
  */
 export function toSsml(text: string, rate: Rate = 'normal'): string {
   const pace = PACES[rate];
-  const body = escapeXml(text.trim())
-    .replace(/([.!?])\s+/g, `$1<break time="${pace.breathMs}ms"/> `);
+  const body = escapeXml(text.trim()).replace(
+    /([.!?])\s+/g,
+    `$1<break time="${pace.breathMs}ms"/> `,
+  );
   return `<speak><prosody rate="${pace.rate}">${body}</prosody></speak>`;
 }
 
@@ -96,17 +103,21 @@ export interface Spoken {
 }
 
 async function speakWith(text: string, rate: Rate, engine: Engine, voice: string): Promise<Spoken> {
-  const res = await polly().send(new SynthesizeSpeechCommand({
-    Text: toSsml(text, rate),
-    TextType: 'ssml',
-    OutputFormat: 'mp3',
-    VoiceId: voice as never,
-    Engine: engine,
-  }));
+  const res = await polly().send(
+    new SynthesizeSpeechCommand({
+      Text: toSsml(text, rate),
+      TextType: 'ssml',
+      OutputFormat: 'mp3',
+      VoiceId: voice as never,
+      Engine: engine,
+    }),
+  );
   if (!res.AudioStream) throw new Error('Polly returned no audio.');
   return {
     audio: Buffer.from(await res.AudioStream.transformToByteArray()),
-    contentType: 'audio/mpeg', voice, engine,
+    contentType: 'audio/mpeg',
+    voice,
+    engine,
   };
 }
 
@@ -120,7 +131,11 @@ async function speakWith(text: string, rate: Rate, engine: Engine, voice: string
 const FALLBACKS: Record<string, Engine> = { generative: 'neural', neural: 'standard' };
 
 /** `voice` is a Polly voice id; each language has its own (domain/language.ts). */
-export async function synthesize(text: string, rate: Rate = 'normal', voice: string = VOICE): Promise<Spoken> {
+export async function synthesize(
+  text: string,
+  rate: Rate = 'normal',
+  voice: string = VOICE,
+): Promise<Spoken> {
   if (!text.trim()) throw new Error('Nothing to say.');
   let engine: Engine | undefined = ENGINE;
   let last: unknown;

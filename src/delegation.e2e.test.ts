@@ -41,7 +41,9 @@ beforeEach(async () => {
   await seedScenario(store, 'h_margaret');
 });
 
-after(() => { server?.close(); });
+after(() => {
+  server?.close();
+});
 
 const HEADERS = (token?: string, sessionId?: string) => ({
   'content-type': 'application/json',
@@ -52,11 +54,15 @@ const HEADERS = (token?: string, sessionId?: string) => ({
 
 async function openSession(token: string): Promise<string> {
   const res = await fetch(base, {
-    method: 'POST', headers: HEADERS(token),
+    method: 'POST',
+    headers: HEADERS(token),
     body: JSON.stringify({
-      jsonrpc: '2.0', id: 1, method: 'initialize',
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'initialize',
       params: {
-        protocolVersion: '2025-11-25', capabilities: {},
+        protocolVersion: '2025-11-25',
+        capabilities: {},
         clientInfo: { name: 'loop', version: '1.0' },
       },
     }),
@@ -64,20 +70,27 @@ async function openSession(token: string): Promise<string> {
   const sessionId = res.headers.get('mcp-session-id')!;
   await res.text();
   await fetch(base, {
-    method: 'POST', headers: HEADERS(token, sessionId),
+    method: 'POST',
+    headers: HEADERS(token, sessionId),
     body: JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }),
   });
   return sessionId;
 }
 
 async function call(
-  token: string, sessionId: string, name: string, args: Record<string, unknown> = {},
+  token: string,
+  sessionId: string,
+  name: string,
+  args: Record<string, unknown> = {},
 ): Promise<any> {
   const res = await fetch(base, {
-    method: 'POST', headers: HEADERS(token, sessionId),
+    method: 'POST',
+    headers: HEADERS(token, sessionId),
     body: JSON.stringify({
-      jsonrpc: '2.0', id: Math.floor(Math.random() * 1e6),
-      method: 'tools/call', params: { name, arguments: args },
+      jsonrpc: '2.0',
+      id: Math.floor(Math.random() * 1e6),
+      method: 'tools/call',
+      params: { name, arguments: args },
     }),
   });
   return JSON.parse(await res.text());
@@ -100,8 +113,10 @@ test('the whole loop: ask, decline, ask the next person, accept', async () => {
   const id = await theRide('renee-token', renee);
 
   // ASK. Funmi asks Tolu.
-  const asked = await call('renee-token', renee, 'request_owner',
-    { obligationId: id, assigneeName: 'Tolu' });
+  const asked = await call('renee-token', renee, 'request_owner', {
+    obligationId: id,
+    assigneeName: 'Tolu',
+  });
   assert.match(spoken(asked), /asked Tolu/i);
   assert.match(spoken(asked), /stays unowned/i);
   assert.equal(structured(asked).status, 'REQUESTED');
@@ -118,29 +133,38 @@ test('the whole loop: ask, decline, ask the next person, accept', async () => {
   assert.equal(structured(mine).requests[0].obligationId, id);
 
   // DECLINE. It goes back to unowned, and the loop proposes the next person.
-  const declined = await call('david-token', david, 'respond_to_request',
-    { obligationId: id, accepted: false, note: "I'm away Thursday" });
+  const declined = await call('david-token', david, 'respond_to_request', {
+    obligationId: id,
+    accepted: false,
+    note: "I'm away Thursday",
+  });
   assert.equal(structured(declined).declined, true);
   assert.match(spoken(declined), /no owner/i);
   assert.ok(structured(declined).nextCandidate, 'a decline should offer somebody next');
 
   // Tolu is not asked again.
-  const reAsk = await call('renee-token', renee, 'request_owner',
-    { obligationId: id, assigneeName: 'Tolu' });
+  const reAsk = await call('renee-token', renee, 'request_owner', {
+    obligationId: id,
+    assigneeName: 'Tolu',
+  });
   assert.match(spoken(reAsk), /already said no/i);
 
   // ACCEPT. Funmi asks herself? No - she claims. Ask Musa, who accepts.
   await call('renee-token', renee, 'request_owner', { obligationId: id, assigneeName: 'Musa' });
   const aide = await openSession('aide-token');
-  const accepted = await call('aide-token', aide, 'respond_to_request',
-    { obligationId: id, accepted: true });
+  const accepted = await call('aide-token', aide, 'respond_to_request', {
+    obligationId: id,
+    accepted: true,
+  });
   assert.equal(structured(accepted).status, 'ASSIGNED');
   assert.match(spoken(accepted), /yours now/i);
 
   // And now it is genuinely owned: no longer a gap.
   const after = structured(await call('renee-token', renee, 'get_care_gaps')).gaps;
-  assert.ok(!after.some((g: any) => g.obligationId === id),
-    'an accepted request should stop being a care gap');
+  assert.ok(
+    !after.some((g: any) => g.obligationId === id),
+    'an accepted request should stop being a care gap',
+  );
 });
 
 test('paid help hears what they were asked in their shift brief', async () => {
@@ -161,13 +185,17 @@ test('only the person asked can answer for themselves', async () => {
   await call('renee-token', renee, 'request_owner', { obligationId: id, assigneeName: 'Musa' });
   // Tolu tries to accept on Musa's behalf. The system must not invent an
   // agreement that was never given.
-  const stolen = await call('david-token', david, 'respond_to_request',
-    { obligationId: id, accepted: true });
+  const stolen = await call('david-token', david, 'respond_to_request', {
+    obligationId: id,
+    accepted: true,
+  });
   assert.match(spoken(stolen), /theirs to answer/i);
 
   const state = structured(await call('renee-token', renee, 'get_care_gaps')).gaps;
-  assert.ok(state.some((g: any) => g.obligationId === id),
-    'it must still be an open gap after a rejected answer');
+  assert.ok(
+    state.some((g: any) => g.obligationId === id),
+    'it must still be an open gap after a rejected answer',
+  );
 });
 
 test('the person being cared for can ask for help herself', async () => {
@@ -176,13 +204,17 @@ test('the person being cared for can ask for help herself', async () => {
   const id = await theRide('renee-token', renee);
   const margaret = await openSession('margaret-token');
 
-  const asked = await call('margaret-token', margaret, 'request_owner',
-    { obligationId: id, assigneeName: 'Tolu' });
+  const asked = await call('margaret-token', margaret, 'request_owner', {
+    obligationId: id,
+    assigneeName: 'Tolu',
+  });
   assert.match(spoken(asked), /asked Tolu/i);
 
   // But assigning is still beyond her.
-  const assign = await call('margaret-token', margaret, 'assign_obligation',
-    { obligationId: id, assigneeName: 'Tolu' });
+  const assign = await call('margaret-token', margaret, 'assign_obligation', {
+    obligationId: id,
+    assigneeName: 'Tolu',
+  });
   assert.match(spoken(assign), /primary caregiver/i);
 });
 

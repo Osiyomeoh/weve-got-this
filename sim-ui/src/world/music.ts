@@ -21,7 +21,9 @@ let speaking = 0;
 
 // Quiet while the microphone is open (see LISTENING_EVENT in lib/mic.ts).
 if (typeof window !== 'undefined') {
-  window.addEventListener('carecircle-listening', (e) => duck(!!(e as CustomEvent<boolean>).detail));
+  window.addEventListener('carecircle-listening', (e) =>
+    duck(!!(e as CustomEvent<boolean>).detail),
+  );
 }
 
 const hz = (midi: number) => 440 * 2 ** ((midi - 69) / 12);
@@ -47,7 +49,8 @@ function schedule() {
     tone(next, chord[0]! - 12, BAR_S + 1, 0.35, 'sine');
     for (const n of chord.slice(1)) tone(next, n, BAR_S + 1, 0.12, 'triangle');
     // A chime arpeggio every other bar, so the music breathes.
-    if (bar % 2 === 0) chord.forEach((n, i) => tone(next + 0.6 + i * 0.6, n + 12, 2.4, 0.08, 'sine'));
+    if (bar % 2 === 0)
+      chord.forEach((n, i) => tone(next + 0.6 + i * 0.6, n + 12, 2.4, 0.08, 'sine'));
     next += BAR_S;
     bar++;
   }

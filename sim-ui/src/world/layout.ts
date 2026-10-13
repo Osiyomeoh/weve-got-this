@@ -11,7 +11,11 @@ export const PHARMACY: V3 = [0, 0, 6.2];
 export const HUB: V3 = [0, 5.2, -2.5];
 export const ROAD_Z = 2.3;
 
-const at = (base: V3, x: number, y: number, z: number): V3 => [base[0] + x, base[1] + y, base[2] + z];
+const at = (base: V3, x: number, y: number, z: number): V3 => [
+  base[0] + x,
+  base[1] + y,
+  base[2] + z,
+];
 
 /** Devices, in world space, so a message can be drawn leaving one and reaching another. */
 export const DEVICE = {
@@ -39,7 +43,10 @@ export const CAR = {
   daddy: [DADDY[0] + 1.6, 0, ROAD_Z] as V3,
 };
 
-export interface Shot { pos: V3; look: V3 }
+export interface Shot {
+  pos: V3;
+  look: V3;
+}
 
 export const SHOTS: Record<string, Shot> = {
   overview: { pos: [0.5, 9.5, 12], look: [0, 0.8, -1.8] },

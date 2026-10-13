@@ -103,8 +103,7 @@ export function planCalendarWriteback(
       plan.creates.push({ obligationId: o.id, body });
       continue;
     }
-    const changed = existing.summary !== body.summary
-      || existing.start !== body.start?.dateTime;
+    const changed = existing.summary !== body.summary || existing.start !== body.start?.dateTime;
     if (changed) {
       plan.updates.push({ eventId: existing.eventId, obligationId: o.id, body });
     }

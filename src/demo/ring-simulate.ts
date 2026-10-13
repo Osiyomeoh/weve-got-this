@@ -29,13 +29,16 @@ export interface SimEvent {
 /** Build an event in Ring's documented shape. */
 export function buildEvent(
   kind: SimEventKind,
-  opts: { requestId: string; deviceId?: string; at?: Date } ,
+  opts: { requestId: string; deviceId?: string; at?: Date },
 ): SimEvent {
   const created_at = (opts.at ?? new Date()).toISOString();
   const device = opts.deviceId ?? 'dev_front_door';
-  const type = kind === 'button' ? 'button_press'
-    : kind === 'device_online' ? 'device_online'
-    : 'motion_detected';
+  const type =
+    kind === 'button'
+      ? 'button_press'
+      : kind === 'device_online'
+        ? 'device_online'
+        : 'motion_detected';
   const subType = kind === 'package' ? 'package' : kind === 'motion' ? 'human' : undefined;
   return {
     data: {
@@ -60,9 +63,7 @@ export interface DeliveryResult {
 }
 
 /** POST a signed event at a webhook, the way Ring would. */
-export async function deliver(
-  url: string, event: SimEvent, key: string,
-): Promise<DeliveryResult> {
+export async function deliver(url: string, event: SimEvent, key: string): Promise<DeliveryResult> {
   // Sign the exact bytes that are sent - re-stringifying would change them.
   const body = JSON.stringify(event);
   const res = await fetch(url, {
@@ -105,5 +106,8 @@ async function main(): Promise<void> {
 
 // Only run when invoked directly, so the helpers stay importable by tests.
 if (process.argv[1]?.includes('ring-simulate')) {
-  main().catch((err) => { console.error(String(err.message ?? err)); process.exit(1); });
+  main().catch((err) => {
+    console.error(String(err.message ?? err));
+    process.exit(1);
+  });
 }

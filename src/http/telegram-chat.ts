@@ -47,9 +47,16 @@ export interface TelegramChatOptions {
 }
 
 /** Whichever loop runs the turn. */
-interface Planner { say(text: string): Promise<TurnResult> }
+interface Planner {
+  say(text: string): Promise<TurnResult>;
+}
 
-interface Thread { host: Promise<Planner>; opened: number; lastUsed: number; queue: Promise<unknown> }
+interface Thread {
+  host: Promise<Planner>;
+  opened: number;
+  lastUsed: number;
+  queue: Promise<unknown>;
+}
 
 // The planner is told the date when a thread opens, so no thread outlives a few hours:
 // a conversation that ran past midnight would resolve "tomorrow" against yesterday.
@@ -64,14 +71,19 @@ export function createTelegramChat(opts: TelegramChatOptions): ChatReply {
 
   const open = async (memberId: string): Promise<Planner> => {
     const server = createCareCircleServer({
-      store: opts.store, actorId: memberId,
+      store: opts.store,
+      actorId: memberId,
       ...(opts.notifier ? { notifier: opts.notifier } : {}),
       ...(opts.now ? { now: opts.now } : {}),
     });
     const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
     await server.connect(serverSide);
     if (opts.provider instanceof StrandsProvider) {
-      return StrandsAlexa.over(clientSide, { model: opts.provider.model, channel: 'chat', ...(opts.now ? { now: opts.now } : {}) });
+      return StrandsAlexa.over(clientSide, {
+        model: opts.provider.model,
+        channel: 'chat',
+        ...(opts.now ? { now: opts.now } : {}),
+      });
     }
     const client = new Client({ name: 'carecircle-telegram', version: '0.1.0' });
     await client.connect(clientSide);
@@ -80,11 +92,16 @@ export function createTelegramChat(opts: TelegramChatOptions): ChatReply {
 
   return async (memberId, text) => {
     const at = Date.now();
-    for (const [id, t] of threads) if (at - t.lastUsed > idleMs || at - t.opened > MAX_AGE_MS) threads.delete(id);
+    for (const [id, t] of threads)
+      if (at - t.lastUsed > idleMs || at - t.opened > MAX_AGE_MS) threads.delete(id);
     // A new language starts a new conversation: the planner is told the language when a
     // thread opens.
     let language = 'en';
-    try { language = opts.store.getMember(memberId).language ?? 'en'; } catch { /* unknown: the tools will say so */ }
+    try {
+      language = opts.store.getMember(memberId).language ?? 'en';
+    } catch {
+      /* unknown: the tools will say so */
+    }
     const key = `${memberId}:${language}`;
     let thread = threads.get(key);
     if (!thread) {

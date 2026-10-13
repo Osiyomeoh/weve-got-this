@@ -28,7 +28,9 @@ const table = process.env['CARECIRCLE_TABLE']?.trim();
 const region = process.env['AWS_REGION']?.trim();
 
 if (!table || !region) {
-  console.error('Set CARECIRCLE_TABLE and AWS_REGION (e.g. CARECIRCLE_TABLE=carecircle AWS_REGION=us-east-1).');
+  console.error(
+    'Set CARECIRCLE_TABLE and AWS_REGION (e.g. CARECIRCLE_TABLE=carecircle AWS_REGION=us-east-1).',
+  );
   process.exit(1);
 }
 
@@ -46,9 +48,14 @@ function others(store: CareStore): Map<string, string> {
 
 function summary(store: CareStore, label: string): void {
   const s = store.getCareState(DEMO);
-  const due = s.obligations.map((o) => o.dueAt).filter(Boolean).sort();
-  console.log(`${label}: ${s.members.length} members, ${s.events.length} events, `
-    + `${s.obligations.length} obligations, due ${due[0] ?? '-'} .. ${due.at(-1) ?? '-'}`);
+  const due = s.obligations
+    .map((o) => o.dueAt)
+    .filter(Boolean)
+    .sort();
+  console.log(
+    `${label}: ${s.members.length} members, ${s.events.length} events, ` +
+      `${s.obligations.length} obligations, due ${due[0] ?? '-'} .. ${due.at(-1) ?? '-'}`,
+  );
 }
 
 const store = new CareStore(new DynamoPersistence({ tableName: table, region }));
@@ -69,8 +76,11 @@ const { checkUpAt } = await seedScenario(store, DEMO, { rideClaimedByFunmi: clai
 await store.quiesce();
 
 summary(store, 'Demo household after');
-console.log(`Eye check-up: ${checkUpAt.toISOString()}  Ride: ${claimed ? 'claimed by Funmi' : 'unclaimed'}`);
-for (const g of detectCareGaps(store.getCareState(DEMO))) console.log(`  [${g.severity}] ${g.spoken}`);
+console.log(
+  `Eye check-up: ${checkUpAt.toISOString()}  Ride: ${claimed ? 'claimed by Funmi' : 'unclaimed'}`,
+);
+for (const g of detectCareGaps(store.getCareState(DEMO)))
+  console.log(`  [${g.severity}] ${g.spoken}`);
 
 // Re-read from the table itself, not the copy in memory, before calling it safe.
 const check = new CareStore(new DynamoPersistence({ tableName: table, region }));
@@ -82,4 +92,6 @@ if (changed.length > 0 || after.size !== before.size) {
   process.exit(2);
 }
 console.log(`\nVerified from the table: all ${after.size} other household(s) unchanged.`);
-console.log('Now restart the MCP server and the console so they reload (infra/demo-reset-prod.sh).');
+console.log(
+  'Now restart the MCP server and the console so they reload (infra/demo-reset-prod.sh).',
+);

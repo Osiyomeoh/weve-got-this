@@ -8,10 +8,10 @@
 
 /** Who someone is to the person being cared for. Determines authority. */
 export type Role =
-  | 'care_recipient'   // the person being cared for; logs their own events
+  | 'care_recipient' // the person being cared for; logs their own events
   | 'primary_caregiver' // full authority, including escalation
-  | 'caregiver'        // can claim, add, confirm; cannot escalate
-  | 'helper';          // paid aide etc; scoped to their shift
+  | 'caregiver' // can claim, add, confirm; cannot escalate
+  | 'helper'; // paid aide etc; scoped to their shift
 
 /**
  * Standing facts about a person or thing that change how work about it must be handled.
@@ -62,14 +62,15 @@ export interface Member {
  * Every language Alexa+ is sold in (English, Spanish, French, Portuguese, German, Italian,
  * Hindi), Chinese, and Nigeria's: Pidgin, Yoruba, Igbo, Hausa, Edo.
  */
-export type LanguageCode = 'en' | 'es' | 'fr' | 'pt' | 'de' | 'it' | 'hi' | 'zh' | 'pcm' | 'yo' | 'ig' | 'ha' | 'bin';
+export type LanguageCode =
+  'en' | 'es' | 'fr' | 'pt' | 'de' | 'it' | 'hi' | 'zh' | 'pcm' | 'yo' | 'ig' | 'ha' | 'bin';
 
 /** What an entity is. People are modelled as `Member`; this widens the graph to the rest. */
 export type EntityType =
-  | 'person'   // reserved; people are modelled as Member today
-  | 'place'    // a clinic, a pharmacy counter, a home
-  | 'service'  // a cardiology practice, a transport service
-  | 'device';  // a Ring doorbell, a pill dispenser
+  | 'person' // reserved; people are modelled as Member today
+  | 'place' // a clinic, a pharmacy counter, a home
+  | 'service' // a cardiology practice, a transport service
+  | 'device'; // a Ring doorbell, a pill dispenser
 
 /**
  * A non-person node in the responsibility graph: the place a ride goes to, the service a
@@ -159,17 +160,17 @@ export type EventKind =
  * have live producers today.
  */
 export type EventSource =
-  | 'voice'     // a person spoke it
-  | 'tv'        // a person pressed it on the Fire TV remote
-  | 'ring'      // a Ring device observed it
-  | 'device'    // some other device observed it
-  | 'bee'       // an ambient wearable overheard it (seam)
-  | 'calendar'  // a calendar sync produced it (seam)
-  | 'email'     // parsed from an email's calendar invite (seam)
-  | 'pharmacy'  // a pharmacy system produced it (seam)
-  | 'whatsapp'  // a member answered over WhatsApp
-  | 'telegram'  // a member answered over Telegram
-  | 'system';   // CareCircle itself derived it
+  | 'voice' // a person spoke it
+  | 'tv' // a person pressed it on the Fire TV remote
+  | 'ring' // a Ring device observed it
+  | 'device' // some other device observed it
+  | 'bee' // an ambient wearable overheard it (seam)
+  | 'calendar' // a calendar sync produced it (seam)
+  | 'email' // parsed from an email's calendar invite (seam)
+  | 'pharmacy' // a pharmacy system produced it (seam)
+  | 'whatsapp' // a member answered over WhatsApp
+  | 'telegram' // a member answered over Telegram
+  | 'system'; // CareCircle itself derived it
 
 /**
  * How sure we are of the observation *itself* - deliberately separate from an
@@ -178,9 +179,9 @@ export type EventSource =
  * leap this system refuses: evidence is not a verdict.
  */
 export type EventConfidence =
-  | 'observed'   // a sensor saw it happen
-  | 'reported'   // a person said it happened
-  | 'inferred'   // the system derived it from other events
+  | 'observed' // a sensor saw it happen
+  | 'reported' // a person said it happened
+  | 'inferred' // the system derived it from other events
   | 'confirmed'; // a person definitively decided or acted
 
 /**

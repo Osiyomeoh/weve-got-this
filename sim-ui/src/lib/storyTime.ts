@@ -35,7 +35,10 @@ export function useNow(): { now: Date; inStory: boolean } {
     const tick = () => setNow(storyNow() ?? new Date());
     listeners.add(tick);
     const id = setInterval(tick, 1000);
-    return () => { listeners.delete(tick); clearInterval(id); };
+    return () => {
+      listeners.delete(tick);
+      clearInterval(id);
+    };
   }, []);
   return { now, inStory: story !== null };
 }

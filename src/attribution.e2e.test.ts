@@ -27,7 +27,11 @@ before(async () => {
   await store.reset();
   await seedDemoHousehold(store);
   await seedScenario(store, 'h_margaret', { now: NOW });
-  const app = createCareCircleApp({ store, now: () => NOW, tokens: new Map(Object.entries(DEMO_TOKENS)) });
+  const app = createCareCircleApp({
+    store,
+    now: () => NOW,
+    tokens: new Map(Object.entries(DEMO_TOKENS)),
+  });
   await new Promise<void>((resolve) => {
     server = app.listen(0, () => {
       const a = server.address();
@@ -43,7 +47,9 @@ beforeEach(async () => {
   await seedScenario(store, 'h_margaret', { now: NOW });
 });
 
-after(() => { server?.close(); });
+after(() => {
+  server?.close();
+});
 
 const HEADERS = (token?: string, sessionId?: string) => ({
   'content-type': 'application/json',
@@ -54,11 +60,15 @@ const HEADERS = (token?: string, sessionId?: string) => ({
 
 async function openSession(token: string): Promise<string> {
   const res = await fetch(base, {
-    method: 'POST', headers: HEADERS(token),
+    method: 'POST',
+    headers: HEADERS(token),
     body: JSON.stringify({
-      jsonrpc: '2.0', id: 1, method: 'initialize',
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'initialize',
       params: {
-        protocolVersion: '2025-11-25', capabilities: {},
+        protocolVersion: '2025-11-25',
+        capabilities: {},
         clientInfo: { name: 'attribution', version: '1.0' },
       },
     }),
@@ -66,20 +76,27 @@ async function openSession(token: string): Promise<string> {
   const sessionId = res.headers.get('mcp-session-id')!;
   await res.text();
   await fetch(base, {
-    method: 'POST', headers: HEADERS(token, sessionId),
+    method: 'POST',
+    headers: HEADERS(token, sessionId),
     body: JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }),
   });
   return sessionId;
 }
 
 async function call(
-  token: string, sessionId: string, name: string, args: Record<string, unknown> = {},
+  token: string,
+  sessionId: string,
+  name: string,
+  args: Record<string, unknown> = {},
 ): Promise<any> {
   const res = await fetch(base, {
-    method: 'POST', headers: HEADERS(token, sessionId),
+    method: 'POST',
+    headers: HEADERS(token, sessionId),
     body: JSON.stringify({
-      jsonrpc: '2.0', id: Math.floor(Math.random() * 1e6),
-      method: 'tools/call', params: { name, arguments: args },
+      jsonrpc: '2.0',
+      id: Math.floor(Math.random() * 1e6),
+      method: 'tools/call',
+      params: { name, arguments: args },
     }),
   });
   return JSON.parse(await res.text());
@@ -93,12 +110,17 @@ test('when the aide logs a dose for Margaret, the summary says the aide did', as
   const david = await openSession('david-token');
 
   await call('aide-token', aide, 'log_care_event', {
-    kind: 'medication_taken', medicationName: 'eye drops', aboutMemberId: 'm_margaret',
+    kind: 'medication_taken',
+    medicationName: 'eye drops',
+    aboutMemberId: 'm_margaret',
   });
 
   const said = spoken(await call('david-token', david, 'get_care_summary'));
-  assert.match(said, /Musa/,
-    `the summary turned the aide's account into Margaret's own word: ${said}`);
+  assert.match(
+    said,
+    /Musa/,
+    `the summary turned the aide's account into Margaret's own word: ${said}`,
+  );
 });
 
 test('when Margaret logs her own dose, nobody else is put in the sentence', async () => {
@@ -106,7 +128,8 @@ test('when Margaret logs her own dose, nobody else is put in the sentence', asyn
   const david = await openSession('david-token');
 
   await call('margaret-token', margaret, 'log_care_event', {
-    kind: 'medication_taken', medicationName: 'eye drops',
+    kind: 'medication_taken',
+    medicationName: 'eye drops',
   });
 
   const said = spoken(await call('david-token', david, 'get_care_summary'));
@@ -122,7 +145,8 @@ test('the same dose reads differently depending on who logged it', async () => {
 
   const margaret = await openSession('margaret-token');
   await call('margaret-token', margaret, 'log_care_event', {
-    kind: 'medication_taken', medicationName: 'eye drops',
+    kind: 'medication_taken',
+    medicationName: 'eye drops',
   });
   const firstHand = spoken(await call('david-token', david, 'get_care_summary'));
 
@@ -132,12 +156,17 @@ test('the same dose reads differently depending on who logged it', async () => {
 
   const aide = await openSession('aide-token');
   await call('aide-token', aide, 'log_care_event', {
-    kind: 'medication_taken', medicationName: 'eye drops', aboutMemberId: 'm_margaret',
+    kind: 'medication_taken',
+    medicationName: 'eye drops',
+    aboutMemberId: 'm_margaret',
   });
   const byProxy = spoken(await call('david-token', david, 'get_care_summary'));
 
-  assert.notEqual(firstHand, byProxy,
-    'a proxy report and a first-person report are still indistinguishable');
+  assert.notEqual(
+    firstHand,
+    byProxy,
+    'a proxy report and a first-person report are still indistinguishable',
+  );
 });
 
 test('the structured record carries the attribution, not just the prose', async () => {
@@ -147,12 +176,18 @@ test('the structured record carries the attribution, not just the prose', async 
   const david = await openSession('david-token');
 
   await call('aide-token', aide, 'log_care_event', {
-    kind: 'medication_taken', medicationName: 'eye drops', aboutMemberId: 'm_margaret',
+    kind: 'medication_taken',
+    medicationName: 'eye drops',
+    aboutMemberId: 'm_margaret',
   });
 
-  const { eventId } = structured(await call('aide-token', aide, 'log_care_event', {
-    kind: 'medication_taken', medicationName: 'supplement', aboutMemberId: 'm_margaret',
-  }));
+  const { eventId } = structured(
+    await call('aide-token', aide, 'log_care_event', {
+      kind: 'medication_taken',
+      medicationName: 'supplement',
+      aboutMemberId: 'm_margaret',
+    }),
+  );
 
   const data = structured(await call('david-token', david, 'get_care_summary'));
   // Match the dose this test logged. The scenario seeds first-hand doses of its
@@ -170,7 +205,9 @@ test('a dose logged by the aide never becomes a care gap', async () => {
   const david = await openSession('david-token');
 
   await call('aide-token', aide, 'log_care_event', {
-    kind: 'medication_taken', medicationName: 'eye drops', aboutMemberId: 'm_margaret',
+    kind: 'medication_taken',
+    medicationName: 'eye drops',
+    aboutMemberId: 'm_margaret',
   });
 
   const gaps = structured(await call('david-token', david, 'get_care_gaps')).gaps ?? [];
@@ -187,7 +224,9 @@ test('naming the reporter never becomes an accusation of anybody', async () => {
   const david = await openSession('david-token');
 
   await call('aide-token', aide, 'log_care_event', {
-    kind: 'medication_taken', medicationName: 'eye drops', aboutMemberId: 'm_margaret',
+    kind: 'medication_taken',
+    medicationName: 'eye drops',
+    aboutMemberId: 'm_margaret',
   });
 
   const said = spoken(await call('david-token', david, 'get_care_summary'));

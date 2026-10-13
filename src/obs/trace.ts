@@ -30,9 +30,11 @@ export function traceFields(trace: TurnTrace): TraceFields {
     outcome: trace.outcome,
     // A reply with no calls is the answer; at the step limit, the last reply asked for more
     // tools and was cut off instead.
-    steps: trace.steps.flatMap((s, i) => (s.calls.length
-      ? s.calls.map((c) => `${c.name}:${c.isError ? 'guidance' : 'ok'}`)
-      : [i === trace.steps.length - 1 && trace.outcome === 'step_limit' ? 'cut_off' : 'answer'])),
+    steps: trace.steps.flatMap((s, i) =>
+      s.calls.length
+        ? s.calls.map((c) => `${c.name}:${c.isError ? 'guidance' : 'ok'}`)
+        : [i === trace.steps.length - 1 && trace.outcome === 'step_limit' ? 'cut_off' : 'answer'],
+    ),
     calls: trace.steps.reduce((n, s) => n + s.calls.length, 0),
     plannerMs: trace.plannerMs,
     toolMs: trace.toolMs,

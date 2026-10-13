@@ -37,10 +37,7 @@ test('a zero quota without an account override is reported differently', () => {
 });
 
 test('one zeroed quota among healthy ones is still surfaced', () => {
-  const d = classify([
-    fact(),
-    fact({ code: 'L-4A6BFAB1', applied: 0, appliedAtLevel: 'ACCOUNT' }),
-  ]);
+  const d = classify([fact(), fact({ code: 'L-4A6BFAB1', applied: 0, appliedAtLevel: 'ACCOUNT' })]);
   assert.equal(d.state, 'account_hold');
   assert.deepEqual(d.state === 'account_hold' ? d.quotas.map((q) => q.code) : [], ['L-4A6BFAB1']);
 });
@@ -66,7 +63,7 @@ test('the prompt tells the planner today, so "Thursday" can be resolved', () => 
   assert.match(p, /Never guess a date/);
 });
 
-test('the household zone is used, not the server\'s', () => {
+test("the household zone is used, not the server's", () => {
   const p = systemPrompt({ now: new Date('2026-09-18T02:00:00Z'), timezone: 'Asia/Tokyo' });
   // 02:00 UTC is already Friday afternoon in Tokyo.
   assert.match(p, /Today is Friday, September 18, 2026/);

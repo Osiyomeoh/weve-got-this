@@ -14,13 +14,26 @@
 
 const token = process.env['TELEGRAM_BOT_TOKEN']?.trim();
 const secret = process.env['TELEGRAM_WEBHOOK_SECRET']?.trim();
-const publicUrl = (process.env['CARECIRCLE_PUBLIC_URL'] ?? 'https://ypq2dfq2p7.us-east-1.awsapprunner.com')
+const publicUrl = (
+  process.env['CARECIRCLE_PUBLIC_URL'] ?? 'https://ypq2dfq2p7.us-east-1.awsapprunner.com'
+)
   .trim()
   .replace(/\/+$/, '');
 
-interface TgUser { id: number; first_name?: string; last_name?: string; username?: string }
-interface TgChat { id: number; type: string; title?: string }
-interface TgUpdate { message?: { from?: TgUser; chat: TgChat; text?: string } }
+interface TgUser {
+  id: number;
+  first_name?: string;
+  last_name?: string;
+  username?: string;
+}
+interface TgChat {
+  id: number;
+  type: string;
+  title?: string;
+}
+interface TgUpdate {
+  message?: { from?: TgUser; chat: TgChat; text?: string };
+}
 
 async function call(method: string, body?: Record<string, unknown>): Promise<unknown> {
   const res = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
@@ -39,18 +52,24 @@ async function main(): Promise<void> {
 
   const listenSeconds = Number(process.env['LISTEN_SECONDS'] ?? 120);
   let stop = false;
-  process.on('SIGINT', () => { stop = true; });
+  process.on('SIGINT', () => {
+    stop = true;
+  });
 
   await call('deleteWebhook');
   try {
-    console.log(`Listening ${listenSeconds}s - ask everyone to post one message in the group now.\n`);
+    console.log(
+      `Listening ${listenSeconds}s - ask everyone to post one message in the group now.\n`,
+    );
     const groups = new Map<number, string>();
     const people = new Map<number, string>();
     const deadline = Date.now() + listenSeconds * 1000;
     let offset = 0;
     while (!stop && Date.now() < deadline) {
       const wait = Math.max(1, Math.min(20, Math.ceil((deadline - Date.now()) / 1000)));
-      const updates = (await call('getUpdates', { offset, timeout: wait })) as Array<TgUpdate & { update_id: number }>;
+      const updates = (await call('getUpdates', { offset, timeout: wait })) as Array<
+        TgUpdate & { update_id: number }
+      >;
       for (const u of updates) {
         offset = u.update_id + 1;
         const m = u.message;

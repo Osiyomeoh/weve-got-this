@@ -36,7 +36,7 @@ test('any button wakes the ambient clock into browsing', () => {
 });
 
 test('browsing wraps in both directions, because a TV list has no edges', () => {
-  assert.equal(press(['right', 'left']).nav.gap, 2);       // wake, then back past 0
+  assert.equal(press(['right', 'left']).nav.gap, 2); // wake, then back past 0
   assert.equal(press(['right', 'right', 'right', 'right']).nav.gap, 0);
 });
 
@@ -59,7 +59,10 @@ test('a claim happens only after a person has been named', () => {
 test('every mode can be backed out of - nobody gets stranded', () => {
   let nav = START;
   const seen = new Set<string>();
-  for (const k of ['right', 'ok'] as Key[]) { nav = reduce(nav, k, COUNTS).nav; seen.add(nav.mode); }
+  for (const k of ['right', 'ok'] as Key[]) {
+    nav = reduce(nav, k, COUNTS).nav;
+    seen.add(nav.mode);
+  }
   assert.deepEqual([...seen].sort(), ['browsing', 'identifying']);
 
   nav = reduce(nav, 'back', COUNTS).nav;
@@ -93,7 +96,7 @@ test('a gap list that shrinks under the viewer never focuses past its end', () =
 test('OK on their own dose asks them, and only a second OK says it was taken', () => {
   const counts = { gaps: 2, members: 4, doses: 1 };
   let nav = START;
-  nav = reduce(nav, 'down', counts).nav;          // wake, focus on the dose
+  nav = reduce(nav, 'down', counts).nav; // wake, focus on the dose
   assert.equal(nav.mode, 'browsing');
   assert.equal(nav.gap, 0);
   const asked = reduce(nav, 'ok', counts);
@@ -122,7 +125,11 @@ test('past the doses, OK on a gap still asks who', () => {
   const counts = { gaps: 1, members: 4, doses: 1 };
   const nav = reduce({ mode: 'browsing', gap: 1, member: 0 }, 'ok', counts).nav;
   assert.equal(nav.mode, 'identifying');
-  assert.equal(reduce({ mode: 'browsing', gap: 1, member: 0 }, 'right', counts).nav.gap, 0, 'the list wraps over doses and gaps');
+  assert.equal(
+    reduce({ mode: 'browsing', gap: 1, member: 0 }, 'right', counts).nav.gap,
+    0,
+    'the list wraps over doses and gaps',
+  );
 });
 
 test('a dose alone is enough to wake the set', () => {

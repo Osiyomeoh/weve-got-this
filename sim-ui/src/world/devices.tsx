@@ -6,7 +6,10 @@ import * as THREE from 'three';
 export type Glow = 'idle' | 'listening' | 'thinking' | 'speaking';
 
 const RING_COLOR: Record<Glow, string> = {
-  idle: '#0b1a24', listening: '#2f7cff', thinking: '#3fd0ff', speaking: '#00e0c6',
+  idle: '#0b1a24',
+  listening: '#2f7cff',
+  thinking: '#3fd0ff',
+  speaking: '#00e0c6',
 };
 
 /**
@@ -18,8 +21,12 @@ export function Echo({ glow, ...rest }: JSX.IntrinsicElements['group'] & { glow:
   const light = useRef<THREE.PointLight>(null);
   useFrame(({ clock }) => {
     const on = glow !== 'idle';
-    const pulse = glow === 'thinking' ? 0.6 + 0.4 * Math.sin(clock.elapsedTime * 8)
-      : glow === 'speaking' ? 0.75 + 0.25 * Math.sin(clock.elapsedTime * 14) : 1;
+    const pulse =
+      glow === 'thinking'
+        ? 0.6 + 0.4 * Math.sin(clock.elapsedTime * 8)
+        : glow === 'speaking'
+          ? 0.75 + 0.25 * Math.sin(clock.elapsedTime * 14)
+          : 1;
     if (ring.current) {
       ring.current.emissive.set(RING_COLOR[glow]);
       ring.current.emissiveIntensity = on ? 3 * pulse : 0.2;
@@ -35,9 +42,19 @@ export function Echo({ glow, ...rest }: JSX.IntrinsicElements['group'] & { glow:
       </mesh>
       <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <torusGeometry args={[0.066, 0.009, 12, 48]} />
-        <meshStandardMaterial ref={ring} color="#0b1a24" emissive={RING_COLOR[glow]} toneMapped={false} />
+        <meshStandardMaterial
+          ref={ring}
+          color="#0b1a24"
+          emissive={RING_COLOR[glow]}
+          toneMapped={false}
+        />
       </mesh>
-      <pointLight ref={light} position={[0, 0.05, 0.1]} distance={1.2} color={RING_COLOR[glow === 'idle' ? 'speaking' : glow]} />
+      <pointLight
+        ref={light}
+        position={[0, 0.05, 0.1]}
+        distance={1.2}
+        color={RING_COLOR[glow === 'idle' ? 'speaking' : glow]}
+      />
     </group>
   );
 }
@@ -46,9 +63,20 @@ export function Echo({ glow, ...rest }: JSX.IntrinsicElements['group'] & { glow:
  * The family's TV, showing the real Fire TV page from this visitor's own copy of the demo.
  * It is the same /tv a Fire TV loads, so what changes here changed in the record.
  */
-export function FireTV({ src, width = 0.62, live = true, frameId, ...rest }: JSX.IntrinsicElements['group'] & { src: string; width?: number; live?: boolean; frameId?: string }) {
+export function FireTV({
+  src,
+  width = 0.62,
+  live = true,
+  frameId,
+  ...rest
+}: JSX.IntrinsicElements['group'] & {
+  src: string;
+  width?: number;
+  live?: boolean;
+  frameId?: string;
+}) {
   const px = 1280;
-  const height = width * 9 / 16;
+  const height = (width * 9) / 16;
   return (
     <group {...rest}>
       <mesh castShadow position={[0, 0, -0.02]}>
@@ -60,9 +88,22 @@ export function FireTV({ src, width = 0.62, live = true, frameId, ...rest }: JSX
         <meshBasicMaterial color="#05070a" />
       </mesh>
       {live && (
-        <Html transform occlude="blending" distanceFactor={(width / px) * 400} position={[0, 0, 0]} zIndexRange={[5, 0]}
-          style={{ width: px, height: px * 9 / 16, background: '#05070a' }} pointerEvents="none">
-          <iframe id={frameId} title="Fire TV" src={src} allow="autoplay" style={{ width: px, height: px * 9 / 16, border: 0 }} />
+        <Html
+          transform
+          occlude="blending"
+          distanceFactor={(width / px) * 400}
+          position={[0, 0, 0]}
+          zIndexRange={[5, 0]}
+          style={{ width: px, height: (px * 9) / 16, background: '#05070a' }}
+          pointerEvents="none"
+        >
+          <iframe
+            id={frameId}
+            title="Fire TV"
+            src={src}
+            allow="autoplay"
+            style={{ width: px, height: (px * 9) / 16, border: 0 }}
+          />
         </Html>
       )}
     </group>
@@ -70,10 +111,14 @@ export function FireTV({ src, width = 0.62, live = true, frameId, ...rest }: JSX
 }
 
 /** A video doorbell by the front door. It flashes when it reports activity. */
-export function Doorbell({ active, ...rest }: JSX.IntrinsicElements['group'] & { active: boolean }) {
+export function Doorbell({
+  active,
+  ...rest
+}: JSX.IntrinsicElements['group'] & { active: boolean }) {
   const mat = useRef<THREE.MeshStandardMaterial>(null);
   useFrame(({ clock }) => {
-    if (mat.current) mat.current.emissiveIntensity = active ? 2 + Math.sin(clock.elapsedTime * 10) * 1.5 : 0.4;
+    if (mat.current)
+      mat.current.emissiveIntensity = active ? 2 + Math.sin(clock.elapsedTime * 10) * 1.5 : 0.4;
   });
   return (
     <group {...rest}>
@@ -111,11 +156,22 @@ export function Hub({ busy, ...rest }: JSX.IntrinsicElements['group'] & { busy: 
     <group {...rest}>
       <mesh ref={core}>
         <icosahedronGeometry args={[0.45, 1]} />
-        <meshStandardMaterial color="#0e2a33" emissive="#00e0c6" emissiveIntensity={busy ? 2.2 : 0.8} flatShading toneMapped={false} />
+        <meshStandardMaterial
+          color="#0e2a33"
+          emissive="#00e0c6"
+          emissiveIntensity={busy ? 2.2 : 0.8}
+          flatShading
+          toneMapped={false}
+        />
       </mesh>
       <mesh ref={halo}>
         <sphereGeometry args={[0.75, 32, 16]} />
-        <meshBasicMaterial color="#00e0c6" transparent opacity={busy ? 0.14 : 0.06} depthWrite={false} />
+        <meshBasicMaterial
+          color="#00e0c6"
+          transparent
+          opacity={busy ? 0.14 : 0.06}
+          depthWrite={false}
+        />
       </mesh>
       <Html position={[0, -0.95, 0]} center pointerEvents="none" zIndexRange={[5, 0]}>
         <div className="world-label hub">CareCircle · MCP server</div>
@@ -124,10 +180,24 @@ export function Hub({ busy, ...rest }: JSX.IntrinsicElements['group'] & { busy: 
   );
 }
 
-export interface PulseSpec { id: number; from: THREE.Vector3; to: THREE.Vector3; color: string; label?: string }
+export interface PulseSpec {
+  id: number;
+  from: THREE.Vector3;
+  to: THREE.Vector3;
+  color: string;
+  label?: string;
+}
 
 /** One message in flight: a bright bead along an arc from one device to another. */
-export function Pulse({ spec, onDone, seconds = 0.9 }: { spec: PulseSpec; onDone: (id: number) => void; seconds?: number }) {
+export function Pulse({
+  spec,
+  onDone,
+  seconds = 0.9,
+}: {
+  spec: PulseSpec;
+  onDone: (id: number) => void;
+  seconds?: number;
+}) {
   const bead = useRef<THREE.Mesh>(null);
   const t = useRef(0);
   const curve = useMemo(() => {
@@ -146,7 +216,14 @@ export function Pulse({ spec, onDone, seconds = 0.9 }: { spec: PulseSpec; onDone
   return (
     <group>
       <mesh geometry={tube}>
-        <meshBasicMaterial ref={trail} color={spec.color} transparent opacity={0.5} depthWrite={false} toneMapped={false} />
+        <meshBasicMaterial
+          ref={trail}
+          color={spec.color}
+          transparent
+          opacity={0.5}
+          depthWrite={false}
+          toneMapped={false}
+        />
       </mesh>
       <mesh ref={bead}>
         <sphereGeometry args={[0.07, 16, 12]} />

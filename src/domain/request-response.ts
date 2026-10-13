@@ -24,7 +24,13 @@ export interface ResponseResult {
 
 export async function applyRequestResponse(
   store: CareStore,
-  input: { householdId: string; memberId: string; accepted: boolean; note?: string; channel?: EventSource },
+  input: {
+    householdId: string;
+    memberId: string;
+    accepted: boolean;
+    note?: string;
+    channel?: EventSource;
+  },
   now: Date,
 ): Promise<ResponseResult> {
   const state = store.getCareState(input.householdId);
@@ -42,32 +48,54 @@ export async function applyRequestResponse(
 
   if (input.accepted) {
     await store.transition(
-      o.id, input.householdId, 'ASSIGNED', input.memberId,
-      { ownerId: input.memberId, clearRequest: true }, input.note,
+      o.id,
+      input.householdId,
+      'ASSIGNED',
+      input.memberId,
+      { ownerId: input.memberId, clearRequest: true },
+      input.note,
     );
     await store.appendEvent({
-      householdId: input.householdId, kind: 'request_answered', reportedBy: input.memberId,
-      occurredAt: now.toISOString(), source, confidence: 'confirmed',
+      householdId: input.householdId,
+      kind: 'request_answered',
+      reportedBy: input.memberId,
+      occurredAt: now.toISOString(),
+      source,
+      confidence: 'confirmed',
       ...(input.note ? { detail: input.note } : {}),
       data: { obligationId: o.id, accepted: true },
     });
-    return { ok: true, spoken: `Thanks - "${o.what}" is yours now.`, obligationId: o.id, status: 'ASSIGNED' };
+    return {
+      ok: true,
+      spoken: `Thanks - "${o.what}" is yours now.`,
+      obligationId: o.id,
+      status: 'ASSIGNED',
+    };
   }
 
   const declinedBy = [...(o.declinedBy ?? []), input.memberId];
   await store.transition(
-    o.id, input.householdId, 'OPEN', input.memberId,
-    { ownerId: null, clearRequest: true, declinedBy }, input.note,
+    o.id,
+    input.householdId,
+    'OPEN',
+    input.memberId,
+    { ownerId: null, clearRequest: true, declinedBy },
+    input.note,
   );
   await store.appendEvent({
-    householdId: input.householdId, kind: 'request_answered', reportedBy: input.memberId,
-    occurredAt: now.toISOString(), source, confidence: 'confirmed',
+    householdId: input.householdId,
+    kind: 'request_answered',
+    reportedBy: input.memberId,
+    occurredAt: now.toISOString(),
+    source,
+    confidence: 'confirmed',
     ...(input.note ? { detail: input.note } : {}),
     data: { obligationId: o.id, accepted: false },
   });
   return {
     ok: true,
     spoken: `That's noted - "${o.what}" is back with no owner.`,
-    obligationId: o.id, status: 'OPEN',
+    obligationId: o.id,
+    status: 'OPEN',
   };
 }

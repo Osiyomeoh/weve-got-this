@@ -15,7 +15,10 @@ import { createCareCircleServer } from '../src/mcp/server.ts';
 import { seedDemoHousehold } from '../src/demo/seed.ts';
 
 const out = process.argv[2];
-if (!out) { console.error('usage: npx tsx scripts/contract-dump.ts <out.json>'); process.exit(1); }
+if (!out) {
+  console.error('usage: npx tsx scripts/contract-dump.ts <out.json>');
+  process.exit(1);
+}
 const store = new CareStore();
 await seedDemoHousehold(store);
 const server = createCareCircleServer({ store, actorId: 'm_david' });
@@ -23,6 +26,12 @@ const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
 await server.connect(serverSide);
 const client = new Client({ name: 'contract-dump', version: '1' });
 await client.connect(clientSide);
-const contract = { tools: await client.listTools(), resources: await client.listResources(), prompts: await client.listPrompts() };
+const contract = {
+  tools: await client.listTools(),
+  resources: await client.listResources(),
+  prompts: await client.listPrompts(),
+};
 writeFileSync(out, `${JSON.stringify(contract, null, 2)}\n`);
-console.log(`${contract.tools.tools.length} tools, ${JSON.stringify(contract).length} bytes -> ${out}`);
+console.log(
+  `${contract.tools.tools.length} tools, ${JSON.stringify(contract).length} bytes -> ${out}`,
+);

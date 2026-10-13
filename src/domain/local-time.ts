@@ -23,20 +23,54 @@ export function isLocalToday(iso: string, now: Date, timezone: string): boolean 
 /** "8:10 AM" in the household's timezone. */
 export function clockTime(iso: string, timezone: string): string {
   return new Intl.DateTimeFormat('en-US', {
-    timeZone: timezone, hour: 'numeric', minute: '2-digit', hour12: true,
+    timeZone: timezone,
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
   }).format(new Date(iso));
 }
 
 /** "tomorrow at 10 AM", "Thursday the 24th at 10 AM"; null when there is no due time. */
-export function dueSpoken(dueAt: string | undefined | null, timezone: string, now: Date): string | null {
+export function dueSpoken(
+  dueAt: string | undefined | null,
+  timezone: string,
+  now: Date,
+): string | null {
   return spokenDue(dueAt ?? undefined, timezone, now).trim() || null;
 }
 
 /** Verbs a task's wording starts with when it is already an instruction. */
 const TASK_VERBS = new Set([
-  'take', 'drive', 'pick', 'go', 'check', 'give', 'get', 'buy', 'collect', 'bring', 'call',
-  'book', 'refill', 'reorder', 'order', 'help', 'cook', 'clean', 'visit', 'sit', 'stay',
-  'fill', 'arrange', 'confirm', 'renew', 'schedule', 'drop', 'fetch', 'sort', 'make',
+  'take',
+  'drive',
+  'pick',
+  'go',
+  'check',
+  'give',
+  'get',
+  'buy',
+  'collect',
+  'bring',
+  'call',
+  'book',
+  'refill',
+  'reorder',
+  'order',
+  'help',
+  'cook',
+  'clean',
+  'visit',
+  'sit',
+  'stay',
+  'fill',
+  'arrange',
+  'confirm',
+  'renew',
+  'schedule',
+  'drop',
+  'fetch',
+  'sort',
+  'make',
 ]);
 
 /**
@@ -61,13 +95,20 @@ const FUTURE_SLACK_MS = 10 * 60_000;
  * New York. Returns a spoken reason instead when the time cannot be used.
  */
 export function happenedAt(
-  iso: string | undefined, timezone: string, now: Date,
+  iso: string | undefined,
+  timezone: string,
+  now: Date,
 ): { at: string } | { problem: string } {
   if (!iso?.trim()) return { at: now.toISOString() };
   const at = toInstant(iso, timezone);
-  if (!at) return { problem: `I couldn't read "${iso}" as a time. Ask when it happened, or leave the time out to mean now.` };
+  if (!at)
+    return {
+      problem: `I couldn't read "${iso}" as a time. Ask when it happened, or leave the time out to mean now.`,
+    };
   if (new Date(at).getTime() - now.getTime() > FUTURE_SLACK_MS) {
-    return { problem: `That time is later than now, so it can't have happened yet. Ask when it happened, or leave the time out to mean now.` };
+    return {
+      problem: `That time is later than now, so it can't have happened yet. Ask when it happened, or leave the time out to mean now.`,
+    };
   }
   return { at };
 }

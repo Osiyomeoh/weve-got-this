@@ -21,11 +21,20 @@ import type { Notifier } from '../src/notify/notifier.ts';
 
 const [resultFile, progressFile] = process.argv.slice(2);
 const show = process.argv.includes('--show');
-if (!resultFile || !progressFile) throw new Error('usage: massive-landed.ts <result.json> <progress.jsonl> [--show]');
+if (!resultFile || !progressFile)
+  throw new Error('usage: massive-landed.ts <result.json> <progress.jsonl> [--show]');
 
-const result = JSON.parse(readFileSync(resultFile, 'utf8')) as { harms: { id: string; utterance: string; intent: string; tool: string }[]; landed?: unknown };
-const argsOf = new Map(readFileSync(progressFile, 'utf8').split('\n').filter(Boolean)
-  .map((l) => JSON.parse(l) as { id: string; args?: Record<string, unknown> }).map((r) => [r.id, r.args ?? {}]));
+const result = JSON.parse(readFileSync(resultFile, 'utf8')) as {
+  harms: { id: string; utterance: string; intent: string; tool: string }[];
+  landed?: unknown;
+};
+const argsOf = new Map(
+  readFileSync(progressFile, 'utf8')
+    .split('\n')
+    .filter(Boolean)
+    .map((l) => JSON.parse(l) as { id: string; args?: Record<string, unknown> })
+    .map((r) => [r.id, r.args ?? {}]),
+);
 const token = Object.entries(DEMO_TOKENS).find(([, m]) => m === 'm_margaret')![0];
 
 async function landed(tool: string, args: Record<string, unknown>): Promise<boolean> {
@@ -33,16 +42,38 @@ async function landed(tool: string, args: Record<string, unknown>): Promise<bool
   await seedDemoHousehold(store);
   const before = JSON.stringify(store.getCareState(DEMO_HOUSEHOLD_ID));
   let reached = 0;
-  const notifier: Notifier = { channel: 'telegram', deliver: async () => { reached += 1; return { delivered: true, channel: 'telegram' }; } };
-  const server = createCareCircleApp({ store, notifier, tokens: new Map(Object.entries(DEMO_TOKENS)) }).listen(0);
+  const notifier: Notifier = {
+    channel: 'telegram',
+    deliver: async () => {
+      reached += 1;
+      return { delivered: true, channel: 'telegram' };
+    },
+  };
+  const server = createCareCircleApp({
+    store,
+    notifier,
+    tokens: new Map(Object.entries(DEMO_TOKENS)),
+  }).listen(0);
   await new Promise<void>((r) => server.once('listening', r));
   const c = new Client({ name: 'landed', version: '1' });
   try {
     const url = new URL(`http://127.0.0.1:${(server.address() as AddressInfo).port}/mcp`);
-    await c.connect(new StreamableHTTPClientTransport(url, { requestInit: { headers: { Authorization: `Bearer ${token}` } } }));
+    await c.connect(
+      new StreamableHTTPClientTransport(url, {
+        requestInit: { headers: { Authorization: `Bearer ${token}` } },
+      }),
+    );
     const out = await c.callTool({ name: tool, arguments: args });
-    return out.isError !== true && (reached > 0 || JSON.stringify(store.getCareState(DEMO_HOUSEHOLD_ID)) !== before);
-  } catch { return false; } finally { await c.close().catch(() => {}); server.close(); }
+    return (
+      out.isError !== true &&
+      (reached > 0 || JSON.stringify(store.getCareState(DEMO_HOUSEHOLD_ID)) !== before)
+    );
+  } catch {
+    return false;
+  } finally {
+    await c.close().catch(() => {});
+    server.close();
+  }
 }
 
 const byTool: Record<string, number> = {};
@@ -55,5 +86,7 @@ for (const h of result.harms) {
 }
 result.landed = { total: rows.length, byTool };
 writeFileSync(resultFile, JSON.stringify(result, null, 2) + '\n');
-console.log(`${rows.length} of ${result.harms.length} wrong writes landed: ${JSON.stringify(byTool)}`);
+console.log(
+  `${rows.length} of ${result.harms.length} wrong writes landed: ${JSON.stringify(byTool)}`,
+);
 if (show) console.log(rows.join('\n'));

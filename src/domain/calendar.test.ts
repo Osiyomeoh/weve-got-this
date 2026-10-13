@@ -17,7 +17,9 @@ const timed = (over: Partial<GoogleCalendarEvent> = {}): GoogleCalendarEvent => 
 });
 
 test('a real timed event becomes an appointment, observed and calendar-sourced', () => {
-  const m = calendarEventToAppointment(timed({ location: 'Mercy Clinic', description: 'bring list' }));
+  const m = calendarEventToAppointment(
+    timed({ location: 'Mercy Clinic', description: 'bring list' }),
+  );
   assert.equal(m.apply, true);
   if (!m.apply) return;
   assert.equal(m.input.kind, 'Cardiology');
@@ -37,25 +39,31 @@ test('a cancelled event is not an appointment', () => {
 });
 
 test('an all-day banner (no timed start) is dropped, not guessed at', () => {
-  const m = calendarEventToAppointment(timed({ start: { date: '2026-10-16' }, end: { date: '2026-10-17' } }));
+  const m = calendarEventToAppointment(
+    timed({ start: { date: '2026-10-16' }, end: { date: '2026-10-17' } }),
+  );
   assert.equal(m.apply, false);
   if (m.apply) return;
   assert.match(m.reason, /timed start/);
 });
 
 test('an event the calendar owner declined creates no work', () => {
-  const m = calendarEventToAppointment(timed({
-    attendees: [{ self: true, responseStatus: 'declined' }],
-  }));
+  const m = calendarEventToAppointment(
+    timed({
+      attendees: [{ self: true, responseStatus: 'declined' }],
+    }),
+  );
   assert.equal(m.apply, false);
   if (m.apply) return;
   assert.match(m.reason, /declined/);
 });
 
-test('an event another attendee declined is still the owner\'s appointment', () => {
-  const m = calendarEventToAppointment(timed({
-    attendees: [{ self: true, responseStatus: 'accepted' }, { responseStatus: 'declined' }],
-  }));
+test("an event another attendee declined is still the owner's appointment", () => {
+  const m = calendarEventToAppointment(
+    timed({
+      attendees: [{ self: true, responseStatus: 'accepted' }, { responseStatus: 'declined' }],
+    }),
+  );
   assert.equal(m.apply, true);
 });
 
@@ -65,9 +73,13 @@ test('an untitled event has nothing to name, so it is skipped', () => {
 });
 
 test('an event CareCircle wrote is never re-ingested (loop guard)', () => {
-  const m = calendarEventToAppointment(timed({
-    extendedProperties: { private: { carecircleSource: 'carecircle', carecircleObligationId: 'obl_1' } },
-  }));
+  const m = calendarEventToAppointment(
+    timed({
+      extendedProperties: {
+        private: { carecircleSource: 'carecircle', carecircleObligationId: 'obl_1' },
+      },
+    }),
+  );
   assert.equal(m.apply, false);
   if (m.apply) return;
   assert.match(m.reason, /CareCircle/);

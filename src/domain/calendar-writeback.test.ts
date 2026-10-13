@@ -37,7 +37,8 @@ test('an owned, dated obligation writes an event naming the owner', () => {
 
 test('the calendar entry never claims more than the record: asked is not owned', () => {
   const requested = base({
-    status: 'REQUESTED', ownerId: null,
+    status: 'REQUESTED',
+    ownerId: null,
     request: { askedOfId: 'm_renee', askedById: 'm_david', at: '2026-10-13T12:00:00Z' },
   });
   assert.match(obligationToCalendarEvent(requested, members)!.summary!, /asked Renee/);
@@ -54,12 +55,24 @@ test('a PROPOSED guess and undated work are never written', () => {
 });
 
 test('planning creates new events and patches only changed ones', () => {
-  const owned = base();                                   // obl_ride, David, ASSIGNED
-  const other = base({ id: 'obl_pickup', what: 'Pick up prescription', status: 'OPEN', ownerId: null });
+  const owned = base(); // obl_ride, David, ASSIGNED
+  const other = base({
+    id: 'obl_pickup',
+    what: 'Pick up prescription',
+    status: 'OPEN',
+    ownerId: null,
+  });
 
   // obl_ride already on the calendar but with the OLD (asked) summary; obl_pickup new.
   const existing = new Map([
-    ['obl_ride', { eventId: 'gc_1', summary: 'Drive Margaret to cardiology — asked Renee', start: '2026-10-16T18:00:00Z' }],
+    [
+      'obl_ride',
+      {
+        eventId: 'gc_1',
+        summary: 'Drive Margaret to cardiology — asked Renee',
+        start: '2026-10-16T18:00:00Z',
+      },
+    ],
   ]);
 
   const plan = planCalendarWriteback([owned, other], members, existing);
@@ -72,7 +85,14 @@ test('planning creates new events and patches only changed ones', () => {
 test('an unchanged obligation is left untouched (idempotent)', () => {
   const owned = base();
   const existing = new Map([
-    ['obl_ride', { eventId: 'gc_1', summary: 'Drive Margaret to cardiology — David', start: '2026-10-16T18:00:00Z' }],
+    [
+      'obl_ride',
+      {
+        eventId: 'gc_1',
+        summary: 'Drive Margaret to cardiology — David',
+        start: '2026-10-16T18:00:00Z',
+      },
+    ],
   ]);
   const plan = planCalendarWriteback([owned], members, existing);
   assert.equal(plan.creates.length, 0);

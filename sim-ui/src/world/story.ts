@@ -6,7 +6,8 @@ import type { Key } from '../lib/dpad';
 // is a real tool call on the visitor's own copy of the care record. What comes back is
 // whatever the server says.
 
-export type ShotName = 'overview' | 'daddy' | 'daddyTv' | 'tolu' | 'musa' | 'pharmacy' | 'door' | 'both' | 'hub';
+export type ShotName =
+  'overview' | 'daddy' | 'daddyTv' | 'tolu' | 'musa' | 'pharmacy' | 'door' | 'both' | 'hub';
 export type Device = 'echo' | 'phone';
 export type Stage = 'midday' | 'pharmacy' | 'driving' | 'atDoor' | 'backInCar';
 
@@ -15,29 +16,64 @@ export type Stage = 'midday' | 'pharmacy' | 'driving' | 'atDoor' | 'backInCar';
  * `no` is what they say when they decline. A step that `needs` a moment plays only if it
  * went ahead; one that runs `unless` it did plays only if it was declined or let go.
  */
-export interface Branch { id?: string; needs?: string; unless?: string; no?: string }
+export interface Branch {
+  id?: string;
+  needs?: string;
+  unless?: string;
+  no?: string;
+}
 
-export type Step = Branch & (
+export type Step = Branch &
   /** A person speaks to their device. If the visitor plays them, the visitor says it. */
-  | { kind: 'line'; who: PersonKey; text: string; via: Device; expect?: string[]; shot?: ShotName }
-  /** A device or the server itself acts, through a tool, with no one speaking. */
-  | { kind: 'signal'; source: 'ring' | 'agent'; tool: string; args: Record<string, unknown>; caption: string; shot?: ShotName }
-  /** A caption on screen, nobody's words. */
-  | { kind: 'caption'; text: string; ms?: number; shot?: ShotName }
-  /** The clock runs forward to a time of day, lights following it. */
-  | { kind: 'lapse'; to: [number, number]; seconds: number; shot?: ShotName }
-  /** Musa moves through his evening. */
-  | { kind: 'musa'; stage: Stage; shot?: ShotName; ms?: number }
-  /** People speaking to each other, not to Alexa. Never sent to the server, never on the record. */
-  | { kind: 'aside'; who: PersonKey; to: PersonKey; text: string; listener?: 'nod' | 'shake'; shot?: ShotName }
-  /** Someone gets up and goes somewhere in their home. The story moves on while they walk. */
-  | { kind: 'move'; who: PersonKey; to: 'home' | 'door'; ms?: number; shot?: ShotName }
-  /**
-   * Someone picks up the TV remote and presses its buttons. The TV on the wall is the real
-   * Fire TV page, so the press does whatever it does there, through the same tools.
-   */
-  | { kind: 'remote'; who: PersonKey; keys: Key[]; expect: string; caption: string; shot?: ShotName }
-  | { kind: 'shot'; shot: ShotName; ms?: number });
+  (
+    | {
+        kind: 'line';
+        who: PersonKey;
+        text: string;
+        via: Device;
+        expect?: string[];
+        shot?: ShotName;
+      }
+    /** A device or the server itself acts, through a tool, with no one speaking. */
+    | {
+        kind: 'signal';
+        source: 'ring' | 'agent';
+        tool: string;
+        args: Record<string, unknown>;
+        caption: string;
+        shot?: ShotName;
+      }
+    /** A caption on screen, nobody's words. */
+    | { kind: 'caption'; text: string; ms?: number; shot?: ShotName }
+    /** The clock runs forward to a time of day, lights following it. */
+    | { kind: 'lapse'; to: [number, number]; seconds: number; shot?: ShotName }
+    /** Musa moves through his evening. */
+    | { kind: 'musa'; stage: Stage; shot?: ShotName; ms?: number }
+    /** People speaking to each other, not to Alexa. Never sent to the server, never on the record. */
+    | {
+        kind: 'aside';
+        who: PersonKey;
+        to: PersonKey;
+        text: string;
+        listener?: 'nod' | 'shake';
+        shot?: ShotName;
+      }
+    /** Someone gets up and goes somewhere in their home. The story moves on while they walk. */
+    | { kind: 'move'; who: PersonKey; to: 'home' | 'door'; ms?: number; shot?: ShotName }
+    /**
+     * Someone picks up the TV remote and presses its buttons. The TV on the wall is the real
+     * Fire TV page, so the press does whatever it does there, through the same tools.
+     */
+    | {
+        kind: 'remote';
+        who: PersonKey;
+        keys: Key[];
+        expect: string;
+        caption: string;
+        shot?: ShotName;
+      }
+    | { kind: 'shot'; shot: ShotName; ms?: number }
+  );
 
 export interface Beat {
   id: string;
@@ -108,11 +144,14 @@ export interface Words {
 }
 
 export const EYES: Words = {
-  who: 'Daddy', his: 'his', him: 'him',
-  intro: 'Daddy is a week out of eye surgery. He can\'t read a screen, so he talks.',
-  morningPoint: 'The person cared for is a participant, not a monitored subject. He records his own care.',
+  who: 'Daddy',
+  his: 'his',
+  him: 'him',
+  intro: "Daddy is a week out of eye surgery. He can't read a screen, so he talks.",
+  morningPoint:
+    'The person cared for is a participant, not a monitored subject. He records his own care.',
   logMorning: 'Alexa, I used my eye drops.',
-  refill: 'Daddy\'s eye drops refill',
+  refill: "Daddy's eye drops refill",
   ride: 'Daddy to his eye check-up',
   evening: 'eye drops',
   use: { present: 'use', past: 'used' },
@@ -124,105 +163,268 @@ export function storyFor(w: Words): Beat[] {
   const H = helper.name;
   const T = w.primary?.name ?? 'Tolu';
   return [
-  {
-    id: 'morning', at: [7, 42], title: `${w.who}'s morning`,
-    point: w.morningPoint,
-    steps: [
-      { kind: 'caption', text: w.intro, shot: 'daddy', ms: 3200 },
-      ...(w.morningSteps ?? [
-        { kind: 'line', who: 'daddy', via: 'echo', text: w.logMorning, expect: ['log_care_event'] } as Step,
-        // The same record, on the screen already in the room: the TV is not a second app.
-        { kind: 'caption', text: `${w.who}'s TV shows it the moment it is said. Nobody had to open anything.`, shot: 'daddyTv', ms: 3200 } as Step,
-      ]),
-      ...(w.extraMorning ?? []),
-    ],
-  },
-  {
-    id: 'ask', at: [12, 30], title: `${T}, between meetings`,
-    point: w.askPoint ?? 'One sentence in one house becomes a question on someone else\'s phone across town.',
-    steps: [
-      { kind: 'caption', text: `${w.toluWhere ?? 'Across town'}, ${T} has ten minutes between meetings.`, shot: 'tolu', ms: 2600 },
-      { kind: 'line', who: 'tolu', via: 'echo', text: 'Alexa, what\'s going to fall through the cracks this week?', expect: ['get_care_gaps'] },
-      { kind: 'line', who: 'tolu', via: 'echo', text: `Ask ${H} if ${helper.they} can pick up ${w.refill} tonight.`, expect: ['request_owner'], id: 'asked' },
-      { kind: 'shot', shot: 'musa', ms: 1800, needs: 'asked' },
-      { kind: 'line', who: 'musa', via: 'phone', text: 'Yes, I\'ll do it.', expect: ['respond_to_request'], shot: 'musa', id: 'helper', needs: 'asked', no: 'Sorry, I can\'t tonight.' },
-    ],
-  },
-  {
-    id: 'ride', at: [12, 34], title: 'Thursday\'s ride',
-    point: w.ridePoint ?? `Work has an owner or it is a gap. ${T} takes the ride ${w.primary?.self ?? 'himself'}.`,
-    steps: [
-      ...(w.rideSteps ?? [
-        { kind: 'line', who: 'tolu', via: 'echo', text: `I'll take ${w.ride} on Thursday.`, expect: ['claim_obligation'], shot: 'tolu' } as Step,
-      ]).map((s): Step => (s.kind === 'line' && s.expect?.includes('claim_obligation')
-        ? { ...s, id: 'ride', no: `I can't do it this time. Can someone else take ${w.ride}?` } : s)),
-      { kind: 'caption', unless: 'ride', shot: 'both', ms: 3800,
-        text: `Nobody has said they'll take ${w.ride}. It stays on the record as work with no owner: a gap, not a promise.` },
-    ],
-  },
-  {
-    id: 'evening', at: [19, 20], title: 'The evening gets away',
-    point: 'Saying yes is not doing it. The day runs on.',
-    steps: [
-      { kind: 'lapse', to: [19, 20], seconds: 4, shot: 'overview' },
-      // Nobody said yes to tonight's refill, so someone else has to take it, or nobody does.
-      { kind: 'line', unless: 'helper', who: 'tolu', via: 'echo', id: 'covered', shot: 'tolu',
-        text: `${H} can't do tonight. I'll pick up ${w.refill} myself on the way home.`, expect: ['claim_obligation'],
-        no: `${H} can't do tonight, and neither can I.` },
-      { needs: 'helper', kind: 'musa', stage: 'pharmacy', shot: 'pharmacy', ms: 4200 },
-      { kind: 'lapse', to: [19, 58], seconds: 2.5, shot: 'overview' },
-      { needs: 'helper', kind: 'musa', stage: 'driving', ms: 3500 },
-      { needs: 'helper', kind: 'musa', stage: 'atDoor', shot: 'door', ms: 3200 },
-      // The bell: on Fire TV the door camera opens over whatever is on. They see someone, and
-      // get up and go to the door, slowly, while the doorbell reports what it saw.
-      {
-        needs: 'helper', kind: 'signal', source: 'ring', tool: 'ingest_signal', args: { source: 'ring', kind: 'motion' }, shot: 'daddyTv',
-        caption: w.ringCaption ?? `Ring sees someone at ${w.who}'s door at 7:58, and the live view opens over the programme on the TV. It can say a person. It can't say who.`,
-      },
-      { needs: 'helper', kind: 'move', who: 'daddy', to: 'door', shot: 'door' },
-      { needs: 'helper', kind: 'aside', who: 'musa', to: 'daddy', text: w.handover, shot: 'door' },
-      { needs: 'helper', kind: 'aside', who: 'daddy', to: 'musa', text: `Thank you, ${H}.`, listener: 'nod' },
-      { needs: 'helper', kind: 'move', who: 'daddy', to: 'home' },
-      { needs: 'helper', kind: 'musa', stage: 'backInCar', shot: 'overview', ms: 3000 },
-      { needs: 'helper', kind: 'caption', text: w.afterDoor ?? `${w.who} knows who came. The record only knows someone did. ${H} drives on, and never says it's done.`, ms: 3600 },
-    ],
-  },
-  {
-    id: 'checkin', at: [20, 16], title: 'Nobody asked it to',
-    point: 'Every 15 minutes the agent looks for promises slipping. It asks. It never accuses, never reassigns.',
-    steps: [
-      { kind: 'lapse', to: [20, 16], seconds: 2.5, shot: 'hub' },
-      {
-        kind: 'signal', source: 'agent', tool: 'run_care_agent', args: {}, shot: 'hub',
-        caption: 'The pharmacy run was due at 8:00. CareCircle\'s own pass notices, and asks the one person who said yes.',
-        needs: 'helper',
-      },
-      {
-        kind: 'signal', source: 'agent', tool: 'run_care_agent', args: {}, shot: 'hub', unless: 'helper',
-        caption: `${H} said no to tonight, so nobody is assumed. CareCircle\'s own pass looks at what is still open, and asks whoever it can.`,
-      },
-      { kind: 'shot', shot: 'musa', ms: 2600, needs: 'helper' },
-      { kind: 'line', needs: 'helper', who: 'musa', via: 'phone', text: `Done. I dropped them with ${w.him} at eight.`, expect: ['resolve_obligation'], shot: 'musa' },
-      { kind: 'line', needs: 'covered', unless: 'helper', who: 'tolu', via: 'echo', text: `Done. I dropped ${w.refill} with ${w.him} on the way home.`, expect: ['resolve_obligation'], shot: 'tolu' },
-      { kind: 'line', who: 'tolu', via: 'echo', text: `Where does it say ${w.refill} was picked up? Show me the trail.`, expect: ['get_provenance'], shot: 'tolu' },
-    ],
-  },
-  {
-    id: 'unknown', at: [21, 10], title: 'Known is not assumed',
-    point: 'No record is not the same as "didn\'t happen". It is said as a question, never as a failure.',
-    steps: [
-      { kind: 'lapse', to: [21, 10], seconds: 2, shot: 'overview' },
-      { kind: 'line', who: 'tolu', via: 'echo', text: `Did ${w.who} ${w.use.present} ${w.his} evening ${w.evening}?`, shot: 'tolu' },
-      { kind: 'shot', shot: 'daddyTv', ms: 3500 },
-      // Every family answers it on the Fire TV: the question rises over the programme, and
-      // one press of the remote they already hold puts their own word on the record.
-      ...(w.answerSteps ?? [
-        { kind: 'remote', who: 'daddy', keys: ['ok', 'ok', 'ok'], expect: 'log_care_event', shot: 'daddyTv',
-          caption: `${w.who} sees the same question on ${w.his} TV, and answers it with the remote.` } as Step,
-      ]),
-      { kind: 'caption', text: w.answered ?? `One record. The question cleared for the whole family at once, on ${w.who}'s TV too.`, shot: 'both', ms: 3600 },
-    ],
-  },
+    {
+      id: 'morning',
+      at: [7, 42],
+      title: `${w.who}'s morning`,
+      point: w.morningPoint,
+      steps: [
+        { kind: 'caption', text: w.intro, shot: 'daddy', ms: 3200 },
+        ...(w.morningSteps ?? [
+          {
+            kind: 'line',
+            who: 'daddy',
+            via: 'echo',
+            text: w.logMorning,
+            expect: ['log_care_event'],
+          } as Step,
+          // The same record, on the screen already in the room: the TV is not a second app.
+          {
+            kind: 'caption',
+            text: `${w.who}'s TV shows it the moment it is said. Nobody had to open anything.`,
+            shot: 'daddyTv',
+            ms: 3200,
+          } as Step,
+        ]),
+        ...(w.extraMorning ?? []),
+      ],
+    },
+    {
+      id: 'ask',
+      at: [12, 30],
+      title: `${T}, between meetings`,
+      point:
+        w.askPoint ??
+        "One sentence in one house becomes a question on someone else's phone across town.",
+      steps: [
+        {
+          kind: 'caption',
+          text: `${w.toluWhere ?? 'Across town'}, ${T} has ten minutes between meetings.`,
+          shot: 'tolu',
+          ms: 2600,
+        },
+        {
+          kind: 'line',
+          who: 'tolu',
+          via: 'echo',
+          text: "Alexa, what's going to fall through the cracks this week?",
+          expect: ['get_care_gaps'],
+        },
+        {
+          kind: 'line',
+          who: 'tolu',
+          via: 'echo',
+          text: `Ask ${H} if ${helper.they} can pick up ${w.refill} tonight.`,
+          expect: ['request_owner'],
+          id: 'asked',
+        },
+        { kind: 'shot', shot: 'musa', ms: 1800, needs: 'asked' },
+        {
+          kind: 'line',
+          who: 'musa',
+          via: 'phone',
+          text: "Yes, I'll do it.",
+          expect: ['respond_to_request'],
+          shot: 'musa',
+          id: 'helper',
+          needs: 'asked',
+          no: "Sorry, I can't tonight.",
+        },
+      ],
+    },
+    {
+      id: 'ride',
+      at: [12, 34],
+      title: "Thursday's ride",
+      point:
+        w.ridePoint ??
+        `Work has an owner or it is a gap. ${T} takes the ride ${w.primary?.self ?? 'himself'}.`,
+      steps: [
+        ...(
+          w.rideSteps ?? [
+            {
+              kind: 'line',
+              who: 'tolu',
+              via: 'echo',
+              text: `I'll take ${w.ride} on Thursday.`,
+              expect: ['claim_obligation'],
+              shot: 'tolu',
+            } as Step,
+          ]
+        ).map((s): Step =>
+          s.kind === 'line' && s.expect?.includes('claim_obligation')
+            ? { ...s, id: 'ride', no: `I can't do it this time. Can someone else take ${w.ride}?` }
+            : s,
+        ),
+        {
+          kind: 'caption',
+          unless: 'ride',
+          shot: 'both',
+          ms: 3800,
+          text: `Nobody has said they'll take ${w.ride}. It stays on the record as work with no owner: a gap, not a promise.`,
+        },
+      ],
+    },
+    {
+      id: 'evening',
+      at: [19, 20],
+      title: 'The evening gets away',
+      point: 'Saying yes is not doing it. The day runs on.',
+      steps: [
+        { kind: 'lapse', to: [19, 20], seconds: 4, shot: 'overview' },
+        // Nobody said yes to tonight's refill, so someone else has to take it, or nobody does.
+        {
+          kind: 'line',
+          unless: 'helper',
+          who: 'tolu',
+          via: 'echo',
+          id: 'covered',
+          shot: 'tolu',
+          text: `${H} can't do tonight. I'll pick up ${w.refill} myself on the way home.`,
+          expect: ['claim_obligation'],
+          no: `${H} can't do tonight, and neither can I.`,
+        },
+        { needs: 'helper', kind: 'musa', stage: 'pharmacy', shot: 'pharmacy', ms: 4200 },
+        { kind: 'lapse', to: [19, 58], seconds: 2.5, shot: 'overview' },
+        { needs: 'helper', kind: 'musa', stage: 'driving', ms: 3500 },
+        { needs: 'helper', kind: 'musa', stage: 'atDoor', shot: 'door', ms: 3200 },
+        // The bell: on Fire TV the door camera opens over whatever is on. They see someone, and
+        // get up and go to the door, slowly, while the doorbell reports what it saw.
+        {
+          needs: 'helper',
+          kind: 'signal',
+          source: 'ring',
+          tool: 'ingest_signal',
+          args: { source: 'ring', kind: 'motion' },
+          shot: 'daddyTv',
+          caption:
+            w.ringCaption ??
+            `Ring sees someone at ${w.who}'s door at 7:58, and the live view opens over the programme on the TV. It can say a person. It can't say who.`,
+        },
+        { needs: 'helper', kind: 'move', who: 'daddy', to: 'door', shot: 'door' },
+        {
+          needs: 'helper',
+          kind: 'aside',
+          who: 'musa',
+          to: 'daddy',
+          text: w.handover,
+          shot: 'door',
+        },
+        {
+          needs: 'helper',
+          kind: 'aside',
+          who: 'daddy',
+          to: 'musa',
+          text: `Thank you, ${H}.`,
+          listener: 'nod',
+        },
+        { needs: 'helper', kind: 'move', who: 'daddy', to: 'home' },
+        { needs: 'helper', kind: 'musa', stage: 'backInCar', shot: 'overview', ms: 3000 },
+        {
+          needs: 'helper',
+          kind: 'caption',
+          text:
+            w.afterDoor ??
+            `${w.who} knows who came. The record only knows someone did. ${H} drives on, and never says it's done.`,
+          ms: 3600,
+        },
+      ],
+    },
+    {
+      id: 'checkin',
+      at: [20, 16],
+      title: 'Nobody asked it to',
+      point:
+        'Every 15 minutes the agent looks for promises slipping. It asks. It never accuses, never reassigns.',
+      steps: [
+        { kind: 'lapse', to: [20, 16], seconds: 2.5, shot: 'hub' },
+        {
+          kind: 'signal',
+          source: 'agent',
+          tool: 'run_care_agent',
+          args: {},
+          shot: 'hub',
+          caption:
+            "The pharmacy run was due at 8:00. CareCircle's own pass notices, and asks the one person who said yes.",
+          needs: 'helper',
+        },
+        {
+          kind: 'signal',
+          source: 'agent',
+          tool: 'run_care_agent',
+          args: {},
+          shot: 'hub',
+          unless: 'helper',
+          caption: `${H} said no to tonight, so nobody is assumed. CareCircle\'s own pass looks at what is still open, and asks whoever it can.`,
+        },
+        { kind: 'shot', shot: 'musa', ms: 2600, needs: 'helper' },
+        {
+          kind: 'line',
+          needs: 'helper',
+          who: 'musa',
+          via: 'phone',
+          text: `Done. I dropped them with ${w.him} at eight.`,
+          expect: ['resolve_obligation'],
+          shot: 'musa',
+        },
+        {
+          kind: 'line',
+          needs: 'covered',
+          unless: 'helper',
+          who: 'tolu',
+          via: 'echo',
+          text: `Done. I dropped ${w.refill} with ${w.him} on the way home.`,
+          expect: ['resolve_obligation'],
+          shot: 'tolu',
+        },
+        {
+          kind: 'line',
+          who: 'tolu',
+          via: 'echo',
+          text: `Where does it say ${w.refill} was picked up? Show me the trail.`,
+          expect: ['get_provenance'],
+          shot: 'tolu',
+        },
+      ],
+    },
+    {
+      id: 'unknown',
+      at: [21, 10],
+      title: 'Known is not assumed',
+      point:
+        'No record is not the same as "didn\'t happen". It is said as a question, never as a failure.',
+      steps: [
+        { kind: 'lapse', to: [21, 10], seconds: 2, shot: 'overview' },
+        {
+          kind: 'line',
+          who: 'tolu',
+          via: 'echo',
+          text: `Did ${w.who} ${w.use.present} ${w.his} evening ${w.evening}?`,
+          shot: 'tolu',
+        },
+        { kind: 'shot', shot: 'daddyTv', ms: 3500 },
+        // Every family answers it on the Fire TV: the question rises over the programme, and
+        // one press of the remote they already hold puts their own word on the record.
+        ...(w.answerSteps ?? [
+          {
+            kind: 'remote',
+            who: 'daddy',
+            keys: ['ok', 'ok', 'ok'],
+            expect: 'log_care_event',
+            shot: 'daddyTv',
+            caption: `${w.who} sees the same question on ${w.his} TV, and answers it with the remote.`,
+          } as Step,
+        ]),
+        {
+          kind: 'caption',
+          text:
+            w.answered ??
+            `One record. The question cleared for the whole family at once, on ${w.who}'s TV too.`,
+          shot: 'both',
+          ms: 3600,
+        },
+      ],
+    },
   ];
 }
 
@@ -238,13 +440,25 @@ export const STORY: Beat[] = storyFor(EYES);
  * the world is theirs, the way the server's "today" and "8 PM" are.
  */
 let ZONE = 'Africa/Lagos';
-export function setHomeZone(zone: string): void { ZONE = zone; }
+export function setHomeZone(zone: string): void {
+  ZONE = zone;
+}
 
 /** The wall clock in the household's zone at an instant, as numbers. */
 function wall(at: Date): { y: number; mo: number; d: number; h: number; mi: number } {
-  const p = Object.fromEntries(new Intl.DateTimeFormat('en-US', {
-    timeZone: ZONE, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
-  }).formatToParts(at).map((x) => [x.type, Number(x.value)]));
+  const p = Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: ZONE,
+      hourCycle: 'h23',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+      .formatToParts(at)
+      .map((x) => [x.type, Number(x.value)]),
+  );
   return { y: p.year!, mo: p.month!, d: p.day!, h: p.hour! % 24, mi: p.minute! };
 }
 

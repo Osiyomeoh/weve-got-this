@@ -34,12 +34,28 @@ class Scripted implements ModelProvider {
 async function dad(): Promise<CareStore> {
   const store = new CareStore();
   await store.addHousehold({ id: 'h', name: 'circle', timezone: 'Africa/Lagos' });
-  await store.addMember({ id: 'm_dad', householdId: 'h', name: 'Joseph', role: 'care_recipient', spokenAs: 'Daddy' });
-  await store.addMedication({ id: 'med', householdId: 'h', name: 'eye drops', times: ['08:00', '20:00'], forMemberId: 'm_dad' });
+  await store.addMember({
+    id: 'm_dad',
+    householdId: 'h',
+    name: 'Joseph',
+    role: 'care_recipient',
+    spokenAs: 'Daddy',
+  });
+  await store.addMedication({
+    id: 'med',
+    householdId: 'h',
+    name: 'eye drops',
+    times: ['08:00', '20:00'],
+    forMemberId: 'm_dad',
+  });
   return store;
 }
 
-async function hostFor(store: CareStore, provider: ModelProvider, channel: 'voice' | 'chat' = 'voice'): Promise<SimulatedAlexa> {
+async function hostFor(
+  store: CareStore,
+  provider: ModelProvider,
+  channel: 'voice' | 'chat' = 'voice',
+): Promise<SimulatedAlexa> {
   const server = createCareCircleServer({ store, actorId: 'm_dad' });
   const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
   await server.connect(serverSide);
@@ -48,11 +64,20 @@ async function hostFor(store: CareStore, provider: ModelProvider, channel: 'voic
   return SimulatedAlexa.over(client, provider, channel);
 }
 
-const logDose = (medicationName: string): ToolUse[] => [{ id: medicationName, name: 'log_care_event', input: { kind: 'medication_taken', medicationName } }];
+const logDose = (medicationName: string): ToolUse[] => [
+  {
+    id: medicationName,
+    name: 'log_care_event',
+    input: { kind: 'medication_taken', medicationName },
+  },
+];
 
 test('each step is recorded: the name that matched nothing, then the call that worked', async () => {
   const store = await dad();
-  const host = await hostFor(store, new Scripted([logDose('colírio'), logDose('eye drops'), "Got it, I've logged the eye drops."]));
+  const host = await hostFor(
+    store,
+    new Scripted([logDose('colírio'), logDose('eye drops'), "Got it, I've logged the eye drops."]),
+  );
   const { trace, spoken } = await host.say('Mo ti lo colírio mi');
 
   assert.equal(spoken, "Got it, I've logged the eye drops.");
@@ -64,23 +89,40 @@ test('each step is recorded: the name that matched nothing, then the call that w
   assert.match(trace.steps[0]!.calls[0]!.result, /is not a name on your schedule/);
   assert.equal(trace.steps[1]!.calls[0]!.isError, false);
   assert.deepEqual(trace.steps[2]!.calls, [], 'the last reply is the answer');
-  assert.ok(trace.plannerMs + trace.toolMs <= trace.totalMs + 1, 'the parts add up to no more than the whole');
+  assert.ok(
+    trace.plannerMs + trace.toolMs <= trace.totalMs + 1,
+    'the parts add up to no more than the whole',
+  );
 
-  assert.deepEqual(traceFields(trace).steps, ['log_care_event:guidance', 'log_care_event:ok', 'answer']);
+  assert.deepEqual(traceFields(trace).steps, [
+    'log_care_event:guidance',
+    'log_care_event:ok',
+    'answer',
+  ]);
 });
 
 test('a planner that never stops is cut off, and the trace says so', async () => {
-  const host = await hostFor(await dad(), new Scripted([[{ id: 'g', name: 'get_shift_brief', input: {} }]]));
+  const host = await hostFor(
+    await dad(),
+    new Scripted([[{ id: 'g', name: 'get_shift_brief', input: {} }]]),
+  );
   const { trace, spoken } = await host.say('what is happening');
   assert.equal(trace.outcome, 'step_limit');
   assert.match(spoken, /got stuck/);
-  assert.equal(trace.steps.length, 7, 'six rounds of tools on a voice turn, then the reply that was cut off');
+  assert.equal(
+    trace.steps.length,
+    7,
+    'six rounds of tools on a voice turn, then the reply that was cut off',
+  );
   assert.equal(traceFields(trace).steps.at(-1), 'cut_off');
   assert.equal(traceFields(trace).calls, 6);
 });
 
 test('the logged form carries no care: no words said, no medicine, no names, no results', async () => {
-  const host = await hostFor(await dad(), new Scripted([logDose('eye drops'), "Got it, I've logged the eye drops."]));
+  const host = await hostFor(
+    await dad(),
+    new Scripted([logDose('eye drops'), "Got it, I've logged the eye drops."]),
+  );
   const { trace } = await host.say('Daddy used his eye drops at eight');
   const logged = JSON.stringify(traceFields(trace));
   for (const secret of ['eye drops', 'Daddy', 'Joseph', 'at eight', 'logged', 'medication_taken']) {
@@ -92,16 +134,25 @@ test('the Telegram chat logs every turn without the care, and hands the full tra
   const store = await dad();
   const traces: TurnTrace[] = [];
   const chat = createTelegramChat({
-    store, provider: new Scripted([logDose('eye drops'), 'Done.']),
-    onTrace: (memberId, trace) => { assert.equal(memberId, 'm_dad'); traces.push(trace); },
+    store,
+    provider: new Scripted([logDose('eye drops'), 'Done.']),
+    onTrace: (memberId, trace) => {
+      assert.equal(memberId, 'm_dad');
+      traces.push(trace);
+    },
   });
 
   const written: string[] = [];
   const write = process.stdout.write.bind(process.stdout);
-  process.stdout.write = ((chunk: string | Uint8Array) => { written.push(String(chunk)); return true; }) as typeof process.stdout.write;
+  process.stdout.write = ((chunk: string | Uint8Array) => {
+    written.push(String(chunk));
+    return true;
+  }) as typeof process.stdout.write;
   try {
     assert.equal(await chat('m_dad', 'I used my eye drops'), 'Done.');
-  } finally { process.stdout.write = write; }
+  } finally {
+    process.stdout.write = write;
+  }
 
   assert.equal(traces.length, 1);
   assert.equal(traces[0]!.channel, 'chat');
@@ -109,13 +160,19 @@ test('the Telegram chat logs every turn without the care, and hands the full tra
   const line = written.find((w) => w.includes('chat turn'));
   assert.ok(line, `no trace line was logged: ${written.join('')}`);
   assert.match(line, /log_care_event:ok/);
-  assert.ok(!line.includes('eye drops') && !line.includes('I used'), `the care reached the log: ${line}`);
+  assert.ok(
+    !line.includes('eye drops') && !line.includes('I used'),
+    `the care reached the log: ${line}`,
+  );
 });
 
 test("a planner's inline reasoning is not spoken", async () => {
-  const host = await hostFor(await dad(), new Scripted([
-    "<thinking>Nothing logged tonight; maybe he missed it.</thinking> There's no record of the evening eye drops yet.",
-  ]));
+  const host = await hostFor(
+    await dad(),
+    new Scripted([
+      "<thinking>Nothing logged tonight; maybe he missed it.</thinking> There's no record of the evening eye drops yet.",
+    ]),
+  );
   const { spoken } = await host.say('Did I use my evening drops?');
   assert.equal(spoken, "There's no record of the evening eye drops yet.");
 });
@@ -123,7 +180,10 @@ test("a planner's inline reasoning is not spoken", async () => {
 test('a turn that changed the record is never answered with silence', async () => {
   // Seen on Nova Lite: "Did I take my evening drops?" logged a dose and then said nothing,
   // so the person never heard that anything was written.
-  const host = await hostFor(await dad(), new Scripted([logDose('eye drops'), '<thinking>Done.</thinking>']));
+  const host = await hostFor(
+    await dad(),
+    new Scripted([logDose('eye drops'), '<thinking>Done.</thinking>']),
+  );
   const { spoken, toolCalls } = await host.say('Did I take my evening drops?');
   assert.equal(spoken, toolCalls[0]!.result);
   assert.match(spoken, /logged/);

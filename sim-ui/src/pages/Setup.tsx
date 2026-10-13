@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api, getStarted, FOUNDER_ID, type OnboardingProgress, type OnboardingStep } from '../lib/api';
+import {
+  api,
+  getStarted,
+  FOUNDER_ID,
+  type OnboardingProgress,
+  type OnboardingStep,
+} from '../lib/api';
 
 /**
  * First run, on a screen.
@@ -24,8 +30,11 @@ const STEP_LABELS: Record<OnboardingStep, string> = {
 const ORDER: OnboardingStep[] = ['create_circle', 'add_recipient', 'add_care_detail', 'ready'];
 
 const GUESS_TZ = (): string => {
-  try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York'; }
-  catch { return 'America/New_York'; }
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York';
+  } catch {
+    return 'America/New_York';
+  }
 };
 
 export default function Setup() {
@@ -34,19 +43,31 @@ export default function Setup() {
   const [error, setError] = useState<string | null>(null);
 
   const refresh = async () => {
-    try { setProgress(await getStarted()); setError(null); }
-    catch (e) { setError((e as Error).message); }
+    try {
+      setProgress(await getStarted());
+      setError(null);
+    } catch (e) {
+      setError((e as Error).message);
+    }
   };
 
   // Start clean each visit, so a demo always begins at "create your circle".
-  useEffect(() => { void api.resetSetup().then(refresh).catch(() => void refresh()); }, []);
+  useEffect(() => {
+    void api
+      .resetSetup()
+      .then(refresh)
+      .catch(() => void refresh());
+  }, []);
 
   const run = async (tool: string, args: Record<string, unknown>): Promise<boolean> => {
     setBusy(true);
     setError(null);
     try {
       const call = await api.act(FOUNDER_ID, tool, args);
-      if (call.isError) { setError(call.result); return false; }
+      if (call.isError) {
+        setError(call.result);
+        return false;
+      }
       // Creating the circle maps the founder's token to a real member; the open
       // session is still the bootstrap principal, so refresh it before continuing.
       if (tool === 'create_household') await api.rebindSetup().catch(() => undefined);
@@ -66,7 +87,9 @@ export default function Setup() {
     <div className="mx-auto min-h-screen max-w-2xl px-5 py-10 text-ink">
       <div className="mb-8 flex items-center justify-between">
         <div className="text-lg font-semibold tracking-tight">CareCircle · set up</div>
-        <Link to="/" className="text-sm text-muted hover:text-ink">Exit</Link>
+        <Link to="/" className="text-sm text-muted hover:text-ink">
+          Exit
+        </Link>
       </div>
 
       <ol className="mb-8 flex gap-2">
@@ -75,8 +98,12 @@ export default function Setup() {
           const here = s === step;
           return (
             <li key={s} className="flex-1">
-              <div className={`h-1.5 rounded-full ${done ? 'bg-confirmed' : here ? 'bg-alexa' : 'bg-white/10'}`} />
-              <div className={`mt-2 text-[0.7rem] uppercase tracking-wide ${here ? 'text-ink' : 'text-muted'}`}>
+              <div
+                className={`h-1.5 rounded-full ${done ? 'bg-confirmed' : here ? 'bg-alexa' : 'bg-white/10'}`}
+              />
+              <div
+                className={`mt-2 text-[0.7rem] uppercase tracking-wide ${here ? 'text-ink' : 'text-muted'}`}
+              >
                 {STEP_LABELS[s]}
               </div>
             </li>
@@ -85,9 +112,7 @@ export default function Setup() {
       </ol>
 
       {/* What the server says next, spoken aloud in the voice flow - shown here. */}
-      {progress && (
-        <p className="mb-6 text-lg leading-relaxed text-ink/90">{progress.spoken}</p>
-      )}
+      {progress && <p className="mb-6 text-lg leading-relaxed text-ink/90">{progress.spoken}</p>}
 
       {error && (
         <div className="mb-5 rounded-lg border border-norecord/40 bg-norecord/10 px-3 py-2 text-sm text-norecord">
@@ -99,7 +124,12 @@ export default function Setup() {
       {step === 'add_recipient' && <AddRecipient busy={busy} onSubmit={run} />}
       {step === 'add_care_detail' && <AddCareDetail busy={busy} onSubmit={run} />}
       {step === 'ready' && (
-        <Ready progress={progress!} busy={busy} onSubmit={run} onReset={() => void api.resetSetup().then(refresh)} />
+        <Ready
+          progress={progress!}
+          busy={busy}
+          onSubmit={run}
+          onReset={() => void api.resetSetup().then(refresh)}
+        />
       )}
     </div>
   );
@@ -122,8 +152,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 const inputCls =
   'w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2.5 text-ink outline-none focus:border-alexa';
-const btnCls =
-  'rounded-lg bg-alexa px-5 py-2.5 font-semibold text-black disabled:opacity-50';
+const btnCls = 'rounded-lg bg-alexa px-5 py-2.5 font-semibold text-black disabled:opacity-50';
 
 function CreateCircle({ busy, onSubmit }: StepProps) {
   const [circle, setCircle] = useState('');
@@ -133,16 +162,36 @@ function CreateCircle({ busy, onSubmit }: StepProps) {
   return (
     <form
       className="space-y-4"
-      onSubmit={(e) => { e.preventDefault(); if (ok) onSubmit('create_household', { name: circle.trim(), timezone: tz, callerName: me.trim() }); }}
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (ok)
+          onSubmit('create_household', {
+            name: circle.trim(),
+            timezone: tz,
+            callerName: me.trim(),
+          });
+      }}
     >
       <Field label="What would you like to call the circle?">
-        <input className={inputCls} value={circle} onChange={(e) => setCircle(e.target.value)} placeholder="Mum's care circle" />
+        <input
+          className={inputCls}
+          value={circle}
+          onChange={(e) => setCircle(e.target.value)}
+          placeholder="Mum's care circle"
+        />
       </Field>
       <Field label="Your name">
-        <input className={inputCls} value={me} onChange={(e) => setMe(e.target.value)} placeholder="e.g. Ada" />
+        <input
+          className={inputCls}
+          value={me}
+          onChange={(e) => setMe(e.target.value)}
+          placeholder="e.g. Ada"
+        />
       </Field>
       <p className="text-xs text-muted">Times will be read in {tz}.</p>
-      <button className={btnCls} disabled={!ok || busy}>{busy ? 'Setting up…' : 'Create the circle'}</button>
+      <button className={btnCls} disabled={!ok || busy}>
+        {busy ? 'Setting up…' : 'Create the circle'}
+      </button>
     </form>
   );
 }
@@ -156,19 +205,33 @@ function AddRecipient({ busy, onSubmit }: StepProps) {
       className="space-y-4"
       onSubmit={(e) => {
         e.preventDefault();
-        if (ok) onSubmit('add_member', {
-          name: name.trim(), role: 'care_recipient',
-          ...(spokenAs.trim() ? { spokenAs: spokenAs.trim() } : {}),
-        });
+        if (ok)
+          onSubmit('add_member', {
+            name: name.trim(),
+            role: 'care_recipient',
+            ...(spokenAs.trim() ? { spokenAs: spokenAs.trim() } : {}),
+          });
       }}
     >
       <Field label="Who is the circle caring for?">
-        <input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Grace" />
+        <input
+          className={inputCls}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. Grace"
+        />
       </Field>
       <Field label="What do you call them? (optional)">
-        <input className={inputCls} value={spokenAs} onChange={(e) => setSpokenAs(e.target.value)} placeholder="e.g. Mum" />
+        <input
+          className={inputCls}
+          value={spokenAs}
+          onChange={(e) => setSpokenAs(e.target.value)}
+          placeholder="e.g. Mum"
+        />
       </Field>
-      <button className={btnCls} disabled={!ok || busy}>{busy ? 'Adding…' : 'Add them'}</button>
+      <button className={btnCls} disabled={!ok || busy}>
+        {busy ? 'Adding…' : 'Add them'}
+      </button>
     </form>
   );
 }
@@ -176,43 +239,75 @@ function AddRecipient({ busy, onSubmit }: StepProps) {
 function AddCareDetail({ busy, onSubmit }: StepProps) {
   const [name, setName] = useState('');
   const [times, setTimes] = useState('08:00, 20:00');
-  const parsed = times.split(',').map((t) => t.trim()).filter(Boolean);
+  const parsed = times
+    .split(',')
+    .map((t) => t.trim())
+    .filter(Boolean);
   const ok = name.trim() && parsed.length > 0;
   return (
     <form
       className="space-y-4"
-      onSubmit={(e) => { e.preventDefault(); if (ok) onSubmit('add_medication', { name: name.trim(), times: parsed }); }}
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (ok) onSubmit('add_medication', { name: name.trim(), times: parsed });
+      }}
     >
       <Field label="A medication to keep an eye on">
-        <input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. eye drops" />
+        <input
+          className={inputCls}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. eye drops"
+        />
       </Field>
       <Field label="Times it's due (24-hour, comma-separated)">
-        <input className={inputCls} value={times} onChange={(e) => setTimes(e.target.value)} placeholder="08:00, 20:00" />
+        <input
+          className={inputCls}
+          value={times}
+          onChange={(e) => setTimes(e.target.value)}
+          placeholder="08:00, 20:00"
+        />
       </Field>
-      <button className={btnCls} disabled={!ok || busy}>{busy ? 'Adding…' : 'Add it'}</button>
+      <button className={btnCls} disabled={!ok || busy}>
+        {busy ? 'Adding…' : 'Add it'}
+      </button>
     </form>
   );
 }
 
-function Ready({ progress, busy, onSubmit, onReset }: StepProps & { progress: OnboardingProgress; onReset: () => void }) {
+function Ready({
+  progress,
+  busy,
+  onSubmit,
+  onReset,
+}: StepProps & { progress: OnboardingProgress; onReset: () => void }) {
   return (
     <div className="space-y-5">
       {progress.firstGap ? (
         <div className="rounded-2xl border border-white/12 bg-white/5 p-5">
-          <div className="mb-1 text-[0.7rem] uppercase tracking-wide text-norecord">First thing that needs someone</div>
+          <div className="mb-1 text-[0.7rem] uppercase tracking-wide text-norecord">
+            First thing that needs someone
+          </div>
           <div className="text-lg font-medium">{progress.firstGap.what}</div>
           <div className="mt-1.5 text-sm text-[#c3cad9]">{progress.firstGap.because}</div>
         </div>
       ) : (
         <div className="rounded-2xl border border-white/12 bg-white/5 p-5 text-ink/80">
-          Nothing needs anyone yet. CareCircle will keep watch and let the circle know the
-          moment something does.
+          Nothing needs anyone yet. CareCircle will keep watch and let the circle know the moment
+          something does.
         </div>
       )}
       <AddFamily busy={busy} onSubmit={onSubmit} />
       <div className="flex gap-3">
-        <Link to="/console" className={btnCls}>Open the care board</Link>
-        <button onClick={onReset} className="rounded-lg border border-white/15 px-5 py-2.5 text-ink/80">Set up another</button>
+        <Link to="/console" className={btnCls}>
+          Open the care board
+        </Link>
+        <button
+          onClick={onReset}
+          className="rounded-lg border border-white/15 px-5 py-2.5 text-ink/80"
+        >
+          Set up another
+        </button>
       </div>
     </div>
   );
@@ -239,27 +334,41 @@ function AddFamily({ busy, onSubmit }: StepProps) {
         if (!ok) return;
         const who = name.trim();
         void onSubmit('add_member', {
-          name: who, role,
+          name: who,
+          role,
           ...(away ? { livesAway: city.trim(), dailyUpdate: evening } : {}),
         }).then((saved) => {
           if (!saved) return;
           setAdded((a) => [...a, who]);
-          setName(''); setAway(false); setCity('');
+          setName('');
+          setAway(false);
+          setCity('');
         });
       }}
     >
       <div>
         <div className="font-medium">Add family (optional)</div>
         <div className="text-sm text-muted">
-          {added.length ? `Added ${added.join(', ')}. Anyone else?` : 'Brothers, sisters, a paid helper: whoever shares the care.'}
+          {added.length
+            ? `Added ${added.join(', ')}. Anyone else?`
+            : 'Brothers, sisters, a paid helper: whoever shares the care.'}
         </div>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Name">
-          <input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Kunle" />
+          <input
+            className={inputCls}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Kunle"
+          />
         </Field>
         <Field label="They are">
-          <select className={inputCls} value={role} onChange={(e) => setRole(e.target.value as 'caregiver' | 'helper')}>
+          <select
+            className={inputCls}
+            value={role}
+            onChange={(e) => setRole(e.target.value as 'caregiver' | 'helper')}
+          >
             <option value="caregiver">Family</option>
             <option value="helper">Paid help</option>
           </select>
@@ -272,19 +381,30 @@ function AddFamily({ busy, onSubmit }: StepProps) {
       {away && (
         <div className="space-y-3 border-l-2 border-white/10 pl-4">
           <Field label="Where?">
-            <input className={inputCls} value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. London" />
+            <input
+              className={inputCls}
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="e.g. London"
+            />
           </Field>
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={evening} onChange={(e) => setEvening(e.target.checked)} />
+            <input
+              type="checkbox"
+              checked={evening}
+              onChange={(e) => setEvening(e.target.checked)}
+            />
             Send them an update on the day, every evening
           </label>
           <p className="text-xs text-muted">
-            CareCircle won't ask them to do things that need someone there, like a ride.
-            You can still ask them by name.
+            CareCircle won't ask them to do things that need someone there, like a ride. You can
+            still ask them by name.
           </p>
         </div>
       )}
-      <button className={btnCls} disabled={!ok || busy}>{busy ? 'Adding…' : 'Add to the circle'}</button>
+      <button className={btnCls} disabled={!ok || busy}>
+        {busy ? 'Adding…' : 'Add to the circle'}
+      </button>
     </form>
   );
 }

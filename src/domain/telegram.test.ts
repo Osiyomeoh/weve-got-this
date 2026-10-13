@@ -21,7 +21,7 @@ test('in a group, the sender id is kept apart from the group chat id', () => {
     message: { message_id: 11, chat: { id: -100200300 }, from: { id: 987654 }, text: 'yes' },
   });
   assert.equal(m!.chatId, '-100200300'); // the group
-  assert.equal(m!.fromId, '987654');      // the person who answered
+  assert.equal(m!.fromId, '987654'); // the person who answered
 });
 
 test('a non-message update (no text) carries no answer and is dropped', () => {

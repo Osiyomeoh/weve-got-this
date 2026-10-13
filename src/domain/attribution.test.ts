@@ -8,13 +8,17 @@ import type { CareEvent, CareState } from './types.ts';
 const NOW = new Date('2026-10-15T18:00:00Z');
 
 const NAMES: Record<string, string> = {
-  m_alex: 'Alex', m_aide: 'Tasha', m_david: 'David',
+  m_alex: 'Alex',
+  m_aide: 'Tasha',
+  m_david: 'David',
 };
 const nameOf = (id: string) => NAMES[id] ?? null;
 
 function dose(reportedBy: string, aboutMemberId = 'm_alex'): CareEvent {
   return {
-    id: 'e1', householdId: 'h1', kind: 'medication_taken',
+    id: 'e1',
+    householdId: 'h1',
+    kind: 'medication_taken',
     reportedBy,
     occurredAt: '2026-10-15T12:00:00Z', // 08:00 New York
     recordedAt: '2026-10-15T12:00:00Z',
@@ -41,7 +45,9 @@ test('somebody else speaking about you is not you speaking for yourself', () => 
   // The defect this file exists for: these two were once byte-identical.
   assert.deepEqual(attributionOf(dose('m_alex')), { kind: 'FIRST_HAND', memberId: 'm_alex' });
   assert.deepEqual(attributionOf(dose('m_aide')), {
-    kind: 'REPORTED', byMemberId: 'm_aide', aboutMemberId: 'm_alex',
+    kind: 'REPORTED',
+    byMemberId: 'm_aide',
+    aboutMemberId: 'm_alex',
   });
 });
 
@@ -62,8 +68,11 @@ test('a proxy record still closes the gap completely', () => {
 test('a proxy record is reported exactly as confidently as a first-hand one', () => {
   const byProxy = detectCareGaps(stateWith([dose('m_aide')]), { now: NOW });
   const byThemselves = detectCareGaps(stateWith([dose('m_alex')]), { now: NOW });
-  assert.deepEqual(byProxy, byThemselves,
-    'the distinction belongs in the language, never in the doubt');
+  assert.deepEqual(
+    byProxy,
+    byThemselves,
+    'the distinction belongs in the language, never in the doubt',
+  );
 });
 
 test('an absent record is still an absent record, whoever might have made it', () => {
@@ -108,7 +117,10 @@ test('the invariant catches a line that hides where a record came from', () => {
 
 test('a first-hand record carries no obligation to name anybody else', () => {
   // There is no second party in the claim to name.
-  assert.equal(namesItsSource('One medication logged today.', attributionOf(dose('m_alex')), nameOf), true);
+  assert.equal(
+    namesItsSource('One medication logged today.', attributionOf(dose('m_alex')), nameOf),
+    true,
+  );
 });
 
 test('isReported agrees with attributionOf on every event it sees', () => {

@@ -50,9 +50,11 @@ const TOKENS: Record<EvalCase['member'], string> = {
 
 async function toolsFor(endpoint: string, token: string): Promise<ToolSpec[]> {
   const client = new Client({ name: 'carecircle-evals', version: '0.1.0' });
-  await client.connect(new StreamableHTTPClientTransport(new URL(endpoint), {
-    requestInit: { headers: { Authorization: `Bearer ${token}` } },
-  }) as never);
+  await client.connect(
+    new StreamableHTTPClientTransport(new URL(endpoint), {
+      requestInit: { headers: { Authorization: `Bearer ${token}` } },
+    }) as never,
+  );
   const { tools } = await client.listTools();
   await client.close();
   return tools.map((t) => ({
@@ -62,8 +64,13 @@ async function toolsFor(endpoint: string, token: string): Promise<ToolSpec[]> {
   }));
 }
 
-function judge(c: EvalCase, chosen: string | null, args: Record<string, unknown>): {
-  pass: boolean; reason: string;
+function judge(
+  c: EvalCase,
+  chosen: string | null,
+  args: Record<string, unknown>,
+): {
+  pass: boolean;
+  reason: string;
 } {
   if (c.expectNone) {
     return chosen === null
@@ -79,7 +86,10 @@ function judge(c: EvalCase, chosen: string | null, args: Record<string, unknown>
   }
   for (const [key, check] of Object.entries(c.args ?? {})) {
     if (!check(args[key])) {
-      return { pass: false, reason: `${chosen} called, but argument "${key}" was ${JSON.stringify(args[key])}` };
+      return {
+        pass: false,
+        reason: `${chosen} called, but argument "${key}" was ${JSON.stringify(args[key])}`,
+      };
     }
   }
   return { pass: true, reason: chosen };
@@ -90,8 +100,9 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 /** Rate limiting is transient; a hard failure is not. Only the first is worth retrying. */
 function isRateLimit(err: unknown): boolean {
   const message = (err as Error).message ?? '';
-  return /\b429\b|rate.?limit|too many requests|RESOURCE_EXHAUSTED|exceeded your current quota|throttl/i
-    .test(message);
+  return /\b429\b|rate.?limit|too many requests|RESOURCE_EXHAUSTED|exceeded your current quota|throttl/i.test(
+    message,
+  );
 }
 
 export async function runEvals(options: {
@@ -132,7 +143,9 @@ export async function runEvals(options: {
     for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
       try {
         // A fresh conversation per case: nothing carries over between utterances.
-        const output = await options.provider.start(options.systemPrompt ?? SYSTEM, tools).say(c.utterance);
+        const output = await options.provider
+          .start(options.systemPrompt ?? SYSTEM, tools)
+          .say(c.utterance);
         const use = output.toolUses[0];
         chosen = use?.name ?? null;
         args = use?.input ?? {};
@@ -174,11 +187,15 @@ export async function runEvals(options: {
 
 /** Accuracy per category, so a weak area is visible rather than averaged away. */
 export function summarise(results: CaseResult[]): {
-  total: number; passed: number; accuracy: number | null; errored: number;
+  total: number;
+  passed: number;
+  accuracy: number | null;
+  errored: number;
   byCategory: { category: string; passed: number; total: number }[];
   /** Authored (tuned against), held-out and unseen, and held-out but since used to fix. */
   splits: { split: 'authored' | 'held-out' | 'seen'; passed: number; total: number }[];
-  failures: CaseResult[]; errors: CaseResult[];
+  failures: CaseResult[];
+  errors: CaseResult[];
 } {
   const errors = results.filter((r) => r.errored);
   const scored = results.filter((r) => !r.errored);
@@ -191,7 +208,8 @@ export function summarise(results: CaseResult[]): {
     if (r.pass) entry.passed += 1;
     byCategory.set(category, entry);
   }
-  const splitOf = (c: EvalCase) => (!c.id.startsWith('h') ? 'authored' : c.seen ? 'seen' : 'held-out');
+  const splitOf = (c: EvalCase) =>
+    !c.id.startsWith('h') ? 'authored' : c.seen ? 'seen' : 'held-out';
   const splits = (['authored', 'held-out', 'seen'] as const).map((split) => {
     const inSplit = scored.filter((r) => splitOf(r.case) === split);
     return { split, passed: inSplit.filter((r) => r.pass).length, total: inSplit.length };

@@ -1,4 +1,10 @@
-import { GetCommand, PutCommand, ScanCommand, TransactWriteCommand, type DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
+import {
+  GetCommand,
+  PutCommand,
+  ScanCommand,
+  TransactWriteCommand,
+  type DynamoDBDocumentClient,
+} from '@aws-sdk/lib-dynamodb';
 
 /**
  * A DynamoDB table in memory, for tests: it answers the commands DynamoPersistence
@@ -36,8 +42,14 @@ export function fakeTable(): FakeTable {
           const item = cmd.input.Item as Item;
           const current = rows.get(keyOf(item));
           const v = cmd.input.ExpressionAttributeValues ?? {};
-          if (current && current['holder'] !== v[':me'] && !((current['until'] as number) < v[':now'])) {
-            throw Object.assign(new Error('The conditional request failed'), { name: 'ConditionalCheckFailedException' });
+          if (
+            current &&
+            current['holder'] !== v[':me'] &&
+            !((current['until'] as number) < v[':now'])
+          ) {
+            throw Object.assign(new Error('The conditional request failed'), {
+              name: 'ConditionalCheckFailedException',
+            });
           }
           rows.set(keyOf(item), structuredClone(item));
           return {};
@@ -55,7 +67,10 @@ export function fakeTable(): FakeTable {
             return { Code: ok ? 'None' : 'ConditionalCheckFailed' };
           });
           if (reasons.some((r) => r.Code !== 'None')) {
-            throw Object.assign(new Error('Transaction cancelled'), { name: 'TransactionCanceledException', CancellationReasons: reasons });
+            throw Object.assign(new Error('Transaction cancelled'), {
+              name: 'TransactionCanceledException',
+              CancellationReasons: reasons,
+            });
           }
           for (const op of ops) {
             if (op.Put) rows.set(keyOf(op.Put.Item as Item), structuredClone(op.Put.Item) as Item);

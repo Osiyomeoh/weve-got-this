@@ -36,7 +36,9 @@ before(async () => {
   });
 });
 
-after(() => { server?.close(); });
+after(() => {
+  server?.close();
+});
 
 const HEADERS = (token: string, sessionId?: string) => ({
   'content-type': 'application/json',
@@ -50,11 +52,15 @@ async function openSession(token: string): Promise<string> {
     method: 'POST',
     headers: HEADERS(token),
     body: JSON.stringify({
-      jsonrpc: '2.0', id: 1, method: 'initialize',
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'initialize',
       params: {
         protocolVersion: '2025-11-25',
         // A host that renders MCP Apps advertises it here.
-        capabilities: { extensions: { 'io.modelcontextprotocol/ui': { mimeTypes: [APP_MIME_TYPE] } } },
+        capabilities: {
+          extensions: { 'io.modelcontextprotocol/ui': { mimeTypes: [APP_MIME_TYPE] } },
+        },
         clientInfo: { name: 'app-host', version: '1.0' },
       },
     }),
@@ -63,24 +69,34 @@ async function openSession(token: string): Promise<string> {
   await res.text();
   assert.ok(sessionId, 'expected a session id');
   await fetch(base, {
-    method: 'POST', headers: HEADERS(token, sessionId),
+    method: 'POST',
+    headers: HEADERS(token, sessionId),
     body: JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }),
   });
   return sessionId;
 }
 
 async function rpc(
-  token: string, sessionId: string, method: string, params: Record<string, unknown> = {},
+  token: string,
+  sessionId: string,
+  method: string,
+  params: Record<string, unknown> = {},
 ): Promise<any> {
   const res = await fetch(base, {
-    method: 'POST', headers: HEADERS(token, sessionId),
+    method: 'POST',
+    headers: HEADERS(token, sessionId),
     body: JSON.stringify({ jsonrpc: '2.0', id: Math.floor(Math.random() * 1e6), method, params }),
   });
   const text = await res.text();
   // Streamable HTTP may answer as SSE; take the one data frame either way.
-  const json = text.startsWith('event:') || text.startsWith('data:')
-    ? text.split('\n').find((l) => l.startsWith('data:'))!.slice(5).trim()
-    : text;
+  const json =
+    text.startsWith('event:') || text.startsWith('data:')
+      ? text
+          .split('\n')
+          .find((l) => l.startsWith('data:'))!
+          .slice(5)
+          .trim()
+      : text;
   return JSON.parse(json);
 }
 
@@ -101,7 +117,9 @@ test('get_care_gaps points at the care board in both metadata formats', async ()
 test('the care board is readable as an app resource', async () => {
   const session = await openSession('renee-token');
   const listed = await rpc('renee-token', session, 'resources/list');
-  const entry = listed.result.resources.find((r: any) => r.uri === 'ui://carecircle/care-board.html');
+  const entry = listed.result.resources.find(
+    (r: any) => r.uri === 'ui://carecircle/care-board.html',
+  );
   assert.ok(entry, 'the ui:// resource should be listed');
   assert.equal(entry.mimeType, APP_MIME_TYPE);
 
@@ -116,7 +134,8 @@ test('the care board is readable as an app resource', async () => {
 test('the board carries the arithmetic behind each ranking', async () => {
   const session = await openSession('renee-token');
   const { result } = await rpc('renee-token', session, 'tools/call', {
-    name: 'get_care_gaps', arguments: {},
+    name: 'get_care_gaps',
+    arguments: {},
   });
   const gaps = result.structuredContent.gaps;
   assert.ok(gaps.length > 0, 'the seeded scenario should have gaps');
@@ -134,7 +153,8 @@ test('the board carries the arithmetic behind each ranking', async () => {
 test('the spoken answer stays complete without the view', async () => {
   const session = await openSession('renee-token');
   const { result } = await rpc('renee-token', session, 'tools/call', {
-    name: 'get_care_gaps', arguments: {},
+    name: 'get_care_gaps',
+    arguments: {},
   });
   // A voice surface gets no iframe. If the view ever became load-bearing, this
   // is where it would show up - as an answer that only makes sense on a screen.

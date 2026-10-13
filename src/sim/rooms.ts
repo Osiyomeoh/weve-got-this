@@ -43,7 +43,8 @@ const INBOX_LIMIT = 20;
 // No 0/O or 1/I: the code is read aloud across a room, or typed from a text message.
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
-export type RoomError = 'no-room' | 'not-host' | 'seat-taken' | 'no-seat' | 'bad-message' | 'too-big';
+export type RoomError =
+  'no-room' | 'not-host' | 'seat-taken' | 'no-seat' | 'bad-message' | 'too-big';
 
 export class Rooms {
   readonly #rooms = new Map<string, Room>();
@@ -70,7 +71,11 @@ export class Rooms {
   /** A host's room: the same one again if they already have it. */
   open(host: string): string {
     this.#sweep();
-    for (const r of this.#rooms.values()) if (r.host === host) { r.touched = this.#now(); return r.code; }
+    for (const r of this.#rooms.values())
+      if (r.host === host) {
+        r.touched = this.#now();
+        return r.code;
+      }
     while (this.#rooms.size >= this.#limit) {
       // The room idle longest goes first.
       let oldest: Room | undefined;
@@ -81,7 +86,15 @@ export class Rooms {
     let code = '';
     do code = Array.from({ length: 6 }, () => ALPHABET[randomInt(ALPHABET.length)]).join('');
     while (this.#rooms.has(code));
-    this.#rooms.set(code, { code, host, feed: null, hostAs: null, seats: new Map(), inbox: [], touched: this.#now() });
+    this.#rooms.set(code, {
+      code,
+      host,
+      feed: null,
+      hostAs: null,
+      seats: new Map(),
+      inbox: [],
+      touched: this.#now(),
+    });
     return code;
   }
 
@@ -89,7 +102,12 @@ export class Rooms {
    * The host posts what the world shows, and takes what guests sent since last time.
    * A guest in the host's own seat is let go: the host chose it.
    */
-  post(code: string, host: string, feed: unknown, hostAs: Seat | null): { seats: Partial<Record<Seat, true>>; inbox: GuestMessage[] } | RoomError {
+  post(
+    code: string,
+    host: string,
+    feed: unknown,
+    hostAs: Seat | null,
+  ): { seats: Partial<Record<Seat, true>>; inbox: GuestMessage[] } | RoomError {
     const r = this.#live(code);
     if (!r) return 'no-room';
     if (r.host !== host) return 'not-host';
@@ -103,7 +121,10 @@ export class Rooms {
   }
 
   /** What a guest sees: the host's feed, which seats are taken, and which one is theirs. */
-  view(code: string, guest: string): { feed: unknown; taken: Seat[]; mine: Seat | null } | RoomError {
+  view(
+    code: string,
+    guest: string,
+  ): { feed: unknown; taken: Seat[]; mine: Seat | null } | RoomError {
     const r = this.#live(code);
     if (!r) return 'no-room';
     const mine = [...r.seats].find(([, g]) => g === guest)?.[0] ?? null;
@@ -130,8 +151,10 @@ export class Rooms {
     const who = [...r.seats].find(([, g]) => g === guest)?.[0];
     if (!who) return 'no-seat';
     let out: GuestMessage;
-    if (typeof m.text === 'string' && m.text.trim() && m.text.length <= TEXT_LIMIT) out = { who, text: m.text.trim() };
-    else if (typeof m.key === 'string' && (KEYS as readonly string[]).includes(m.key)) out = { who, key: m.key as RemoteKey };
+    if (typeof m.text === 'string' && m.text.trim() && m.text.length <= TEXT_LIMIT)
+      out = { who, text: m.text.trim() };
+    else if (typeof m.key === 'string' && (KEYS as readonly string[]).includes(m.key))
+      out = { who, key: m.key as RemoteKey };
     else return 'bad-message';
     if (r.inbox.length >= INBOX_LIMIT) r.inbox.shift();
     r.inbox.push(out);

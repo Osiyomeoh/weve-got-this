@@ -33,9 +33,11 @@ after(() => server?.close());
 for (const kind of ['delivery_arrived', 'door_activity', 'motion', 'no_activity'] as const) {
   test(`a real MCP client accepts ingest_signal's result for ${kind}`, async () => {
     const c = new Client({ name: 'signal-schema-test', version: '1' });
-    await c.connect(new StreamableHTTPClientTransport(new URL(base), {
-      requestInit: { headers: { Authorization: 'Bearer david-token' } },
-    }));
+    await c.connect(
+      new StreamableHTTPClientTransport(new URL(base), {
+        requestInit: { headers: { Authorization: 'Bearer david-token' } },
+      }),
+    );
     try {
       // The SDK validates results against output schemas it learned from tools/list,
       // as every real host does before calling a tool.

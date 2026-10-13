@@ -76,20 +76,33 @@ export const START: Nav = { mode: 'ambient', gap: 0, member: 0 };
  */
 export function keyOf(key: string): Key | null {
   switch (key) {
-    case 'ArrowLeft': return 'left';
-    case 'ArrowRight': return 'right';
-    case 'ArrowUp': return 'up';
-    case 'ArrowDown': return 'down';
-    case 'Enter': case 'NumpadEnter': case ' ': case 'Spacebar': return 'ok';
-    case 'Escape': case 'Backspace': case 'GoBack': case 'BrowserBack': return 'back';
-    default: return null;
+    case 'ArrowLeft':
+      return 'left';
+    case 'ArrowRight':
+      return 'right';
+    case 'ArrowUp':
+      return 'up';
+    case 'ArrowDown':
+      return 'down';
+    case 'Enter':
+    case 'NumpadEnter':
+    case ' ':
+    case 'Spacebar':
+      return 'ok';
+    case 'Escape':
+    case 'Backspace':
+    case 'GoBack':
+    case 'BrowserBack':
+      return 'back';
+    default:
+      return null;
   }
 }
 
 /** Move within a ring, wrapping both ways. A TV list has no edges to get stuck on. */
 function wrap(i: number, delta: number, n: number): number {
   if (n <= 0) return 0;
-  return ((i + delta) % n + n) % n;
+  return (((i + delta) % n) + n) % n;
 }
 
 export function reduce(nav: Nav, key: Key, counts: Counts): Step {
@@ -111,9 +124,11 @@ export function reduce(nav: Nav, key: Key, counts: Counts): Step {
 
   if (nav.mode === 'browsing') {
     switch (key) {
-      case 'left': case 'up':
+      case 'left':
+      case 'up':
         return { nav: { ...nav, mode: 'browsing', gap: wrap(gap, -1, items) } };
-      case 'right': case 'down':
+      case 'right':
+      case 'down':
         return { nav: { ...nav, mode: 'browsing', gap: wrap(gap, 1, items) } };
       case 'ok':
         // Their own dose: ask them. Anything else: ask who, before doing anything in anyone's name.
@@ -140,9 +155,11 @@ export function reduce(nav: Nav, key: Key, counts: Counts): Step {
 
   // identifying
   switch (key) {
-    case 'left': case 'up':
+    case 'left':
+    case 'up':
       return { nav: { ...nav, gap, member: wrap(nav.member, -1, counts.members) } };
-    case 'right': case 'down':
+    case 'right':
+    case 'down':
       return { nav: { ...nav, gap, member: wrap(nav.member, 1, counts.members) } };
     case 'ok':
       // Straight back to ambient: the work is claimed, and a television should

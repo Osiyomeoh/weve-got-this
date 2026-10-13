@@ -27,11 +27,14 @@ export type Step =
 /** The text of every block in a message, for steps that answer from what came back. */
 export function textIn(message: Message | undefined): string {
   if (!message) return '';
-  return message.content.flatMap((b) => {
-    if (b instanceof TextBlock) return [b.text];
-    if (b.type === 'toolResultBlock') return b.content.map((c) => (c instanceof TextBlock ? c.text : ''));
-    return [];
-  }).join(' ');
+  return message.content
+    .flatMap((b) => {
+      if (b instanceof TextBlock) return [b.text];
+      if (b.type === 'toolResultBlock')
+        return b.content.map((c) => (c instanceof TextBlock ? c.text : ''));
+      return [];
+    })
+    .join(' ');
 }
 
 export class ScriptedModel extends Model<BaseModelConfig> {
@@ -42,10 +45,14 @@ export class ScriptedModel extends Model<BaseModelConfig> {
   #next = 0;
   #ids = 0;
 
-  constructor(private readonly steps: Step[]) { super(); }
+  constructor(private readonly steps: Step[]) {
+    super();
+  }
 
   updateConfig(): void {}
-  getConfig(): BaseModelConfig { return { modelId: 'scripted' }; }
+  getConfig(): BaseModelConfig {
+    return { modelId: 'scripted' };
+  }
 
   async *stream(messages: Message[], options?: StreamOptions): AsyncIterable<ModelStreamEvent> {
     this.seen.push(messages.map((m) => m));
@@ -62,15 +69,25 @@ export class ScriptedModel extends Model<BaseModelConfig> {
       });
       yield new ModelContentBlockDeltaEvent({
         type: 'modelContentBlockDeltaEvent',
-        delta: { type: 'toolUseInputDelta', input: JSON.stringify((step.input ?? {}) as JSONValue) },
+        delta: {
+          type: 'toolUseInputDelta',
+          input: JSON.stringify((step.input ?? {}) as JSONValue),
+        },
       });
       yield new ModelContentBlockStopEvent({ type: 'modelContentBlockStopEvent' });
       yield new ModelMessageStopEvent({ type: 'modelMessageStopEvent', stopReason: 'toolUse' });
     } else {
-      yield new ModelContentBlockDeltaEvent({ type: 'modelContentBlockDeltaEvent', delta: { type: 'textDelta', text: step.say } });
+      yield new ModelContentBlockDeltaEvent({
+        type: 'modelContentBlockDeltaEvent',
+        delta: { type: 'textDelta', text: step.say },
+      });
       yield new ModelContentBlockStopEvent({ type: 'modelContentBlockStopEvent' });
       yield new ModelMessageStopEvent({ type: 'modelMessageStopEvent', stopReason: 'endTurn' });
     }
-    yield new ModelMetadataEvent({ type: 'modelMetadataEvent', usage: { inputTokens: 1, outputTokens: 1, totalTokens: 2 }, metrics: { latencyMs: 0 } });
+    yield new ModelMetadataEvent({
+      type: 'modelMetadataEvent',
+      usage: { inputTokens: 1, outputTokens: 1, totalTokens: 2 },
+      metrics: { latencyMs: 0 },
+    });
   }
 }

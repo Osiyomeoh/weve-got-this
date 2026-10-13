@@ -21,7 +21,8 @@ export const SAMPLE_RATE = 16_000;
  * TV) steps back while someone speaks: the mic would hear it, and never hear them stop.
  */
 export const LISTENING_EVENT = 'carecircle-listening';
-const listeningNow = (on: boolean) => window.dispatchEvent(new CustomEvent(LISTENING_EVENT, { detail: on }));
+const listeningNow = (on: boolean) =>
+  window.dispatchEvent(new CustomEvent(LISTENING_EVENT, { detail: on }));
 
 export interface Recording {
   /** Resolves with the captured audio as 16-bit little-endian PCM. */
@@ -47,9 +48,10 @@ export interface Listening {
  * OfflineAudioContext; it smears consonants, and consonants are what names are made of.
  */
 async function toRate(samples: Float32Array, from: number, to: number): Promise<Float32Array> {
-  if (from === to || samples.length === 0 || typeof OfflineAudioContext === 'undefined') return resample(samples, from, to);
+  if (from === to || samples.length === 0 || typeof OfflineAudioContext === 'undefined')
+    return resample(samples, from, to);
   try {
-    const length = Math.ceil(samples.length * to / from);
+    const length = Math.ceil((samples.length * to) / from);
     const offline = new OfflineAudioContext(1, length, to);
     const buffer = offline.createBuffer(1, samples.length, from);
     buffer.copyToChannel(new Float32Array(samples), 0);
@@ -73,7 +75,8 @@ function resample(samples: Float32Array, from: number, to: number): Float32Array
     const end = Math.min(samples.length, Math.floor((i + 1) * ratio));
     let sum = 0;
     for (let j = start; j < end; j++) sum += samples[j]!;
-    out[i] = end > start ? sum / (end - start) : samples[Math.min(start, samples.length - 1)] ?? 0;
+    out[i] =
+      end > start ? sum / (end - start) : (samples[Math.min(start, samples.length - 1)] ?? 0);
   }
   return out;
 }
@@ -97,11 +100,19 @@ function toPcm16(samples: Float32Array): Int16Array<ArrayBuffer> {
  * should treat as "fall back to the browser's own recogniser" rather than as a
  * dead end.
  */
-export async function record(listening: Listening | ((level: number) => void) = {}): Promise<Recording> {
-  const { onLevel, onEnd } = typeof listening === 'function' ? { onLevel: listening, onEnd: undefined } : listening;
+export async function record(
+  listening: Listening | ((level: number) => void) = {},
+): Promise<Recording> {
+  const { onLevel, onEnd } =
+    typeof listening === 'function' ? { onLevel: listening, onEnd: undefined } : listening;
 
   const stream = await navigator.mediaDevices.getUserMedia({
-    audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+    audio: {
+      channelCount: 1,
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: true,
+    },
   });
 
   // The device's own rate, converted to 16 kHz at the end: some browsers (Firefox, older
@@ -133,7 +144,10 @@ export async function record(listening: Listening | ((level: number) => void) = 
     if (closed || !onEnd) return;
     const step = hear(ear, performance.now() - began, peak);
     ear = step.ear;
-    if (step.end) { closed = true; onEnd(step.end); }
+    if (step.end) {
+      closed = true;
+      onEnd(step.end);
+    }
   };
 
   source.connect(processor);
@@ -146,7 +160,10 @@ export async function record(listening: Listening | ((level: number) => void) = 
   mute.connect(context.destination);
 
   const teardown = () => {
-    if (open) { open = false; listeningNow(false); }
+    if (open) {
+      open = false;
+      listeningNow(false);
+    }
     closed = true;
     processor.disconnect();
     source.disconnect();
@@ -161,10 +178,15 @@ export async function record(listening: Listening | ((level: number) => void) = 
       const total = captured.reduce((n, chunk) => n + chunk.length, 0);
       const merged = new Float32Array(total);
       let offset = 0;
-      for (const chunk of captured) { merged.set(chunk, offset); offset += chunk.length; }
+      for (const chunk of captured) {
+        merged.set(chunk, offset);
+        offset += chunk.length;
+      }
       // Pass the view, not `.buffer`: a typed array is a valid BlobPart and
       // avoids the SharedArrayBuffer branch of ArrayBufferLike.
-      return new Blob([toPcm16(await toRate(merged, rate, SAMPLE_RATE))], { type: 'application/octet-stream' });
+      return new Blob([toPcm16(await toRate(merged, rate, SAMPLE_RATE))], {
+        type: 'application/octet-stream',
+      });
     },
     cancel: teardown,
   };

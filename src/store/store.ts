@@ -1,6 +1,15 @@
 import { randomUUID } from 'node:crypto';
 import type {
-  CareEvent, CareState, Entity, Household, IdentityMapping, LanguageCode, Member, MedicationSchedule, Obligation, TelegramLink,
+  CareEvent,
+  CareState,
+  Entity,
+  Household,
+  IdentityMapping,
+  LanguageCode,
+  Member,
+  MedicationSchedule,
+  Obligation,
+  TelegramLink,
 } from '../domain/types.js';
 
 /**
@@ -75,8 +84,15 @@ export interface StoreSnapshot {
 
 function emptySnapshot(): StoreSnapshot {
   return {
-    households: [], members: [], events: [],
-    obligations: [], medications: [], transitions: [], identities: [], entities: [], telegramLinks: [],
+    households: [],
+    members: [],
+    events: [],
+    obligations: [],
+    medications: [],
+    transitions: [],
+    identities: [],
+    entities: [],
+    telegramLinks: [],
   };
 }
 
@@ -195,8 +211,13 @@ export class CareStore {
       } catch (err) {
         try {
           const fresh = await this.#persistence?.load();
-          if (this.#persistence) { this.#snapshot = fresh ?? emptySnapshot(); this.#generation++; }
-        } catch { /* the table is unreachable too: keep what we have, and report the save */ }
+          if (this.#persistence) {
+            this.#snapshot = fresh ?? emptySnapshot();
+            this.#generation++;
+          }
+        } catch {
+          /* the table is unreachable too: keep what we have, and report the save */
+        }
         throw err instanceof StaleRecordError ? new RecordChangedError() : err;
       }
       return result;
@@ -245,9 +266,11 @@ export class CareStore {
 
   findMemberByName(householdId: string, name: string): Member | undefined {
     const needle = name.trim().toLowerCase();
-    return this.#snapshot.members.find((m) =>
-      m.householdId === householdId
-      && (m.name.toLowerCase() === needle || m.spokenAs?.toLowerCase() === needle));
+    return this.#snapshot.members.find(
+      (m) =>
+        m.householdId === householdId &&
+        (m.name.toLowerCase() === needle || m.spokenAs?.toLowerCase() === needle),
+    );
   }
 
   getObligation(id: string, householdId: string): Obligation {
@@ -309,19 +332,22 @@ export class CareStore {
     householdId: string,
     to: Obligation['status'],
     byMemberId: string,
-    changes: Partial<Pick<
-      Obligation, 'ownerId' | 'resolutionNote' | 'resolvedAt' | 'request' | 'declinedBy'
-    >> & { clearRequest?: boolean } = {},
+    changes: Partial<
+      Pick<Obligation, 'ownerId' | 'resolutionNote' | 'resolvedAt' | 'request' | 'declinedBy'>
+    > & { clearRequest?: boolean } = {},
     note?: string,
   ): Promise<Obligation> {
     // The obligation as the caller saw it when it decided. Two claims at once both saw the
     // ride open; the second, run after the first, would take it from someone just told it
     // was theirs. If it changed while this waited its turn, this is refused, not applied.
-    const seen = this.#snapshot.obligations.find((x) => x.id === id && x.householdId === householdId);
+    const seen = this.#snapshot.obligations.find(
+      (x) => x.id === id && x.householdId === householdId,
+    );
     const was = seen && { status: seen.status, ownerId: seen.ownerId };
     return this.#write(() => {
       const o = this.getObligation(id, householdId);
-      if (was && (o.status !== was.status || o.ownerId !== was.ownerId)) throw new RecordChangedError();
+      if (was && (o.status !== was.status || o.ownerId !== was.ownerId))
+        throw new RecordChangedError();
       const from = o.status;
       o.status = to;
       if ('ownerId' in changes) o.ownerId = changes.ownerId ?? null;
@@ -333,8 +359,14 @@ export class CareStore {
       if (changes.clearRequest) delete o.request;
       if (changes.declinedBy !== undefined) o.declinedBy = changes.declinedBy;
       this.#snapshot.transitions.push({
-        obligationId: id, from, to, byMemberId,
-        at: after(this.#snapshot.transitions.findLast((t) => t.obligationId === id)?.at, this.#now().getTime()),
+        obligationId: id,
+        from,
+        to,
+        byMemberId,
+        at: after(
+          this.#snapshot.transitions.findLast((t) => t.obligationId === id)?.at,
+          this.#now().getTime(),
+        ),
         ...(note ? { note } : {}),
       });
       return o;
@@ -349,15 +381,24 @@ export class CareStore {
   // --- setup -------------------------------------------------------------
 
   addHousehold(h: Household): Promise<Household> {
-    return this.#write(() => { this.#snapshot.households.push(h); return h; });
+    return this.#write(() => {
+      this.#snapshot.households.push(h);
+      return h;
+    });
   }
 
   addMember(m: Member): Promise<Member> {
-    return this.#write(() => { this.#snapshot.members.push(m); return m; });
+    return this.#write(() => {
+      this.#snapshot.members.push(m);
+      return m;
+    });
   }
 
   addMedication(m: MedicationSchedule): Promise<MedicationSchedule> {
-    return this.#write(() => { this.#snapshot.medications.push(m); return m; });
+    return this.#write(() => {
+      this.#snapshot.medications.push(m);
+      return m;
+    });
   }
 
   /**
@@ -366,11 +407,14 @@ export class CareStore {
    * in other languages.
    */
   updateMedication(
-    id: string, householdId: string,
+    id: string,
+    householdId: string,
     changes: Partial<Pick<MedicationSchedule, 'name' | 'times' | 'until' | 'stoppedAt' | 'names'>>,
   ): Promise<MedicationSchedule> {
     return this.#write(() => {
-      const m = this.#snapshot.medications.find((x) => x.id === id && x.householdId === householdId);
+      const m = this.#snapshot.medications.find(
+        (x) => x.id === id && x.householdId === householdId,
+      );
       if (!m) throw new NotFoundError('medication', id);
       const { names, ...rest } = changes;
       Object.assign(m, rest);
@@ -381,15 +425,24 @@ export class CareStore {
 
   /** A member's own preferences, set by them: reminders on or off. */
   setMemberPreference(
-    memberId: string, householdId: string,
+    memberId: string,
+    householdId: string,
     changes: { reminders?: 'off' | undefined; language?: LanguageCode | undefined },
   ): Promise<Member> {
     return this.#write(() => {
-      const m = this.#snapshot.members.find((x) => x.id === memberId && x.householdId === householdId);
+      const m = this.#snapshot.members.find(
+        (x) => x.id === memberId && x.householdId === householdId,
+      );
       if (!m) throw new NotFoundError('member', memberId);
       // Only what was named changes: setting a language leaves reminders as they were.
-      if ('reminders' in changes) { if (changes.reminders === 'off') m.reminders = 'off'; else delete m.reminders; }
-      if ('language' in changes) { if (changes.language && changes.language !== 'en') m.language = changes.language; else delete m.language; }
+      if ('reminders' in changes) {
+        if (changes.reminders === 'off') m.reminders = 'off';
+        else delete m.reminders;
+      }
+      if ('language' in changes) {
+        if (changes.language && changes.language !== 'en') m.language = changes.language;
+        else delete m.language;
+      }
       return m;
     });
   }
@@ -413,7 +466,9 @@ export class CareStore {
 
   /** A non-person node by id within a household, or undefined. */
   getEntity(id: string, householdId: string): Entity | undefined {
-    return (this.#snapshot.entities ?? []).find((e) => e.id === id && e.householdId === householdId);
+    return (this.#snapshot.entities ?? []).find(
+      (e) => e.id === id && e.householdId === householdId,
+    );
   }
 
   /**
@@ -422,7 +477,9 @@ export class CareStore {
    */
   mapIdentity(mapping: IdentityMapping): Promise<IdentityMapping> {
     return this.#write(() => {
-      this.#snapshot.identities = this.#snapshot.identities.filter((i) => i.subject !== mapping.subject);
+      this.#snapshot.identities = this.#snapshot.identities.filter(
+        (i) => i.subject !== mapping.subject,
+      );
       this.#snapshot.identities.push(mapping);
       return mapping;
     });
@@ -439,8 +496,9 @@ export class CareStore {
    */
   linkTelegram(link: TelegramLink): Promise<TelegramLink> {
     return this.#write(() => {
-      this.#snapshot.telegramLinks = (this.#snapshot.telegramLinks ?? [])
-        .filter((l) => l.telegramId !== link.telegramId && l.memberId !== link.memberId);
+      this.#snapshot.telegramLinks = (this.#snapshot.telegramLinks ?? []).filter(
+        (l) => l.telegramId !== link.telegramId && l.memberId !== link.memberId,
+      );
       this.#snapshot.telegramLinks.push(link);
       return link;
     });
@@ -464,12 +522,18 @@ export class CareStore {
    */
   removeMember(householdId: string, memberId: string): Promise<{ released: number }> {
     return this.#write(() => {
-      const member = this.#snapshot.members.find((m) => m.id === memberId && m.householdId === householdId);
+      const member = this.#snapshot.members.find(
+        (m) => m.id === memberId && m.householdId === householdId,
+      );
       if (!member) throw new NotFoundError('member', memberId);
       let released = 0;
       for (const o of this.#snapshot.obligations) {
-        if (o.householdId === householdId && o.ownerId === memberId
-          && o.status !== 'RESOLVED' && o.status !== 'DISMISSED') {
+        if (
+          o.householdId === householdId &&
+          o.ownerId === memberId &&
+          o.status !== 'RESOLVED' &&
+          o.status !== 'DISMISSED'
+        ) {
           o.ownerId = null;
           o.status = 'OPEN';
           released += 1;
@@ -478,7 +542,9 @@ export class CareStore {
       this.#snapshot.members = this.#snapshot.members.filter((m) => m.id !== memberId);
       this.#snapshot.identities = this.#snapshot.identities.filter((i) => i.memberId !== memberId);
       if (this.#snapshot.telegramLinks) {
-        this.#snapshot.telegramLinks = this.#snapshot.telegramLinks.filter((l) => l.memberId !== memberId);
+        this.#snapshot.telegramLinks = this.#snapshot.telegramLinks.filter(
+          (l) => l.memberId !== memberId,
+        );
       }
       return { released };
     });
@@ -497,11 +563,22 @@ export class CareStore {
       if (!snap.households.some((h) => h.id === householdId)) {
         throw new NotFoundError('household', householdId);
       }
-      const memberIds = new Set(snap.members.filter((m) => m.householdId === householdId).map((m) => m.id));
-      const obligationIds = new Set(snap.obligations.filter((o) => o.householdId === householdId).map((o) => o.id));
-      const before = snap.households.length + snap.members.length + snap.events.length
-        + snap.obligations.length + snap.medications.length + snap.transitions.length
-        + snap.identities.length + (snap.entities ?? []).length + (snap.telegramLinks ?? []).length;
+      const memberIds = new Set(
+        snap.members.filter((m) => m.householdId === householdId).map((m) => m.id),
+      );
+      const obligationIds = new Set(
+        snap.obligations.filter((o) => o.householdId === householdId).map((o) => o.id),
+      );
+      const before =
+        snap.households.length +
+        snap.members.length +
+        snap.events.length +
+        snap.obligations.length +
+        snap.medications.length +
+        snap.transitions.length +
+        snap.identities.length +
+        (snap.entities ?? []).length +
+        (snap.telegramLinks ?? []).length;
 
       snap.households = snap.households.filter((h) => h.id !== householdId);
       snap.members = snap.members.filter((m) => m.householdId !== householdId);
@@ -509,13 +586,23 @@ export class CareStore {
       snap.obligations = snap.obligations.filter((o) => o.householdId !== householdId);
       snap.medications = snap.medications.filter((m) => m.householdId !== householdId);
       snap.transitions = snap.transitions.filter((t) => !obligationIds.has(t.obligationId));
-      snap.identities = snap.identities.filter((i) => i.householdId !== householdId && !memberIds.has(i.memberId));
+      snap.identities = snap.identities.filter(
+        (i) => i.householdId !== householdId && !memberIds.has(i.memberId),
+      );
       if (snap.entities) snap.entities = snap.entities.filter((e) => e.householdId !== householdId);
-      if (snap.telegramLinks) snap.telegramLinks = snap.telegramLinks.filter((l) => l.householdId !== householdId);
+      if (snap.telegramLinks)
+        snap.telegramLinks = snap.telegramLinks.filter((l) => l.householdId !== householdId);
 
-      const after = snap.households.length + snap.members.length + snap.events.length
-        + snap.obligations.length + snap.medications.length + snap.transitions.length
-        + snap.identities.length + (snap.entities ?? []).length + (snap.telegramLinks ?? []).length;
+      const after =
+        snap.households.length +
+        snap.members.length +
+        snap.events.length +
+        snap.obligations.length +
+        snap.medications.length +
+        snap.transitions.length +
+        snap.identities.length +
+        (snap.entities ?? []).length +
+        (snap.telegramLinks ?? []).length;
       return { removed: before - after };
     });
   }
@@ -527,6 +614,8 @@ export class CareStore {
 
   /** Replace all state. Used by the demo seeder and by tests. */
   async reset(snapshot: StoreSnapshot = emptySnapshot()): Promise<void> {
-    await this.#write(() => { this.#snapshot = snapshot; });
+    await this.#write(() => {
+      this.#snapshot = snapshot;
+    });
   }
 }

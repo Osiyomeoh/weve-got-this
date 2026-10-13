@@ -4,7 +4,12 @@ import { z } from 'zod';
 import { LANGUAGE_CODES } from '../domain/language.js';
 import type { CareState, LanguageCode, Member, Obligation } from '../domain/types.js';
 import type { Notifier } from '../notify/notifier.js';
-import { HouseholdScopeError, NotFoundError, RecordChangedError, type CareStore } from '../store/store.js';
+import {
+  HouseholdScopeError,
+  NotFoundError,
+  RecordChangedError,
+  type CareStore,
+} from '../store/store.js';
 import { matchObligation } from '../domain/obligation-ref.js';
 
 /**
@@ -66,7 +71,10 @@ class ObligationRefError extends Error {}
  * passed those instead (see domain/obligation-ref.ts). Never guesses between two.
  */
 export function obligationFrom(
-  store: CareStore, ref: string, householdId: string, opts: { finished?: boolean } = {},
+  store: CareStore,
+  ref: string,
+  householdId: string,
+  opts: { finished?: boolean } = {},
 ): Obligation {
   try {
     return store.getObligation(ref, householdId);
@@ -78,14 +86,16 @@ export function obligationFrom(
   const list = (os: Obligation[]) => os.map((o) => `"${o.what}" (obligationId ${o.id})`).join('; ');
   if (match.kind === 'ambiguous') {
     throw new ObligationRefError(
-      `That could be ${match.options.length} things: ${list(match.options)}. `
-      + 'Ask the person which one they mean, then use its obligationId.',
+      `That could be ${match.options.length} things: ${list(match.options)}. ` +
+        'Ask the person which one they mean, then use its obligationId.',
     );
   }
-  throw new ObligationRefError(match.live.length === 0
-    ? 'Nothing is open right now, so there is nothing to act on. Tell the person that.'
-    : `Nothing open matches that. What is open: ${list(match.live)}. `
-      + 'Use the obligationId of the one the person means, or ask them which.');
+  throw new ObligationRefError(
+    match.live.length === 0
+      ? 'Nothing is open right now, so there is nothing to act on. Tell the person that.'
+      : `Nothing open matches that. What is open: ${list(match.live)}. ` +
+          'Use the obligationId of the one the person means, or ask them which.',
+  );
 }
 
 export function describeError(err: unknown): string {
@@ -98,8 +108,10 @@ export function describeError(err: unknown): string {
   if (err instanceof RecordChangedError) {
     // Someone else changed the record in the same moment. Deciding again on the fresh record
     // is right; repeating the same call blindly may undo what they just did.
-    return 'Someone else changed the care record at the same moment, so this was not saved. '
-      + 'Read the record again (get_care_gaps), then do it again only if it still applies.';
+    return (
+      'Someone else changed the care record at the same moment, so this was not saved. ' +
+      'Read the record again (get_care_gaps), then do it again only if it still applies.'
+    );
   }
   return "Something went wrong saving that, so it hasn't been recorded. Tell the person it didn't save and offer to try again.";
 }
@@ -107,7 +119,12 @@ export function describeError(err: unknown): string {
 /** A timezone the runtime can actually format in - the IANA name must be valid, or
  *  gap detection (which reads the household timezone) throws on every later call. */
 export function isValidTimeZone(tz: string): boolean {
-  try { new Intl.DateTimeFormat('en-US', { timeZone: tz }); return true; } catch { return false; }
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: tz });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /** Every entry must be a 24-hour "HH:MM"; a malformed time is silently un-checkable. */
@@ -124,14 +141,29 @@ export function closed<T extends z.ZodRawShape>(shape: T) {
 }
 
 /** A medicine's name in another language, as the family says it: add_medication and change_medication. */
-export const ALSO_CALLED = z.array(closed({
-  language: z.enum(LANGUAGE_CODES as [LanguageCode, ...LanguageCode[]])
-    .describe('The language of that name: es, fr, pt, de, it, hi, zh, pcm, yo, ig, ha, bin or en.'),
-  name: z.string().describe('The name, exactly as the family says it in that language (e.g. "colírio").'),
-})).optional()
-  .describe('Only when the family says what they call it in another language ("Mum calls her eye drops colírio"). Never translate a name yourself.');
+export const ALSO_CALLED = z
+  .array(
+    closed({
+      language: z
+        .enum(LANGUAGE_CODES as [LanguageCode, ...LanguageCode[]])
+        .describe(
+          'The language of that name: es, fr, pt, de, it, hi, zh, pcm, yo, ig, ha, bin or en.',
+        ),
+      name: z
+        .string()
+        .describe('The name, exactly as the family says it in that language (e.g. "colírio").'),
+    }),
+  )
+  .optional()
+  .describe(
+    'Only when the family says what they call it in another language ("Mum calls her eye drops colírio"). Never translate a name yourself.',
+  );
 
-export function namesFrom(alsoCalled: z.infer<typeof ALSO_CALLED>): Partial<Record<LanguageCode, string>> | undefined {
+export function namesFrom(
+  alsoCalled: z.infer<typeof ALSO_CALLED>,
+): Partial<Record<LanguageCode, string>> | undefined {
   const named = (alsoCalled ?? []).filter((a) => a.name.trim());
-  return named.length ? Object.fromEntries(named.map((a) => [a.language, a.name.trim()])) : undefined;
+  return named.length
+    ? Object.fromEntries(named.map((a) => [a.language, a.name.trim()]))
+    : undefined;
 }

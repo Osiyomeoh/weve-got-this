@@ -26,8 +26,12 @@ const state = store.getCareState('h_margaret');
 const gaps = detectCareGaps(state);
 
 const when = new Intl.DateTimeFormat('en-US', {
-  timeZone: 'Africa/Lagos', weekday: 'long', month: 'long', day: 'numeric',
-  hour: 'numeric', minute: '2-digit',
+  timeZone: 'Africa/Lagos',
+  weekday: 'long',
+  month: 'long',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
 }).format(checkUpAt);
 
 console.log(`Demo reset - ${dbPath}`);

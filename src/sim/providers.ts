@@ -1,6 +1,9 @@
 import {
-  BedrockRuntimeClient, ConverseCommand,
-  type ContentBlock, type Message, type Tool as BedrockTool,
+  BedrockRuntimeClient,
+  ConverseCommand,
+  type ContentBlock,
+  type Message,
+  type Tool as BedrockTool,
 } from '@aws-sdk/client-bedrock-runtime';
 import { GoogleGenAI, type FunctionDeclaration } from '@google/genai';
 import { bedrockModel } from '../strands/host.js';
@@ -87,18 +90,23 @@ export class BedrockProvider implements ModelProvider {
     };
 
     const turn = async (): Promise<TurnOutput> => {
-      const response = await this.#client.send(new ConverseCommand({
-        modelId: this.modelId,
-        system: [{ text: system }],
-        messages: history,
-        // Bedrock refuses an empty tool list: a conversation with no tools sends none.
-        ...(toolConfig.tools.length ? { toolConfig } : {}),
-        inferenceConfig: { maxTokens: 512, temperature: 0 },
-      }));
+      const response = await this.#client.send(
+        new ConverseCommand({
+          modelId: this.modelId,
+          system: [{ text: system }],
+          messages: history,
+          // Bedrock refuses an empty tool list: a conversation with no tools sends none.
+          ...(toolConfig.tools.length ? { toolConfig } : {}),
+          inferenceConfig: { maxTokens: 512, temperature: 0 },
+        }),
+      );
       const content = response.output?.message?.content ?? [];
       history.push({ role: 'assistant', content });
       return {
-        text: content.map((c) => ('text' in c ? c.text ?? '' : '')).join(' ').trim(),
+        text: content
+          .map((c) => ('text' in c ? (c.text ?? '') : ''))
+          .join(' ')
+          .trim(),
         toolUses: content
           .filter((c) => 'toolUse' in c && c.toolUse)
           .map((c) => ({
@@ -138,7 +146,13 @@ export class BedrockProvider implements ModelProvider {
  */
 function geminiSchema(schema: Record<string, unknown>): Record<string, unknown> {
   const ALLOWED = new Set([
-    'type', 'description', 'properties', 'required', 'items', 'enum', 'nullable',
+    'type',
+    'description',
+    'properties',
+    'required',
+    'items',
+    'enum',
+    'nullable',
   ]);
   const walk = (node: unknown): unknown => {
     if (Array.isArray(node)) return node.map(walk);
@@ -146,11 +160,12 @@ function geminiSchema(schema: Record<string, unknown>): Record<string, unknown> 
     const out: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
       if (!ALLOWED.has(key)) continue;
-      out[key] = key === 'properties'
-        ? Object.fromEntries(
-            Object.entries(value as Record<string, unknown>).map(([k, v]) => [k, walk(v)]),
-          )
-        : walk(value);
+      out[key] =
+        key === 'properties'
+          ? Object.fromEntries(
+              Object.entries(value as Record<string, unknown>).map(([k, v]) => [k, walk(v)]),
+            )
+          : walk(value);
     }
     // Gemini requires a type; objects without one are rejected outright.
     if (!('type' in out) && 'properties' in out) out['type'] = 'object';
@@ -255,7 +270,9 @@ export function providerFromEnv(fallback: 'bedrock' | 'strands' = 'bedrock'): Mo
     return new GeminiProvider({
       modelId: process.env['GEMINI_MODEL_ID'] ?? 'gemini-3.5-flash',
       ...(apiKey ? { apiKey } : {}),
-      ...(process.env['GOOGLE_CLOUD_PROJECT'] ? { project: process.env['GOOGLE_CLOUD_PROJECT'] } : {}),
+      ...(process.env['GOOGLE_CLOUD_PROJECT']
+        ? { project: process.env['GOOGLE_CLOUD_PROJECT'] }
+        : {}),
     });
   }
   return new BedrockProvider({

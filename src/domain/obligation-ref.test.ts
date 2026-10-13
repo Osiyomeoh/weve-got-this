@@ -5,7 +5,12 @@ import type { Obligation } from './types.ts';
 
 function work(id: string, what: string, status: Obligation['status'] = 'OPEN'): Obligation {
   return {
-    id, householdId: 'h', what, status, consequence: 'logistical', ownerId: null,
+    id,
+    householdId: 'h',
+    what,
+    status,
+    consequence: 'logistical',
+    ownerId: null,
     provenance: { kind: 'CONFIRMED', byMemberId: 'm', at: '2026-09-23T08:00:00Z' },
     createdAt: '2026-09-23T08:00:00Z',
   };
@@ -29,7 +34,10 @@ test('an id is used as it is', () => {
 test('the task in words, or the whole spoken gap line, finds it', () => {
   assert.equal(found('Take Daddy to his eye check-up'), 'ob_ride');
   // What the planner passed in production, word for word.
-  assert.equal(found('Take Daddy to his eye check-up tomorrow at 10 AM - nobody has taken this yet.'), 'ob_ride');
+  assert.equal(
+    found('Take Daddy to his eye check-up tomorrow at 10 AM - nobody has taken this yet.'),
+    'ob_ride',
+  );
   assert.equal(found("pick up daddy's eye drops refill"), 'ob_refill');
 });
 
@@ -60,8 +68,14 @@ test('a question about what happened may name finished work, and gets the latest
   assert.equal(pick('book the eye check-up', board), 'ob_old');
   assert.equal(pick('the refill', board), 'ob_refill', 'live work still comes first');
   const twice = [
-    { ...work('ob_r1', "Pick up Daddy's eye drops refill", 'RESOLVED'), resolvedAt: '2026-09-20T19:00:00Z' },
-    { ...work('ob_r2', "Pick up Daddy's eye drops refill", 'RESOLVED'), resolvedAt: '2026-10-07T19:16:00Z' },
+    {
+      ...work('ob_r1', "Pick up Daddy's eye drops refill", 'RESOLVED'),
+      resolvedAt: '2026-09-20T19:00:00Z',
+    },
+    {
+      ...work('ob_r2', "Pick up Daddy's eye drops refill", 'RESOLVED'),
+      resolvedAt: '2026-10-07T19:16:00Z',
+    },
   ];
   assert.equal(pick('the eye drops refill', twice), 'ob_r2');
   assert.equal(pick('the laundry', board), 'none');

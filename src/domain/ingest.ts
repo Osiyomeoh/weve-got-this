@@ -47,8 +47,7 @@ export async function applySignal(
   if (outcome.resolvesObligationLike) {
     const pattern = outcome.resolvesObligationLike.match;
     const open = state.obligations.find(
-      (o) => pattern.test(o.what)
-        && o.status !== 'RESOLVED' && o.status !== 'DISMISSED',
+      (o) => pattern.test(o.what) && o.status !== 'RESOLVED' && o.status !== 'DISMISSED',
     );
     resolvesCandidate = open?.id ?? null;
   }

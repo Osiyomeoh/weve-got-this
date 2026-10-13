@@ -67,8 +67,8 @@ function decodeBase64Url(data: string): string {
 /** Depth-first search for the first calendar (.ics) part's decoded text. */
 function findIcsText(part: GmailPart | undefined): string | undefined {
   if (!part) return undefined;
-  const isCalendar = part.mimeType === 'text/calendar'
-    || (part.filename ?? '').toLowerCase().endsWith('.ics');
+  const isCalendar =
+    part.mimeType === 'text/calendar' || (part.filename ?? '').toLowerCase().endsWith('.ics');
   if (isCalendar && part.body?.data) return decodeBase64Url(part.body.data);
   for (const child of part.parts ?? []) {
     const found = findIcsText(child);
@@ -149,11 +149,16 @@ export async function syncEmailAppointments(
       continue;
     }
 
-    const applied = await applyAppointment(store, householdId, {
-      ...mapping.input,
-      ...(forMemberId ? { forMemberId } : {}),
-      reportedBy: EMAIL_REPORTER,
-    }, now);
+    const applied = await applyAppointment(
+      store,
+      householdId,
+      {
+        ...mapping.input,
+        ...(forMemberId ? { forMemberId } : {}),
+        reportedBy: EMAIL_REPORTER,
+      },
+      now,
+    );
 
     if (!applied.ok) {
       result.skipped.push({ id: email.messageId, reason: applied.spoken });
@@ -180,6 +185,10 @@ export async function runGmailSync(
   forMemberId?: string,
 ): Promise<EmailSyncResult> {
   const accessToken = await refreshAccessToken(config);
-  const emails = await fetchInviteEmails(accessToken, config.query ?? DEFAULT_QUERY, config.maxResults ?? 25);
+  const emails = await fetchInviteEmails(
+    accessToken,
+    config.query ?? DEFAULT_QUERY,
+    config.maxResults ?? 25,
+  );
   return syncEmailAppointments(store, householdId, emails, now, forMemberId);
 }

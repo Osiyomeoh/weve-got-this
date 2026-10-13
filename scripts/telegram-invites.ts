@@ -34,9 +34,11 @@ const bot = process.env['TELEGRAM_BOT_USERNAME']?.trim() || 'carecircle0111_bot'
 
 const table = process.env['CARECIRCLE_TABLE']?.trim();
 const region = process.env['AWS_REGION']?.trim();
-const store = new CareStore(table
-  ? new DynamoPersistence({ tableName: table, ...(region ? { region } : {}) })
-  : new FilePersistence(process.env['CARECIRCLE_DB'] ?? 'carecircle.db.json'));
+const store = new CareStore(
+  table
+    ? new DynamoPersistence({ tableName: table, ...(region ? { region } : {}) })
+    : new FilePersistence(process.env['CARECIRCLE_DB'] ?? 'carecircle.db.json'),
+);
 await store.init();
 
 const households = [...new Set(store.allMembers().map((m) => m.householdId))];
@@ -44,9 +46,11 @@ let householdId = flag('--household');
 if (!householdId) {
   const real = households.filter((h) => h !== DEMO && !h.startsWith(`${DEMO}~`));
   if (real.length !== 1) {
-    console.error(real.length === 0
-      ? 'No household other than the demo one yet. Create the circle at /setup first, or pass --household.'
-      : `More than one household; pick one with --household:\n${real.map((h) => `  ${h}  ${store.getCareState(h).household.name}`).join('\n')}`);
+    console.error(
+      real.length === 0
+        ? 'No household other than the demo one yet. Create the circle at /setup first, or pass --household.'
+        : `More than one household; pick one with --household:\n${real.map((h) => `  ${h}  ${store.getCareState(h).household.name}`).join('\n')}`,
+    );
     process.exit(1);
   }
   householdId = real[0]!;
@@ -65,16 +69,21 @@ for (const m of state.members) {
   const link = inviteLink(bot, inviteFor(secret, m.id));
   console.log(`== ${m.name}, ${ROLE[m.role]}${linked ? '  (already connected)' : ''}`);
   console.log(`   ${link}\n`);
-  const why = m.role === 'care_recipient'
-    ? 'to help us all keep track of your care, and you are part of it'
-    : `to help us share ${them}'s care`;
-  console.log([
-    `Hi ${m.name}, I've set up CareCircle ${why}. It works in Telegram.`,
-    '',
-    `1. Tap this link on your phone: ${link}`,
-    '2. Telegram opens a chat with CareCircle. Tap Start.',
-    '',
-    'It will tell you what you can do. The link is just for you, so please don\'t forward it.',
-  ].map((l) => `   ${l}`).join('\n'));
+  const why =
+    m.role === 'care_recipient'
+      ? 'to help us all keep track of your care, and you are part of it'
+      : `to help us share ${them}'s care`;
+  console.log(
+    [
+      `Hi ${m.name}, I've set up CareCircle ${why}. It works in Telegram.`,
+      '',
+      `1. Tap this link on your phone: ${link}`,
+      '2. Telegram opens a chat with CareCircle. Tap Start.',
+      '',
+      "It will tell you what you can do. The link is just for you, so please don't forward it.",
+    ]
+      .map((l) => `   ${l}`)
+      .join('\n'),
+  );
   console.log('');
 }

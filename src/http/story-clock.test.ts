@@ -50,7 +50,12 @@ async function sandbox(): Promise<{ householdId: string; tokens: Record<string, 
 }
 
 /** One tool call in its own session, optionally claiming a story time on every request. */
-async function callTool(token: string, name: string, args: Record<string, unknown>, storyTime?: string): Promise<void> {
+async function callTool(
+  token: string,
+  name: string,
+  args: Record<string, unknown>,
+  storyTime?: string,
+): Promise<void> {
   const headers: Record<string, string> = {
     'content-type': 'application/json',
     accept: 'application/json, text/event-stream',
@@ -58,17 +63,37 @@ async function callTool(token: string, name: string, args: Record<string, unknow
     ...(storyTime ? { [STORY_TIME_HEADER]: storyTime } : {}),
   };
   const init = await fetch(`${base}/mcp`, {
-    method: 'POST', headers,
-    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize', params: {
-      protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 't', version: '1' } } }),
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'initialize',
+      params: {
+        protocolVersion: '2025-11-25',
+        capabilities: {},
+        clientInfo: { name: 't', version: '1' },
+      },
+    }),
   });
   assert.equal(init.status, 200);
   headers['mcp-session-id'] = init.headers.get('mcp-session-id')!;
   await init.text();
-  await fetch(`${base}/mcp`, { method: 'POST', headers,
-    body: JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) });
-  const res = await fetch(`${base}/mcp`, { method: 'POST', headers,
-    body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'tools/call', params: { name, arguments: args } }) });
+  await fetch(`${base}/mcp`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }),
+  });
+  const res = await fetch(`${base}/mcp`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 2,
+      method: 'tools/call',
+      params: { name, arguments: args },
+    }),
+  });
   assert.equal(res.status, 200);
   await res.text();
 }
@@ -81,17 +106,32 @@ const lastNoteAt = (householdId: string): number => {
 test('a sandbox copy runs on the story time its caller sends', async () => {
   const copy = await sandbox();
   const story = '2026-10-07T19:16:00.000Z';
-  await callTool(copy.tokens['m_david']!, 'add_note', { note: 'Musa is on his way to the pharmacy.' }, story);
+  await callTool(
+    copy.tokens['m_david']!,
+    'add_note',
+    { note: 'Musa is on his way to the pharmacy.' },
+    story,
+  );
   const at = lastNoteAt(copy.householdId);
   // Story time plus however long the request took - never the real clock.
-  assert.ok(at >= Date.parse(story) && at < Date.parse(story) + 5_000, `recorded at ${new Date(at).toISOString()}`);
+  assert.ok(
+    at >= Date.parse(story) && at < Date.parse(story) + 5_000,
+    `recorded at ${new Date(at).toISOString()}`,
+  );
 });
 
 test('who took the work on, and when, is kept in story time too', async () => {
   const copy = await sandbox();
   const story = '2026-10-07T11:34:00.000Z';
-  await callTool(copy.tokens['m_david']!, 'claim_obligation', { obligationId: 'eye check-up' }, story);
-  const ride = store.getCareState(copy.householdId).obligations.find((o) => /eye check-up/.test(o.what))!;
+  await callTool(
+    copy.tokens['m_david']!,
+    'claim_obligation',
+    { obligationId: 'eye check-up' },
+    story,
+  );
+  const ride = store
+    .getCareState(copy.householdId)
+    .obligations.find((o) => /eye check-up/.test(o.what))!;
   const moved = store.getTransitions(ride.id).at(-1)!;
   assert.equal(moved.to, 'ASSIGNED');
   const at = Date.parse(moved.at);
@@ -100,8 +140,16 @@ test('who took the work on, and when, is kept in story time too', async () => {
 
 test('the real demo household ignores a claimed story time', async () => {
   const before = Date.now();
-  await callTool('david-token', 'add_note', { note: 'A note on the real clock.' }, '2001-01-01T12:00:00.000Z');
-  assert.ok(lastNoteAt('h_margaret') >= before - 1_000, 'a real household must stay on the real clock');
+  await callTool(
+    'david-token',
+    'add_note',
+    { note: 'A note on the real clock.' },
+    '2001-01-01T12:00:00.000Z',
+  );
+  assert.ok(
+    lastNoteAt('h_margaret') >= before - 1_000,
+    'a real household must stay on the real clock',
+  );
 });
 
 test('a copy that sends no story time stays on the real clock', async () => {

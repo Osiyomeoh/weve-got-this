@@ -47,7 +47,9 @@ test('the planner calls the real tools over MCP and speaks what they say', async
     assert.equal(turn.trace.outcome, 'answered');
     assert.equal(turn.trace.steps.length, 2, 'one reply asked for the tool, one answered');
     assert.equal(turn.trace.steps[0]?.calls[0]?.name, 'get_care_summary');
-  } finally { await host.close(); }
+  } finally {
+    await host.close();
+  }
 });
 
 test('the planner knows who is speaking and where the family lives, from the server', async () => {
@@ -60,16 +62,19 @@ test('the planner knows who is speaking and where the family lives, from the ser
     assert.match(prompt, /this household is in Africa\/Lagos/);
     assert.match(prompt, /Today is Thursday, October 1, 2026 at 9:30 PM/);
     assert.match(prompt, /Never say someone did not take a medication/);
-  } finally { await host.close(); }
+  } finally {
+    await host.close();
+  }
 });
 
 test('a reply that says Daddy missed his drops is sent back, and the corrected one is spoken', async () => {
   const { host, model } = await planner([
     { tool: 'get_care_summary' },
     { say: 'Daddy missed his evening eye drops.' },
-    (messages) => corrected(messages)
-      ? { say: "There's no record of Daddy's evening eye drops yet." }
-      : { say: 'Daddy missed his evening eye drops.' },
+    (messages) =>
+      corrected(messages)
+        ? { say: "There's no record of Daddy's evening eye drops yet." }
+        : { say: 'Daddy missed his evening eye drops.' },
     { say: 'You are welcome.' },
   ]);
   try {
@@ -79,11 +84,16 @@ test('a reply that says Daddy missed his drops is sent back, and the corrected o
 
     // Neither the blaming reply nor the correction is left in the conversation.
     await host.say('Thanks');
-    const history = model.seen.at(-1)!.map((m) => textIn(m)).join('\n');
+    const history = model.seen
+      .at(-1)!
+      .map((m) => textIn(m))
+      .join('\n');
     assert.doesNotMatch(history, BLAME);
     assert.doesNotMatch(history, /CareCircle check/);
     assert.match(history, /no record of Daddy's evening eye drops yet/);
-  } finally { await host.close(); }
+  } finally {
+    await host.close();
+  }
 });
 
 test('a model that blames twice is not asked a third time: what the tools said is spoken', async () => {
@@ -95,29 +105,40 @@ test('a model that blames twice is not asked a third time: what the tools said i
   ]);
   try {
     const turn = await host.say('Did Daddy take his evening drops?');
-    assert.deepEqual(turn.noBlame, { caught: ['missed', 'forgot'], corrected: false, replaced: true });
+    assert.deepEqual(turn.noBlame, {
+      caught: ['missed', 'forgot'],
+      corrected: false,
+      replaced: true,
+    });
     assert.equal(turn.spoken, turn.toolCalls[0]!.result, 'the summary, word for word');
     assert.match(turn.spoken, /no record/i);
     assert.doesNotMatch(turn.spoken, BLAME);
-    assert.equal(model.seen.length, 3, 'the tool call, the first reply, the one retry: no third ask');
-  } finally { await host.close(); }
+    assert.equal(
+      model.seen.length,
+      3,
+      'the tool call, the first reply, the one retry: no third ask',
+    );
+  } finally {
+    await host.close();
+  }
 });
 
 test("a refused tool's words are for the model, so they are never the fallback", async () => {
   // Daddy cannot read the full record; the refusal tells the model which tool to call
   // instead, in words that would be wrong said aloud. Seen on Nova Pro: "Have I missed
   // anything today?" was answered with the refusal, instruction and all.
-  const { host } = await planner([
-    { tool: 'get_care_gaps' },
-    { say: 'You missed your drops.' },
-    { say: 'You forgot them.' },
-  ], 'm_margaret');
+  const { host } = await planner(
+    [{ tool: 'get_care_gaps' }, { say: 'You missed your drops.' }, { say: 'You forgot them.' }],
+    'm_margaret',
+  );
   try {
     const turn = await host.say('Have I missed anything today?');
     assert.equal(turn.toolCalls[0]!.isError, true);
     assert.equal(turn.noBlame.replaced, true);
     assert.equal(turn.spoken, ONLY_THE_RECORD);
-  } finally { await host.close(); }
+  } finally {
+    await host.close();
+  }
 });
 
 test('with no tool result to fall back on, only what the record can say is spoken', async () => {
@@ -130,30 +151,41 @@ test('with no tool result to fall back on, only what the record can say is spoke
     assert.equal(turn.spoken, ONLY_THE_RECORD);
     assert.doesNotMatch(ONLY_THE_RECORD, BLAME);
     assert.deepEqual(turn.noBlame.caught, ["didn't take", "hasn't taken"]);
-  } finally { await host.close(); }
+  } finally {
+    await host.close();
+  }
 });
 
 test("a model's inline reasoning is not spoken", async () => {
   const { host } = await planner([
     { tool: 'get_care_summary' },
-    { say: "<thinking>I should read Tolu the summary.</thinking> There's no record of Daddy's evening eye drops yet." },
+    {
+      say: "<thinking>I should read Tolu the summary.</thinking> There's no record of Daddy's evening eye drops yet.",
+    },
   ]);
   try {
     const turn = await host.say('How is Daddy?');
     assert.equal(turn.spoken, "There's no record of Daddy's evening eye drops yet.");
-  } finally { await host.close(); }
+  } finally {
+    await host.close();
+  }
 });
 
 test('a turn that changed the record is never answered with silence', async () => {
-  const { host } = await planner([
-    { tool: 'log_care_event', input: { kind: 'medication_taken', medicationName: 'eye drops' } },
-    { say: '<thinking>Logged it.</thinking>' },
-  ], 'm_margaret');
+  const { host } = await planner(
+    [
+      { tool: 'log_care_event', input: { kind: 'medication_taken', medicationName: 'eye drops' } },
+      { say: '<thinking>Logged it.</thinking>' },
+    ],
+    'm_margaret',
+  );
   try {
     const turn = await host.say('Did I take my evening drops?');
     assert.equal(turn.spoken, turn.toolCalls[0]!.result);
     assert.match(turn.spoken, /logged/);
-  } finally { await host.close(); }
+  } finally {
+    await host.close();
+  }
 });
 
 test('a tool called twice is said once when the reply falls back to it', async () => {
@@ -168,18 +200,27 @@ test('a tool called twice is said once when the reply falls back to it', async (
     assert.equal(turn.noBlame.replaced, true);
     assert.equal(turn.toolCalls.length, 2);
     assert.equal(turn.spoken, turn.toolCalls[0]!.result);
-  } finally { await host.close(); }
+  } finally {
+    await host.close();
+  }
 });
 
 test('the plugin resets every turn', async () => {
   const { host } = await planner([
-    { say: 'He missed it.' }, { say: 'There is no record of it.' },
+    { say: 'He missed it.' },
+    { say: 'There is no record of it.' },
     { say: 'Hello again.' },
   ]);
   try {
     assert.equal((await host.say('a')).noBlame.corrected, true);
-    assert.deepEqual((await host.say('b')).noBlame, { caught: [], corrected: false, replaced: false });
-  } finally { await host.close(); }
+    assert.deepEqual((await host.say('b')).noBlame, {
+      caught: [],
+      corrected: false,
+      replaced: false,
+    });
+  } finally {
+    await host.close();
+  }
 });
 
 test('a model that never stops calling tools is cut off and says so', async () => {
@@ -189,17 +230,24 @@ test('a model that never stops calling tools is cut off and says so', async () =
     assert.equal(turn.trace.outcome, 'step_limit');
     assert.match(turn.spoken, /got stuck/);
     assert.ok(turn.toolCalls.length <= 7, `${turn.toolCalls.length} tool calls`);
-  } finally { await host.close(); }
+  } finally {
+    await host.close();
+  }
 });
 
 test('a tool error is passed to the model as an error, and the turn goes on', async () => {
-  const { host } = await planner([{ tool: 'claim_obligation', input: { obligationId: 'o_nothing' } }, echo]);
+  const { host } = await planner([
+    { tool: 'claim_obligation', input: { obligationId: 'o_nothing' } },
+    echo,
+  ]);
   try {
     const turn = await host.say('I will take that one');
     assert.equal(turn.toolCalls[0]?.isError, true);
     assert.ok(turn.spoken.length > 0);
     assert.doesNotMatch(turn.spoken, /undefined|\[object Object\]/);
-  } finally { await host.close(); }
+  } finally {
+    await host.close();
+  }
 });
 
 test('every turn after the first tells the model the record may have changed', async () => {
@@ -211,5 +259,7 @@ test('every turn after the first tells the model the record may have changed', a
     const second = textIn(model.seen[1]?.at(-1));
     assert.ok(second.startsWith(STALE_NOTE), 'the second turn carries the reminder');
     assert.match(second, /Did Daddy use his drops\?$/);
-  } finally { await host.close(); }
+  } finally {
+    await host.close();
+  }
 });

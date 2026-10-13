@@ -3,14 +3,22 @@ import assert from 'node:assert/strict';
 import { careEvent, ringAdapter, beeAdapter } from './index.ts';
 
 test('a builder fills an id and a timestamp, and keeps provenance honest', () => {
-  const e = careEvent({ source: 'alexa', kind: 'medication', provenance: { kind: 'CONFIRMED', by: 'm', at: '2026-01-01T00:00:00Z' } });
+  const e = careEvent({
+    source: 'alexa',
+    kind: 'medication',
+    provenance: { kind: 'CONFIRMED', by: 'm', at: '2026-01-01T00:00:00Z' },
+  });
   assert.ok(e.id.startsWith('ce_alexa'));
   assert.ok(e.occurredAt);
   assert.equal(e.provenance.kind, 'CONFIRMED');
 });
 
 test('a Ring package delivery is evidence (INFERRED), never a conclusion', () => {
-  const [e] = ringAdapter.adapt({ type: 'motion_detected', sub_type: 'package_delivery', request_id: 'r1' });
+  const [e] = ringAdapter.adapt({
+    type: 'motion_detected',
+    sub_type: 'package_delivery',
+    request_id: 'r1',
+  });
   assert.equal(e.kind, 'delivery');
   assert.equal(e.provenance.kind, 'INFERRED');
   assert.equal(e.id, 'ce_ring_r1'); // idempotent on request_id

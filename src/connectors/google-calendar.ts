@@ -141,14 +141,19 @@ export async function syncCalendarEvents(
       continue;
     }
 
-    const applied = await applyAppointment(store, householdId, {
-      ...mapping.input,
-      // Store the idempotency key (id + updated) as the externalId so an unchanged
-      // re-poll is recognised and an edited event re-applies.
-      externalId: key,
-      ...(forMemberId ? { forMemberId } : {}),
-      reportedBy: CALENDAR_REPORTER,
-    }, now);
+    const applied = await applyAppointment(
+      store,
+      householdId,
+      {
+        ...mapping.input,
+        // Store the idempotency key (id + updated) as the externalId so an unchanged
+        // re-poll is recognised and an edited event re-applies.
+        externalId: key,
+        ...(forMemberId ? { forMemberId } : {}),
+        reportedBy: CALENDAR_REPORTER,
+      },
+      now,
+    );
 
     if (!applied.ok) {
       result.skipped.push({ key, reason: applied.spoken });
@@ -176,7 +181,10 @@ export async function runGoogleCalendarSync(
 ): Promise<SyncResult> {
   const accessToken = await refreshAccessToken(config);
   const events = await fetchUpcomingEvents(
-    accessToken, config.calendarId, now, config.horizonDays ?? 30,
+    accessToken,
+    config.calendarId,
+    now,
+    config.horizonDays ?? 30,
   );
   return syncCalendarEvents(store, householdId, events, now, forMemberId);
 }
@@ -201,7 +209,9 @@ async function fetchCareCircleEvents(
   const res = await fetch(url, { headers: { authorization: `Bearer ${accessToken}` } });
   if (!res.ok) {
     const text = await res.text().catch(() => '');
-    throw new Error(`Google Calendar list (write-back) failed (${res.status}): ${text.slice(0, 300)}`);
+    throw new Error(
+      `Google Calendar list (write-back) failed (${res.status}): ${text.slice(0, 300)}`,
+    );
   }
   const json = (await res.json()) as { items?: Array<GoogleCalendarEvent & { id?: string }> };
   const map = new Map<string, { eventId: string; summary?: string; start?: string }>();
@@ -218,7 +228,11 @@ async function fetchCareCircleEvents(
   return map;
 }
 
-async function insertEvent(accessToken: string, calendarId: string, body: GoogleCalendarEvent): Promise<void> {
+async function insertEvent(
+  accessToken: string,
+  calendarId: string,
+  body: GoogleCalendarEvent,
+): Promise<void> {
   const url = `${CALENDAR_API}/${encodeURIComponent(calendarId)}/events`;
   const res = await fetch(url, {
     method: 'POST',
@@ -231,7 +245,12 @@ async function insertEvent(accessToken: string, calendarId: string, body: Google
   }
 }
 
-async function patchEvent(accessToken: string, calendarId: string, eventId: string, body: GoogleCalendarEvent): Promise<void> {
+async function patchEvent(
+  accessToken: string,
+  calendarId: string,
+  eventId: string,
+  body: GoogleCalendarEvent,
+): Promise<void> {
   const url = `${CALENDAR_API}/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`;
   const res = await fetch(url, {
     method: 'PATCH',

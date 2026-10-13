@@ -26,10 +26,17 @@ import { SeenEvents } from './ring-webhook.js';
 
 const SIGNATURE_HEADER = 'x-hub-signature-256';
 
-function verifySignature(rawBody: Buffer, signature: string | undefined, appSecret: string): boolean {
+function verifySignature(
+  rawBody: Buffer,
+  signature: string | undefined,
+  appSecret: string,
+): boolean {
   if (!signature || !appSecret) return false;
   const expected = createHmac('sha256', appSecret).update(rawBody).digest('hex');
-  const given = signature.trim().replace(/^sha256=/i, '').toLowerCase();
+  const given = signature
+    .trim()
+    .replace(/^sha256=/i, '')
+    .toLowerCase();
   const a = Buffer.from(expected, 'utf8');
   const b = Buffer.from(given, 'utf8');
   if (a.length !== b.length) return false;
@@ -56,7 +63,12 @@ export function createWhatsAppVerify(opts: Pick<WhatsAppWebhookOptions, 'verifyT
     const mode = req.query['hub.mode'];
     const token = req.query['hub.verify_token'];
     const challenge = req.query['hub.challenge'];
-    if (mode === 'subscribe' && typeof token === 'string' && token === opts.verifyToken && opts.verifyToken) {
+    if (
+      mode === 'subscribe' &&
+      typeof token === 'string' &&
+      token === opts.verifyToken &&
+      opts.verifyToken
+    ) {
       res.status(200).send(typeof challenge === 'string' ? challenge : '');
       return;
     }
@@ -113,10 +125,20 @@ export function createWhatsAppWebhook(opts: WhatsAppWebhookOptions) {
       try {
         const r = await applyRequestResponse(
           opts.store,
-          { householdId: opts.householdId, memberId, accepted: intent === 'accepted', note: msg.text, channel: 'whatsapp' },
+          {
+            householdId: opts.householdId,
+            memberId,
+            accepted: intent === 'accepted',
+            note: msg.text,
+            channel: 'whatsapp',
+          },
           now(),
         );
-        results.push({ messageId: msg.messageId, status: r.ok ? intent : 'no-open-request', ...(r.obligationId ? { obligationId: r.obligationId } : {}) });
+        results.push({
+          messageId: msg.messageId,
+          status: r.ok ? intent : 'no-open-request',
+          ...(r.obligationId ? { obligationId: r.obligationId } : {}),
+        });
       } catch (err) {
         results.push({ messageId: msg.messageId, status: 'error', detail: (err as Error).message });
       }

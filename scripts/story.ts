@@ -46,16 +46,22 @@ function wallClockToday(hour: number, minute: number, tz: string, base = new Dat
   // Anchor the day to the calendar date in `tz`, not UTC: in the evening in the
   // Americas the UTC date is already tomorrow, which would misplace "today".
   const ymd = new Intl.DateTimeFormat('en-CA', {
-    timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit',
+    timeZone: tz,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
   }).format(base);
   const [y, mo, d] = ymd.split('-').map(Number);
   const guess = new Date(Date.UTC(y!, mo! - 1, d!, hour, minute, 0, 0));
   const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: tz, hour: '2-digit', hour12: false, minute: '2-digit',
+    timeZone: tz,
+    hour: '2-digit',
+    hour12: false,
+    minute: '2-digit',
   }).formatToParts(guess);
   const h = Number(parts.find((p) => p.type === 'hour')?.value ?? '0') % 24;
   const m = Number(parts.find((p) => p.type === 'minute')?.value ?? '0');
-  const drift = (h * 60 + m) - (hour * 60 + minute);
+  const drift = h * 60 + m - (hour * 60 + minute);
   return new Date(guess.getTime() - drift * 60_000);
 }
 
@@ -77,7 +83,10 @@ function alexa(r: any): any {
 }
 function board(gaps: any[]): void {
   console.log(dim('    ── Care Gaps ─────────────────────────────────'));
-  if (gaps.length === 0) { console.log(dim('    (nothing unowned)')); return; }
+  if (gaps.length === 0) {
+    console.log(dim('    (nothing unowned)'));
+    return;
+  }
   for (const g of gaps) {
     const mark = g.obligationId ? '•' : '?';
     console.log(dim(`    ${mark} [${String(g.severity).padEnd(6)}] ${g.spoken}`));
@@ -125,9 +134,16 @@ async function main(): Promise<void> {
   // An errand Musa promised this afternoon, due at 8pm. Part of the opening state,
   // like the ride: the story is about what happens when a promise slips.
   const errand = await store.createObligation({
-    householdId: HOUSEHOLD, what: "Pick up Daddy's new eye drops from the pharmacy", consequence: 'medical',
-    status: 'ASSIGNED', ownerId: 'm_aide',
-    provenance: { kind: 'CONFIRMED', byMemberId: 'm_aide', at: wallClockToday(15, 0, TZ).toISOString() },
+    householdId: HOUSEHOLD,
+    what: "Pick up Daddy's new eye drops from the pharmacy",
+    consequence: 'medical',
+    status: 'ASSIGNED',
+    ownerId: 'm_aide',
+    provenance: {
+      kind: 'CONFIRMED',
+      byMemberId: 'm_aide',
+      at: wallClockToday(15, 0, TZ).toISOString(),
+    },
     dueAt: wallClockToday(20, 0, TZ).toISOString(),
   });
 
@@ -150,10 +166,15 @@ async function main(): Promise<void> {
   const url = `http://127.0.0.1:${port}/mcp`;
 
   const when = new Intl.DateTimeFormat('en-US', {
-    timeZone: TZ, weekday: 'long', hour: 'numeric', minute: '2-digit',
+    timeZone: TZ,
+    weekday: 'long',
+    hour: 'numeric',
+    minute: '2-digit',
   }).format(checkUpAt);
   // The check-up's own day: it is two days from whenever the story runs, so never a fixed name.
-  const rideDay = new Intl.DateTimeFormat('en-US', { timeZone: TZ, weekday: 'long' }).format(checkUpAt);
+  const rideDay = new Intl.DateTimeFormat('en-US', { timeZone: TZ, weekday: 'long' }).format(
+    checkUpAt,
+  );
 
   // 3. Four members, four credentials, four sessions.
   const daddy = await connect(url, 'margaret-token');
@@ -169,32 +190,40 @@ async function main(): Promise<void> {
   // ── Beat 1 · 7:42am - she logs her own care by talking ──────────────────
   beat('7:42am', 'The parent logs his own care by voice');
   say('Daddy (Echo at home)', 'Alexa, I used my eye drops.');
-  alexa(await call(daddy, 'log_care_event', {
-    kind: 'medication_taken', medicationName: 'eye drops',
-    occurredAt: wallClockToday(7, 42, TZ).toISOString(),
-  }));
+  alexa(
+    await call(daddy, 'log_care_event', {
+      kind: 'medication_taken',
+      medicationName: 'eye drops',
+      occurredAt: wallClockToday(7, 42, TZ).toISOString(),
+    }),
+  );
 
   // ── Beat 2 · the constraint - work comes loose, silently ────────────────
   clockAt = wallClockToday(9, 15, TZ);
   beat('9:15am', 'A constraint quietly orphans work nobody re-assigned');
   say('Funmi (phone)', `I can't take Daddy to his eye check-up on ${rideDay} after all.`);
-  alexa(await call(funmi, 'add_note', {
-    note: `I can't take Daddy to his eye check-up ${rideDay}.`,
-    unavailable: {
-      memberName: 'Funmi',
-      from: new Date(checkUpAt.getTime() - 3 * 3600_000).toISOString(),
-      to: new Date(checkUpAt.getTime() + 3 * 3600_000).toISOString(),
-    },
-  }));
+  alexa(
+    await call(funmi, 'add_note', {
+      note: `I can't take Daddy to his eye check-up ${rideDay}.`,
+      unavailable: {
+        memberName: 'Funmi',
+        from: new Date(checkUpAt.getTime() - 3 * 3600_000).toISOString(),
+        to: new Date(checkUpAt.getTime() + 3 * 3600_000).toISOString(),
+      },
+    }),
+  );
 
   // ── Beat 3 · 2:14pm - a doorbell becomes evidence, never a conclusion ────
   clockAt = wallClockToday(14, 14, TZ);
   beat('2:14pm', 'Ring sees a delivery - evidence toward the refill, not proof');
-  say('Ring doorbell', '(a package is left at Daddy\'s door)');
-  alexa(await call(tolu, 'ingest_signal', {
-    source: 'ring', kind: 'delivery_arrived',
-    detail: 'Package left at front door',
-  }));
+  say('Ring doorbell', "(a package is left at Daddy's door)");
+  alexa(
+    await call(tolu, 'ingest_signal', {
+      source: 'ring',
+      kind: 'delivery_arrived',
+      detail: 'Package left at front door',
+    }),
+  );
 
   // ── Beat 4 · 6:30pm - the question no other assistant answers ────────────
   clockAt = wallClockToday(18, 30, TZ);
@@ -203,8 +232,9 @@ async function main(): Promise<void> {
   const gapsRes = alexa(await call(tolu, 'get_care_gaps', { withinDays: 7 }));
   board(gapsOf(gapsRes));
 
-  const ride = gapsOf(gapsRes).find((g) => g.obligationId === rideObligationId)
-    ?? gapsOf(gapsRes).find((g) => /check-up|take daddy/i.test(g.spoken));
+  const ride =
+    gapsOf(gapsRes).find((g) => g.obligationId === rideObligationId) ??
+    gapsOf(gapsRes).find((g) => /check-up|take daddy/i.test(g.spoken));
   say('Tolu', `I'll take him ${rideDay}.`);
   alexa(await call(tolu, 'claim_obligation', { obligationId: ride.obligationId }));
 
@@ -212,9 +242,12 @@ async function main(): Promise<void> {
   const rx = gapsOf(gapsRes).find((g) => /refill/i.test(g.spoken));
   say('Tolu', 'And yes - that package was the eye drops refill. Mark it picked up.');
   await call(tolu, 'claim_obligation', { obligationId: rx.obligationId });
-  alexa(await call(tolu, 'resolve_obligation', {
-    obligationId: rx.obligationId, note: 'Confirmed via the 2:14pm doorbell delivery.',
-  }));
+  alexa(
+    await call(tolu, 'resolve_obligation', {
+      obligationId: rx.obligationId,
+      note: 'Confirmed via the 2:14pm doorbell delivery.',
+    }),
+  );
 
   // ── Beat 5 · 8:16pm - a promise slips, and CareCircle follows up ─────────
   clockAt = wallClockToday(19, 58, TZ);
@@ -224,7 +257,10 @@ async function main(): Promise<void> {
 
   clockAt = wallClockToday(20, 16, TZ);
   beat('8:16pm', 'Saying yes is not doing it: the agent checks in on a slipping promise');
-  say('CareCircle', "(its own pass, every 15 minutes - nobody asked; Musa's pharmacy run was due at 8:00)");
+  say(
+    'CareCircle',
+    "(its own pass, every 15 minutes - nobody asked; Musa's pharmacy run was due at 8:00)",
+  );
   alexa(await call(tolu, 'run_care_agent', {}));
   say('Musa', 'done');
   alexa(await call(musa, 'resolve_obligation', { obligationId: errand.id }));
@@ -241,12 +277,19 @@ async function main(): Promise<void> {
   // ── Beat 7 · 9:12pm - the living room already knew; the gap clears ───────
   clockAt = wallClockToday(21, 12, TZ);
   beat('9:12pm', 'The ambient board prompts a call; the gap clears everywhere');
-  say('Funmi (sees the Fire TV board)', 'I just called him - he used them at 7:50 and forgot to say.');
-  alexa(await call(funmi, 'log_care_event', {
-    kind: 'medication_taken', medicationName: 'eye drops', aboutMemberId: 'm_margaret',
-    occurredAt: wallClockToday(19, 50, TZ).toISOString(),
-    detail: 'Confirmed by phone; Daddy used them at 7:50pm.',
-  }));
+  say(
+    'Funmi (sees the Fire TV board)',
+    'I just called him - he used them at 7:50 and forgot to say.',
+  );
+  alexa(
+    await call(funmi, 'log_care_event', {
+      kind: 'medication_taken',
+      medicationName: 'eye drops',
+      aboutMemberId: 'm_margaret',
+      occurredAt: wallClockToday(19, 50, TZ).toISOString(),
+      detail: 'Confirmed by phone; Daddy used them at 7:50pm.',
+    }),
+  );
   const closedRes = await call(tolu, 'get_care_gaps', {});
   console.log(dim('\n    After Funmi confirms:'));
   board(gapsOf(closedRes));
@@ -256,13 +299,21 @@ async function main(): Promise<void> {
   say('Musa (driver)', 'What do I need to know for today?');
   alexa(await call(musa, 'get_shift_brief'));
   say('Funmi (caregiver)', "Put Daddy's check-up ride on Tolu's name.");
-  alexa(await call(funmi, 'assign_obligation', { obligationId: ride.obligationId, assigneeName: 'Tolu' }));
+  alexa(
+    await call(funmi, 'assign_obligation', {
+      obligationId: ride.obligationId,
+      assigneeName: 'Tolu',
+    }),
+  );
 
-  console.log(bold(cyan('\n  CareCircle doesn\'t just tell a family what happened.')));
+  console.log(bold(cyan("\n  CareCircle doesn't just tell a family what happened.")));
   console.log(bold(cyan('  It tells them what still needs someone.\n')));
 
   await Promise.all([daddy.close(), tolu.close(), funmi.close(), musa.close()]);
   await new Promise<void>((r) => http.close(() => r()));
 }
 
-main().catch((err) => { console.error(err); process.exit(1); });
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

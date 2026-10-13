@@ -18,8 +18,12 @@ import { careCaseFor, type CareCaseId, type FamilyNames } from './cases.js';
  * day before.
  */
 function localTimeToUtc(date: Date, hour: number, minute: number, timezone: string): Date {
-  const day = new Intl.DateTimeFormat('en-CA', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' })
-    .format(date);
+  const day = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
   const clock = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
   const at = toInstant(`${day}T${clock}:00`, timezone);
   if (!at) throw new Error(`Cannot place ${day} ${clock} in ${timezone}`);
@@ -74,7 +78,9 @@ export interface ScenarioOptions {
  * - Funmi left a note: Daddy asked who is taking him on Thursday.
  */
 export async function seedScenario(
-  store: CareStore, householdId: string, options: ScenarioOptions = {},
+  store: CareStore,
+  householdId: string,
+  options: ScenarioOptions = {},
 ): Promise<{ checkUpAt: Date; rideObligationId: string }> {
   const now = options.now ?? new Date();
   const c = careCaseFor(options.careCase, options.names);
@@ -84,33 +90,55 @@ export async function seedScenario(
   // day's name. A fixed "Thursday" fell on the day itself when played on a Thursday, and was
   // already past by the time anyone offered to drive.
   const checkUpAt = localTimeToUtc(new Date(now.getTime() + 2 * 86_400_000), 10, 0, TZ);
-  const rideDay = new Intl.DateTimeFormat('en-US', { timeZone: TZ, weekday: 'long' }).format(checkUpAt);
+  const rideDay = new Intl.DateTimeFormat('en-US', { timeZone: TZ, weekday: 'long' }).format(
+    checkUpAt,
+  );
   const onRideDay = (text: string): string => text.replace(/Thursday/g, rideDay);
 
   // Morning medications, logged by Daddy himself. The eye drops are optionally
   // left for the live walkthrough to log on camera (see skipMorningEyeDrops).
   if (!options.skipMorningEyeDrops) {
     await store.appendEvent({
-      householdId, kind: 'medication_taken', reportedBy: sid('m_margaret'),
+      householdId,
+      kind: 'medication_taken',
+      reportedBy: sid('m_margaret'),
       occurredAt: todayAt(8, 10, now, TZ).toISOString(),
-      source: 'voice', confidence: 'reported',
-      data: { medicationId: sid('med_heart'), medicationName: c.medication, aboutMemberId: sid('m_margaret') },
+      source: 'voice',
+      confidence: 'reported',
+      data: {
+        medicationId: sid('med_heart'),
+        medicationName: c.medication,
+        aboutMemberId: sid('m_margaret'),
+      },
     });
   }
   // In a live copy the day opens at 7:42 on the eye drops, so the supplement was taken
   // before that, with breakfast. A record later than the clock would be a record from the future.
   await store.appendEvent({
-    householdId, kind: 'medication_taken', reportedBy: sid('m_margaret'),
-    occurredAt: (options.skipMorningEyeDrops ? todayAt(7, 25, now, TZ) : todayAt(8, 12, now, TZ)).toISOString(),
-    source: 'voice', confidence: 'reported',
-    data: { medicationId: sid('med_thyroid'), medicationName: c.supplement, aboutMemberId: sid('m_margaret') },
+    householdId,
+    kind: 'medication_taken',
+    reportedBy: sid('m_margaret'),
+    occurredAt: (options.skipMorningEyeDrops
+      ? todayAt(7, 25, now, TZ)
+      : todayAt(8, 12, now, TZ)
+    ).toISOString(),
+    source: 'voice',
+    confidence: 'reported',
+    data: {
+      medicationId: sid('med_thyroid'),
+      medicationName: c.supplement,
+      aboutMemberId: sid('m_margaret'),
+    },
   });
   // The evening dose is deliberately absent. Not "missed" - unrecorded.
 
   const appointment = await store.appendEvent({
-    householdId, kind: 'appointment_scheduled', reportedBy: sid('m_renee'),
+    householdId,
+    kind: 'appointment_scheduled',
+    reportedBy: sid('m_renee'),
     occurredAt: checkUpAt.toISOString(),
-    source: 'voice', confidence: 'reported',
+    source: 'voice',
+    confidence: 'reported',
     detail: onRideDay(c.appointment.detail),
     data: { appointmentKind: c.appointment.kind, forMemberId: sid('m_margaret') },
   });
@@ -121,7 +149,11 @@ export async function seedScenario(
     status: 'OPEN',
     consequence: 'medical',
     // Inferred originally, then confirmed by a human - which is why it counts.
-    provenance: { kind: 'INFERRED', rule: 'medical-appointment-transport', from: c.appointment.inferredFrom },
+    provenance: {
+      kind: 'INFERRED',
+      rule: 'medical-appointment-transport',
+      from: c.appointment.inferredFrom,
+    },
     ownerId: options.rideClaimedByFunmi ? sid('m_renee') : null,
     dueAt: checkUpAt.toISOString(),
     sourceEventId: appointment.id,
@@ -129,7 +161,9 @@ export async function seedScenario(
     aboutEntityId: sid('m_margaret'),
   });
   if (options.rideClaimedByFunmi) {
-    await store.transition(ride.id, householdId, 'ASSIGNED', sid('m_renee'), { ownerId: sid('m_renee') });
+    await store.transition(ride.id, householdId, 'ASSIGNED', sid('m_renee'), {
+      ownerId: sid('m_renee'),
+    });
   }
 
   await store.createObligation({
@@ -140,8 +174,12 @@ export async function seedScenario(
     // In a visitor's copy the day is played from the morning, so Funmi noticed the
     // drops running low the evening before, not at whatever real time the copy was made.
     provenance: {
-      kind: 'CONFIRMED', byMemberId: sid('m_renee'),
-      at: (options.refillDueTonight ? todayAt(18, 30, new Date(now.getTime() - 86_400_000), TZ) : now).toISOString(),
+      kind: 'CONFIRMED',
+      byMemberId: sid('m_renee'),
+      at: (options.refillDueTonight
+        ? todayAt(18, 30, new Date(now.getTime() - 86_400_000), TZ)
+        : now
+      ).toISOString(),
     },
     ownerId: null,
     dueAt: options.refillDueTonight
@@ -150,9 +188,12 @@ export async function seedScenario(
   });
 
   await store.appendEvent({
-    householdId, kind: 'note_added', reportedBy: sid('m_renee'),
+    householdId,
+    kind: 'note_added',
+    reportedBy: sid('m_renee'),
     occurredAt: todayAt(14, 20, now, TZ).toISOString(),
-    source: 'voice', confidence: 'reported',
+    source: 'voice',
+    confidence: 'reported',
     detail: onRideDay(c.note),
     data: { aboutMemberId: sid('m_margaret') },
   });

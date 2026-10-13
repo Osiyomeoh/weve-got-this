@@ -12,8 +12,11 @@
  */
 const token = process.env['TELEGRAM_BOT_TOKEN']?.trim();
 const secret = process.env['TELEGRAM_WEBHOOK_SECRET']?.trim();
-const publicUrl = (process.env['CARECIRCLE_PUBLIC_URL'] ?? 'https://ypq2dfq2p7.us-east-1.awsapprunner.com')
-  .trim().replace(/\/+$/, '');
+const publicUrl = (
+  process.env['CARECIRCLE_PUBLIC_URL'] ?? 'https://ypq2dfq2p7.us-east-1.awsapprunner.com'
+)
+  .trim()
+  .replace(/\/+$/, '');
 
 async function call(method: string, body?: Record<string, unknown>): Promise<unknown> {
   const res = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
@@ -21,7 +24,7 @@ async function call(method: string, body?: Record<string, unknown>): Promise<unk
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body ?? {}),
   });
-  const json = await res.json() as { ok: boolean; result?: unknown; description?: string };
+  const json = (await res.json()) as { ok: boolean; result?: unknown; description?: string };
   if (!json.ok) throw new Error(`${method}: ${json.description ?? res.status}`);
   return json.result;
 }
@@ -39,13 +42,21 @@ await call('setChatMenuButton', {
 });
 await call('setMyCommands', {
   commands: [
-    { command: 'calendar', description: 'The family calendar: who has what, and what nobody has yet' },
+    {
+      command: 'calendar',
+      description: 'The family calendar: who has what, and what nobody has yet',
+    },
     { command: 'language', description: 'Choose the language I write to you in' },
     { command: 'reminders', description: '/reminders off or /reminders on' },
   ],
 });
 
-const info = await call('getWebhookInfo') as { url: string; allowed_updates?: string[]; pending_update_count: number; last_error_message?: string };
+const info = (await call('getWebhookInfo')) as {
+  url: string;
+  allowed_updates?: string[];
+  pending_update_count: number;
+  last_error_message?: string;
+};
 console.log(`webhook          ${info.url}`);
 console.log(`allowed updates  ${(info.allowed_updates ?? ['(all)']).join(', ')}`);
 console.log(`pending updates  ${info.pending_update_count}`);

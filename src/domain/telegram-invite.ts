@@ -22,13 +22,17 @@ const SIG_LENGTH = 16;
 const PAYLOAD = /^[A-Za-z0-9_-]{17,64}$/;
 
 function signature(secret: string, memberId: string): string {
-  return createHmac('sha256', secret).update(`telegram-invite:${memberId}`).digest('hex').slice(0, SIG_LENGTH);
+  return createHmac('sha256', secret)
+    .update(`telegram-invite:${memberId}`)
+    .digest('hex')
+    .slice(0, SIG_LENGTH);
 }
 
 /** The start payload for a member's personal link. */
 export function inviteFor(secret: string, memberId: string): string {
   const payload = signature(secret, memberId) + memberId;
-  if (!PAYLOAD.test(payload)) throw new Error(`Member id ${memberId} can't be carried in a Telegram link.`);
+  if (!PAYLOAD.test(payload))
+    throw new Error(`Member id ${memberId} can't be carried in a Telegram link.`);
   return payload;
 }
 
@@ -71,7 +75,10 @@ export const ROLE: Record<Member['role'], string> = {
  */
 export function welcome(member: Member, state: CareState, botUsername: string): string {
   const them = recipientName(state);
-  const lines = [`Hi ${member.name}, you're now connected to ${state.household.name} as ${ROLE[member.role]}.`, ''];
+  const lines = [
+    `Hi ${member.name}, you're now connected to ${state.household.name} as ${ROLE[member.role]}.`,
+    '',
+  ];
 
   if (member.role === 'care_recipient') {
     lines.push(
@@ -79,7 +86,7 @@ export function welcome(member: Member, state: CareState, botUsername: string): 
       '- "I\'ve taken my eye drops" and I\'ll write it down with the time.',
       '- "I have the clinic on Thursday at 10" and I\'ll add it, so the family can sort out who takes you.',
       '- "What\'s on today?" and I\'ll tell you.',
-      'Your family sees what you record. If something isn\'t written down, I only ever say there is no record of it, never that you missed it.',
+      "Your family sees what you record. If something isn't written down, I only ever say there is no record of it, never that you missed it.",
     );
   } else if (member.role === 'primary_caregiver') {
     lines.push(
@@ -96,14 +103,17 @@ export function welcome(member: Member, state: CareState, botUsername: string): 
     );
   } else {
     lines.push(
-      'You\'ll see today\'s work and anything you have taken on.',
+      "You'll see today's work and anything you have taken on.",
       '- Say "That\'s done" when you\'ve finished something.',
     );
   }
 
   if (member.livesAway) {
-    lines.push('', `You live in ${member.livesAway}, so I won't ask you on my own for things that need someone there.`
-      + (member.dailyUpdate ? ` You'll get a short update on ${them}'s day every evening.` : ''));
+    lines.push(
+      '',
+      `You live in ${member.livesAway}, so I won't ask you on my own for things that need someone there.` +
+        (member.dailyUpdate ? ` You'll get a short update on ${them}'s day every evening.` : ''),
+    );
   }
 
   lines.push(

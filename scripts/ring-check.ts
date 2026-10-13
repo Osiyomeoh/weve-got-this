@@ -17,10 +17,10 @@ async function main(): Promise<void> {
   const config = ringConfigFromEnv();
   if (!config) {
     console.error(
-      'Ring is not configured for API calls. Set RING_ACCESS_TOKEN (Ring Developer\n'
-      + 'Playground), or RING_REFRESH_TOKEN with RING_CLIENT_ID and RING_CLIENT_SECRET.\n'
-      + 'Note: receiving doorbell events needs only RING_HMAC_KEY + the webhook URL set\n'
-      + 'in the Ring Developer Portal - this check is for the outbound API link.',
+      'Ring is not configured for API calls. Set RING_ACCESS_TOKEN (Ring Developer\n' +
+        'Playground), or RING_REFRESH_TOKEN with RING_CLIENT_ID and RING_CLIENT_SECRET.\n' +
+        'Note: receiving doorbell events needs only RING_HMAC_KEY + the webhook URL set\n' +
+        'in the Ring Developer Portal - this check is for the outbound API link.',
     );
     process.exit(1);
   }
@@ -37,4 +37,7 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

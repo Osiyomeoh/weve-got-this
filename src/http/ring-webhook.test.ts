@@ -62,7 +62,9 @@ beforeEach(async () => {
 });
 
 // Without this the last server stays listening and the test process never exits.
-after(() => { server?.close(); });
+after(() => {
+  server?.close();
+});
 
 test('an unsigned event is refused', async () => {
   // Without this, a stranger with the URL could write into a family's care record.
@@ -105,15 +107,24 @@ test('a redelivery that lands on another instance is not acted on twice either',
   const body = motion('req_other_instance', 'package');
   assert.equal((await post(body, sign(body))).json.status, 'accepted');
   const other = createCareCircleApp({ store, tokens: new Map(Object.entries(DEMO_TOKENS)) });
-  const s2 = await new Promise<Server>((resolve) => { const s = other.listen(0, () => resolve(s)); });
+  const s2 = await new Promise<Server>((resolve) => {
+    const s = other.listen(0, () => resolve(s));
+  });
   try {
     const a = s2.address();
-    const res = await fetch(`http://localhost:${typeof a === 'object' && a ? a.port : 0}/ring/webhook`, {
-      method: 'POST', headers: { 'content-type': 'application/json', 'x-signature': sign(body) }, body,
-    });
+    const res = await fetch(
+      `http://localhost:${typeof a === 'object' && a ? a.port : 0}/ring/webhook`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-signature': sign(body) },
+        body,
+      },
+    );
     assert.equal(res.status, 200);
     assert.equal(((await res.json()) as { status: string }).status, 'duplicate');
-  } finally { s2.close(); }
+  } finally {
+    s2.close();
+  }
 });
 
 test('an event Ring sends that we do not act on is still acknowledged', async () => {
@@ -137,8 +148,10 @@ test('a sensor never resolves work on its own', async () => {
   const { json } = await post(body, sign(body));
   // It may NAME work it is evidence toward, but must not close it.
   const state = store.getCareState('h_margaret');
-  assert.ok(!state.obligations.some((o) => o.status === 'RESOLVED'),
-    'a Ring event must never resolve an obligation');
+  assert.ok(
+    !state.obligations.some((o) => o.status === 'RESOLVED'),
+    'a Ring event must never resolve an obligation',
+  );
   if (json.proposalId) {
     const proposed = state.obligations.find((o) => o.id === json.proposalId);
     assert.equal(proposed?.status, 'PROPOSED');
@@ -165,6 +178,8 @@ test('the idempotency cache is bounded', () => {
   const seen = new SeenEvents(3);
   assert.equal(seen.admit('a'), true);
   assert.equal(seen.admit('a'), false);
-  seen.admit('b'); seen.admit('c'); seen.admit('d');
+  seen.admit('b');
+  seen.admit('c');
+  seen.admit('d');
   assert.equal(seen.admit('a'), true, 'the oldest key should have been evicted');
 });

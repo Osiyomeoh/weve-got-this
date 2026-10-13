@@ -13,5 +13,8 @@ test('a ride reads naturally whether the appointment is a department or an event
 test('the inferred ride is phrased as a guess, in plain words', () => {
   const ride = RULES.find((r) => r.id === 'medical-appointment-transport')!;
   assert.equal(ride.what('Daddy', 'eye check-up'), 'Drive Daddy to the eye check-up');
-  assert.match(ride.ask('Daddy', 'eye check-up'), /^Will Daddy need a ride to the eye check-up\? I'm guessing/);
+  assert.match(
+    ride.ask('Daddy', 'eye check-up'),
+    /^Will Daddy need a ride to the eye check-up\? I'm guessing/,
+  );
 });

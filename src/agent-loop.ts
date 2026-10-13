@@ -54,7 +54,11 @@ export function startAgentLoop(deps: AgentLoopDeps): () => void {
     if (!(await deps.store.lease('loops', leaseMs).catch(() => false))) return;
     running = true;
     // Another instance, or a script, may have written since the last tick.
-    await deps.store.refresh().catch((err: unknown) => deps.log.error('record refresh failed', { reason: (err as Error).name }));
+    await deps.store
+      .refresh()
+      .catch((err: unknown) =>
+        deps.log.error('record refresh failed', { reason: (err as Error).name }),
+      );
     try {
       const runs = await runAgentAll(deps);
       const asked = runs.reduce((n, r) => n + r.performed.length, 0);
@@ -75,7 +79,9 @@ export function startAgentLoop(deps: AgentLoopDeps): () => void {
   };
 
   deps.log.info('agent loop enabled', { intervalMs: ms });
-  const handle = setInterval(() => { void tick(); }, ms);
+  const handle = setInterval(() => {
+    void tick();
+  }, ms);
   handle.unref?.(); // the loop must never hold the process open on its own
 
   // A connected Bee, and whose it is: their dose reminders also ring in their Bee app.
@@ -86,16 +92,32 @@ export function startAgentLoop(deps: AgentLoopDeps): () => void {
   const remind = setInterval(() => {
     if (reminding) return;
     reminding = true;
-    void deps.store.lease('loops', leaseMs).catch(() => false)
+    void deps.store
+      .lease('loops', leaseMs)
+      .catch(() => false)
       .then(async (mine) => {
         if (!mine) throw new NotLeader();
-        await deps.store.refresh().catch((err: unknown) => deps.log.error('record refresh failed', { reason: (err as Error).name }));
+        await deps.store
+          .refresh()
+          .catch((err: unknown) =>
+            deps.log.error('record refresh failed', { reason: (err as Error).name }),
+          );
       })
       .then(() => sendDueReminders({ ...deps, bee }))
-      .then((n) => { if (n > 0) deps.log.info('reminders sent', { reminders: n }); })
-      .catch((err: unknown) => { if (!(err instanceof NotLeader)) deps.log.error('reminders failed', { reason: (err as Error).message }); })
-      .finally(() => { reminding = false; });
+      .then((n) => {
+        if (n > 0) deps.log.info('reminders sent', { reminders: n });
+      })
+      .catch((err: unknown) => {
+        if (!(err instanceof NotLeader))
+          deps.log.error('reminders failed', { reason: (err as Error).message });
+      })
+      .finally(() => {
+        reminding = false;
+      });
   }, everyMs);
   remind.unref?.();
-  return () => { clearInterval(handle); clearInterval(remind); };
+  return () => {
+    clearInterval(handle);
+    clearInterval(remind);
+  };
 }

@@ -71,8 +71,10 @@ export function parseInboundMessages(payload: unknown): WhatsAppInbound[] {
   return out;
 }
 
-const YES = /\b(yes|yeah|yep|yup|sure|ok(ay)?|will do|i'?ll (do|take)|i can|i've got|got it|of course|absolutely)\b/i;
-const NO = /\b(no|nope|can'?t|cannot|sorry|not (this|able)|unable|won'?t|busy|afraid not|another time)\b/i;
+const YES =
+  /\b(yes|yeah|yep|yup|sure|ok(ay)?|will do|i'?ll (do|take)|i can|i've got|got it|of course|absolutely)\b/i;
+const NO =
+  /\b(no|nope|can'?t|cannot|sorry|not (this|able)|unable|won'?t|busy|afraid not|another time)\b/i;
 // Thumb emoji are unambiguous and carry no word boundary, so they are matched apart
 // from the bounded word regexes above.
 const YES_EMOJI = '👍';
