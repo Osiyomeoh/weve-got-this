@@ -1,0 +1,5 @@
+# Commits that only reformatted code. GitHub skips these in blame; locally:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Format all TypeScript with the repository's Prettier settings
+f65aea300c31719ad8e286365b97c430043aee97
