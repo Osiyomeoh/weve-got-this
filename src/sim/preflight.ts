@@ -60,7 +60,7 @@ export function classify(quotas: QuotaFact[]): Diagnosis {
         + 'Quotas cannot fix it: RequestServiceQuotaIncrease only accepts values above '
         + 'the default, so a zero override cannot be raised back to it. Open an AWS '
         + 'Support case for Amazon Bedrock asking for the account-level hold to be '
-        + 'reviewed and lifted. See infra/aws-support-case.md for a drafted case.',
+        + 'reviewed and lifted.',
     };
   }
   return {

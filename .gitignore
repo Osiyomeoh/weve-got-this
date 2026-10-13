@@ -19,3 +19,6 @@ sim-ui/node_modules/
 sim-ui/dist/
 .DS_Store
 evals-massive-*
+
+# Editor and agent settings stay with the person who made them
+.claude/
