@@ -45,7 +45,6 @@
     "pilot:report": "tsx --env-file-if-exists=.env scripts/pilot-report.ts"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock": "^3.1131.0",
     "@aws-sdk/client-bedrock-runtime": "^3.1131.0",
     "@aws-sdk/client-dynamodb": "^3.1132.0",
     "@aws-sdk/client-polly": "^3.1135.0",

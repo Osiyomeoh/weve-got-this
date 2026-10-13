@@ -186,8 +186,8 @@ app.use((_req, res, next) => {
   res.setHeader('Access-Control-Allow-Headers', 'content-type');
   next();
 });
-// The built React UI (Vite) is the primary front-end; public/ still holds legacy
-// static pages (e.g. tv.html the Fire TV APK points at) and is served as a fallback.
+// The built React UI (Vite) comes first; public/ holds the pages it links to that are
+// not part of it: the console, the docs page, /proof and the React Native TV web build.
 const uiDir = join(here, '../../sim-ui/dist');
 app.use(express.static(uiDir));
 app.use(express.static(join(here, '../../public')));
