@@ -1,62 +1,75 @@
 # Open Source mini-challenge - submission
 
+**Published:** https://github.com/Osiyomeoh/household-sim (public, MIT).
 
-**Published:** https://github.com/Osiyomeoh/care-events (public, MIT). Fields below are filled.
-## The contribution: `@carecircle/care-events`
+## The contribution: household-sim
 
-A new, standalone, MIT-licensed, zero-dependency TypeScript package that extracts
-CareCircle's core idea into something any project can reuse: **one adapter seam that
-turns heterogeneous device signals - voice, wearable, doorbell - into a single
-`CareEvent` contract, with a provenance model that never lets a guess become a fact.**
+A new, standalone, MIT-licensed tool that tests an MCP server the way a household uses
+it. It is CareCircle's simulator with CareCircle taken out, so it works for any MCP
+add-on, not only ours.
 
-Lives at [`packages/care-events`](../packages/care-events). It builds, typechecks
-under `strict` + `exactOptionalPropertyTypes`, and ships with its own `node:test`
-suite (5 tests, zero runtime dependencies).
+It typechecks under `strict` + `exactOptionalPropertyTypes`, ships 35 `node:test`
+tests, and has its own GitHub Actions workflow on Node 22 and 24. That workflow also
+replays the example scenarios against the real example server.
 
 ## What / how / why (the required submission fields)
 
-**What.** A device-agnostic library defining the `CareEvent` contract, a `Provenance`
-trust model (`CONFIRMED` / `INFERRED` / `NOT_LOGGED`), a `SignalAdapter<Raw>`
-interface, and two working adapters (`ringAdapter`, `beeAdapter`). Adding a new
-device is one adapter and nothing else.
+**What.** A command-line tool and library with two commands:
 
-**How.** Each adapter maps a raw payload to zero or more `CareEvent`s. The contract
-enforces the one rule that makes such a system trustworthy: adapters *classify*, they
-never *assert*. A Ring package delivery enters as `INFERRED` evidence that a package
-arrived - never a conclusion that an errand is done. A Bee conversation fact enters as
-`INFERRED` until a human confirms it. Downstream, a Bee fact and a Ring doorbell are
-indistinguishable - which is exactly what lets one engine serve every surface.
+- `check <url>` connects to any MCP server and reports what a voice host and its model
+  would trip on: no sign-in challenge, an old protocol version, tool names some model
+  APIs refuse, missing or thin descriptions, arguments with no description, broken
+  schemas, missing `readOnlyHint`/`destructiveHint`, and a tool list too big to send
+  every turn. It needs no model.
+- `run scenarios/*.yaml` plays a household story against the server. Several people
+  each connect with their own credential, a model plays the assistant using only the
+  server's own tool descriptions, devices send signed webhooks, and a story clock moves
+  time forward. Every step passes or fails, with console, JUnit and JSON output.
 
-**Why it matters.** Most home-care and household-coordination tools are welded to a
-single device SDK. This package is a reusable integration *pattern*: it lets any
-developer wire a new signal source (an Alexa+ MCP tool, a wearable, a camera, a
-sensor) into a shared care record without re-deriving the trust model each time. It
-is the seam that makes cross-device coordination tractable, released so others do not
-have to rebuild it.
+It comes with a small example add-on, `house-rota`, set in a Nigerian home: Ada, Tunde
+and Grandma share the generator fuel, the bins and the water tank, and a fuel gauge
+reports when the generator runs low. There are three scenarios against it.
 
-## To make it count as a distinct contribution (publish steps)
+**How.** Each member is a real MCP client over Streamable HTTP with its own bearer
+token, so the server always knows who is speaking, as it would with a real host. A
+model (Amazon Bedrock, any OpenAI-compatible endpoint, or a local Ollama) chooses the
+tools. Nothing is scripted on the server's side, so how well the model chooses is a
+direct test of how well the tools are described. A run can be **recorded** once and
+**replayed** in CI: the model's choices are played back, while every tool call still
+goes to the real server. A replay costs nothing and needs no credentials. It refuses
+to pass when the scenario has changed under it, or when a recorded call names a tool
+that no longer exists. When a tool's description changed after the recording, it runs
+but says so.
 
-The mini-challenge wants a separate open-source artifact alongside the primary track
-submission. `packages/care-events` is self-contained precisely so it can be lifted
-out into its own public repository:
+**Why it matters.** The bugs that hurt a voice add-on most only appear with several
+people, a model choosing the tools, devices changing the record between turns, and
+time passing. CareCircle's worst one put an appointment on the family's board dated
+19 December 2024, because the model was never told today's date. Unit tests do not
+reach these bugs, and testing by hand on a speaker is slow and hard to repeat. At
+office hours a judge warned about untested AI-written code landing on open-source
+maintainers. This tool lets the author of an MCP server test their own work first, in
+CI, before anyone else has to.
 
-```bash
-# from the repo root
-cp -r packages/care-events /tmp/care-events && cd /tmp/care-events
-git init && git add -A && git commit -m "care-events: one adapter seam any device plugs into"
-gh repo create care-events --public --source=. --push   # its own repo, MIT license visible
-# optional: npm publish --access public
-```
+The README says plainly that it is a stand-in for a voice host, not Alexa+, and that a
+real host's planner will not choose exactly the same.
 
-## Submission form fields (fill the URLs after publishing)
+## Submission form fields
 
-- **Contribution URL:** `https://github.com/Osiyomeoh/care-events` (or the first commit/PR URL)
-- **Project repository URL:** `https://github.com/Osiyomeoh/care-events`
+- **Contribution URL:** `https://github.com/Osiyomeoh/household-sim`
+- **Project repository URL:** `https://github.com/Osiyomeoh/household-sim`
 - **GitHub username:** `Osiyomeoh`
 - **Description:** the What / How / Why above, condensed to a paragraph.
+
+## Also published
+
+`@carecircle/care-events` (https://github.com/Osiyomeoh/care-events, MIT) is a smaller
+package: one adapter seam that turns device signals (voice, wearable, doorbell) into a
+single `CareEvent` contract, with a provenance model that never lets a guess become a
+fact. It lives in this repo at [`packages/care-events`](../packages/care-events), with
+5 tests. It was the planned entry until household-sim was ready, and stays public.
 
 ## Rubric note
 
 The Open Source rubric calls a "meaningful feature addition with tests" or a "new
-integration pattern" *creative*, versus a README/typo fix as *obvious*. This is a new
-integration pattern with tests and a trust model - squarely the creative end.
+integration pattern" *creative*, versus a README/typo fix as *obvious*. household-sim
+is a new, tested tool that other MCP authors can run in their own CI.

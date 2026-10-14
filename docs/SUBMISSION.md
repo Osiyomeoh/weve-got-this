@@ -258,8 +258,9 @@ won't assert an inference.
 Built new during the window. Highlights added this period: the purchase-in-place flow
 (`reorder_prescription` / `confirm_purchase`), the tool-selection eval harness and its
 published accuracy, production hardening (config validation, structured logging,
-graceful shutdown, DynamoDB persistence, App Runner deployment), runtime onboarding (create a household, add/remove members and medications), and the
-`@carecircle/care-events` open-source package.
+graceful shutdown, DynamoDB persistence, App Runner deployment), runtime onboarding (create a household, add/remove members and medications), the
+`@carecircle/care-events` open-source package, and household-sim, the simulator released
+as its own open-source test harness.
 
 ## The Alexa+ add-on contract, item by item
 
@@ -445,10 +446,12 @@ delivery → observability), not a single Bedrock call.
 
 ## Open Source mini
 
-`@carecircle/care-events` - a new, standalone, MIT-licensed, zero-dependency package
-that extracts the adapter-seam pattern (one `CareEvent` contract any device plugs into,
-with a provenance trust model). Details, what/how/why, and publish steps in
-[OPEN-SOURCE.md](OPEN-SOURCE.md).
+[household-sim](https://github.com/Osiyomeoh/household-sim) - a new, standalone,
+MIT-licensed tool that tests any MCP server the way a household uses it: several people
+on their own credentials, a model choosing the tools, devices sending signed webhooks,
+and a story clock. Model choices are recorded once and replayed in CI for free. It is
+CareCircle's simulator with CareCircle taken out. Details, what/how/why and the form
+fields are in [OPEN-SOURCE.md](OPEN-SOURCE.md).
 
 ## Demo credentials (the identity model in miniature)
 

@@ -121,6 +121,7 @@ what isn't care?), are measured too. Every number, with the file it came from:
 - Live MCP endpoint (OAuth 2.1; 401 without a token): https://ypq2dfq2p7.us-east-1.awsapprunner.com/mcp
 - Friction log, dated while building: [`docs/FRICTION-LOG.md`](docs/FRICTION-LOG.md)
 - Product feedback per tool: [`docs/PRODUCT-FEEDBACK.md`](docs/PRODUCT-FEEDBACK.md) · feature requests: [`docs/FEATURE-REQUESTS.md`](docs/FEATURE-REQUESTS.md)
+- Open Source mini entry: [household-sim](https://github.com/Osiyomeoh/household-sim), this repo's simulator released as a test harness for any MCP server
 - The Alexa Skill bridge fork it was tested through on a real Echo: [Osiyomeoh/alexa-skill-mcp-bridge@carecircle](https://github.com/Osiyomeoh/alexa-skill-mcp-bridge/tree/carecircle)
 
 ### Try it live in your browser - no clone, no keys
