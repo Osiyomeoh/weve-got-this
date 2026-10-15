@@ -20,6 +20,8 @@ export interface Person {
   place: Place;
   /** What they hold, wear or ride, from the same CC0 kit. */
   aid?: 'sunglasses' | 'glasses' | 'wheelchair';
+  /** How tall they are against an adult, when they are not one: a child is smaller. */
+  size?: number;
 }
 
 export const CAST: Record<string, Person> = {

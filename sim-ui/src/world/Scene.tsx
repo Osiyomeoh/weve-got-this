@@ -417,7 +417,7 @@ function DaddysHouse({ view, night }: { view: WorldView; night: boolean }) {
         anim={view.people.daddy!.at === 'door' ? 'idle' : 'sit'}
         position={daddySpot(view.people.daddy!.at)}
         facing={view.people.daddy!.at === 'door' ? FACE.toward : FACE.away}
-        scale={PERSON_SCALE}
+        scale={PERSON_SCALE * (daddy.size ?? 1)}
         aid={daddy.aid}
         speed={0.5}
         {...alive('daddy', view.people)}

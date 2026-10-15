@@ -514,6 +514,7 @@ const CHARACTER_VOICES = new Set([
   'Ayanda',
   'Kevin',
   'Kendra',
+  'Ivy',
   ...Object.values(LANGUAGES).flatMap((l) => (l.voice ? [l.voice] : [])),
 ]);
 

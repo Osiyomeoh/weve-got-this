@@ -118,6 +118,8 @@ export interface Words {
   primary?: { name: string; self: string };
   /** Where Tolu is, as the day opens on them. Default: across town. */
   toluWhere?: string;
+  /** What Tolu fits the ask between, as the ask beat opens. Default: meetings. */
+  askBreak?: string;
   /** The ask beat's point, when the family is not all in one town. */
   askPoint?: string;
   /** How the morning dose gets on the record, when it is not said to the Echo. */
@@ -192,14 +194,14 @@ export function storyFor(w: Words): Beat[] {
     {
       id: 'ask',
       at: [12, 30],
-      title: `${T}, between meetings`,
+      title: `${T}, between ${w.askBreak ?? 'meetings'}`,
       point:
         w.askPoint ??
         "One sentence in one house becomes a question on someone else's phone across town.",
       steps: [
         {
           kind: 'caption',
-          text: `${w.toluWhere ?? 'Across town'}, ${T} has ten minutes between meetings.`,
+          text: `${w.toluWhere ?? 'Across town'}, ${T} has ten minutes between ${w.askBreak ?? 'meetings'}.`,
           shot: 'tolu',
           ms: 2600,
         },

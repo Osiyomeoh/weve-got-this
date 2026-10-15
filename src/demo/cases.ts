@@ -15,7 +15,8 @@ import type { EntityAttributes } from '../domain/types.js';
  * the console and the world work unchanged; only names, needs and wording differ.
  */
 
-export type CareCaseId = 'eyes' | 'memory' | 'wheelchair' | 'hometown' | 'us' | 'abroad' | 'ke';
+export type CareCaseId =
+  'eyes' | 'memory' | 'wheelchair' | 'hometown' | 'us' | 'abroad' | 'ke' | 'child' | 'independent';
 
 export const CARE_CASES: readonly CareCaseId[] = [
   'eyes',
@@ -25,6 +26,8 @@ export const CARE_CASES: readonly CareCaseId[] = [
   'us',
   'abroad',
   'ke',
+  'child',
+  'independent',
 ];
 
 export interface CareCase {
@@ -205,6 +208,58 @@ export const CASES: Record<CareCaseId, CareCase> = {
       primary: { name: 'Wanjiru', livesAway: 'Nairobi' },
       caregiver: { name: 'Kamau', livesAway: 'Nairobi' },
       away: { name: 'Mwangi', livesAway: 'Dubai' },
+    },
+  },
+  // A child with Down syndrome in Columbus, Ohio. Her mom coordinates from work, her dad
+  // works shifts, and Grandpa Luis, ten minutes away, does most of the driving.
+  child: {
+    household: "Maya's care circle",
+    recipient: { name: 'Maya', spokenAs: 'Maya', attributes: { requiresAssistance: true } },
+    medication: 'morning medicine',
+    supplement: 'vitamin',
+    appointment: {
+      kind: 'speech therapy session',
+      detail: 'Speech therapy, Thursday at 10',
+      place: "Children's therapy center, Columbus",
+      ride: 'Take Maya to speech therapy',
+      inferredFrom: 'speech therapy appointment',
+    },
+    refill: "Pick up Maya's medicine refill",
+    note: 'Maya asked who is taking her on Thursday.',
+    helper: 'Luis',
+    timezone: 'America/New_York',
+    family: {
+      primary: { name: 'Danielle' },
+      caregiver: { name: 'Marcus' },
+      away: { name: 'Aunt Priya', livesAway: 'Austin' },
+    },
+  },
+  // A woman who uses a wheelchair and lives on her own in Philadelphia. Her brother
+  // coordinates from Boston; her friend Sam, nearby, has a van that takes the chair.
+  independent: {
+    household: "Erin's care circle",
+    recipient: {
+      name: 'Erin',
+      spokenAs: 'Erin',
+      attributes: { needsAccessibleTransport: true },
+    },
+    medication: 'daily medication',
+    supplement: 'vitamin D',
+    appointment: {
+      kind: 'wheelchair seating appointment',
+      detail: 'Wheelchair seating appointment, Thursday at 10',
+      place: 'Rehab clinic, Philadelphia',
+      ride: 'Drive Erin to her wheelchair seating appointment',
+      inferredFrom: 'wheelchair seating appointment',
+    },
+    refill: "Pick up Erin's prescription refill",
+    note: 'Erin asked who can drive her on Thursday.',
+    helper: 'Sam',
+    timezone: 'America/New_York',
+    family: {
+      primary: { name: 'Chris', livesAway: 'Boston' },
+      caregiver: { name: 'Nadia' },
+      away: { name: 'Carol', livesAway: 'Tampa' },
     },
   },
 };

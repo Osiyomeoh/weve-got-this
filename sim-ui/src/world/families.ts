@@ -28,6 +28,7 @@ export interface Family {
   /** The person cared for, over CAST.daddy. Everyone else is the same family around them. */
   recipient: Pick<Person, 'name' | 'role' | 'playAs' | 'model' | 'voice' | 'fallbackPitch'> & {
     aid?: Person['aid'];
+    size?: number;
   };
   /** Tolu's role card, which names who he is to them. */
   toluRole: string;
@@ -370,6 +371,155 @@ export const FAMILIES: Record<CareCaseId, Family> = {
     ending:
       'Mom logged her own care with the remote already in her hand. Sarah, four hours away, saw it the moment she pressed, and took Thursday from Chicago. Mike, fifteen minutes away, took tonight, and was asked, not assumed: three in four caregivers say they get no consistent help from family, and the one nearby is not the only name on the record. A doorbell said someone came without claiming to know who, and the agent followed up when the promise slipped.',
   },
+  // A child with Down syndrome in Columbus, Ohio. Her mom coordinates from work; Grandpa
+  // Luis, ten minutes away, does most of the driving. Simulated, labelled.
+  child: {
+    id: 'child',
+    country: 'us',
+    label: 'Maya',
+    tagline: 'Eight, with Down syndrome. Therapy, school, refills. A simulated family.',
+    simulated: true,
+    lede: 'Maya is eight and has Down syndrome. She has speech therapy every week, a morning medicine and a lot to say. Her mom Danielle works at a hospital across town. Grandpa Luis lives ten minutes away and does most of the driving. Her dad Marcus works shifts; Aunt Priya is in Austin.',
+    recipient: {
+      name: 'Maya',
+      role: 'Eight, with Down syndrome, at home',
+      playAs: 'You tell Alexa things yourself. You like being the one who says it.',
+      model: 'character-female-b',
+      voice: 'Ivy',
+      fallbackPitch: 1.4,
+      size: 0.72,
+    },
+    toluRole: 'Her mom, coordinating therapy, school and medicine around hospital shifts',
+    toluPlayAs: 'You run it all from your phone at work, between patients.',
+    tolu: { name: 'Danielle', model: 'character-female-a', voice: 'Danielle', fallbackPitch: 1.1 },
+    helper: {
+      name: 'Luis',
+      role: 'Her grandpa, ten minutes away',
+      playAs: "You're retired and close by. Rides are your job, when you say yes.",
+      model: 'character-male-b',
+      voice: 'Gregory',
+      fallbackPitch: 0.85,
+    },
+    places: { home: 'Columbus, OH', tolu: 'At work, downtown' },
+    words: {
+      who: 'Maya',
+      his: 'her',
+      him: 'her',
+      intro:
+        'Maya is eight and has Down syndrome. She talks to Alexa herself. Her mom is at work, her grandpa ten minutes away.',
+      morningPoint:
+        'A child with a disability is a participant too. Maya says it herself, and her mom sees it at work.',
+      logMorning: 'Alexa, I took my morning medicine.',
+      refill: "Maya's medicine refill",
+      ride: 'Maya to speech therapy',
+      evening: 'medicine',
+      use: { present: 'take', past: 'took' },
+      handover: 'Here you go, Maya. Your medicine.',
+      helper: { name: 'Luis', they: 'he' },
+      primary: { name: 'Danielle', self: 'herself' },
+      toluWhere: 'At the hospital, across town',
+      askBreak: 'patients',
+      askPoint:
+        "One sentence between patients becomes a question on Grandpa's phone. Asked, never assigned.",
+      ridePoint:
+        "Nothing is Grandpa's job until he says yes. Danielle asks; Luis says yes, and everyone can see who has Thursday.",
+      rideSteps: [
+        {
+          kind: 'line',
+          who: 'tolu',
+          via: 'echo',
+          text: 'Ask Luis if he can take Maya to speech therapy on Thursday.',
+          expect: ['request_owner'],
+          shot: 'tolu',
+        },
+        { kind: 'shot', shot: 'musa', ms: 1800 },
+        {
+          kind: 'line',
+          who: 'musa',
+          via: 'phone',
+          text: "Yes, I'll take Maya to speech therapy on Thursday.",
+          expect: ['respond_to_request'],
+          shot: 'musa',
+        },
+      ],
+    },
+    ending:
+      'Maya logged her own medicine by voice, and her mom saw it at work without a call. Grandpa was asked for Thursday, not assigned, and his yes is on the record for everyone. A doorbell said someone came without claiming to know who, and the agent followed up when the promise slipped.',
+  },
+  // A woman who uses a wheelchair and lives on her own in Philadelphia. Her brother checks
+  // in from Boston; her friend Sam has a van that takes the chair. Simulated, labelled.
+  independent: {
+    id: 'independent',
+    country: 'us',
+    label: 'Erin',
+    tagline: 'Uses a wheelchair, lives on her own. A simulated family.',
+    simulated: true,
+    lede: 'Erin uses a wheelchair and lives on her own in Philadelphia. She runs her own life; getting across town takes a van that carries the chair. Her brother Chris checks in from Boston. Her friend Sam lives nearby and has the van. Their mom Carol is in Tampa.',
+    recipient: {
+      name: 'Erin',
+      role: 'Uses a wheelchair, lives on her own',
+      playAs: 'Your life, your call. You ask for help when you want it.',
+      model: 'character-female-e',
+      voice: 'Ruth',
+      fallbackPitch: 1.05,
+      aid: 'wheelchair',
+    },
+    toluRole: 'Her brother, in Boston, who wants to help without hovering',
+    toluPlayAs: 'You check in from Boston. Five hours away, and you still want to be useful.',
+    tolu: { name: 'Chris', model: 'character-male-e', voice: 'Matthew', fallbackPitch: 1.0 },
+    helper: {
+      name: 'Sam',
+      role: 'Her friend nearby, with a van that takes the chair',
+      playAs: "You've got the van. You help when you can, and say so when you can't.",
+      model: 'character-male-a',
+      voice: 'Stephen',
+      fallbackPitch: 1.0,
+    },
+    places: { home: 'Philadelphia, PA', tolu: 'Boston, MA' },
+    words: {
+      who: 'Erin',
+      his: 'her',
+      him: 'her',
+      intro:
+        'Erin uses a wheelchair and lives on her own. She runs her own day, and she talks to Alexa.',
+      morningPoint:
+        "Independent, not monitored. Erin's record is hers: she logs her own care, and her brother sees it without asking.",
+      logMorning: 'Alexa, I took my daily medication.',
+      refill: "Erin's prescription refill",
+      ride: 'Erin to her wheelchair seating appointment',
+      evening: 'medication',
+      use: { present: 'take', past: 'took' },
+      handover: 'Hey Erin. Got your prescription.',
+      helper: { name: 'Sam', they: 'he' },
+      primary: { name: 'Chris', self: 'himself' },
+      toluWhere: 'In Boston, five hours from Erin',
+      askPoint:
+        'Five hours away, Chris can still help: one sentence becomes a question on the phone of the friend with the van.',
+      ridePoint:
+        'The ride needs a van that takes the chair. Sam has one, is asked, and says yes, so nobody guesses who is driving.',
+      rideSteps: [
+        {
+          kind: 'line',
+          who: 'tolu',
+          via: 'echo',
+          text: 'Ask Sam if he can drive Erin to her wheelchair seating appointment on Thursday.',
+          expect: ['request_owner'],
+          shot: 'tolu',
+        },
+        { kind: 'shot', shot: 'musa', ms: 1800 },
+        {
+          kind: 'line',
+          who: 'musa',
+          via: 'phone',
+          text: "Yes. The van takes the chair. I'll drive her on Thursday.",
+          expect: ['respond_to_request'],
+          shot: 'musa',
+        },
+      ],
+    },
+    ending:
+      'Erin logged her own care, on her own terms. Chris, in Boston, saw it without a call. Sam was asked for the ride, not assumed, and the van that takes the chair is on the record for Thursday. A doorbell said someone came without claiming to know who, and the agent followed up when the promise slipped.',
+  },
   // Mummy in Ibadan; her children went abroad. Tolu coordinates from London, where in October
   // the clock reads the same as hers. Segun, her nephew, is the only family nearby.
   abroad: {
@@ -565,6 +715,20 @@ export const BASE_NAMES: Record<CareCaseId, FamilyNames> = {
     helper: 'Segun',
   },
   ke: { recipient: 'Mum', primary: 'Wanjiru', caregiver: 'Kamau', away: 'Mwangi', helper: 'Njeri' },
+  child: {
+    recipient: 'Maya',
+    primary: 'Danielle',
+    caregiver: 'Marcus',
+    away: 'Aunt Priya',
+    helper: 'Luis',
+  },
+  independent: {
+    recipient: 'Erin',
+    primary: 'Chris',
+    caregiver: 'Nadia',
+    away: 'Carol',
+    helper: 'Sam',
+  },
 };
 
 const NAME = /^\p{L}[\p{L}' -]{0,22}\p{L}$|^\p{L}$/u;
@@ -646,7 +810,7 @@ export function setFamily(id: CareCaseId, own: FamilyNames | null = null): void 
   const f = family();
   const mine = <T>(x: T): T => (names ? renameAll(x, BASE_NAMES[id], names) : x);
   // Start from the real recipient each time, so an aid never carries over from another family.
-  CAST.daddy = mine({ ...EYES_RECIPIENT, aid: undefined, ...f.recipient });
+  CAST.daddy = mine({ ...EYES_RECIPIENT, aid: undefined, size: undefined, ...f.recipient });
   CAST.tolu = mine({ ...TOLU, ...f.tolu, role: f.toluRole, playAs: f.toluPlayAs ?? TOLU.playAs });
   CAST.musa = mine({ ...MUSA, ...f.helper });
   setHomeZone(COUNTRIES[f.country].zone);
