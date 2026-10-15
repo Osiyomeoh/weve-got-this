@@ -63,7 +63,7 @@ Expect `{"ok":true,"result":true,...}`. Check anytime with `.../getWebhookInfo`.
 Env-only `update-service` on **`carecircle-mcp`** (`ypq2dfq2p7`, us-east-1). Derive the payload
 from the live `describe-service` config and add only the four keys, piping file→file so no
 value is printed, and preserve `AuthenticationConfiguration.AccessRoleArn` + every existing
-secret (the self-signup rollback trap; see `docs/HANDOFF.md`).
+secret (dropping them is what once rolled back self-signup).
 
 ## 7. Prove it end-to-end
 

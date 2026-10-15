@@ -55,8 +55,8 @@ the agent's ask will buzz the mapped phone.
 Env-var changes are an `update-service` on **`carecircle-mcp`** (`ypq2dfq2p7`, us-east-1).
 The payload MUST preserve `AuthenticationConfiguration.AccessRoleArn` and every existing
 secret — derive it from the live `describe-service` config and add only the six keys, piping
-file→file so no value is ever printed. (Same trap that caused the self-signup rollback; see
-`docs/HANDOFF.md`.) Then `start-deployment` is not needed for an env-only update — the
+file→file so no value is ever printed. (Dropping them is what once rolled back self-signup.)
+Then `start-deployment` is not needed for an env-only update — the
 update itself redeploys.
 
 ## 5. Prove it end-to-end

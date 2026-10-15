@@ -373,4 +373,3 @@ Persistence is in-memory by default and DynamoDB when configured; see
 - [`DESIGN.md`](DESIGN.md) - why the model is EVENTS → OBLIGATIONS → OWNERSHIP
 - [`FRICTION-LOG.md`](FRICTION-LOG.md) - where the protocol and platform got in the way
 - [`FEATURE-REQUESTS.md`](FEATURE-REQUESTS.md) - what we wished existed, and what has since arrived
-- [`HANDOFF.md`](HANDOFF.md) - operational state, deploys, and gotchas

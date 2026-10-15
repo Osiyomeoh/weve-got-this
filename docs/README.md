@@ -46,5 +46,4 @@ Kept for the record of how it was built; not needed to use it.
 
 | Doc | What it is |
 |---|---|
-| [HANDOFF.md](HANDOFF.md) | The running build log, newest first |
 | [RECORD-PLAN.md](RECORD-PLAN.md) | How the real connections were built. Some of it uses the first demo family's names |

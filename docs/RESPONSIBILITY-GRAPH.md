@@ -215,7 +215,7 @@ The LLM is a **speaker and a proposer.** The graph is the **source of truth and 
 One write model, many read/write surfaces. No double entry, no second source of truth.
 Only Alexa+ is a live MCP host; Ring/Bee enter through the `ingest_signal` seam and Fire
 TV renders the same board the voice surface reads. What is LIVE vs. SEAM is stated plainly
-in the README and `HANDOFF.md`, never blurred.
+in the README, never blurred.
 
 ---
 
