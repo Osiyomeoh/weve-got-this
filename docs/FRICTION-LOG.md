@@ -681,6 +681,23 @@ Template:
   the default, and make `profile-nlu` easy to run in bulk so builders measure this step.
 - **Date:** 2026-10-02
 
+### Vega SDK - the multi-TV sample won't build on SDK 0.24 until its manifest declares an OS version
+- **Task attempted:** Run our Care Board (built on `react-native-multi-tv-app-sample`) on the
+  Vega Virtual Device.
+- **Steps taken:** Installed SDK 0.24.12112 with the one-line installer, `yarn install` in
+  `firetv/`, `vega virtual-device start`, then `yarn build:debug` in `apps/vega`.
+- **Expected:** The sample's Vega app builds as it comes.
+- **Actual:** First, Metro's watchman failed with "Operation not permitted" on the project
+  folder (macOS privacy rules on `~/Documents`). With `CI=true` it bundled, then `vega build`
+  stopped: "Missing [os.version].target. A Vega application must declare its OS version."
+- **Severity:** moderate. Two blocked builds, but both errors pointed at a fix.
+- **Workaround:** `CI=true` to skip watchman, and `vega project update-manifest --os-version 1.2
+  --os-min 1.2` (the device reports OS 1.2). Then `vega run-app` installed and launched it on
+  the virtual device.
+- **Suggestion:** Update the sample's `manifest.toml` for SDK 0.24, and mention watchman and
+  Full Disk Access in the macOS install guide.
+- **Date:** 2026-10-15
+
 ### Bee - "no device needed" still needs an Apple Watch to get into the app
 - **Task attempted:** Send a real dose reminder to the person's Bee (`POST /v1/todos` with
   `alarm_at`) and record the dose when they tick it off. Built and tested (commit

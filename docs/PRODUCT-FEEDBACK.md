@@ -309,6 +309,41 @@ calibrated scores.
 
 ---
 
+## Fire TV (React Native Multi-TV sample, Fire OS, Vega)
+
+**Used for:** the family's shared screen. The TV shows what the care plan needs and who has
+picked it up, reading the same live `/api/state` the voice side writes to. We started from
+Amazon's `react-native-multi-tv-app-sample` (`firetv/`): a Fire OS app, an Expo web export
+hosted at `/tv-native/`, and a Vega OS target. The sim's TV plays Amazon's sample feed
+(scrap-tv-feed) so the living room has a real programme to interrupt.
+
+**What worked well:** the sample saved us days. One set of shared React Native screens ran
+on Fire OS, Android TV and the web, and the focus handling was already done. The MIT-0
+licence meant we could build on it without worrying, and the sample feed gave us royalty-free
+video for the sim.
+
+**What needs work:**
+- **The sample no longer builds on the current Vega SDK as shipped.** On SDK 0.24.12112,
+  `vega build` refused the sample's `manifest.toml` until it declared an OS version
+  (`vega project update-manifest --os-version 1.2 --os-min 1.2`). The error told us the fix,
+  which helped; the sample should carry it.
+- **Watchman can't read `~/Documents` on macOS** without Full Disk Access, and the build
+  died with "Operation not permitted". `CI=true` (no watchman) got us through.
+- **The template is a lot to strip.** The media screens (Explore, Details, Player, Settings)
+  and their data still sit in `packages/shared-ui`. A minimal "one screen, focus, build"
+  starter next to the full sample would help apps that aren't media players.
+
+**Onboarding (zero → hello world):** quick for Fire OS and web: clone, `yarn install`,
+`./gradlew :app:assembleRelease` or `npx expo export -p web`. Vega took an
+afternoon: sign in, run the one-line installer (SDK and Vega Virtual Device, about 20 GB of
+disk), `vega virtual-device start`, build, then `vega run-app`. The Care Board opened on the
+virtual device first time once it built.
+
+**Would you build with it again?** **Yes.** A TV is the one screen the whole family already
+looks at, and the sample got us there fast. The Vega CLI was a pleasure once installed: one command to start the device, one to install and launch.
+
+---
+
 ## A note on Kiro / development-time AWS tools
 
 Our development workflow used Claude Code as the primary agent for building and reviewing this
