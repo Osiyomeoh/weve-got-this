@@ -1,196 +1,156 @@
-import { Suspense, useMemo, useRef, type ReactNode } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, Html, MeshDistortMaterial, Icosahedron, OrbitControls } from '@react-three/drei';
+import { type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import * as THREE from 'three';
 import { useBoard } from '../lib/useBoard';
 
 /**
- * The one page that has to make the whole argument.
+ * The landing page: who it is for, what it does, and where to try it.
  *
- * Everything CareCircle is follows from a single observation, and the page is
- * ordered so a reader meets it before anything else: **care is already shared,
- * and nothing shares it.** More than half of family caregivers are coordinating
- * with someone else over the same person, with no system holding who owes what.
- *
- * So the sections below are not a feature tour. They are one argument:
- *   the problem is shared responsibility -> the hard part is not guessing ->
- *   here is the mechanism -> here are four surfaces of the same idea ->
- *   here is what it contributes back to the protocol.
- *
- * The four surfaces are deliberately framed as four *kinds of evidence* feeding
- * one responsibility layer, never as four separate integrations. If this page
- * ever reads as a list of demos, it has stopped doing its job.
+ * It leads with the family and the one thing CareCircle does that nothing else does (it asks
+ * the right person, and nothing is anyone's until they say yes), then sends the reader to the
+ * simulation, where they can play a family's week by typing, speaking or sending a voice note.
+ * The sections below are one argument, not a feature tour: the problem is shared
+ * responsibility -> the hard part is not guessing -> the mechanism -> the devices as kinds of
+ * evidence -> what it gives back to the protocol.
  */
 
 const SURFACES = [
-  { key: 'alexa', name: 'Alexa+', sub: 'declared', color: '#4ea1ff', status: 'live', angle: 0 },
+  { key: 'alexa', name: 'Alexa+', sub: 'what people say', color: '#4ea1ff', status: 'live' },
+  { key: 'tv', name: 'Fire TV', sub: 'the shared screen', color: '#b46bff', status: 'built' },
+  { key: 'ring', name: 'Ring', sub: 'the front door', color: '#25d3c2', status: 'simulated' },
   {
-    key: 'ring',
-    name: 'Ring',
-    sub: 'physical',
-    color: '#25d3c2',
-    status: 'seam',
-    angle: (2 * Math.PI) / 3,
-  },
-  {
-    key: 'tv',
-    name: 'Fire TV',
-    sub: 'shared display',
-    color: '#b46bff',
-    status: 'seam',
-    angle: (4 * Math.PI) / 3,
+    key: 'bee',
+    name: 'Bee',
+    sub: 'what was overheard',
+    color: '#ffb020',
+    status: 'not on a device yet',
   },
 ] as const;
 
-const R = 4.2;
+const NAV = [
+  { to: '/world', label: 'Simulation' },
+  { to: '/console', label: 'Console' },
+  { to: '/tv', label: 'Fire TV' },
+  { href: '#how', label: 'How it works' },
+  { href: '/docs.html', label: 'Developers' },
+] as const;
 
-function Core({ intensity }: { intensity: number }) {
-  const shell = useRef<THREE.Mesh>(null!);
-  useFrame((_, dt) => {
-    if (shell.current) shell.current.rotation.y += dt * 0.15;
-  });
-  return (
-    <group>
-      <Float speed={2} rotationIntensity={0.4} floatIntensity={0.6}>
-        <Icosahedron args={[1.15, 4]}>
-          <MeshDistortMaterial
-            color="#7cf0c8"
-            emissive="#7cf0c8"
-            emissiveIntensity={intensity}
-            roughness={0.2}
-            metalness={0.4}
-            distort={0.28}
-            speed={1.6}
-            flatShading
-          />
-        </Icosahedron>
-      </Float>
-      <Icosahedron ref={shell} args={[1.5, 1]}>
-        <meshBasicMaterial color="#7cf0c8" wireframe transparent opacity={0.18} />
-      </Icosahedron>
-      <pointLight color="#7cf0c8" intensity={2.2} distance={22} />
-    </group>
-  );
-}
+/** The conversation from the README, as it plays in the simulation. */
+const TURNS: { who: string; color: string; text: string; alexa?: boolean; note?: string }[] = [
+  { who: 'Daddy', color: '#ffcf70', text: 'I have my eye check-up tomorrow at ten.' },
+  {
+    who: 'Alexa',
+    color: '#4ea1ff',
+    alexa: true,
+    text: 'Noted. Will Daddy need a ride to the eye check-up?',
+    note: 'A guess from the appointment type, not something anyone said.',
+  },
+  { who: 'Tolu, his son', color: '#7cf0c8', text: "Yes. Ask whoever's free." },
+  {
+    who: 'Alexa',
+    color: '#4ea1ff',
+    alexa: true,
+    text: "I've asked Funmi. It stays unowned until Funmi says yes.",
+  },
+  { who: 'Funmi, on her phone', color: '#b46bff', text: 'Yes, I can take him.' },
+  {
+    who: 'Alexa',
+    color: '#4ea1ff',
+    alexa: true,
+    text: 'Thanks. Driving Daddy to the eye check-up is yours now.',
+  },
+];
 
-function DeviceNode({ color, angle, name, sub, status }: Omit<(typeof SURFACES)[number], 'key'>) {
-  const pos = useMemo(
-    () => new THREE.Vector3(Math.cos(angle) * R, 0, Math.sin(angle) * R),
-    [angle],
-  );
+const primary =
+  'inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#00e0c6] to-[#3b82f6] px-6 py-3 text-[0.9375rem] font-semibold text-[#03050a] shadow-[0_10px_40px_rgba(0,224,198,0.3)] transition hover:-translate-y-0.5';
+const ghost =
+  'inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-3 text-[0.9375rem] font-medium text-ink backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-white/10';
+
+function Nav({ online, gaps, owned }: { online: boolean; gaps: number; owned: number }) {
   return (
-    <group position={pos}>
-      <Float speed={3} floatIntensity={0.8}>
-        <mesh>
-          <sphereGeometry args={[0.36, 24, 24]} />
-          <meshStandardMaterial
-            color={color}
-            emissive={color}
-            emissiveIntensity={0.9}
-            roughness={0.3}
-          />
-        </mesh>
-        <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, -0.28, 0]}>
-          <torusGeometry args={[0.55, 0.02, 12, 48]} />
-          <meshBasicMaterial color={color} transparent opacity={0.5} />
-        </mesh>
-      </Float>
-      {/* drei portals these labels into their own stacking context, which by
-          default floats above the copy overlay and lets a device name land on
-          top of the headline. Bounding the range below the overlay's z-10 keeps
-          them behind the text where they belong. */}
-      <Html center distanceFactor={9} position={[0, 1.0, 0]} zIndexRange={[5, 0]}>
-        <div className="whitespace-nowrap px-2.5 py-1 rounded-lg text-[0.8125rem] bg-bg/70 border border-line backdrop-blur-sm">
-          <span className="font-semibold text-ink">{name}</span>
-          <span className="text-muted"> · {sub}</span>
-          <span
-            className={`ml-1.5 uppercase text-[0.625rem] tracking-wider ${status === 'live' ? 'text-confirmed' : 'text-muted'}`}
-          >
-            {status}
+    <header className="sticky top-0 z-30 border-b border-line bg-bg/80 backdrop-blur-xl">
+      <div className="mx-auto flex w-full max-w-6xl items-center gap-6 px-6 py-3.5 md:px-10 tv:max-w-[80rem]">
+        <Link to="/" className="flex items-center gap-3">
+          <span className="h-7 w-7 shrink-0 rounded-full bg-[conic-gradient(from_200deg,#00e0c6,#3b82f6,#8b5cf6,#00e0c6)] p-[3px]">
+            <span className="block h-full w-full rounded-full bg-bg" />
           </span>
+          <b className="text-lg tracking-tight">CareCircle</b>
+          <span className="hidden whitespace-nowrap rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 text-[0.6875rem] font-medium text-white/70 sm:inline">
+            for Alexa+
+          </span>
+        </Link>
+        <nav className="ml-4 hidden items-center gap-5 text-[0.8125rem] font-medium text-muted lg:flex">
+          {NAV.map((n) =>
+            'to' in n ? (
+              <Link key={n.label} to={n.to} className="transition hover:text-ink">
+                {n.label}
+              </Link>
+            ) : (
+              <a key={n.label} href={n.href} className="transition hover:text-ink">
+                {n.label}
+              </a>
+            ),
+          )}
+        </nav>
+        <div className="ml-auto flex items-center gap-3">
+          <div
+            className="hidden items-center gap-2 whitespace-nowrap text-[0.75rem] text-muted md:flex"
+            title="The demo family's care board on the live server"
+          >
+            <span
+              className={`h-2 w-2 rounded-full ${online ? 'bg-confirmed' : 'bg-sevHigh'} animate-beat`}
+            />
+            {online ? (
+              <span>
+                server live · <b className="text-ink">{gaps}</b> open ·{' '}
+                <b className="text-ink">{owned}</b> owned
+              </span>
+            ) : (
+              <span>server offline</span>
+            )}
+          </div>
+          <Link
+            to="/world"
+            className="rounded-full bg-ink px-4 py-2 text-[0.8125rem] font-semibold text-bg transition hover:bg-white"
+          >
+            Try the simulation
+          </Link>
         </div>
-      </Html>
-    </group>
+      </div>
+    </header>
   );
 }
 
-function Stream({ angle, color }: { angle: number; color: string }) {
-  const COUNT = 7;
-  const group = useRef<THREE.Group>(null!);
-  const from = useMemo(
-    () => new THREE.Vector3(Math.cos(angle) * R, 0, Math.sin(angle) * R),
-    [angle],
-  );
-  const mid = useMemo(() => from.clone().multiplyScalar(0.5).setY(2.2), [from]);
-  const to = useMemo(() => new THREE.Vector3(0, 0, 0), []);
-  const offs = useMemo(() => Array.from({ length: COUNT }, (_, i) => i / COUNT), []);
-  useFrame((state) => {
-    if (!group.current) return;
-    const t0 = state.clock.elapsedTime * 0.22;
-    group.current.children.forEach((child, i) => {
-      const t = (t0 + offs[i]) % 1;
-      const u = 1 - t;
-      child.position.set(
-        u * u * from.x + 2 * u * t * mid.x + t * t * to.x,
-        u * u * from.y + 2 * u * t * mid.y + t * t * to.y,
-        u * u * from.z + 2 * u * t * mid.z + t * t * to.z,
-      );
-      (child as THREE.Mesh).scale.setScalar(0.6 + Math.sin(t * Math.PI) * 0.6);
-    });
-  });
+function Conversation() {
   return (
-    <group ref={group}>
-      {offs.map((_, i) => (
-        <mesh key={i}>
-          <sphereGeometry args={[0.08, 8, 8]} />
-          <meshBasicMaterial color={color} />
-        </mesh>
-      ))}
-    </group>
-  );
-}
-
-function Scene({ intensity }: { intensity: number }) {
-  const rig = useRef<THREE.Group>(null!);
-  useFrame((state) => {
-    // gentle parallax toward the pointer
-    if (rig.current) {
-      rig.current.rotation.y = THREE.MathUtils.lerp(
-        rig.current.rotation.y,
-        state.pointer.x * 0.3,
-        0.05,
-      );
-      rig.current.rotation.x = THREE.MathUtils.lerp(
-        rig.current.rotation.x,
-        -state.pointer.y * 0.15,
-        0.05,
-      );
-    }
-  });
-  return (
-    <>
-      <ambientLight intensity={0.7} color="#4a5a7a" />
-      <pointLight position={[6, 8, 6]} intensity={1.1} color="#9fd8ff" />
-      <group ref={rig}>
-        <Core intensity={intensity} />
-        {SURFACES.map(({ key, ...s }) => (
-          <DeviceNode key={key} {...s} />
+    <div className="glass w-full max-w-md rounded-3xl p-5 shadow-card md:p-6">
+      <div className="mb-4 flex items-center justify-between text-[0.6875rem] uppercase tracking-[0.16em] text-muted">
+        <span>A family, one evening</span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-alexa" /> Alexa+ with CareCircle
+        </span>
+      </div>
+      <ol className="space-y-3">
+        {TURNS.map((t, i) => (
+          <li
+            key={i}
+            className={`animate-rise ${t.alexa ? 'pr-6' : 'pl-6 text-right'}`}
+            style={{ animationDelay: `${0.15 + i * 0.12}s` }}
+          >
+            <div className="text-[0.6875rem] font-semibold" style={{ color: t.color }}>
+              {t.who}
+            </div>
+            <div
+              className={`mt-1 inline-block rounded-2xl px-3.5 py-2 text-left text-[0.875rem] leading-snug ${
+                t.alexa ? 'bg-[#13203a] text-ink' : 'bg-white/[0.06] text-[#dfe5f2]'
+              }`}
+            >
+              {t.text}
+              {t.note && <div className="mt-1 text-[0.75rem] italic text-inferred">{t.note}</div>}
+            </div>
+          </li>
         ))}
-        {SURFACES.map((s) => (
-          <Stream key={s.key} angle={s.angle} color={s.color} />
-        ))}
-      </group>
-      <OrbitControls
-        enableZoom={false}
-        enablePan={false}
-        autoRotate
-        autoRotateSpeed={0.6}
-        minPolarAngle={Math.PI / 2.6}
-        maxPolarAngle={Math.PI / 2.6}
-        enableRotate={false}
-      />
-    </>
+      </ol>
+    </div>
   );
 }
 
@@ -278,119 +238,69 @@ export default function Hero() {
   const { state, online } = useBoard();
   const gaps = state?.gaps?.length ?? 0;
   const owned = (state?.obligations ?? []).filter((o) => o.status === 'ASSIGNED').length;
-  const intensity = 0.5 + Math.min(gaps, 4) * 0.2;
 
   return (
     <div className="min-h-screen w-full bg-bg">
-      {/* ---------- 1. The claim ---------- */}
-      {/* A minimum, not a cap: on a short phone the copy is taller than the
-          viewport, and h-screen silently cut the surface chips off the bottom.
-          svh rather than vh so mobile browser chrome does not make it jump. */}
-      <div className="relative min-h-[100svh] w-full overflow-hidden">
-        {/* The same ambient light as the console and the TV, so the three read as one product. */}
+      <Nav online={online} gaps={gaps} owned={owned} />
+
+      {/* ---------- 1. Who it is for, and what it does ---------- */}
+      <div className="relative w-full overflow-hidden">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -left-40 -top-40 h-[36rem] w-[36rem] rounded-full bg-[#1b4dff]/20 blur-[120px]" />
-          <div className="absolute -bottom-48 left-1/3 h-[32rem] w-[32rem] rounded-full bg-[#00e0c6]/10 blur-[120px]" />
+          <div className="absolute -bottom-48 right-0 h-[32rem] w-[32rem] rounded-full bg-[#00e0c6]/10 blur-[120px]" />
         </div>
-        <div className="absolute inset-0 md:left-[42%]">
-          <Canvas camera={{ position: [0, 3.5, 9.5], fov: 50 }} dpr={[1, 2]}>
-            <fog attach="fog" args={['#07090f', 8, 22]} />
-            <Suspense fallback={null}>
-              <Scene intensity={intensity} />
-            </Suspense>
-          </Canvas>
-        </div>
-
-        {/* The copy has to win. A device orbiting to the inner edge of the canvas
-            would otherwise smudge the column the headline sits in, so the scrim
-            stays opaque across the text and only clears over open space. */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-bg via-bg/85 to-transparent md:via-bg/70" />
-        <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-[46%] bg-gradient-to-r from-bg via-bg/95 to-transparent md:block" />
-
-        <div className="relative z-10 flex min-h-[100svh] flex-col justify-between gap-10 p-6 md:p-14">
-          <div className="flex items-start justify-between gap-6">
-            <div className="flex items-center gap-5">
-              <div className="flex items-center gap-3">
-                <span className="h-7 w-7 shrink-0 rounded-full bg-[conic-gradient(from_200deg,#00e0c6,#3b82f6,#8b5cf6,#00e0c6)] p-[3px] shadow-[0_0_24px_rgba(0,224,198,0.35)]">
-                  <span className="block h-full w-full rounded-full bg-bg" />
-                </span>
-                <b className="text-lg tracking-tight">CareCircle</b>
-                <span className="hidden whitespace-nowrap rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 text-[0.6875rem] sm:inline font-medium text-white/70">
-                  for Alexa+
-                </span>
-              </div>
-              <a
-                href="/docs.html"
-                className="hidden text-[0.8125rem] font-medium text-muted transition hover:text-ink sm:inline"
-              >
-                Developer docs
-              </a>
+        <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 px-6 py-16 md:px-10 md:py-24 lg:grid-cols-[1.15fr_1fr] tv:max-w-[80rem]">
+          <div className="animate-rise">
+            <div className="mb-4 text-[0.8125rem] uppercase tracking-[0.16em] text-muted">
+              An Alexa+ add-on for families looking after a parent
             </div>
-            <div className="glass flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-full px-3.5 py-2 text-[0.8125rem] text-muted">
-              <span
-                className={`h-2 w-2 rounded-full ${online ? 'bg-confirmed' : 'bg-sevHigh'} animate-beat`}
-              />
-              {online ? (
-                <span>
-                  <b className="text-ink">{gaps}</b> open · <b className="text-ink">{owned}</b>{' '}
-                  owned
-                </span>
-              ) : (
-                <span>care board offline</span>
-              )}
-            </div>
-          </div>
-
-          <div className="max-w-2xl animate-rise">
-            <div className="mb-3.5 text-[0.8125rem] uppercase tracking-[0.16em] text-muted">
-              The responsibility layer for family care
-            </div>
-            <h1 className="text-4xl font-semibold leading-[1.04] tracking-tight md:text-6xl">
-              Care is already shared.{' '}
+            <h1 className="text-4xl font-semibold leading-[1.06] tracking-tight md:text-6xl">
+              Nothing is anyone&rsquo;s job{' '}
               <span className="bg-gradient-to-r from-core to-alexa bg-clip-text text-transparent">
-                Nothing shares it.
+                until they say yes.
               </span>
             </h1>
-            <p className="mt-5 max-w-xl text-[0.9375rem] leading-relaxed text-[#c3cad9] md:text-lg">
-              In Lagos, two grown children who both work and the family driver look after Daddy,
-              going on 70 and home from surgery. Each of them knows part of what happened today, and
-              no system holds the whole. CareCircle turns what everyone says and everything the
-              house notices into shared obligations, finds the ones nobody owns, and never turns a
-              missing record into an accusation.
+            <p className="mt-6 max-w-xl text-[0.9375rem] leading-relaxed text-[#c3cad9] md:text-lg">
+              CareCircle notices the care nobody has taken on yet, like the ride to Dad&rsquo;s eye
+              check-up, and asks the person who has room. It never assigns, and it never turns a
+              missing record into blame.
             </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link
-                to="/console"
-                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#00e0c6] to-[#3b82f6] px-6 py-3 text-[0.9375rem] font-semibold text-[#03050a] shadow-[0_10px_40px_rgba(0,224,198,0.3)] transition hover:-translate-y-0.5"
-              >
-                Open the live demo →
+            <p className="mt-4 max-w-xl text-[0.875rem] leading-relaxed text-muted">
+              Built in Lagos for the builder&rsquo;s own dad: going on 70, home from eye surgery,
+              with all his children at work. The family uses it now.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link to="/world" className={primary}>
+                Play a family&rsquo;s week →
               </Link>
-              <a
-                href="#problem"
-                className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-3 text-[0.9375rem] font-medium text-ink backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-white/10"
-              >
-                See how it works
-              </a>
+              <Link to="/console" className={ghost}>
+                Open the console
+              </Link>
             </div>
+            <p className="mt-3 text-[0.75rem] text-muted">
+              In your browser. Type, speak, or send a voice note. No sign-up.
+            </p>
           </div>
-
-          <div className="flex flex-wrap gap-2.5">
-            {SURFACES.map((s) => (
-              <div
-                key={s.key}
-                className="flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 px-3.5 py-2 text-[0.8125rem] backdrop-blur-xl"
+          <div className="flex justify-center lg:justify-end">
+            <Conversation />
+          </div>
+        </div>
+        <div className="relative mx-auto flex w-full max-w-6xl flex-wrap gap-2.5 px-6 pb-12 md:px-10 tv:max-w-[80rem]">
+          {SURFACES.map((s) => (
+            <div
+              key={s.key}
+              className="flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 px-3.5 py-2 text-[0.8125rem] backdrop-blur-xl"
+            >
+              <span className="h-2.5 w-2.5 rounded-full" style={{ background: s.color }} />
+              <span className="font-semibold text-ink">{s.name}</span>
+              <span className="text-muted">{s.sub}</span>
+              <span
+                className={`ml-1 rounded-full border border-line px-1.5 py-0.5 text-[0.625rem] uppercase tracking-wider ${s.status === 'live' ? 'text-core' : 'text-muted'}`}
               >
-                <span className="h-2.5 w-2.5 rounded-full" style={{ background: s.color }} />
-                <span className="text-muted">{s.name}</span>
-                <span className="font-semibold text-ink">{s.sub}</span>
-                <span
-                  className={`ml-1 rounded-full border border-line px-1.5 py-0.5 text-[0.625rem] uppercase tracking-wider ${s.status === 'live' ? 'text-core' : 'text-muted'}`}
-                >
-                  {s.status}
-                </span>
-              </div>
-            ))}
-          </div>
+                {s.status}
+              </span>
+            </div>
+          ))}
         </div>
         <div
           aria-hidden
@@ -400,6 +310,47 @@ export default function Hero() {
             backgroundSize: '200% 100%',
           }}
         />
+      </div>
+
+      {/* ---------- The simulation ---------- */}
+      <div className="border-t border-line bg-[#0a0e18]">
+        <Section
+          eyebrow="Try it"
+          title={<>Play one family&rsquo;s week, on the real server.</>}
+          lead={
+            <>
+              Pick who you are: the son across town, Daddy after surgery, or the family driver. The
+              others are played for you. Everything you say goes to the same Alexa+ planner and MCP
+              server a real family uses, on your own throwaway copy of their record.
+            </>
+          }
+        >
+          <div className="mt-12 grid gap-5 md:grid-cols-3">
+            <Step
+              n="TYPE"
+              name="Say it your own way"
+              body="Each turn suggests a line. Change it, refuse, or stay quiet, and the day goes differently."
+            />
+            <Step
+              n="SPEAK"
+              name="Talk to it"
+              body="Tap Speak and talk, the way you would to an Echo. Amazon Transcribe hears you, and Alexa answers aloud."
+            />
+            <Step
+              n="VOICE NOTE"
+              name="Send a voice note"
+              body="Hold the button and talk, as you would in a family chat. Play it back, see what was heard, then send it."
+            />
+          </div>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link to="/world" className={primary}>
+              Start the simulation →
+            </Link>
+            <Link to="/tv" className={ghost}>
+              The Fire TV screen
+            </Link>
+          </div>
+        </Section>
       </div>
 
       {/* ---------- 2. The problem, with its evidence ---------- */}
@@ -515,7 +466,7 @@ export default function Hero() {
       </div>
 
       {/* ---------- 4. The mechanism ---------- */}
-      <div className="border-t border-line">
+      <div id="how" className="border-t border-line">
         <Section
           eyebrow="How it works"
           title={<>Events become obligations. Obligations need an owner.</>}
@@ -571,7 +522,7 @@ export default function Hero() {
                 </span>
               </div>
               <p className="mt-4 text-[0.875rem] leading-relaxed text-[#c3cad9]">
-                What a person tells you. The MCP server itself: 23 tools, per-member identity bound
+                What a person tells you. The MCP server itself: 25 tools, per-member identity bound
                 to the session rather than to the conversation, purchase-in-place, and an
                 interactive Care Board shipped as an MCP App.
               </p>
@@ -590,8 +541,8 @@ export default function Hero() {
                 <span className="h-2.5 w-2.5 rounded-full bg-tv" />
                 <span className="font-semibold text-ink">Fire TV</span>
                 <span className="text-muted">· the shared display</span>
-                <span className="ml-auto rounded-md border border-line px-2 py-0.5 text-[0.625rem] uppercase tracking-wider text-core">
-                  live
+                <span className="ml-auto rounded-md border border-line px-2 py-0.5 text-[0.625rem] uppercase tracking-wider text-muted">
+                  built
                 </span>
               </div>
               <p className="mt-4 text-[0.875rem] leading-relaxed text-[#c3cad9]">
@@ -665,9 +616,9 @@ export default function Hero() {
             <div className="glass rounded-3xl p-6">
               <div className="text-lg font-semibold text-ink">Everything that got in the way</div>
               <p className="mt-3 text-[0.875rem] leading-relaxed text-[#c3cad9]">
-                Fifteen logged pieces of friction, written in the moment - the ones we worked
-                around, and the ones we could not. Where the platform has since answered us, we say
-                so rather than keep the complaint.
+                Every piece of friction, logged in the moment - the ones we worked around, and the
+                ones we could not. Where the platform has since answered us, we say so rather than
+                keep the complaint.
               </p>
             </div>
           </div>
@@ -681,9 +632,9 @@ export default function Hero() {
           title={<>It is running right now.</>}
           lead={
             <>
-              Not a mockup: a live MCP server, 455 tests including property-based proofs of the risk
-              model, and 96.5% measured tool-selection accuracy. The full story runs end to end in
-              about a minute with no AWS account and no keys.
+              Not a mockup: a live MCP server with 710 tests and 94.8% measured first-tool accuracy.
+              The full story also runs end to end on your machine in about a minute, with no AWS
+              account and no keys.
             </>
           }
         >
@@ -692,37 +643,31 @@ export default function Hero() {
           </pre>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              to="/console"
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-core to-[#57c6ff] px-5 py-3 text-[0.9375rem] font-semibold text-[#04120d] shadow-glow transition hover:-translate-y-0.5"
-            >
-              Open the live demo →
+            <Link to="/world" className={primary}>
+              Play a family&rsquo;s week →
             </Link>
-            <Link
-              to="/tv"
-              className="glass inline-flex items-center gap-2 rounded-xl px-5 py-3 text-[0.9375rem] font-medium text-ink transition hover:-translate-y-0.5"
-            >
-              The ambient screen
+            <Link to="/console" className={ghost}>
+              The console
             </Link>
-            <a
-              href="/docs.html"
-              className="glass inline-flex items-center gap-2 rounded-xl px-5 py-3 text-[0.9375rem] font-medium text-ink transition hover:-translate-y-0.5"
-            >
+            <Link to="/tv" className={ghost}>
+              The Fire TV screen
+            </Link>
+            <a href="/docs.html" className={ghost}>
               Developer docs
             </a>
             <a
               href="https://github.com/Osiyomeoh/carecircle"
               target="_blank"
               rel="noreferrer"
-              className="glass inline-flex items-center gap-2 rounded-xl px-5 py-3 text-[0.9375rem] font-medium text-ink transition hover:-translate-y-0.5"
+              className={ghost}
             >
               Read the source
             </a>
           </div>
 
-          <div className="mt-16 border-t border-line pt-8 text-[0.8125rem] text-muted">
-            CareCircle · an open-source MCP server for shared household care · EVENTS &rarr;
-            OBLIGATIONS &rarr; OWNERSHIP
+          <div className="mt-16 flex flex-wrap justify-between gap-4 border-t border-line pt-8 text-[0.8125rem] text-muted">
+            <span>CareCircle · an open-source MCP server for families sharing care</span>
+            <span>EVENTS &rarr; OBLIGATIONS &rarr; OWNERSHIP</span>
           </div>
         </Section>
       </div>

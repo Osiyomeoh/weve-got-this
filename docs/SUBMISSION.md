@@ -2,8 +2,11 @@
 
 **Primary track:** Alexa+ (MCP) · **Mini-challenges:** AWS Builder, Open Source
 
-**Tagline:** Every other assistant tells you what happened. CareCircle tells you what
-nobody has taken responsibility for - and asks the right person to take it on, by voice, without ever turning a guess into a fact.
+**Tagline:** An Alexa+ add-on for families looking after a parent. It notices the care nobody
+has taken on yet, like the ride to Dad's eye check-up, and asks the right person. It never assigns.
+
+**Try it:** the simulation, a family's week on the live server (type, speak, or send a voice
+note): https://krqi2tpsif.us-east-1.awsapprunner.com/world
 
 **Live MCP server (judge-usable until judging ends):** `https://ypq2dfq2p7.us-east-1.awsapprunner.com/mcp`
 · health: `/health` · spec 2025-11-25, Streamable HTTP. Demo credentials below.

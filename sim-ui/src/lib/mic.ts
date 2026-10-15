@@ -191,3 +191,28 @@ export async function record(
     cancel: teardown,
   };
 }
+
+/**
+ * A recording as a playable WAV, for a voice note the speaker can hear back before sending it.
+ * The PCM is what `stop()` produced: 16-bit little-endian, mono, at SAMPLE_RATE.
+ */
+export function pcmToWav(pcm: Blob): Blob {
+  const header = new DataView(new ArrayBuffer(44));
+  const text = (at: number, s: string) => {
+    for (let i = 0; i < s.length; i++) header.setUint8(at + i, s.charCodeAt(i));
+  };
+  text(0, 'RIFF');
+  header.setUint32(4, 36 + pcm.size, true);
+  text(8, 'WAVE');
+  text(12, 'fmt ');
+  header.setUint32(16, 16, true);
+  header.setUint16(20, 1, true); // PCM
+  header.setUint16(22, 1, true); // mono
+  header.setUint32(24, SAMPLE_RATE, true);
+  header.setUint32(28, SAMPLE_RATE * 2, true);
+  header.setUint16(32, 2, true);
+  header.setUint16(34, 16, true);
+  text(36, 'data');
+  header.setUint32(40, pcm.size, true);
+  return new Blob([header, pcm], { type: 'audio/wav' });
+}

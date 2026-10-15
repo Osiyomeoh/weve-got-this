@@ -4,8 +4,16 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![MCP spec 2025-11-25](https://img.shields.io/badge/MCP-2025--11--25-6f42c1)
 
-**An Alexa+ add-on that hears the care work nobody mentioned, and asks the right person to
-take it on.**
+**An Alexa+ add-on for families looking after a parent. It notices the care nobody has taken
+on yet, like the ride to Dad's eye check-up, and asks the right person. It never assigns.**
+
+My dad is going on 70 and lives in Lagos. After his eye surgery he had to time his own
+medicine, and he wanted to know what was going on. We, his children, all work, and my
+brother lives in the UK. CareCircle listens to what the family tells Alexa, spots the jobs no one
+has claimed, and asks whoever has room. Nothing is anyone's until they say yes.
+
+**Try it:** [play a family's week in the simulation](https://krqi2tpsif.us-east-1.awsapprunner.com/world)
+(type, speak, or send a voice note) · [open the console](https://krqi2tpsif.us-east-1.awsapprunner.com/console)
 
 [![The CareCircle console: the family on the left, and on the right two pieces of Daddy's care that nobody has taken yet, each with "I'll take it"](docs/console.png)](https://krqi2tpsif.us-east-1.awsapprunner.com/console.html)
 

@@ -4,7 +4,7 @@ import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { advance, Canvas, useThree } from '@react-three/fiber';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
-import { LISTENING_EVENT, record, type Recording } from '../lib/mic';
+import { LISTENING_EVENT, pcmToWav, record, type Recording } from '../lib/mic';
 import { SPEECH_LANGUAGES, setSpeechLanguage, speechLanguage } from '../lib/speech-language';
 import { tellStoryTime } from '../lib/storyTime';
 import { CAST, PLAYABLE, type PersonKey } from '../world/cast';
@@ -739,7 +739,192 @@ function MakeItYours({
   );
 }
 
-/** Your line: say it your own way, type it, or speak it (Amazon Transcribe). */
+/** How many bars a voice note's waveform is drawn with. */
+const NOTE_BARS = 32;
+
+interface Note {
+  url: string;
+  secs: number;
+  bars: number[];
+  heard?: string;
+  failed?: string;
+}
+
+/**
+ * A voice note, the way the family already talks in their group chat: hold to record, let go,
+ * hear it back and see what was heard, then send it. What is sent is the transcript, so a
+ * misheard word is caught before it reaches the record.
+ */
+function VoiceNote({ color, onSend }: { color: string; onSend: (text: string) => void }) {
+  const [recording, setRecording] = useState(false);
+  const [note, setNote] = useState<Note | null>(null);
+  const [hint, setHint] = useState<string | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const rec = useRef<Recording | null>(null);
+  const peaks = useRef<number[]>([]);
+  const started = useRef(0);
+  const audio = useRef<HTMLAudioElement | null>(null);
+
+  const discard = useCallback(() => {
+    audio.current?.pause();
+    setPlaying(false);
+    setNote((n) => {
+      if (n) URL.revokeObjectURL(n.url);
+      return null;
+    });
+  }, []);
+  useEffect(() => () => rec.current?.cancel(), []);
+
+  const start = async () => {
+    if (rec.current) return;
+    discard();
+    setHint(null);
+    peaks.current = [];
+    try {
+      rec.current = await record({ onLevel: (l) => peaks.current.push(l) });
+      started.current = performance.now();
+      setRecording(true);
+    } catch (e) {
+      setHint(
+        (e as Error).name === 'NotAllowedError'
+          ? 'The browser blocked the microphone. Allow it in the address bar, or type it instead.'
+          : 'No microphone is available. Type it instead.',
+      );
+    }
+  };
+
+  const stop = async () => {
+    const r = rec.current;
+    rec.current = null;
+    if (!r) return;
+    setRecording(false);
+    const secs = (performance.now() - started.current) / 1000;
+    if (secs < 0.6) {
+      r.cancel();
+      setHint('Hold the button down while you talk.');
+      return;
+    }
+    const pcm = await r.stop();
+    const all = peaks.current;
+    const per = Math.max(1, Math.floor(all.length / NOTE_BARS));
+    const bars = Array.from({ length: Math.min(NOTE_BARS, all.length) }, (_, i) =>
+      Math.min(1, Math.max(...all.slice(i * per, i * per + per), 0) * 1.6),
+    );
+    const url = URL.createObjectURL(pcmToWav(pcm));
+    setNote({ url, secs, bars });
+    try {
+      const { text } = await api.transcribe(pcm);
+      setNote((n) =>
+        n?.url === url
+          ? text.trim()
+            ? { ...n, heard: text.trim() }
+            : { ...n, failed: 'Nothing was heard in it. Record it again, or type it.' }
+          : n,
+      );
+    } catch (e) {
+      setNote((n) =>
+        n?.url === url ? { ...n, failed: `Couldn't transcribe it: ${(e as Error).message}` } : n,
+      );
+    }
+  };
+
+  const play = () => {
+    if (!note) return;
+    if (playing) {
+      audio.current?.pause();
+      setPlaying(false);
+      return;
+    }
+    const a = new Audio(note.url);
+    audio.current = a;
+    a.onended = () => setPlaying(false);
+    void a.play();
+    setPlaying(true);
+  };
+
+  const length = (secs: number) => `0:${String(Math.round(secs)).padStart(2, '0')}`;
+
+  return (
+    <div className="world-note">
+      {note ? (
+        <div className="world-note-bubble" style={{ borderColor: color }}>
+          <button
+            type="button"
+            className="world-note-play"
+            style={{ background: color }}
+            onClick={play}
+            aria-label={playing ? 'Pause the voice note' : 'Play the voice note'}
+          >
+            {playing ? '❚❚' : '▶'}
+          </button>
+          <div className="world-note-wave" aria-hidden>
+            {note.bars.map((b, i) => (
+              <span key={i} style={{ height: `${12 + b * 88}%`, background: color }} />
+            ))}
+          </div>
+          <span className="world-note-len">{length(note.secs)}</span>
+          <div className="world-note-heard">
+            {note.heard ? (
+              <>
+                Heard: <q>{note.heard}</q>
+              </>
+            ) : note.failed ? (
+              note.failed
+            ) : (
+              'Listening to your note…'
+            )}
+          </div>
+          <div className="row">
+            <button
+              type="button"
+              className="world-btn"
+              disabled={!note.heard}
+              onClick={() => {
+                const text = note.heard!;
+                discard();
+                onSend(text);
+              }}
+            >
+              Send voice note
+            </button>
+            <button type="button" className="world-btn ghost" onClick={discard}>
+              Delete
+            </button>
+          </div>
+        </div>
+      ) : null}
+      <button
+        type="button"
+        className={`world-btn ghost world-note-hold${recording ? ' live' : ''}`}
+        onPointerDown={(e) => {
+          e.currentTarget.setPointerCapture(e.pointerId);
+          void start();
+        }}
+        onPointerUp={() => void stop()}
+        onPointerCancel={() => void stop()}
+        onKeyDown={(e) => {
+          if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) {
+            e.preventDefault();
+            void start();
+          }
+        }}
+        onKeyUp={(e) => {
+          if (e.key === ' ' || e.key === 'Enter') void stop();
+        }}
+        title="Hold to record a voice note, let go to stop"
+      >
+        {recording
+          ? '● Recording… let go to stop'
+          : note
+            ? 'Record again'
+            : '🎙 Hold for a voice note'}
+      </button>
+      {hint && <div className="world-turn-note">{hint}</div>}
+    </div>
+  );
+}
+
+/** Your line: say it your own way, type it, speak it, or send a voice note (Amazon Transcribe). */
 function YourTurn({
   who,
   suggestion,
@@ -831,6 +1016,20 @@ function YourTurn({
           onChange={(e) => setText(e.target.value)}
           aria-label={`What ${p.name} says`}
         />
+        <button type="submit" className="world-btn">
+          Say it
+        </button>
+      </div>
+      {/* Other ways to say it, and the day doesn't have to go to script: a no is an answer, silence is a choice too. */}
+      <div className="row world-choices">
+        <button
+          type="button"
+          className={`world-btn ghost${listening ? ' live' : ''}`}
+          onClick={() => void mic()}
+        >
+          {listening ? 'Stop' : 'Speak'}
+        </button>
+        <VoiceNote color={p.color} onSend={onSay} />
         <select
           className="world-btn ghost"
           value={lang}
@@ -854,13 +1053,6 @@ function YourTurn({
         </select>
         <button
           type="button"
-          className={`world-btn ghost${listening ? ' live' : ''}`}
-          onClick={() => void mic()}
-        >
-          {listening ? 'Stop' : 'Speak'}
-        </button>
-        <button
-          type="button"
           className="world-btn ghost"
           disabled={text === suggestion}
           title="Put the story's line back in the box"
@@ -871,12 +1063,6 @@ function YourTurn({
         >
           Suggest
         </button>
-        <button type="submit" className="world-btn">
-          Say it
-        </button>
-      </div>
-      {/* The day doesn't have to go to script. A no is an answer; silence is a choice too. */}
-      <div className="row world-choices">
         {no && (
           <button
             type="button"
