@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { WebView } from '@amazon-devices/webview';
 
@@ -11,16 +11,35 @@ import { WebView } from '@amazon-devices/webview';
  * here never writes to a real family's record.
  */
 const TV_URL = 'https://krqi2tpsif.us-east-1.awsapprunner.com/tv';
+const RETRY_MS = 4000;
 
 export default function CareTv() {
+  // A set switched on before its network is up gets an error page once. Load again after a
+  // pause, by mounting a fresh WebView, until the page arrives.
+  const [attempt, setAttempt] = useState(0);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    if (!failed) return;
+    const id = setTimeout(() => {
+      setFailed(false);
+      setAttempt((n) => n + 1);
+    }, RETRY_MS);
+    return () => clearTimeout(id);
+  }, [failed]);
+
   return (
     <View style={styles.root}>
       <WebView
+        key={attempt}
         source={{ uri: TV_URL }}
         javaScriptEnabled
         domStorageEnabled
         allowSystemKeyEvents
         hasTVPreferredFocus
+        onError={() => setFailed(true)}
+        onHttpError={(e) => {
+          if (e.nativeEvent.isMainFrame && e.nativeEvent.statusCode >= 500) setFailed(true);
+        }}
         style={styles.root}
       />
     </View>
