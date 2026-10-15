@@ -79,6 +79,8 @@ interface CharacterProps {
   visible?: boolean;
   /** Walking speed in world units per second. */
   speed?: number;
+  /** How far an older body leans forward, in radians: more when they walk. */
+  stoop?: number;
   /** A point in the world they are paying attention to. Nothing: their eyes wander. */
   look?: [number, number, number] | null;
   /** Speaking: the head moves with the words and a hand talks too. */
@@ -131,6 +133,7 @@ export function Character({
   aid,
   visible = true,
   speed = 1.2,
+  stoop = 0,
   look = null,
   talking = false,
   phone = false,
@@ -170,6 +173,8 @@ export function Character({
   const { actions } = useAnimations(animations, root);
   const target = useRef(new THREE.Vector3(...position));
   const walking = useRef(false);
+  // From 0 standing to 1 at full pace: nobody starts or stops walking in an instant.
+  const pace = useRef(0);
   const current = useRef<string | null>(null);
   // Each person breathes and glances on their own rhythm, not in step with everyone else.
   const life = useRef({
@@ -230,10 +235,20 @@ export function Character({
       if (d < 0.03) {
         g.position.copy(target.current);
         walking.current = false;
+        pace.current = 0;
         play(rest);
       } else {
-        g.position.add(to.normalize().multiplyScalar(Math.min(d, speed * dt)));
-        g.rotation.y = Math.atan2(to.x, to.z);
+        // Speed up over the first steps and slow for the last ones.
+        const want = Math.min(1, d / 0.35);
+        pace.current += (want - pace.current) * ease(dt, want > pace.current ? 3 : 8);
+        const v = speed * Math.max(0.15, pace.current);
+        g.position.add(to.normalize().multiplyScalar(Math.min(d, v * dt)));
+        const walk = current.current ? actions[current.current] : null;
+        if (walk && current.current === 'walk') walk.timeScale = clamp(v / 1.2, 0.35, 1.4);
+        // Turn into the new direction, not snap to it.
+        const head = Math.atan2(to.x, to.z);
+        const turn = Math.atan2(Math.sin(head - g.rotation.y), Math.cos(head - g.rotation.y));
+        g.rotation.y += turn * Math.min(1, dt * 7);
       }
     } else {
       // Turn to face where the scene wants them, gently.
@@ -290,10 +305,12 @@ export function Character({
     const breath = Math.sin(t * 1.7) * 0.018;
 
     bones.head?.apply(
-      L.pitch * 0.75 + nod + speech,
+      L.pitch * 0.75 + nod + speech - stoop * (walking.current ? 0.7 : 0.4),
       L.yaw * 0.75 + shake + L.talk * Math.sin(t * 1.9) * 0.06,
     );
-    bones.torso?.apply(breath + L.pitch * 0.12 + L.type * 0.12, L.yaw * 0.25);
+    // An older body leans into the walk; the head comes up to keep the eyes ahead.
+    const lean = stoop * (walking.current ? 1 : 0.6);
+    bones.torso?.apply(breath + lean + L.pitch * 0.12 + L.type * 0.12, L.yaw * 0.25);
     // Hands: the phone held up to the face, keys under the fingers, or a hand that talks.
     const talkHand = L.talk * (1 - L.phone);
     bones.armR?.apply(

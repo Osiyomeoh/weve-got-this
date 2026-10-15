@@ -411,7 +411,7 @@ function DaddysHouse({ view, night }: { view: WorldView; night: boolean }) {
           listening={view.phoneListening === 'daddy'}
         />
       </group>
-      {/* Whoever is cared for moves at their own pace: slowly after eye surgery, steadily in a chair. */}
+      {/* Whoever is cared for moves at their own pace: slowly when older, steadily in a chair. */}
       <Character
         model={daddy.model}
         anim={view.people.daddy!.at === 'door' ? 'idle' : 'sit'}
@@ -419,7 +419,9 @@ function DaddysHouse({ view, night }: { view: WorldView; night: boolean }) {
         facing={view.people.daddy!.at === 'door' ? FACE.toward : FACE.away}
         scale={PERSON_SCALE * (daddy.size ?? 1)}
         aid={daddy.aid}
-        speed={0.5}
+        // A child walks at a child's pace and stands straight; an older parent stoops a little.
+        speed={daddy.size ? 1 : 0.5}
+        stoop={daddy.size || daddy.aid === 'wheelchair' ? 0 : 0.16}
         {...alive('daddy', view.people)}
       />
       {view.people.daddy!.look === 'tv' && view.people.daddy!.at !== 'door' && (
