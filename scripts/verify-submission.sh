@@ -37,7 +37,7 @@ claim() { # name, code regex, [public repo that holds the code, when it isn't ou
   docs=$(git grep -liE "$2" "$ref" -- '*.md' | wc -l | tr -d ' ')
   code=$(git grep -liE "$2" "$ref" -- src scripts infra packages ':!*.md' ':!*.json' ':!scripts/verify-submission.sh' | wc -l | tr -d ' ')
   if [ "$code" -gt 0 ]; then ok "$1 (code files: $code)"
-  elif [ -n "${3:-}" ] && git grep -qF "$3" "$ref" -- README.md docs/SUBMISSION.md; then
+  elif [ -n "${3:-}" ] && git grep -qF "$3" "$ref" -- README.md; then
     ok "$1 (not ours: linked to $3)"
   elif [ "$docs" -gt 0 ]; then bad "$1 claimed in $docs doc(s) but no code"
   fi

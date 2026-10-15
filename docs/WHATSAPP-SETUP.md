@@ -1,6 +1,6 @@
 # WhatsApp Business Cloud API — go-live runbook
 
-The WhatsApp door is **built and tested** (see `docs/RECORD-PLAN.md` §1.4). This is the
+The WhatsApp door is **built and tested**. This is the
 purely-operational checklist to make it *live*: collect five values from Meta, set six env
 vars, register one webhook. No code changes.
 

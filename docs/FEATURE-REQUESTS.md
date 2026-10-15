@@ -1,80 +1,71 @@
 # Feature requests
 
-These are the things we kept wishing existed while building - written down in the moment,
-addressed to the teams who own each surface, and rated by how much they actually hurt:
-critical / important / nice-to-have. None of them are wishlist padding; every one is a
-place where we wanted to do the right thing for a family coordinating someone's care and
-the platform made us choose a workaround instead. Where we found a way around it, we say
-so - the workaround is usually the tell for what the platform should have handled.
+These are the things we kept wishing existed while we built CareCircle. Each one is
+addressed to the team that owns that part, and rated by how much it hurt: critical,
+important or nice-to-have. Each one is a place where we wanted to do right by a family
+looking after someone, and had to settle for a workaround. Where we found one, we say what
+it was, because the workaround usually shows what the platform should have done.
 
 ---
 
 ## MCP specification / TypeScript SDK
 
-### Per-identity sessions as a first-class concept
+### Sessions that know which person is acting
 - **Urgency:** important
-- **What:** A documented pattern for a server whose state is shared across several
-  *people* with different authority, where the session credential establishes which
-  person is acting.
-- **Why it matters:** MCP today reads as one user talking to one server. CareCircle's
-  whole premise is one shared record and four relationships to it - a care recipient,
-  two family caregivers with different authority, and a paid helper. Every tool call
-  has to be attributed and authorised. We built this ourselves, but every multi-user
-  MCP server will rebuild the same thing, differently, and most will get authorisation
-  subtly wrong.
-- **Instead:** Per-member bearer credentials mapped to a member id, checked against a
-  role capability table on every call.
+- **What:** A documented pattern for a server whose data is shared by several people with
+  different permissions, where the session credential says which person is acting.
+- **Why it matters:** MCP mostly reads as one user talking to one server. CareCircle is one
+  shared record with four people around it: the person being cared for, two family members
+  with different permissions, and a paid helper. Every tool call has to be tied to a person
+  and checked. We built that ourselves, but every multi-user MCP server will build it again,
+  differently, and many will get the permissions slightly wrong.
+- **Instead:** Each member has their own bearer credential, mapped to a member id and checked
+  against a role permission table on every call.
 
-### A way for a server to state the current date and time
+### A way for a server to say today's date and time
 - **Urgency:** critical
-- **What:** Let a server advertise the current timestamp and an IANA timezone to the
-  client - the natural counterpart to `instructions` on initialize, or a standard
-  `_meta` key.
-- **Why it matters:** This is the only request here that has already produced wrong
-  data in a medical record. Asked to record "cardiology Thursday at ten", a planner
-  that does not know today's date emitted **19 December 2024** for an appointment
-  spoken in September 2026, with no timezone, and it was written to the live care
-  record and rendered to the family as real. A tool description can say "resolve
-  against today's date"; it cannot say *what today's date is*. Every MCP server that
-  deals in relative dates - scheduling, reminders, deadlines, anything with
-  "tomorrow" in it - has this problem right now, and each is solving it by stuffing
-  the date into a prompt the server may not control.
-- **Instead:** We stamp the date and household timezone into the planner prompt we
-  own, normalise offset-less timestamps as household-local, and refuse any date more
-  than two days past or a year ahead.
+- **What:** Let a server send the current time and an IANA timezone to the client, next to
+  `instructions` on initialize, or as a standard `_meta` key.
+- **Why it matters:** This is the only request here that has already put wrong data in a
+  medical record. Asked to record "cardiology Thursday at ten", a planner that didn't know
+  the date saved **19 December 2024**, with no timezone, for an appointment spoken in
+  September 2026. It went into the live care record and the family saw it as real. A tool
+  description can say "use today's date". It can't say what today's date is. Every MCP
+  server dealing with "tomorrow" or "next week" has this problem now, and each one is
+  patching it by putting the date into a prompt it may not control.
+- **Instead:** We put the date and the household's timezone into the planner prompt we own,
+  read timestamps without an offset as household time, and refuse any date more than two
+  days past or a year ahead.
 
-### An explicitly non-authoritative speaker hint
+### A speaker hint that's clearly just a hint
 - **Urgency:** important
-- **What:** An optional field by which a host may pass "I believe this turn is from
-  profile X", clearly specified as evidence rather than proof.
-- **Why it matters:** Shared devices are the normal case for family products. On a
-  living-room Echo the credential identifies the *household* while the speaker changes
-  every turn. Identity must stay bound to the credential for authorisation - a model
-  can be talked into believing anything about who is speaking - but a weak signal a
-  server may treat as `INFERRED` would let a shared device stop asking "who is this?"
-  every turn. Our whole trust model is built on ranking evidence by confidence; we
-  would consume this correctly and so would anyone else who needed it.
-- **Instead:** One session per member, chosen explicitly.
+- **What:** An optional field where a host can say "I think this turn is from profile X",
+  defined as evidence, not proof.
+- **Why it matters:** Families share devices. On a living-room Echo the credential
+  identifies the household, and the person talking changes every turn. Permissions have to
+  stay tied to the credential, because a model can be talked into believing anyone is
+  speaking. But a weak hint, which a server could treat as `INFERRED`, would let a shared
+  device stop asking "who is this?" every turn. Our trust model already ranks evidence by how
+  sure it is, so we'd use this properly, and so would anyone who needs it.
+- **Instead:** One session per member, picked on purpose.
 
-### A way to mark tool result content as user-supplied
+### A way to mark tool output that a person wrote
 - **Urgency:** important
-- **What:** A `_meta` flag or content-part annotation meaning "this text was typed by
-  a person, not authored by the server".
-- **Why it matters:** Hosts reasonably treat output from a trusted server as
-  trustworthy, but servers increasingly return *other people's words*. A care note
-  written by a paid aide travels the same path as text the server wrote itself. As
-  more MCP servers relay user-generated content, "all tool output is equally
-  trustworthy" stops being a safe default - and a server currently has no vocabulary
-  to say otherwise.
-- **Instead:** We never interpolate free text into instructions, and every
-  state-changing action requires a tool call the capability model authorises
-  independently.
+- **What:** A `_meta` flag or content annotation meaning "a person typed this, the server
+  didn't write it".
+- **Why it matters:** Hosts fairly trust what a trusted server returns, but servers now
+  return other people's words more and more. A care note from a paid aide travels the same
+  way as text the server wrote. As more servers pass along what users wrote, "all tool output
+  is equally trustworthy" stops being a safe default, and a server has no way to say
+  otherwise.
+- **Instead:** We never put free text into instructions, and every change needs a tool call
+  that the permission check approves on its own.
 
-### A spec-version support matrix
+### A table of which spec versions each SDK release supports
 - **Urgency:** nice-to-have
-- **What:** Published mapping of SDK release -> supported spec versions.
-- **Why it matters:** We had to target spec 2025-11-25 specifically. Determining which
-  SDK release supports it required grepping compiled output. See friction log.
+- **What:** A published list of SDK release -> supported spec versions.
+- **Why it matters:** We had to target spec 2025-11-25. Finding which SDK release supports
+  it meant grepping compiled code. See the friction log.
 
 ---
 
@@ -82,272 +73,256 @@ so - the workaround is usually the tell for what the platform should have handle
 
 ### A local simulator for add-on conversations
 - **Urgency:** critical
-- **What:** An official local harness that runs an MCP server against the real Alexa+
-  planner and speech surface, without needing an invite or a device.
-- **Why it matters:** Add-ons are invite-only, and per Amazon's own office hours you
-  cannot currently drive an Echo Show from an SDK. Everyone outside the preview is
-  guessing at how Alexa+ will actually choose between their tools, how it will phrase
-  results, and where it will get confused. We are building our own simulator, which
-  means we are optimising against *our* model's behaviour, not Alexa's. If add-ons are
-  meant to be an open ecosystem, this is the single biggest gap.
+- **What:** An official local tool that runs an MCP server against the real Alexa+ planner
+  and speech, with no invite or device needed.
+- **Why it matters:** Add-ons are invite-only, and Amazon said at office hours that you can't
+  drive an Echo Show from an SDK yet. Everyone outside the preview is guessing how Alexa+
+  will choose between their tools, how it will word results, and where it will get confused.
+  We built our own simulator, which means we're tuning against our model's behaviour, not
+  Alexa's. If add-ons are meant to be open to everyone, this is the biggest gap.
 
-### Guidance on speakable tool responses
+### Guidance on writing tool output that will be spoken
 - **Urgency:** important
-- **What:** Documented conventions for shaping tool output that will be *spoken* -
-  length limits, how lists are read aloud, whether the model reformats or reads
-  verbatim, how to mark something as a question back to the user.
-- **Why it matters:** A voice surface has hard constraints a chat surface does not.
-  Four unclaimed care gaps read aloud is fine; fourteen is unusable. We are guessing
-  at the ceiling. Every add-on developer will guess differently, and customers will
-  experience the inconsistency.
+- **What:** Documented advice for tool output that gets read aloud: how long is too long, how
+  lists are read, whether the model rewords or reads as written, how to mark a question back
+  to the user.
+- **Why it matters:** Voice has limits a chat window doesn't. Four open care tasks read aloud
+  is fine; fourteen is useless. We're guessing where the limit is. Every add-on developer
+  will guess differently, and users will notice.
 
-### Elicitation assumes a request that can stay open; a voice turn cannot
+### Elicitation expects a request to stay open; a voice turn can't
 - **Urgency:** important
-- **What:** Guidance (or a protocol affordance) for elicitation on surfaces where a
-  single request cannot stay open across a human's response - voice being the clearest
-  case.
-- **Why it matters:** MCP elicitation expects the answer to arrive inside the same
-  `tools/call` that raised it. An Alexa turn is over in seconds, so the two disagree
-  about how long one request may stay open. A bridge author who put an Alexa Skill in
-  front of MCP servers hit exactly this and had to park the open call and resume it on a
-  later turn. CareCircle sidesteps it by modelling confirmation as a *separate* tool call
-  (`confirm_proposal`): "will Mom need a ride?" then "yes" survives any gap between turns
-  with nothing parked. That works, but it is a workaround for a protocol assumption that
-  does not hold on voice. Worth either documenting the pattern or letting a server mark a
-  tool's elicitation as resumable out-of-band.
+- **What:** Guidance, or something in the protocol, for elicitation where one request can't
+  stay open while a person answers. Voice is the clearest case.
+- **Why it matters:** MCP elicitation expects the answer inside the same `tools/call` that
+  asked. An Alexa turn ends in seconds, so the two disagree about how long a request can stay
+  open. Someone who put an Alexa Skill in front of MCP servers hit exactly this, and had to
+  park the open call and pick it up on a later turn. CareCircle avoids it by making
+  confirmation its own tool call (`confirm_proposal`): "will Mom need a ride?" then "yes"
+  works however long the gap is, with nothing parked. It works, but it's working around a
+  protocol assumption that doesn't hold for voice. Either document the pattern, or let a
+  server mark a tool's elicitation as something that can be answered later.
 
-### Confirmation before consequential actions
+### Confirmation before actions that matter
 - **Urgency:** important
-- **What:** A documented contract for how Alexa+ surfaces MCP elicitation, and whether
-  a server can require confirmation before a write.
-- **Why it matters:** CareCircle assigns responsibility for someone's medical care. If
-  a model mishears and assigns Thursday's hospital run to the wrong person, that is a
-  real-world failure, not a bad chat response. Servers with consequences need a
-  guaranteed confirmation path, not a convention.
+- **What:** A documented contract for how Alexa+ shows MCP elicitation, and whether a server
+  can require confirmation before a change.
+- **Why it matters:** CareCircle decides who is responsible for parts of someone's medical
+  care. If a model mishears and gives Thursday's hospital run to the wrong person, that's a
+  real-world problem, not a bad chat reply. Servers whose actions matter need a confirmation
+  step they can rely on, not a convention.
 
-### Rich cards: a structured visual return channel for MCP results
+### Rich cards: a way to show MCP results on screen
 - **Urgency:** critical
-- **What:** A way for an MCP server to return a *renderable* result alongside spoken
-  text - a card with fields, status, and actions - that Alexa+ displays on a screen
-  device and degrades gracefully to speech on a headless one.
-- **Why it matters:** This is the single biggest constraint we hit. CareCircle's core
-  answer is a *ranked list with state*: four care gaps, each with a severity, an owner
-  or the absence of one, a due time, and a reason. Spoken, the usable ceiling is about
-  three items - past that a person cannot hold the list in their head. On a screen, a
-  family absorbs twelve at a glance and points at the one they mean.
-  Today the whole answer has to be flattened into a sentence, which throws away exactly
-  the structure that makes it useful. We already compute `severity`, `because`,
-  `dueAt` and `owner` per gap and have to discard all of it at the speech boundary.
-- **Shape we would want:** `structuredContent` is already in the spec and already
-  carries this data. What is missing is a *rendering contract* - an agreed schema (or a
-  set of card types: list, detail, confirmation, status) that a host knows how to draw,
-  so servers do not each invent their own and hosts do not have to guess.
-- **Instead:** We truncate to three spoken items and say how many remain, and we render
-  our own cards in our simulator to show what the experience should be.
-- **Update (2026-09-18):** the rendering contract we asked for now exists at the MCP
-  layer - the MCP Apps extension (SEP-1865) - and we have shipped against it. Our
-  `get_care_gaps` is an MCP App: it points at a `ui://` resource, and a host that
-  supports the extension draws the ranked board, provenance and all, with the ranking's
-  arithmetic inspectable and a Claim button that calls `claim_obligation` straight back
-  through the host. So the *protocol* half of this request is answered, and we would
-  rather say so than keep the complaint. What is still open is the half only Amazon can
-  close: **Alexa+ adopting the extension**, so the same view a desktop host already
-  draws today reaches an Echo Show, and degrades to our existing speech on a headless
-  device. We built the card once, to the open standard; we are asking for it to be
-  rendered where the family actually is.
+- **What:** A way for an MCP server to return something Alexa+ can draw on a screen device (a
+  card with fields, status and buttons) alongside the spoken text, falling back to speech on a
+  device with no screen.
+- **Why it matters:** This was the biggest limit we hit. CareCircle's main answer is a ranked
+  list: four care tasks, each with how serious it is, who has it (or that nobody does), when
+  it's due and why. Spoken, people can hold about three before they lose track. On a screen,
+  a family takes in twelve at a glance and points at the one they mean. Today we have to
+  squash it all into a sentence, which throws away the structure that makes it useful. We
+  work out `severity`, `because`, `dueAt` and `owner` for every task and then drop them when
+  we speak.
+- **What we'd want:** `structuredContent` is already in the spec and already carries this
+  data. What's missing is an agreed way to draw it: a schema, or a few card types (list,
+  detail, confirmation, status) a host knows how to show, so servers don't each invent one
+  and hosts don't have to guess.
+- **Instead:** We read out three items and say how many more there are, and we draw our own
+  cards in our simulator to show what it should look like.
+- **Update (2026-09-18):** The drawing contract we asked for now exists in MCP: the MCP Apps
+  extension (SEP-1865), and we've shipped on it. Our `get_care_gaps` is an MCP App. It points
+  at a `ui://` resource, and a host that supports the extension draws the ranked board, with
+  where each fact came from, the ranking's maths open to inspect, and a Claim button that
+  calls `claim_obligation` back through the host. So the protocol half of this request is
+  done, and we'd rather say so than keep complaining. The half that's still open is Amazon's:
+  Alexa+ supporting the extension, so the same view a desktop host already shows can appear
+  on an Echo Show, and fall back to our speech on a device with no screen. We built the card
+  once, to the open standard. We're asking for it to show up where the family actually is.
 
-> *This is the one that genuinely frustrated us, because we could feel the good product
-> on the other side of the wall. We compute a ranked list with severity, owner, due time
-> and a reason for every gap - and then, at the speech boundary, we flatten it to a
-> sentence and throw the structure away. Building the care board in our own simulator was
-> partly us refusing to accept that the richest thing we make has to die as audio.*
+> *This one frustrated us most, because we could see the better product just out of reach.
+> We work out a ranked list with seriousness, owner, due time and a reason for every task,
+> then flatten it into a sentence and throw the structure away. Part of why we built the care
+> board in our own simulator was that we didn't want the most useful thing we make to end up
+> as audio only.*
 
-### Actionable cards: let a card carry the next tool call
+### Cards that carry the next tool call
 - **Urgency:** important
-- **What:** Cards whose controls invoke a named tool with bound arguments - a Claim
-  button on a care gap that calls `claim_obligation` with that id.
-- **Why it matters:** "I'll take the cardiology one" requires the model to resolve a
-  referring expression to an id, and it will sometimes get that wrong. When the action
-  is assigning responsibility for a hospital trip, sometimes-wrong is not acceptable.
-  A tap is unambiguous. Voice is the right input for *capture* and the wrong input for
-  *disambiguation among similar items* - a good multi-modal design uses each for what
-  it is good at.
-- **Update (2026-09-18):** also answered by MCP Apps, and better than we asked for. We
-  wanted a card that could carry a bound tool call; the extension gives the view the
-  actual client, so our Claim button makes a real `tools/call` down the same
-  authorisation path as speech - no second, weaker permission model for taps. The one
-  thing we had to add ourselves was telling the model afterwards
-  (`ui/update-model-context`), or it keeps offering work the hands already took.
+- **What:** Cards whose buttons call a named tool with its arguments filled in, like a Claim
+  button on a care task that calls `claim_obligation` with that task's id.
+- **Why it matters:** "I'll take the cardiology one" needs the model to work out which item
+  "the cardiology one" means, and sometimes it gets it wrong. When the action is taking on a
+  hospital trip, sometimes wrong isn't good enough. A tap is clear. Voice is great for saying
+  what happened and poor for picking between similar items, and a good design uses each for
+  what it's good at.
+- **Update (2026-09-18):** MCP Apps answers this too, and better than we asked. We wanted a
+  card that could carry a tool call. The extension gives the view a real client, so our Claim
+  button makes a real `tools/call` through the same permission checks as speech, with no
+  second, weaker set of rules for taps. The one thing we had to add was telling the model
+  afterwards (`ui/update-model-context`), or it keeps offering tasks someone already took.
 
-### Confirmation as a first-class surface
+### Confirmation shown on screen
 - **Urgency:** important
-- **What:** A host-rendered confirmation step for consequential tool calls, showing
-  what is about to happen and who it affects, before it happens.
-- **Why it matters:** Related to elicitation, but the point is the *display*: before
-  Thursday's eye-clinic run is assigned to Musa, Musa's name should be on screen. See
-  also the confirmation request under Alexa+ above.
+- **What:** A confirmation step the host draws for important tool calls, showing what's about
+  to happen and who it affects, before it happens.
+- **Why it matters:** It's close to elicitation, but the point here is the display: before
+  Thursday's eye clinic run is given to Musa, Musa's name should be on the screen. See also
+  the confirmation request above.
 
-### Ambient and glanceable state, not just turn-taking
+### Something to glance at, not just conversations
 - **Urgency:** nice-to-have
-- **What:** A way for an add-on to contribute to a device's ambient/home screen -
-  the state a screen device shows when nobody is talking to it.
-- **Why it matters:** The most valuable moment for CareCircle is not a conversation. It
-  is a family member walking past the kitchen Echo and noticing that Thursday still has
-  no driver. Care coordination is ambient by nature; the conversational turn is the
-  exception, not the rule. Every assistant integration model we have seen assumes the
-  conversation is the product.
+- **What:** A way for an add-on to put something on a device's home screen, the thing a
+  screen shows when nobody is talking to it.
+- **Why it matters:** CareCircle's most useful moment isn't a conversation. It's someone
+  walking past the kitchen Echo and seeing that Thursday still has no driver. Looking after
+  someone mostly happens in the background; talking to the assistant is the exception. Every
+  assistant integration we've seen assumes the conversation is the product.
 
-### Tell an add-on each speaker's language, per person
+### Tell an add-on each speaker's language
 - **Urgency:** important
-- **What:** Alexa+ should pass the add-on the language of the person speaking (for
-  example `es-US`), per turn or per recognized voice profile. Today, if anything is
-  passed, it is the device's locale.
-- **Why it matters:** Care is where one family speaks several languages. In the US,
-  5.6M people over 65 speak English "less than very well", 2.9M of them Spanish
-  speakers (ACS 2024, B16004). The typical case is a parent in Spanish and grown
-  children in English, sharing one Echo in bilingual mode. Alexa+ itself is launching
-  in Spanish, French, Portuguese, German, Italian and Hindi. When we measured our own
-  add-on, the failure was not the wording of replies. It was **the record**:
-  - A mother said "colírio" or "gotas para los ojos", and the planner passed that
-    name to the tool.
-  - It matched nothing on her schedule, so her son was then told there was no record
-    of the dose she had taken. That happened in 10 of 11 languages
-    (`npm run evals:languages`, part 2).
-  - We fixed it on the server. An unmatched name is now answered with the names on
-    that person's schedule, so the planner can call again with the right one.
-  - The host is the only party that knows who is speaking and in what language, and
-    it doesn't tell us.
-- **Instead:** Each member picks a language in Telegram (`/language`). Every
-  reminder, button and reply follows that person's choice, not the device's. The rule
-  is written once, in `src/domain/language.ts`: medicine names and times are never
-  translated, and "no record" never becomes "missed".
+- **What:** Alexa+ should tell the add-on the language of the person speaking (for example
+  `es-US`), per turn or per recognised voice profile. Today, if anything is sent, it's the
+  device's locale.
+- **Why it matters:** Families looking after someone often speak more than one language. In
+  the US, 5.6M people over 65 speak English "less than very well", 2.9M of them Spanish
+  speakers (ACS 2024, B16004). A common case is a parent speaking Spanish and grown children
+  speaking English, sharing one Echo in bilingual mode. Alexa+ itself is launching in
+  Spanish, French, Portuguese, German, Italian and Hindi. When we tested our add-on, the
+  problem wasn't how replies were worded. It was the record:
+  - A mother said "colírio" or "gotas para los ojos", and the planner passed that name to
+    the tool.
+  - It didn't match anything on her schedule, so her son was told there was no record of
+    the dose she'd taken. That happened in 10 of 11 languages (`npm run evals:languages`,
+    part 2).
+  - We fixed it on the server. An unmatched name now gets back the names on that person's
+    schedule, so the planner can try again with the right one.
+  - Only the host knows who is talking and in what language, and it doesn't tell us.
+- **Instead:** Each member picks a language in Telegram (`/language`). Every reminder, button
+  and reply follows that person's choice, not the device's. The rule lives in one place,
+  `src/domain/language.ts`: medicine names and times are never translated, and "no record"
+  never becomes "missed".
 
 ---
 
 ## AWS (Transcribe, Polly) and Ring
 
-### Nigerian English (`en-NG`) for Amazon Transcribe
+### Nigerian English (`en-NG`) in Amazon Transcribe
 - **Urgency:** important
-- **What:** An `en-NG` locale, on a par with `en-ZA`, `en-IN` or `en-AU`. Beyond that,
-  Yoruba and Igbo, each spoken by tens of millions - `ha-NG` (Hausa) already exists,
-  so the pipeline clearly supports Nigerian languages.
-- **Why it matters:** Nigeria is the largest English-speaking country in Africa and
-  among the largest anywhere, and there is no English variant for it. A Nigerian
-  speaker is transcribed by a model tuned for another continent. The failure lands
-  hardest on **names** - a care system that mis-hears "Adaeze" or "Oluwaseun"
-  attributes a medication to the wrong person. This is a silent accuracy tax on an
-  entire region, and it is invisible in aggregate benchmarks.
-- **Instead:** A custom vocabulary built from each household's own care record, plus a
-  phonetic repair pass that maps a mishearing back onto a person who actually exists
-  in that household. The custom-vocabulary API did most of the rescuing here - the gap
-  is coverage, not capability.
+- **What:** An `en-NG` locale, like `en-ZA`, `en-IN` or `en-AU`. After that, Yoruba and Igbo,
+  each spoken by tens of millions. `ha-NG` (Hausa) already exists, so Nigerian languages are
+  clearly possible.
+- **Why it matters:** Nigeria is the biggest English-speaking country in Africa and one of
+  the biggest anywhere, and there's no English option for it. A Nigerian speaker gets a model
+  tuned for somewhere else. It goes wrong most on names: if a care system mishears "Adaeze"
+  or "Oluwaseun", a medicine gets put against the wrong person. It's a quiet accuracy cost
+  for a whole region, and overall benchmarks don't show it.
+- **Instead:** A custom vocabulary built from each household's care record, and a phonetic
+  repair step that maps a mishearing back to someone who's actually in that household. The
+  custom-vocabulary API did most of the rescuing. The gap is coverage, not capability.
 
 ### "Send a test event" in the Ring Developer Portal
 - **Urgency:** important
-- **What:** A per-event-type test button in the staging tab that fires a correctly
-  signed event at the registered webhook.
-- **Why it matters:** Ring staging is documented as testing against *real devices*,
-  while the hackathon explicitly permits a simulator and states no physical device is
-  required. Those two positions are in tension, and the gap is a hardware purchase
-  standing between a developer and a working integration. Signed test events are the
-  ordinary expectation for a webhook API.
-- **Instead:** We wrote a device simulator that builds events in Ring's documented
-  shape and signs them with the real partner HMAC key, so verification, idempotency
-  and inference all run exactly as they would for Ring traffic.
+- **What:** A test button for each event type in the staging tab that sends a properly signed
+  event to the registered webhook.
+- **Why it matters:** Ring's staging is described as testing with real devices, while the
+  hackathon allows a simulator and says no device is needed. Those don't line up, and what's
+  in between is buying hardware before you can build. Signed test events are what people
+  expect from a webhook API.
+- **Instead:** We wrote a device simulator that builds events in Ring's documented shape and
+  signs them with the real partner HMAC key, so signature checks, de-duplication and
+  inference run exactly as they would for real Ring traffic.
 
 ---
 
 ## AWS (Bedrock)
 
-These came straight out of the friction log - the Bedrock quota saga cost us most of a
-day, and the fixes are small.
+These come from the friction log. The Bedrock quota problem cost us most of a day, and the
+fixes are small.
 
-### Show me my daily token budget before I spend it
+### Show me my daily token budget before I use it
 - **Urgency:** important
-- **What:** Surface daily token consumption and remaining budget in the Bedrock console
-  and via an API readable with plain Bedrock access - the way Service Quotas already does
-  for request rates.
-- **Why it matters:** We ran a batch eval and every call died with
-  `ThrottlingException: Too many tokens per day`. There was no figure, no reset time, no
-  page to check - the only way to learn the limit was to hit it, and the only way to learn
-  it had reset was to retry. For anything batch-shaped (evals, backfills) that makes the
-  service unplannable.
-- **Instead:** We excluded throttled cases from results and paced calls by hand.
+- **What:** Show daily token use and what's left in the Bedrock console, and in an API that
+  plain Bedrock access can read, like Service Quotas already does for request rates.
+- **Why it matters:** We ran a batch eval and every call failed with
+  `ThrottlingException: Too many tokens per day`. No number, no reset time, nowhere to look.
+  You learn the limit by hitting it and learn it reset by trying again. For anything that
+  makes lots of calls (evals, backfills) you can't plan.
+- **Instead:** We left throttled cases out of the results and spaced calls out by hand.
 
-### Tell me "zero quota" and "spent quota" apart
+### Tell "zero quota" apart from "used-up quota"
 - **Urgency:** critical
-- **What:** Distinguish an exhausted budget from an account whose quota is *zero*, in both
-  the error class and the message. A permanent zero should not arrive as a retriable
+- **What:** Make the error class and message different for a budget that's used up and an
+  account whose quota is zero. A permanent zero shouldn't come back as a retryable
   `ThrottlingException`.
-- **Why it matters:** Our account's applied inference quota was 0 against a default of a
-  million, but the error said "too many tokens per day" - so we spent hours looking for a
-  workload that had drained a budget that never existed. Clients retry throttling by
-  default, which for a zero quota means retrying forever. These are opposite situations and
-  only one is worth waiting out.
-- **Instead:** We built a preflight ([`docs/FRICTION-LOG.md`](FRICTION-LOG.md)) that reads
-  the applied-vs-default quota and tells the developer which case they're in, so the app
-  explains the failure instead of advising a wait that will never end.
+- **Why it matters:** Our account's inference quota was 0, against a default of a million, but
+  the error said "too many tokens per day". So we spent hours looking for something that had
+  used up a budget we never had. Clients retry throttling automatically, which for a zero
+  quota means retrying forever. The two situations are opposites, and only one is worth
+  waiting for.
+- **Instead:** We built a preflight check ([`docs/FRICTION-LOG.md`](FRICTION-LOG.md)) that
+  reads applied vs default quota and tells the developer which case they're in, so the app
+  explains the failure instead of telling them to wait for something that won't come.
 
 ## Strands Agents (TypeScript SDK)
 
-### Let an after-model hook replace the reply, not only retry it
+### Let an after-model hook replace the reply, not just retry
 - **Urgency:** important
-- **What:** A writable result on `AfterModelCallEvent`: "this is the message the turn ends
-  with", alongside the existing `retry` flag.
-- **Why it matters:** CareCircle never lets a reply say a person missed, skipped or forgot
-  something (`src/strands/no-blame.ts`). When a model blames twice, the safe answer is to end
-  the turn on what the tools said. In 1.19.0 `stopData` is read-only and `retry` is the only
-  lever, so a guardrail that wants to substitute a reply cannot say so directly.
+- **What:** A writable result on `AfterModelCallEvent` ("end the turn with this message"),
+  next to the existing `retry` flag.
+- **Why it matters:** CareCircle never lets a reply say someone missed, skipped or forgot
+  something (`src/strands/no-blame.ts`). If a model blames someone twice, the safe thing is
+  to end the turn with what the tools said. In 1.19.0 `stopData` is read-only and `retry` is
+  the only option, so a guardrail that wants to swap in a reply can't say so directly.
 - **Instead:** We set `retry`, then cancel the next model call from `BeforeModelCallEvent`
-  with our text, which the loop treats as the model's reply. It works, and it is tested, but
-  it is two hooks and a flag carried between them to express one decision.
+  with our text, which the loop treats as the model's reply. It works and it's tested, but
+  it takes two hooks and a flag passed between them to say one thing.
 
-### Feedback on a retry, without editing the history
+### A note for the retry that doesn't stay in the history
 - **Urgency:** nice-to-have
-- **What:** A way to attach a one-off note to a retried model call ("your reply said X; answer
-  again from the tool results") that the model sees once and the conversation never keeps.
-- **Why it matters:** `retry` repeats the same request. A retry that tells the model nothing
-  usually gets the same reply back.
-- **Instead:** The plugin appends the note to the last message in `agent.messages` and puts
-  the original back after the call, so the next turn never sees it. Tests check the history
-  is clean afterwards (`src/strands/host.test.ts`).
+- **What:** A way to add a one-off note to a retried model call ("your reply said X; answer
+  again from the tool results") that the model sees once and the conversation doesn't keep.
+- **Why it matters:** `retry` sends the same request again. A retry that tells the model
+  nothing new usually gets the same reply.
+- **Instead:** The plugin adds the note to the last message in `agent.messages` and puts the
+  original back after the call, so the next turn never sees it. Tests check the history is
+  clean afterwards (`src/strands/host.test.ts`).
 
 ## Bedrock AgentCore
 
-### Say how long a runtime session's state lives, next to the session header
+### Say how long a session's state lives, next to the session header
 - **Urgency:** important
-- **What:** One page that says, for `x-amzn-bedrock-agentcore-runtime-session-id`, how long
-  a session's microVM and its in-process state live, and what happens to a turn in flight
-  when it is reclaimed.
-- **Why it matters:** On the bridge, the session id was the hashed user id, so one
-  microVM served a user for hours, through four deploys of new code. A care conversation
-  also has to be short-lived on purpose (yesterday's
-  "no record yet" is not true tonight), and the record itself must never live in the
-  container. We had to decide both without knowing the platform's own limits.
-- **Instead:** `src/strands/runtime.ts` keeps a conversation per session and speaker, drops
+- **What:** One page that says, for `x-amzn-bedrock-agentcore-runtime-session-id`, how long a
+  session's microVM and its in-memory state last, and what happens to a turn in progress when
+  it's reclaimed.
+- **Why it matters:** On the bridge, the session id was the hashed user id, so one microVM
+  served a user for hours, through four deploys of new code. A care conversation also has to
+  be short on purpose (yesterday's "no record yet" isn't true tonight), and the record itself
+  must never live in the container. We had to decide both without knowing the platform's
+  own limits.
+- **Instead:** `src/strands/runtime.ts` keeps one conversation per session and speaker, drops
   it after 30 minutes idle or 4 hours old, reads the care record fresh from DynamoDB before
-  every turn, and answers `/ping` with `HealthyBusy` while a turn runs.
+  every turn, and answers `/ping` with `HealthyBusy` while a turn is running.
 
-### Memory that can be told what not to replay
+### Memory you can tell what not to replay
 - **Urgency:** important
-- **What:** A per-event or per-namespace way to keep AgentCore Memory from replaying an
-  agent's own earlier answers about facts that change.
+- **What:** A way, per event or per namespace, to stop AgentCore Memory replaying an agent's
+  own earlier answers about things that change.
 - **Why it matters:** On the Alexa Skill bridge, a fresh microVM answered "who is covering
-  the eye clinic appointment" with no tool call at all, from history rehydrated from
+  the eye clinic appointment" without calling any tool, using history restored from
   AgentCore Memory. That history keeps the questions and answers but not the tool calls
-  behind them, so the model read an old answer as a fact. A prompt rule ("call the tool
-  again") did not stop it. For a care record, a stale answer is a wrong answer.
-- **Instead:** We turned replay off on the bridge, and the CareCircle runtime does not use
-  AgentCore Memory: the care record is the memory, and every turn reads it fresh.
+  behind them, so the model treated an old answer as fact. A prompt rule ("call the tool
+  again") didn't stop it. For a care record, an old answer is a wrong answer.
+- **Instead:** We turned replay off on the bridge, and the CareCircle runtime doesn't use
+  AgentCore Memory. The care record is the memory, and every turn reads it fresh.
 
 ## Amazon Nova on Bedrock
 
-### Keep inline reasoning out of the reply text
+### Keep reasoning out of the reply text
 - **Urgency:** important
-- **What:** Return Nova's `<thinking>` text as a reasoning content block, as Converse does
-  for models with reasoning, never inline in the text block.
-- **Why it matters:** On a speaker, the text block is what gets read aloud. Nova Lite, run
-  through our AgentCore container locally, answered with its reasoning first, in tags,
-  about the family by name.
-- **Instead:** `src/domain/speakable.ts` cuts reasoning tags (closed or left open) from
+- **What:** Return Nova's `<thinking>` text as a reasoning content block, the way Converse
+  does for other reasoning models, never inside the text block.
+- **Why it matters:** On a speaker, the text block is what gets read out. Nova Lite, run
+  through our AgentCore container locally, started its answer with its reasoning, in tags,
+  talking about the family by name.
+- **Instead:** `src/domain/speakable.ts` strips reasoning tags (closed or left open) from
   every reply on both planner loops, with tests.

@@ -1,7 +1,7 @@
 /**
  * The 40-second beat, executed end to end.
  *
- * This is the single continuous shot from docs/DEMO-BEAT.md, run headless against the
+ * This is the single continuous demo shot, run headless against the
  * real CareCircle MCP server in-process (Streamable HTTP, spec 2025-11-25). Its job is to
  * make the doc's central claim literally true: the ask -> decline -> re-ask -> accept loop,
  * and the provenance replay that proves it, are reproducible with no cloud and no keys.
