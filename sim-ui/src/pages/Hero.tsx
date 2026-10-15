@@ -1,3 +1,4 @@
+import { People } from './People';
 import { type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useBoard } from '../lib/useBoard';
@@ -353,6 +354,17 @@ export default function Hero() {
         </Section>
       </div>
 
+      {/* ---------- Who it's for ---------- */}
+      <div id="who" className="border-t border-line">
+        <Section
+          eyebrow="Who it's for"
+          title="For families looking after someone who needs a hand."
+          lead="An older parent, a relative in a wheelchair, a grandparent at home, a child with special needs. Everyone helps a little, and CareCircle keeps track of who is doing what."
+        >
+          <People />
+        </Section>
+      </div>
+
       {/* ---------- 2. The problem, with its evidence ---------- */}
       <div id="problem" className="border-t border-line">
         <Section
@@ -522,7 +534,7 @@ export default function Hero() {
                 </span>
               </div>
               <p className="mt-4 text-[0.875rem] leading-relaxed text-[#c3cad9]">
-                What a person tells you. The MCP server itself: 25 tools, per-member identity bound
+                What a person tells you. The MCP server itself: 28 tools, per-member identity bound
                 to the session rather than to the conversation, purchase-in-place, and an
                 interactive Care Board shipped as an MCP App.
               </p>

@@ -135,12 +135,12 @@ const PAGES = [
   { id:'overview', group:'Get started', title:'Overview',
     toc:[['what','What it is'],['why','Why MCP']],
     body:`
-    <div class="tag">CareCircle · MCP spec 2025-11-25</div>
+    <div class="tag">CareCircle · MCP 2026-07-28 and 2025-11-25</div>
     <h1>The care layer, as an MCP server</h1>
-    <p class="lead">CareCircle tracks what needs to happen for someone being cared for, and who is responsible for it - and exposes that as <b>25 MCP tools</b> an AI assistant (Alexa+, or any MCP client) calls. Real events flow in from real accounts and devices; every one enters as a guess a human confirms, never a fact written by a machine.</p>
+    <p class="lead">CareCircle tracks what needs to happen for someone being cared for, and who is responsible for it - and exposes that as <b>28 MCP tools</b> an AI assistant (Alexa+, or any MCP client) calls. Real events flow in from real accounts and devices; every one enters as a guess a human confirms, never a fact written by a machine.</p>
     <h2 id="what">What it is</h2>
     <div class="cards">
-      <div class="card"><h4>Self-hosted MCP</h4><p>Streamable HTTP, spec 2025-11-25, live on AWS App Runner - the compliant Alexa+ surface.</p></div>
+      <div class="card"><h4>Self-hosted MCP</h4><p>Streamable HTTP, live on AWS App Runner. It speaks MCP 2025-11-25 (sessions) and 2026-07-28 (stateless) on the same endpoint, with the same tools.</p></div>
       <div class="card"><h4>Real connections</h4><p>Calendar, Gmail, Ring, Bee, WhatsApp, Telegram. Network at the edges, a pure core.</p></div>
       <div class="card"><h4>Provenance-first</h4><p>Known ≠ assumed. Every claim carries where it came from; a guess stays a guess until confirmed.</p></div>
     </div>
@@ -188,7 +188,7 @@ an expected record that is missing, or something now past its time.</div>
     toc:[['read','See the state'],['own','Ownership'],['record','Record reality'],['act','Act outward'],['admin','Setup & admin']],
     body:`
     <div class="crumb">Reference <b>› MCP tools</b></div>
-    <h1>MCP tools <span class="tag" style="vertical-align:middle">25</span></h1>
+    <h1>MCP tools <span class="tag" style="vertical-align:middle">28</span></h1>
     <p class="lead">You don't call these by hand - you speak, and the planner picks the tool. Grouped by what they do.</p>
     <h2 id="read">See the state · read-only</h2>
     <div class="cards">
@@ -214,10 +214,13 @@ an expected record that is missing, or something now past its time.</div>
       <div class="card"><h4>log_care_event</h4><p>Log something that happened - a dose, a meal - as reported.</p></div>
       <div class="card"><h4>record_appointment</h4><p>A dated commitment; proposes the ride/companion a medical one needs.</p></div>
       <div class="card"><h4>add_note</h4><p>Add a note to the care record.</p></div>
+      <div class="card"><h4>change_appointment</h4><p>An appointment moved or was cancelled. The ride moves with it, and whoever had it is told.</p></div>
+      <div class="card"><h4>change_medication</h4><p>The doctor changed a dose, a time, or when to stop.</p></div>
       <div class="card"><h4>ingest_signal</h4><p>The single source-agnostic front door: record something a device observed.</p></div>
     </div>
     <h2 id="act">Act outward &nbsp;·&nbsp; the agent</h2>
     <div class="cards">
+      <div class="card"><h4>raise_urgent</h4><p>Something urgent ("he has fallen"): every phone at once, and the emergency number.</p></div>
       <div class="card"><h4>notify_member</h4><p>Let someone know - recorded always, pushed if a channel is configured.</p></div>
       <div class="card"><h4>reorder_prescription</h4><p>Offer to reorder a prescription.</p></div>
       <div class="card"><h4>confirm_purchase</h4><p>Place or decline a prepared purchase.</p></div>
@@ -252,7 +255,7 @@ an expected record that is missing, or something now past its time.</div>
     <p class="lead">The MCP server serves the protocol plus the inbound webhooks. Signature-verified webhooks mount before the JSON parser, so the HMAC is over the raw bytes.</p>
     <div class="tablewrap"><table id="list">
       <tr><th>Method</th><th>Path</th><th>Purpose</th></tr>
-      <tr><td><span class="method post">POST</span></td><td><code>/mcp</code></td><td>The MCP endpoint (Streamable HTTP, spec 2025-11-25).</td></tr>
+      <tr><td><span class="method post">POST</span></td><td><code>/mcp</code></td><td>The MCP endpoint (Streamable HTTP). MCP 2025-11-25 with sessions, or 2026-07-28 with no session: each request carries its protocol version.</td></tr>
       <tr><td><span class="method get">GET</span></td><td><code>/health</code></td><td>Health check (App Runner probes this).</td></tr>
       <tr><td><span class="method post">POST</span></td><td><code>/ring/webhook</code></td><td>Ring events, HMAC-verified → INFERRED note.</td></tr>
       <tr><td><span class="method get">GET</span> <span class="method post">POST</span></td><td><code>/whatsapp/webhook</code></td><td>GET verifies the subscription; POST takes signed replies.</td></tr>
@@ -306,12 +309,13 @@ an expected record that is missing, or something now past its time.</div>
     <div class="tablewrap"><table>
       <tr><th>Service</th><th>Host</th><th>Role</th></tr>
       <tr><td><code>carecircle-mcp</code></td><td>ypq2dfq2p7…</td><td>The MCP server + webhooks + the agent heartbeat.</td></tr>
-      <tr><td><code>carecircle-sim</code></td><td>krqi2tpsif…</td><td>The Alexa+ console UI; proxies to the MCP server.</td></tr>
+      <tr><td><code>carecircle-sim</code></td><td>krqi2tpsif…</td><td>The landing page, the simulation, the console and the Fire TV board; proxies to the MCP server.</td></tr>
     </table></div>
     <h2 id="run">Deploy</h2>
-    <pre><code class="language-bash">AWS_PROFILE=conductor  source .env
-bash infra/deploy-mcp.sh          # build image + update-service (env)
-aws apprunner start-deployment …  # force the new image to pull</code></pre>
+    <pre><code class="language-bash">git commit …                                           # the image is built from HEAD
+AWS_PROFILE=conductor ./infra/deploy-mcp.sh            # build and push the image
+AWS_PROFILE=conductor aws apprunner start-deployment \
+  --service-arn &lt;carecircle-sim or carecircle-mcp ARN&gt;  # pull the new image</code></pre>
     <h2 id="gotchas">Gotchas</h2>
     <div class="note warn"><p>An <b>env change</b> is an <code>update-service</code>; a <b>new image</b> needs an explicit <code>start-deployment</code> - do both, or routes 404 on a stale image.</p><p><code>update-service</code> <b>replaces</b> the whole env map and requires <code>AuthenticationConfiguration.AccessRoleArn</code> - derive from live config so secrets and the ECR access role survive.</p></div>` },
 
@@ -333,25 +337,33 @@ aws apprunner start-deployment …  # force the new image to pull</code></pre>
     </table></div>` },
 
   { id:'testing', group:'Operate', title:'Testing',
-    toc:[['run','Run the suite']],
+    toc:[['run','Run the suite'],['household','Test a whole household']],
     body:`
     <div class="crumb">Operate <b>› Testing</b></div>
     <h1>Testing</h1>
     <p class="lead">The suite runs on the Node test runner (not vitest).</p>
     <h2 id="run">Run the suite</h2>
-    <pre><code class="language-bash">npx tsx --test "src/**/*.test.ts"     # 405 tests
-npx tsc --noEmit                       # typecheck</code></pre>
-    <p>Domain logic is pure and network-free, so most tests need no mocks; connectors are tested against recorded real payloads as fixtures.</p>` },
+    <pre><code class="language-bash">npm test               # 710 tests: unit, adversarial and property-based
+npm run typecheck      # tsc --noEmit
+npm run lint
+npm run format:check   # Prettier, also checked in CI
+npm run evals          # tool choice against a real model (needs AWS Bedrock)</code></pre>
+    <p>Domain logic is pure and network-free, so most tests need no mocks; connectors are tested against recorded real payloads as fixtures.</p>
+    <h2 id="household">Test a whole household</h2>
+    <p><a href="https://github.com/Osiyomeoh/household-sim" target="_blank" rel="noreferrer">household-sim</a> (MIT) is CareCircle's simulator as its own tool, for any MCP server. <code>check &lt;url&gt;</code> lints a server for what a voice host trips on; <code>run scenarios/*.yaml</code> plays a family's story against it, several people with their own credentials, devices sending signed webhooks, and a story clock. Runs record once and replay free in CI.</p>` },
 
   { id:'ui', group:'Operate', title:'Using the UI',
     toc:[['surfaces','Surfaces'],['api','The two endpoints']],
     body:`
     <div class="crumb">Operate <b>› Using the UI</b></div>
     <h1>Using the UI</h1>
-    <p class="lead">The console is an MCP client: pick who you are, talk or type, and watch the board react with provenance chips.</p>
+    <p class="lead">Every surface is an MCP client of the same server. The simulation is the quickest way in: pick who you are in a family, then type, speak, or send a voice note.</p>
     <h2 id="surfaces">Surfaces</h2>
     <div class="tablewrap"><table>
       <tr><th>Path</th><th>Surface</th></tr>
+      <tr><td><a href="/">/</a></td><td>The landing page.</td></tr>
+      <tr><td><a href="/world">/world</a></td><td>The simulation: a family's week, played on the real server. Type, speak (Amazon Transcribe), or hold to record a voice note.</td></tr>
+      <tr><td><a href="/join">/join</a></td><td>Join a simulation from your phone, as one of the family.</td></tr>
       <tr><td><a href="/console">/console</a></td><td>The Alexa+ console - drive the MCP by voice or text.</td></tr>
       <tr><td><a href="/setup">/setup</a></td><td>First-run onboarding (drives the real setup tools).</td></tr>
       <tr><td><a href="/tv">/tv</a></td><td>The ambient Fire TV care board.</td></tr>
@@ -403,7 +415,7 @@ function App(){
       <header>
         <button class="burger" onClick=${()=>{setNavOpen(v=>{const n=!v;document.body.classList.toggle('nav-open',n);return n;});}} aria-label="Menu">☰</button>
         <a class="logo" href="/"><span class="dot"></span>CareCircle</a>
-        <span class="ver">MCP 2025-11-25</span>
+        <span class="ver">MCP 2026-07-28</span>
         <div class="search"><span>⌕</span><input placeholder="Search docs…" onInput=${e=>{
           const q=e.target.value.toLowerCase();
           if(!q) return;

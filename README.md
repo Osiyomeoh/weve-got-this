@@ -164,7 +164,7 @@ MCP endpoint (for your own client): `https://ypq2dfq2p7.us-east-1.awsapprunner.c
 
 **Want to point your own client at it?** [`docs/MCP.md`](docs/MCP.md) is the
 integration guide: endpoint and handshake, ready-made Claude Desktop and MCPJam
-configuration, all 25 tools with their arguments, the resources and prompts, the
+configuration, all 28 tools with their arguments, the resources and prompts, the
 role/capability matrix, and how to run your own instance.
 
 ---
@@ -293,7 +293,7 @@ and a human always confirms an inferred obligation - the dashed feedback loop.
        +-------------+------+------+--------------+
        v             v             v              v
    Resources       Tools        Prompts      MCP App
-   who I am,     25 tools    daily check    the Care Board,
+   who I am,     28 tools    daily check    the Care Board,
    care state                weekly review  drawn in the host
        |             |
        +------+------+
@@ -419,7 +419,7 @@ src/
     daily-update.ts    the evening update for family far away
   mcp/
     server.ts          assembles one server per session (tools listed in order)
-    tools/             the 25 tools, grouped: record, ownership, delegation,
+    tools/             the 28 tools, grouped: record, ownership, delegation,
                        insight, signals, commerce, onboarding
     output-schemas.ts  every tool's output contract, strictly enforced
   http/          Streamable HTTP, OAuth 2.1 + PKCE, Ring and Telegram webhooks
