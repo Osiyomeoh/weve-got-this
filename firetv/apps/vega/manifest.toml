@@ -177,6 +177,10 @@ id = "/com.amazon.kepler.navigation__native_stack_7@INavigation__NativeStack_0"
 [[needs.module]]
 id = "/com.amazon.kepler.navigation__routers_7@INavigation__Routers_0"
 
+[[needs.module]]
+id = "/com.amazon.kepler.webview_3@IWebview_3"
+
+
 
 
 

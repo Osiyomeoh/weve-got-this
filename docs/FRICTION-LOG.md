@@ -694,8 +694,12 @@ Template:
 - **Workaround:** `CI=true` to skip watchman, and `vega project update-manifest --os-version 1.2
   --os-min 1.2` (the device reports OS 1.2). Then `vega run-app` installed and launched it on
   the virtual device.
-- **Suggestion:** Update the sample's `manifest.toml` for SDK 0.24, and mention watchman and
-  Full Disk Access in the macOS install guide.
+- **Then:** adding `@amazon-devices/webview` (latest, 4.x) to open our TV page was refused:
+  "major 4 is not available across your OS range (os.min 1.2 -> os.target 1.2)". The error
+  listed three fixes; pinning `~3.5.11` worked, and the page ran with the remote first time.
+- **Suggestion:** Update the sample's `manifest.toml` for SDK 0.24, mention watchman and
+  Full Disk Access in the macOS install guide, and have `yarn add` / npm show which WebView
+  major fits the OS range before the build refuses it.
 - **Date:** 2026-10-15
 
 ### Bee - "no device needed" still needs an Apple Watch to get into the app

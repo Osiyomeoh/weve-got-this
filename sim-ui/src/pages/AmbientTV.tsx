@@ -195,7 +195,7 @@ const WATCHING =
 export default function AmbientTV() {
   const { state, online, refresh } = useBoard();
   // Live clock: real time, or the story's time when this TV hangs in the world.
-  const { now, inStory } = useNow();
+  const { now } = useNow();
 
   const zoneName = state?.household?.timezone ?? 'Africa/Lagos';
   const recipient = recipientOf(state);
@@ -415,8 +415,9 @@ export default function AmbientTV() {
     }
   }, [current?.obligationId, current?.spoken]);
 
-  // In the world the TV is in their house, so it shows their time, not the visitor's.
-  const zone = inStory ? { timeZone: zoneName } : {};
+  // The set is in their house, so it shows their time: in the world, and on a real TV whose
+  // own clock may be set to another zone (the Vega Virtual Device runs on UTC).
+  const zone = { timeZone: zoneName };
   const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', ...zone });
   const day = now.toLocaleDateString('en-US', {
     weekday: 'long',

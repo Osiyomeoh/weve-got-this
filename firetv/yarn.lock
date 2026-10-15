@@ -361,6 +361,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@amazon-devices/webview@npm:^3":
+  version: 3.5.11
+  resolution: "@amazon-devices/webview@npm:3.5.11"
+  dependencies:
+    "@amazon-devices/keplerscript-turbomodule-api": "npm:^1.0.0"
+    react: "npm:18.2.0"
+    react-native: "npm:0.72.0"
+  peerDependencies:
+    "@amazon-devices/react-native-kepler": "*"
+  checksum: 10c0/92072c5d492db83fcd05d32849bb703695827c0f390fc3040823f39fa3e35bab532509395c7243eece406a950bf56a65070663dd5e9ee99a340149f069c97ce3
+  languageName: node
+  linkType: hard
+
 "@babel/code-frame@npm:^7.0.0, @babel/code-frame@npm:^7.12.13, @babel/code-frame@npm:^7.20.0, @babel/code-frame@npm:^7.22.13, @babel/code-frame@npm:^7.24.7, @babel/code-frame@npm:^7.28.6, @babel/code-frame@npm:^7.29.0":
   version: 7.29.0
   resolution: "@babel/code-frame@npm:7.29.0"
@@ -3846,6 +3859,7 @@ __metadata:
     "@amazon-devices/react-navigation__native": "npm:~7.0.0"
     "@amazon-devices/react-navigation__native-stack": "npm:~7.0.0"
     "@amazon-devices/react-navigation__routers": "npm:~7.0.0"
+    "@amazon-devices/webview": "npm:^3"
     "@babel/core": "npm:^7.20.0"
     "@babel/traverse": "npm:^7.20.0"
     "@bam.tech/lrud": "npm:*"
