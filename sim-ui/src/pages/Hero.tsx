@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 /**
@@ -45,6 +46,51 @@ const CREDITS = [
   ['Antoni Shkraba', 'https://www.pexels.com/photo/6288114/'],
 ];
 
+const VIDEO_ID = 'HrkCYV5HOFs';
+
+/** The demo video. YouTube loads only on a click, so the page stays fast and nobody is tracked
+ *  just for visiting. */
+function Video() {
+  const [playing, setPlaying] = useState(false);
+  return (
+    <section id="video" className="mx-auto max-w-5xl px-6 py-16 md:px-10 md:py-24">
+      <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
+        The story in three minutes
+      </h2>
+      <div className="relative mt-8 aspect-video w-full overflow-hidden rounded-3xl bg-black">
+        {playing ? (
+          <iframe
+            className="absolute inset-0 h-full w-full"
+            src={`https://www.youtube-nocookie.com/embed/${VIDEO_ID}?autoplay=1&rel=0`}
+            title="CareCircle demo video"
+            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+            allowFullScreen
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => setPlaying(true)}
+            className="group absolute inset-0 h-full w-full"
+            aria-label="Play the CareCircle demo video"
+          >
+            <img
+              src={`https://i.ytimg.com/vi/${VIDEO_ID}/maxresdefault.jpg`}
+              alt=""
+              loading="lazy"
+              className="h-full w-full object-cover opacity-90 transition group-hover:opacity-100"
+            />
+            <span className="absolute inset-0 m-auto flex h-20 w-20 items-center justify-center rounded-full bg-white/95 shadow-lg transition group-hover:scale-105">
+              <svg viewBox="0 0 24 24" className="ml-1 h-8 w-8" fill={ACCENT} aria-hidden="true">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </span>
+          </button>
+        )}
+      </div>
+    </section>
+  );
+}
+
 const button =
   'inline-flex items-center rounded-full px-7 py-3.5 text-[0.95rem] font-semibold transition hover:-translate-y-0.5';
 
@@ -65,6 +111,9 @@ export default function Hero() {
             CareCircle
           </Link>
           <nav className="ml-auto flex items-center gap-6 text-sm text-white/85">
+            <a href="#video" className="hidden hover:text-white sm:inline">
+              Video
+            </a>
             <a href="#how" className="hidden hover:text-white sm:inline">
               How it works
             </a>
@@ -103,6 +152,8 @@ export default function Hero() {
           </div>
         </div>
       </section>
+
+      <Video />
 
       {/* ---------- A picture per family, a few words each ---------- */}
       {STORIES.map((s, i) => (
