@@ -1,0 +1,72 @@
+{
+  "modelId": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+  "total": 34,
+  "passed": 32,
+  "accuracy": 0.9411764705882353,
+  "errored": 0,
+  "byCategory": [
+    {
+      "category": "hd",
+      "passed": 32,
+      "total": 34
+    }
+  ],
+  "splits": [
+    {
+      "split": "authored",
+      "passed": 0,
+      "total": 0
+    },
+    {
+      "split": "held-out",
+      "passed": 31,
+      "total": 32
+    },
+    {
+      "split": "seen",
+      "passed": 1,
+      "total": 2
+    }
+  ],
+  "failures": [
+    {
+      "case": {
+        "id": "hd-aae-06",
+        "member": "m_renee",
+        "utterance": "I can't drive him Thursday, I'm gon' be out of town.",
+        "expect": [
+          "add_note"
+        ]
+      },
+      "chosen": "get_my_requests",
+      "args": {},
+      "pass": false,
+      "reason": "chose get_my_requests; expected add_note"
+    },
+    {
+      "case": {
+        "id": "hd-pcm-01",
+        "member": "m_margaret",
+        "utterance": "I don use my eye drop this morning.",
+        "expect": [
+          "log_care_event"
+        ],
+        "seen": "2026-09-24: log_care_event now says what Pidgin \"don\" means, after this case failed twice"
+      },
+      "chosen": "add_note",
+      "args": {
+        "note": "I don use my eye drop this morning"
+      },
+      "pass": false,
+      "reason": "chose add_note; expected log_care_event"
+    }
+  ],
+  "errors": [],
+  "rerunAlone": {
+    "cases": [
+      "hd-pcm-04",
+      "hd-pcm-05"
+    ],
+    "why": "throttled by Bedrock in the main run (\"Too many requests\"), re-run alone and merged in"
+  }
+}

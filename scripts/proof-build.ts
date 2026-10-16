@@ -40,11 +40,19 @@ const corpus = latest(
   '2026-09-24-zod4-claude-sonnet-4-5.json',
   '2026-10-02-claude-sonnet-4-5-rename.json',
   '2026-10-02-claude-sonnet-4-5-question-not-report.json',
+  '2026-10-08-claude-sonnet-4-5-get-my-requests-key.json',
+  '2026-10-16-claude-sonnet-4-5-asks-not-assigns.json',
 );
 const dialects = latest(
   '2026-09-24-zod4-dialects-sonnet-4-5.json',
   '2026-10-02-dialects-sonnet-4-5-rename.json',
   '2026-10-02-dialects-sonnet-4-5-question-not-report.json',
+  '2026-10-16-dialects-sonnet-4-5-asks-not-assigns.json',
+);
+const bridge = latest(
+  '2026-09-24-nova-pro-alexa-bridge-prompt.json',
+  '2026-10-02-nova-pro-alexa-bridge-prompt-question-not-report.json',
+  '2026-10-16-nova-pro-alexa-bridge-prompt-asks-not-assigns.json',
 );
 const languages = read('2026-09-24-zod4-languages-named-sonnet-4-5.json');
 const massiveBefore = read('2026-09-23-massive-nova-pro-alexa-bridge-prompt.json');
@@ -58,11 +66,7 @@ const out = {
   tests,
   selection: [
     selection(corpus, 'Claude Sonnet 4.5 (Bedrock)', 'our console'),
-    selection(
-      '2026-09-24-nova-pro-alexa-bridge-prompt.json',
-      'Amazon Nova Pro (Bedrock)',
-      "an Alexa Skill bridge's, not ours",
-    ),
+    selection(bridge, 'Amazon Nova Pro (Bedrock)', "an Alexa Skill bridge's, not ours"),
   ],
   dialects: {
     file: dialects,
