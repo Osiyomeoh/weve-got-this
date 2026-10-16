@@ -1,0 +1,1256 @@
+{
+ "what": "The decline cases (cons-*, h-cons-*), 3 runs per wording, Claude Sonnet 4.5 on Bedrock, the console prompt, 2026-10-16, after the rename to We've Got This. HEAD ran from a worktree on a second local server at the same time. The bisect rows run h-cons only. A run keeps only its failures, so a passing row has chosen: null.",
+ "wordings": {
+  "HEAD ae5bdc8, run alongside: respond_to_request says 'a CareCircle check-in'": {
+   "passed": 20,
+   "total": 21
+  },
+  "renamed, 'an automatic check-in' (dropped)": {
+   "passed": 17,
+   "total": 21
+  },
+  "renamed, 'the app's own check-in' (dropped)": {
+   "passed": 18,
+   "total": 21
+  },
+  "renamed, 'a We've Got This check-in' (kept)": {
+   "passed": 21,
+   "total": 21
+  },
+  "bisect: renamed server ('the app's own check-in'), sim prompt put back to 'the CareCircle tools'": {
+   "passed": 6,
+   "total": 9
+  },
+  "bisect: today's eval client against HEAD's server": {
+   "passed": 9,
+   "total": 9
+  },
+  "bisect: renamed server with only respond_to_request put back to 'a CareCircle check-in'": {
+   "passed": 9,
+   "total": 9
+  }
+ },
+ "rows": [
+  {
+   "wording": "HEAD ae5bdc8, run alongside: respond_to_request says 'a CareCircle check-in'",
+   "run": 1,
+   "id": "cons-01",
+   "utterance": "I can't drive Thursday, I'm out of town.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": "get_my_requests",
+   "pass": false
+  },
+  {
+   "wording": "HEAD ae5bdc8, run alongside: respond_to_request says 'a CareCircle check-in'",
+   "run": 1,
+   "id": "cons-02",
+   "utterance": "I'm away all next week.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "HEAD ae5bdc8, run alongside: respond_to_request says 'a CareCircle check-in'",
+   "run": 1,
+   "id": "cons-03",
+   "utterance": "I won't be able to make Friday after all.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "HEAD ae5bdc8, run alongside: respond_to_request says 'a CareCircle check-in'",
+   "run": 1,
+   "id": "cons-04",
+   "utterance": "I'm off sick tomorrow.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "HEAD ae5bdc8, run alongside: respond_to_request says 'a CareCircle check-in'",
+   "run": 1,
+   "id": "h-cons-01",
+   "utterance": "Something's come up, I can't do Thursday.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "HEAD ae5bdc8, run alongside: respond_to_request says 'a CareCircle check-in'",
+   "run": 1,
+   "id": "h-cons-02",
+   "utterance": "Count me out this weekend.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "HEAD ae5bdc8, run alongside: respond_to_request says 'a CareCircle check-in'",
+   "run": 1,
+   "id": "h-cons-03",
+   "utterance": "I'll be unreachable this afternoon.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "HEAD ae5bdc8, run alongside: respond_to_request says 'a CareCircle check-in'",
+   "run": 2,
+   "id": "cons-01",
+   "utterance": "I can't drive Thursday, I'm out of town.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "HEAD ae5bdc8, run alongside: respond_to_request says 'a CareCircle check-in'",
+   "run": 2,
+   "id": "cons-02",
+   "utterance": "I'm away all next week.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "HEAD ae5bdc8, run alongside: respond_to_request says 'a CareCircle check-in'",
+   "run": 2,
+   "id": "cons-03",
+   "utterance": "I won't be able to make Friday after all.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "HEAD ae5bdc8, run alongside: respond_to_request says 'a CareCircle check-in'",
+   "run": 2,
+   "id": "cons-04",
+   "utterance": "I'm off sick tomorrow.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "HEAD ae5bdc8, run alongside: respond_to_request says 'a CareCircle check-in'",
+   "run": 2,
+   "id": "h-cons-01",
+   "utterance": "Something's come up, I can't do Thursday.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "HEAD ae5bdc8, run alongside: respond_to_request says 'a CareCircle check-in'",
+   "run": 2,
+   "id": "h-cons-02",
+   "utterance": "Count me out this weekend.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "HEAD ae5bdc8, run alongside: respond_to_request says 'a CareCircle check-in'",
+   "run": 2,
+   "id": "h-cons-03",
+   "utterance": "I'll be unreachable this afternoon.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "HEAD ae5bdc8, run alongside: respond_to_request says 'a CareCircle check-in'",
+   "run": 3,
+   "id": "cons-01",
+   "utterance": "I can't drive Thursday, I'm out of town.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "HEAD ae5bdc8, run alongside: respond_to_request says 'a CareCircle check-in'",
+   "run": 3,
+   "id": "cons-02",
+   "utterance": "I'm away all next week.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "HEAD ae5bdc8, run alongside: respond_to_request says 'a CareCircle check-in'",
+   "run": 3,
+   "id": "cons-03",
+   "utterance": "I won't be able to make Friday after all.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "HEAD ae5bdc8, run alongside: respond_to_request says 'a CareCircle check-in'",
+   "run": 3,
+   "id": "cons-04",
+   "utterance": "I'm off sick tomorrow.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "HEAD ae5bdc8, run alongside: respond_to_request says 'a CareCircle check-in'",
+   "run": 3,
+   "id": "h-cons-01",
+   "utterance": "Something's come up, I can't do Thursday.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "HEAD ae5bdc8, run alongside: respond_to_request says 'a CareCircle check-in'",
+   "run": 3,
+   "id": "h-cons-02",
+   "utterance": "Count me out this weekend.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "HEAD ae5bdc8, run alongside: respond_to_request says 'a CareCircle check-in'",
+   "run": 3,
+   "id": "h-cons-03",
+   "utterance": "I'll be unreachable this afternoon.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'an automatic check-in' (dropped)",
+   "run": 1,
+   "id": "cons-01",
+   "utterance": "I can't drive Thursday, I'm out of town.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'an automatic check-in' (dropped)",
+   "run": 1,
+   "id": "cons-02",
+   "utterance": "I'm away all next week.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'an automatic check-in' (dropped)",
+   "run": 1,
+   "id": "cons-03",
+   "utterance": "I won't be able to make Friday after all.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'an automatic check-in' (dropped)",
+   "run": 1,
+   "id": "cons-04",
+   "utterance": "I'm off sick tomorrow.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'an automatic check-in' (dropped)",
+   "run": 1,
+   "id": "h-cons-01",
+   "utterance": "Something's come up, I can't do Thursday.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": "get_my_requests",
+   "pass": false
+  },
+  {
+   "wording": "renamed, 'an automatic check-in' (dropped)",
+   "run": 1,
+   "id": "h-cons-02",
+   "utterance": "Count me out this weekend.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'an automatic check-in' (dropped)",
+   "run": 1,
+   "id": "h-cons-03",
+   "utterance": "I'll be unreachable this afternoon.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'an automatic check-in' (dropped)",
+   "run": 2,
+   "id": "cons-01",
+   "utterance": "I can't drive Thursday, I'm out of town.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'an automatic check-in' (dropped)",
+   "run": 2,
+   "id": "cons-02",
+   "utterance": "I'm away all next week.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'an automatic check-in' (dropped)",
+   "run": 2,
+   "id": "cons-03",
+   "utterance": "I won't be able to make Friday after all.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'an automatic check-in' (dropped)",
+   "run": 2,
+   "id": "cons-04",
+   "utterance": "I'm off sick tomorrow.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'an automatic check-in' (dropped)",
+   "run": 2,
+   "id": "h-cons-01",
+   "utterance": "Something's come up, I can't do Thursday.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": "get_my_requests",
+   "pass": false
+  },
+  {
+   "wording": "renamed, 'an automatic check-in' (dropped)",
+   "run": 2,
+   "id": "h-cons-02",
+   "utterance": "Count me out this weekend.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'an automatic check-in' (dropped)",
+   "run": 2,
+   "id": "h-cons-03",
+   "utterance": "I'll be unreachable this afternoon.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'an automatic check-in' (dropped)",
+   "run": 3,
+   "id": "cons-01",
+   "utterance": "I can't drive Thursday, I'm out of town.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": "get_my_requests",
+   "pass": false
+  },
+  {
+   "wording": "renamed, 'an automatic check-in' (dropped)",
+   "run": 3,
+   "id": "cons-02",
+   "utterance": "I'm away all next week.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'an automatic check-in' (dropped)",
+   "run": 3,
+   "id": "cons-03",
+   "utterance": "I won't be able to make Friday after all.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'an automatic check-in' (dropped)",
+   "run": 3,
+   "id": "cons-04",
+   "utterance": "I'm off sick tomorrow.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'an automatic check-in' (dropped)",
+   "run": 3,
+   "id": "h-cons-01",
+   "utterance": "Something's come up, I can't do Thursday.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": "get_my_requests",
+   "pass": false
+  },
+  {
+   "wording": "renamed, 'an automatic check-in' (dropped)",
+   "run": 3,
+   "id": "h-cons-02",
+   "utterance": "Count me out this weekend.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'an automatic check-in' (dropped)",
+   "run": 3,
+   "id": "h-cons-03",
+   "utterance": "I'll be unreachable this afternoon.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'the app's own check-in' (dropped)",
+   "run": 1,
+   "id": "cons-01",
+   "utterance": "I can't drive Thursday, I'm out of town.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'the app's own check-in' (dropped)",
+   "run": 1,
+   "id": "cons-02",
+   "utterance": "I'm away all next week.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'the app's own check-in' (dropped)",
+   "run": 1,
+   "id": "cons-03",
+   "utterance": "I won't be able to make Friday after all.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'the app's own check-in' (dropped)",
+   "run": 1,
+   "id": "cons-04",
+   "utterance": "I'm off sick tomorrow.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'the app's own check-in' (dropped)",
+   "run": 1,
+   "id": "h-cons-01",
+   "utterance": "Something's come up, I can't do Thursday.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": "get_my_requests",
+   "pass": false
+  },
+  {
+   "wording": "renamed, 'the app's own check-in' (dropped)",
+   "run": 1,
+   "id": "h-cons-02",
+   "utterance": "Count me out this weekend.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'the app's own check-in' (dropped)",
+   "run": 1,
+   "id": "h-cons-03",
+   "utterance": "I'll be unreachable this afternoon.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'the app's own check-in' (dropped)",
+   "run": 2,
+   "id": "cons-01",
+   "utterance": "I can't drive Thursday, I'm out of town.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'the app's own check-in' (dropped)",
+   "run": 2,
+   "id": "cons-02",
+   "utterance": "I'm away all next week.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'the app's own check-in' (dropped)",
+   "run": 2,
+   "id": "cons-03",
+   "utterance": "I won't be able to make Friday after all.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'the app's own check-in' (dropped)",
+   "run": 2,
+   "id": "cons-04",
+   "utterance": "I'm off sick tomorrow.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'the app's own check-in' (dropped)",
+   "run": 2,
+   "id": "h-cons-01",
+   "utterance": "Something's come up, I can't do Thursday.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": "get_my_requests",
+   "pass": false
+  },
+  {
+   "wording": "renamed, 'the app's own check-in' (dropped)",
+   "run": 2,
+   "id": "h-cons-02",
+   "utterance": "Count me out this weekend.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'the app's own check-in' (dropped)",
+   "run": 2,
+   "id": "h-cons-03",
+   "utterance": "I'll be unreachable this afternoon.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'the app's own check-in' (dropped)",
+   "run": 3,
+   "id": "cons-01",
+   "utterance": "I can't drive Thursday, I'm out of town.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'the app's own check-in' (dropped)",
+   "run": 3,
+   "id": "cons-02",
+   "utterance": "I'm away all next week.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'the app's own check-in' (dropped)",
+   "run": 3,
+   "id": "cons-03",
+   "utterance": "I won't be able to make Friday after all.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'the app's own check-in' (dropped)",
+   "run": 3,
+   "id": "cons-04",
+   "utterance": "I'm off sick tomorrow.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'the app's own check-in' (dropped)",
+   "run": 3,
+   "id": "h-cons-01",
+   "utterance": "Something's come up, I can't do Thursday.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": "get_my_requests",
+   "pass": false
+  },
+  {
+   "wording": "renamed, 'the app's own check-in' (dropped)",
+   "run": 3,
+   "id": "h-cons-02",
+   "utterance": "Count me out this weekend.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'the app's own check-in' (dropped)",
+   "run": 3,
+   "id": "h-cons-03",
+   "utterance": "I'll be unreachable this afternoon.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'a We've Got This check-in' (kept)",
+   "run": 1,
+   "id": "cons-01",
+   "utterance": "I can't drive Thursday, I'm out of town.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'a We've Got This check-in' (kept)",
+   "run": 1,
+   "id": "cons-02",
+   "utterance": "I'm away all next week.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'a We've Got This check-in' (kept)",
+   "run": 1,
+   "id": "cons-03",
+   "utterance": "I won't be able to make Friday after all.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'a We've Got This check-in' (kept)",
+   "run": 1,
+   "id": "cons-04",
+   "utterance": "I'm off sick tomorrow.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'a We've Got This check-in' (kept)",
+   "run": 1,
+   "id": "h-cons-01",
+   "utterance": "Something's come up, I can't do Thursday.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'a We've Got This check-in' (kept)",
+   "run": 1,
+   "id": "h-cons-02",
+   "utterance": "Count me out this weekend.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'a We've Got This check-in' (kept)",
+   "run": 1,
+   "id": "h-cons-03",
+   "utterance": "I'll be unreachable this afternoon.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'a We've Got This check-in' (kept)",
+   "run": 2,
+   "id": "cons-01",
+   "utterance": "I can't drive Thursday, I'm out of town.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'a We've Got This check-in' (kept)",
+   "run": 2,
+   "id": "cons-02",
+   "utterance": "I'm away all next week.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'a We've Got This check-in' (kept)",
+   "run": 2,
+   "id": "cons-03",
+   "utterance": "I won't be able to make Friday after all.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'a We've Got This check-in' (kept)",
+   "run": 2,
+   "id": "cons-04",
+   "utterance": "I'm off sick tomorrow.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'a We've Got This check-in' (kept)",
+   "run": 2,
+   "id": "h-cons-01",
+   "utterance": "Something's come up, I can't do Thursday.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'a We've Got This check-in' (kept)",
+   "run": 2,
+   "id": "h-cons-02",
+   "utterance": "Count me out this weekend.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'a We've Got This check-in' (kept)",
+   "run": 2,
+   "id": "h-cons-03",
+   "utterance": "I'll be unreachable this afternoon.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'a We've Got This check-in' (kept)",
+   "run": 3,
+   "id": "cons-01",
+   "utterance": "I can't drive Thursday, I'm out of town.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'a We've Got This check-in' (kept)",
+   "run": 3,
+   "id": "cons-02",
+   "utterance": "I'm away all next week.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'a We've Got This check-in' (kept)",
+   "run": 3,
+   "id": "cons-03",
+   "utterance": "I won't be able to make Friday after all.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'a We've Got This check-in' (kept)",
+   "run": 3,
+   "id": "cons-04",
+   "utterance": "I'm off sick tomorrow.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'a We've Got This check-in' (kept)",
+   "run": 3,
+   "id": "h-cons-01",
+   "utterance": "Something's come up, I can't do Thursday.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'a We've Got This check-in' (kept)",
+   "run": 3,
+   "id": "h-cons-02",
+   "utterance": "Count me out this weekend.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "renamed, 'a We've Got This check-in' (kept)",
+   "run": 3,
+   "id": "h-cons-03",
+   "utterance": "I'll be unreachable this afternoon.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "bisect: renamed server ('the app's own check-in'), sim prompt put back to 'the CareCircle tools'",
+   "run": 1,
+   "id": "h-cons-01",
+   "utterance": "Something's come up, I can't do Thursday.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": "get_my_requests",
+   "pass": false
+  },
+  {
+   "wording": "bisect: renamed server ('the app's own check-in'), sim prompt put back to 'the CareCircle tools'",
+   "run": 1,
+   "id": "h-cons-02",
+   "utterance": "Count me out this weekend.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "bisect: renamed server ('the app's own check-in'), sim prompt put back to 'the CareCircle tools'",
+   "run": 1,
+   "id": "h-cons-03",
+   "utterance": "I'll be unreachable this afternoon.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "bisect: renamed server ('the app's own check-in'), sim prompt put back to 'the CareCircle tools'",
+   "run": 2,
+   "id": "h-cons-01",
+   "utterance": "Something's come up, I can't do Thursday.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": "get_my_requests",
+   "pass": false
+  },
+  {
+   "wording": "bisect: renamed server ('the app's own check-in'), sim prompt put back to 'the CareCircle tools'",
+   "run": 2,
+   "id": "h-cons-02",
+   "utterance": "Count me out this weekend.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "bisect: renamed server ('the app's own check-in'), sim prompt put back to 'the CareCircle tools'",
+   "run": 2,
+   "id": "h-cons-03",
+   "utterance": "I'll be unreachable this afternoon.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "bisect: renamed server ('the app's own check-in'), sim prompt put back to 'the CareCircle tools'",
+   "run": 3,
+   "id": "h-cons-01",
+   "utterance": "Something's come up, I can't do Thursday.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": "get_my_requests",
+   "pass": false
+  },
+  {
+   "wording": "bisect: renamed server ('the app's own check-in'), sim prompt put back to 'the CareCircle tools'",
+   "run": 3,
+   "id": "h-cons-02",
+   "utterance": "Count me out this weekend.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "bisect: renamed server ('the app's own check-in'), sim prompt put back to 'the CareCircle tools'",
+   "run": 3,
+   "id": "h-cons-03",
+   "utterance": "I'll be unreachable this afternoon.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "bisect: today's eval client against HEAD's server",
+   "run": 1,
+   "id": "h-cons-01",
+   "utterance": "Something's come up, I can't do Thursday.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "bisect: today's eval client against HEAD's server",
+   "run": 1,
+   "id": "h-cons-02",
+   "utterance": "Count me out this weekend.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "bisect: today's eval client against HEAD's server",
+   "run": 1,
+   "id": "h-cons-03",
+   "utterance": "I'll be unreachable this afternoon.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "bisect: today's eval client against HEAD's server",
+   "run": 2,
+   "id": "h-cons-01",
+   "utterance": "Something's come up, I can't do Thursday.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "bisect: today's eval client against HEAD's server",
+   "run": 2,
+   "id": "h-cons-02",
+   "utterance": "Count me out this weekend.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "bisect: today's eval client against HEAD's server",
+   "run": 2,
+   "id": "h-cons-03",
+   "utterance": "I'll be unreachable this afternoon.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "bisect: today's eval client against HEAD's server",
+   "run": 3,
+   "id": "h-cons-01",
+   "utterance": "Something's come up, I can't do Thursday.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "bisect: today's eval client against HEAD's server",
+   "run": 3,
+   "id": "h-cons-02",
+   "utterance": "Count me out this weekend.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "bisect: today's eval client against HEAD's server",
+   "run": 3,
+   "id": "h-cons-03",
+   "utterance": "I'll be unreachable this afternoon.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "bisect: renamed server with only respond_to_request put back to 'a CareCircle check-in'",
+   "run": 1,
+   "id": "h-cons-01",
+   "utterance": "Something's come up, I can't do Thursday.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "bisect: renamed server with only respond_to_request put back to 'a CareCircle check-in'",
+   "run": 1,
+   "id": "h-cons-02",
+   "utterance": "Count me out this weekend.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "bisect: renamed server with only respond_to_request put back to 'a CareCircle check-in'",
+   "run": 1,
+   "id": "h-cons-03",
+   "utterance": "I'll be unreachable this afternoon.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "bisect: renamed server with only respond_to_request put back to 'a CareCircle check-in'",
+   "run": 2,
+   "id": "h-cons-01",
+   "utterance": "Something's come up, I can't do Thursday.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "bisect: renamed server with only respond_to_request put back to 'a CareCircle check-in'",
+   "run": 2,
+   "id": "h-cons-02",
+   "utterance": "Count me out this weekend.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "bisect: renamed server with only respond_to_request put back to 'a CareCircle check-in'",
+   "run": 2,
+   "id": "h-cons-03",
+   "utterance": "I'll be unreachable this afternoon.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "bisect: renamed server with only respond_to_request put back to 'a CareCircle check-in'",
+   "run": 3,
+   "id": "h-cons-01",
+   "utterance": "Something's come up, I can't do Thursday.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "bisect: renamed server with only respond_to_request put back to 'a CareCircle check-in'",
+   "run": 3,
+   "id": "h-cons-02",
+   "utterance": "Count me out this weekend.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  },
+  {
+   "wording": "bisect: renamed server with only respond_to_request put back to 'a CareCircle check-in'",
+   "run": 3,
+   "id": "h-cons-03",
+   "utterance": "I'll be unreachable this afternoon.",
+   "expect": [
+    "add_note"
+   ],
+   "chosen": null,
+   "pass": true
+  }
+ ]
+}

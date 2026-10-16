@@ -70,7 +70,7 @@ const server = createServer(async (req, res) => {
     if (!tokenRes.ok || !json.refresh_token) {
       throw new Error(json.error_description ?? `token exchange failed (${tokenRes.status})`);
     }
-    res.end('CareCircle is connected to your Google Calendar. You can close this tab.');
+    res.end("We've Got This is connected to your Google Calendar. You can close this tab.");
     console.log('\n✅ Success. Add this to your .env:\n');
     console.log(`GOOGLE_REFRESH_TOKEN=${json.refresh_token}\n`);
   } catch (e) {
@@ -93,7 +93,7 @@ server.listen(0, () => {
   authUrl.searchParams.set('access_type', 'offline');
   authUrl.searchParams.set('prompt', 'consent');
 
-  console.log('\nOpen this URL in your browser and authorize CareCircle:\n');
+  console.log("\nOpen this URL in your browser and authorize We've Got This:\n");
   console.log(authUrl.toString());
   console.log('\nListening for the redirect on http://localhost:' + port + ' …');
 });

@@ -10,7 +10,7 @@ import type { Channel } from '../sim/host.js';
 import { StrandsAlexa, type StrandsTurnResult } from './host.js';
 
 /**
- * The CareCircle planner as a Bedrock AgentCore Runtime agent.
+ * The planner as a Bedrock AgentCore Runtime agent.
  *
  * AgentCore Runtime runs a container and speaks HTTP to it on port 8080: GET /ping for
  * health, POST /invocations for work, and a header naming the runtime session. Each

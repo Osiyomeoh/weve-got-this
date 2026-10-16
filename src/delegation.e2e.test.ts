@@ -223,7 +223,7 @@ test('even the primary caregiver giving work away only asks: it is theirs once t
   const renee = await openSession('renee-token');
   const id = await theRide('david-token', david);
 
-  // Tolu, the primary caregiver, puts it on Funmi's name. CareCircle asks her instead.
+  // Tolu, the primary caregiver, puts it on Funmi's name. The app asks her instead.
   const given = await call('david-token', david, 'assign_obligation', {
     obligationId: id,
     assigneeName: 'Funmi',
@@ -246,7 +246,7 @@ test('even the primary caregiver giving work away only asks: it is theirs once t
   assert.equal(store.getObligation(id, 'h_margaret').ownerId, 'm_renee');
 });
 
-test('with no name given, CareCircle picks someone and says why', async () => {
+test('with no name given, the app picks someone and says why', async () => {
   const renee = await openSession('renee-token');
   const id = await theRide('renee-token', renee);
   const asked = await call('renee-token', renee, 'request_owner', { obligationId: id });

@@ -1,6 +1,6 @@
 /**
  * Pilot helper: list who has spoken in the family's Telegram group, so each person can
- * be mapped to a CareCircle member in TELEGRAM_RECIPIENTS.
+ * be mapped to a member in TELEGRAM_RECIPIENTS.
  *
  * Telegram refuses getUpdates while a webhook is set (and a live webhook consumes every
  * message), so this removes the webhook, listens for up to LISTEN_SECONDS while people

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Create the CareCircle DynamoDB table. Idempotent.
+# Create the DynamoDB table. Idempotent.
 set -euo pipefail
 TABLE="${CARECIRCLE_TABLE:-carecircle}"
 REGION="${AWS_REGION:-us-east-1}"

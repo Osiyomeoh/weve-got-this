@@ -1,6 +1,6 @@
 # Feature requests
 
-These are the things we kept wishing existed while we built CareCircle. Each one is
+These are the things we kept wishing existed while we built We've Got This. Each one is
 addressed to the team that owns that part, and rated by how much it hurt: critical,
 important or nice-to-have. Each one is a place where we wanted to do right by a family
 looking after someone, and had to settle for a workaround. Where we found one, we say what
@@ -14,7 +14,7 @@ it was, because the workaround usually shows what the platform should have done.
 - **Urgency:** important
 - **What:** A documented pattern for a server whose data is shared by several people with
   different permissions, where the session credential says which person is acting.
-- **Why it matters:** MCP mostly reads as one user talking to one server. CareCircle is one
+- **Why it matters:** MCP mostly reads as one user talking to one server. We've Got This is one
   shared record with four people around it: the person being cared for, two family members
   with different permissions, and a paid helper. Every tool call has to be tied to a person
   and checked. We built that ourselves, but every multi-user MCP server will build it again,
@@ -97,7 +97,7 @@ it was, because the workaround usually shows what the platform should have done.
 - **Why it matters:** MCP elicitation expects the answer inside the same `tools/call` that
   asked. An Alexa turn ends in seconds, so the two disagree about how long a request can stay
   open. Someone who put an Alexa Skill in front of MCP servers hit exactly this, and had to
-  park the open call and pick it up on a later turn. CareCircle avoids it by making
+  park the open call and pick it up on a later turn. We avoid it by making
   confirmation its own tool call (`confirm_proposal`): "will Mom need a ride?" then "yes"
   works however long the gap is, with nothing parked. It works, but it's working around a
   protocol assumption that doesn't hold for voice. Either document the pattern, or let a
@@ -107,7 +107,7 @@ it was, because the workaround usually shows what the platform should have done.
 - **Urgency:** important
 - **What:** A documented contract for how Alexa+ shows MCP elicitation, and whether a server
   can require confirmation before a change.
-- **Why it matters:** CareCircle decides who is responsible for parts of someone's medical
+- **Why it matters:** The app decides who is responsible for parts of someone's medical
   care. If a model mishears and gives Thursday's hospital run to the wrong person, that's a
   real-world problem, not a bad chat reply. Servers whose actions matter need a confirmation
   step they can rely on, not a convention.
@@ -117,7 +117,7 @@ it was, because the workaround usually shows what the platform should have done.
 - **What:** A way for an MCP server to return something Alexa+ can draw on a screen device (a
   card with fields, status and buttons) alongside the spoken text, falling back to speech on a
   device with no screen.
-- **Why it matters:** This was the biggest limit we hit. CareCircle's main answer is a ranked
+- **Why it matters:** This was the biggest limit we hit. Our main answer is a ranked
   list: four care tasks, each with how serious it is, who has it (or that nobody does), when
   it's due and why. Spoken, people can hold about three before they lose track. On a screen,
   a family takes in twelve at a glance and points at the one they mean. Today we have to
@@ -173,7 +173,7 @@ it was, because the workaround usually shows what the platform should have done.
 - **Urgency:** nice-to-have
 - **What:** A way for an add-on to put something on a device's home screen, the thing a
   screen shows when nobody is talking to it.
-- **Why it matters:** CareCircle's most useful moment isn't a conversation. It's someone
+- **Why it matters:** The app's most useful moment isn't a conversation. It's someone
   walking past the kitchen Echo and seeing that Thursday still has no driver. Looking after
   someone mostly happens in the background; talking to the assistant is the exception. Every
   assistant integration we've seen assumes the conversation is the product.
@@ -269,7 +269,7 @@ fixes are small.
 - **Urgency:** important
 - **What:** A writable result on `AfterModelCallEvent` ("end the turn with this message"),
   next to the existing `retry` flag.
-- **Why it matters:** CareCircle never lets a reply say someone missed, skipped or forgot
+- **Why it matters:** The app never lets a reply say someone missed, skipped or forgot
   something (`src/strands/no-blame.ts`). If a model blames someone twice, the safe thing is
   to end the turn with what the tools said. In 1.19.0 `stopData` is read-only and `retry` is
   the only option, so a guardrail that wants to swap in a reply can't say so directly.
@@ -312,7 +312,7 @@ fixes are small.
   AgentCore Memory. That history keeps the questions and answers but not the tool calls
   behind them, so the model treated an old answer as fact. A prompt rule ("call the tool
   again") didn't stop it. For a care record, an old answer is a wrong answer.
-- **Instead:** We turned replay off on the bridge, and the CareCircle runtime doesn't use
+- **Instead:** We turned replay off on the bridge, and our runtime doesn't use
   AgentCore Memory. The care record is the memory, and every turn reads it fresh.
 
 ## Amazon Nova on Bedrock

@@ -91,7 +91,7 @@ export function registerGetConnections({ server, actor, state }: ToolContext): v
     {
       title: 'List the data connections and whether each is live',
       description:
-        'Reports what CareCircle is connected to - Google Calendar, Gmail, Ring, Bee, WhatsApp, ' +
+        "Reports what this family's care record is connected to - Google Calendar, Gmail, Ring, Bee, WhatsApp, " +
         'Telegram - and for each whether it is LIVE (connected and receiving events), CONFIGURED ' +
         '(connected but nothing has arrived yet), or NOT CONNECTED. Use for "what are you ' +
         'connected to?", "is Telegram working?", "which of my accounts are linked?". Read-only, ' +

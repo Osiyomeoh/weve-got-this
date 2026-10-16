@@ -61,7 +61,7 @@ export default function TVBoard() {
     if (notified.current.has(key)) return;
     notified.current.add(key);
     try {
-      bridge.notify('CareCircle', top.spoken);
+      bridge.notify('We’ve Got This', top.spoken);
     } catch {
       /* bridge absent */
     }

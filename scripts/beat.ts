@@ -2,7 +2,7 @@
  * The 40-second beat, executed end to end.
  *
  * This is the single continuous demo shot, run headless against the
- * real CareCircle MCP server in-process (Streamable HTTP, spec 2025-11-25). Its job is to
+ * real MCP server in-process (Streamable HTTP, spec 2025-11-25). Its job is to
  * make the doc's central claim literally true: the ask -> decline -> re-ask -> accept loop,
  * and the provenance replay that proves it, are reproducible with no cloud and no keys.
  *
@@ -67,7 +67,7 @@ function say(who: string, text: string): void {
   console.log(`  ${who}: "${text}"`);
 }
 function alexa(r: any): any {
-  console.log(`    ${amber('CareCircle')}: ${r.content?.[0]?.text ?? '(no text)'}`);
+  console.log(`    ${amber("We've Got This")}: ${r.content?.[0]?.text ?? '(no text)'}`);
   return r;
 }
 function surfaces(label: string, gaps: any[]): void {
@@ -119,7 +119,7 @@ async function main(): Promise<void> {
   const funmi = await connect(url, 'renee-token'); // caregiver (family)
   const musa = await connect(url, 'aide-token'); // paid driver
 
-  console.log(bold('\n  CareCircle · the 40-second beat  (real server, append-only log)'));
+  console.log(bold("\n  We've Got This · the 40-second beat  (real server, append-only log)"));
   console.log(dim('  ═══════════════════════════════════════════════════════════'));
 
   // 0:00 - the gap, and why it ranks

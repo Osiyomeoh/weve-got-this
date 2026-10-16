@@ -33,7 +33,8 @@ async function planner(steps: Step[], actorId = 'm_david') {
 
 /** Say back what the last tool said, as the prompt tells the model to. */
 const echo: Step = (messages) => ({ say: textIn(messages.at(-1)) });
-const corrected = (messages: Message[]) => textIn(messages.at(-1)).includes('[CareCircle check');
+const corrected = (messages: Message[]) =>
+  textIn(messages.at(-1)).includes("[We've Got This check");
 
 test('the planner calls the real tools over MCP and speaks what they say', async () => {
   const { host } = await planner([{ tool: 'get_care_summary' }, echo]);
@@ -89,7 +90,7 @@ test('a reply that says Daddy missed his drops is sent back, and the corrected o
       .map((m) => textIn(m))
       .join('\n');
     assert.doesNotMatch(history, BLAME);
-    assert.doesNotMatch(history, /CareCircle check/);
+    assert.doesNotMatch(history, /We've Got This check/);
     assert.match(history, /no record of Daddy's evening eye drops yet/);
   } finally {
     await host.close();

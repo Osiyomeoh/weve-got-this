@@ -9,7 +9,7 @@ import { seedScenario } from './demo/scenario.ts';
 /**
  * Adversarial tests.
  *
- * CareCircle assigns responsibility for someone's medical care, so the identity
+ * The app assigns responsibility for someone's medical care, so the identity
  * and trust rules are not conveniences - they are the product. Each test here is
  * an attack that would be plausible in a real deployment, and the assertion is
  * that it fails closed.

@@ -58,7 +58,7 @@ export function Programme({
   raised: boolean;
   /** The world's sound switch. */
   sound: boolean;
-  /** Something of CareCircle's or the doorbell's is on screen: the show goes quiet under it. */
+  /** Something of the app's or the doorbell's is on screen: the show goes quiet under it. */
   ducked: boolean;
 }) {
   const evening = hour >= 17 || hour < 4;
@@ -190,7 +190,7 @@ function Break() {
       className="tv-rise absolute bottom-[6vh] right-[3vw] max-w-[34vw] rounded-[0.8vw] bg-black/70 px-[1.8vw] py-[1.6vh] backdrop-blur"
     >
       <div className="text-[0.8vw] uppercase tracking-[0.25em] text-[#00caff]">
-        Works with CareCircle
+        Works with We’ve Got This
       </div>
       <div className="text-[2vw] font-medium">{c.name}</div>
       <div className="text-[1.1vw] text-white/80">{c.line}</div>

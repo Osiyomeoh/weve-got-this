@@ -3,7 +3,7 @@
 Telegram is the **live** reply channel of the delegation loop: same seams as the WhatsApp
 door (`Notifier` + signed-ish webhook + shared `applyRequestResponse`), but a bot token from
 `@BotFather` stands it up in minutes with **no business verification, no Meta throttle**.
-CareCircle asks a member to take a job on → the ask arrives in their Telegram chat with the
+The app asks a member to take a job on → the ask arrives in their Telegram chat with the
 bot → they reply "yes"/"can't" → the board updates.
 
 - **Webhook URL:** `https://ypq2dfq2p7.us-east-1.awsapprunner.com/telegram/webhook`
@@ -27,7 +27,7 @@ A bot **cannot** open a chat — the person must message it first.
    curl -s "https://api.telegram.org/bot<TOKEN>/getUpdates" | python3 -m json.tool
    ```
    Each `result[].message.chat.id` is that person's numeric chat id.
-3. Build `TELEGRAM_RECIPIENTS` — a JSON map of **CareCircle member id → chat id**, e.g.
+3. Build `TELEGRAM_RECIPIENTS` — a JSON map of **member id → chat id**, e.g.
    `{"m_renee":"987654321"}`.
 
 ## 3. Pick a webhook secret
@@ -78,7 +78,7 @@ No platform verification, no lead time — this is the one to demo live.
 
 ## Family-group mode (the demo scene) — LIVE
 
-Instead of private DMs, CareCircle can run in a **Telegram group** so the whole circle sees
+Instead of private DMs, the app can run in a **Telegram group** so the whole circle sees
 the loop. Verified live in the group **"Magaret's CareCircle"** (`-5450402543`).
 
 **Setup:**

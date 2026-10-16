@@ -1,6 +1,7 @@
 import { createHmac, randomUUID, timingSafeEqual, createHash, randomBytes } from 'node:crypto';
 import type { Request, Response } from 'express';
 import type { IdentityResolver, IdentityLookup } from './identity.js';
+import { BRAND } from '../domain/brand.js';
 
 /**
  * OAuth 2.1 with PKCE.
@@ -546,7 +547,7 @@ export class OAuthProvider {
     const copies = !!this.#opts.copies;
     const lead = copies
       ? "You get your own copy of a demo family: the same people and the same week, and nothing you do reaches anyone else's. Who are you in it?"
-      : 'Who is setting this up? What you can do depends on your role in the care circle.';
+      : 'Who is setting this up? What you can do depends on your role in the family.';
     // A second agent can join the copy the first one made, so one person can ask from
     // Claude and another answer from ChatGPT. get_started tells each copy its code.
     const join = copies
@@ -566,7 +567,7 @@ ${keep
       : '';
     return `<!doctype html><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Connect CareCircle</title>
+<title>Connect ${BRAND}</title>
 <style>
 :root{color-scheme:light dark}
 body{font:16px/1.5 system-ui,sans-serif;margin:0;display:grid;place-items:center;min-height:100svh;background:#07090f;color:#eef2fb}
@@ -585,7 +586,7 @@ button{cursor:pointer;border-color:#7cf0c8}
 .problem{color:#ffb4a8}
 </style>
 <main>
-<h1>Connect to CareCircle</h1>
+<h1>Connect to ${BRAND}</h1>
 <p>${lead}</p>
 ${problem ? `<p class="problem">${escapeHtml(problem)}</p>` : ''}
 ${buttons}

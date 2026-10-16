@@ -1,12 +1,12 @@
 # Real-family pilot kit
 
-The goal: one real family runs CareCircle for 1-2 weeks, so the submission shows a real
+The goal: one real family runs We've Got This for 1-2 weeks, so the submission shows a real
 person using it, not only a demo household. Real usage is the strongest Impact evidence a
 judge can see, and very few entries will have it.
 
 Target: a family caring for an older relative across more than one home, which is common
 in Nigeria where children and relatives coordinate care from different cities. They
-already coordinate on Telegram or WhatsApp groups, so CareCircle meets them where they are.
+already coordinate on Telegram or WhatsApp groups, so the app meets them where they are.
 
 ---
 
@@ -31,7 +31,7 @@ This is a real person's care, so:
      family**, tick **Lives far away**, say where, and leave **evening update** on. Or by
      voice: *"Add my brother Kunle as a caregiver. He lives in London and wants an update
      every evening."* Either way it sets `livesAway` and `dailyUpdate`. From then on he
-     gets a short update on the day after 21:00 household time, and CareCircle never
+     gets a short update on the day after 21:00 household time, and the app never
      picks him on its own for rides or pickups. Map his Telegram in step 2 so the update
      reaches him; unmapped, it is only written to the care log.
 4. Tell the operator (you) it's done. The operator pulls the new household id and member
@@ -91,13 +91,13 @@ Nothing special, which is the point. Everything happens in Telegram, which the f
 already uses:
 
 - **Talk to it in a private chat with the bot.** After tapping their link, anything they
-  send it goes to CareCircle as them: *"I used my eye drops"*, *"He has the
+  send it goes to the app as them: *"I used my eye drops"*, *"He has the
   clinic Thursday at 10"*, *"How was Daddy's day?"*, *"What's still open?"*. The person
   being cared for logs his own care this way, with no Echo and no app to learn.
-- **In the family group, mention the bot or reply to it** to talk to CareCircle there
+- **In the family group, mention the bot or reply to it** to talk to the bot there
   (*"@carecircle0111_bot what needs doing this week?"*). Everything else in the group is
   family conversation, and the bot stays out of it.
-- When CareCircle asks someone in the group ("can you take ...?"), they reply **yes** or
+- When the app asks someone in the group ("can you take ...?"), they reply **yes** or
   **can't**.
 - The console still works for whoever prefers a screen, and it shows the whole care board.
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Create the CareCircle notification topic and (optionally) subscribe an email.
+# Create the notification topic and (optionally) subscribe an email.
 #   ./infra/create-sns.sh you@example.com
 set -euo pipefail
 NAME="${CARECIRCLE_SNS_NAME:-carecircle-demo}"

@@ -2,7 +2,9 @@
  * Resources: the care record, readable as a document.
  */
 
+import { AGENT_ID } from '../domain/agent.js';
 import { attributionOf } from '../domain/attribution.js';
+import { BRAND } from '../domain/brand.js';
 import { capabilitiesOf } from '../domain/auth.js';
 import { activeMedications } from '../domain/care-changes.js';
 import { detectCareGaps, doseRecord } from '../domain/gaps.js';
@@ -183,7 +185,9 @@ export function registerCareStateResource({ server, now, state, nameOf }: ToolCo
                   .slice(-5)
                   .map((e) => ({
                     from:
-                      nameOf(e.reportedBy) ?? (e.source === 'system' ? 'CareCircle' : 'Someone'),
+                      e.reportedBy === AGENT_ID
+                        ? BRAND
+                        : (nameOf(e.reportedBy) ?? (e.source === 'system' ? BRAND : 'Someone')),
                     to:
                       nameOf((e.data['recipientId'] ?? e.data['askedOfId']) as string) ?? 'someone',
                     message:

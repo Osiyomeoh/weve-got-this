@@ -11,7 +11,7 @@ Mini-challenge: **AWS Builder** (Bedrock + Nova + Strands Agents + AgentCore Run
 
 ## Alexa+ (MCP add-on)
 
-**Used for:** everything CareCircle is. The whole product is an Alexa+ add-on: a family
+**Used for:** everything We've Got This is. The whole product is an Alexa+ add-on: a family
 member says "Daddy has his eye check-up tomorrow at ten" or "I can't do Thursday", and
 our MCP server works out who has taken responsibility for what, and who to ask next.
 We started building it for my own family, after my dad's eye surgery, and Alexa+ is

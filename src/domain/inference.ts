@@ -102,7 +102,7 @@ export function proposeFromAppointment(
  * already has an owner*. Nobody says "create a task" - somebody says "I can't drive
  * Thursday", and a ride that was covered silently stops being covered.
  *
- * That silence is precisely the failure mode CareCircle exists to catch, so the
+ * That silence is precisely the failure mode the app exists to catch, so the
  * orphaned obligation is surfaced the same way as any other inference: as a
  * proposal, explaining what it noticed and what it is guessing.
  */
@@ -127,7 +127,7 @@ export interface OrphanedWork {
 /**
  * Find work that a stated unavailability leaves without a real owner.
  *
- * Returns descriptions, not decisions: CareCircle never silently reassigns someone
+ * Returns descriptions, not decisions: the app never silently reassigns someone
  * else's responsibility. It notices, and it asks.
  */
 export function orphanedBy(

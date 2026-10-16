@@ -1,13 +1,14 @@
 import type { CareEvent, CareState } from './types.js';
 import { DOSE_GRACE_MINUTES, doseRecord, localParts, parseHHMM } from './gaps.js';
 import { AGENT_ID } from './agent.js';
+import { AGENT_IN_A_SENTENCE } from './brand.js';
 
 /**
  * What a family's care record shows about a stretch of real use.
  *
  * Every figure is counted from the log, the same append-only record the tools read;
  * nothing is estimated or projected. That matters because this is the evidence for
- * whether CareCircle helped, and the only honest source for that is what happened.
+ * whether the app helped, and the only honest source for that is what happened.
  *
  * The one figure that needs a word is `loggedLate`: a dose whose record arrived after
  * the board had already started showing "no record". Each one is a time a system that
@@ -25,7 +26,7 @@ export interface PilotReport {
   days: number;
   /** Days on which somebody recorded something. */
   activeDays: number;
-  /** Everyone who put something in the record, most first. Devices and CareCircle are left out. */
+  /** Everyone who put something in the record, most first. Devices and the app are left out. */
   people: { name: string; records: number; channels: string[] }[];
   doses: {
     /** Doses due in the window whose "no record" point had passed by the end of it. */
@@ -39,12 +40,12 @@ export interface PilotReport {
   };
   work: {
     created: number;
-    /** Proposed by CareCircle from a signal or a calendar, not said by a person. */
+    /** Proposed by the app from a signal or a calendar, not said by a person. */
     proposed: number;
     proposedConfirmed: number;
     proposedDismissed: number;
     asked: number;
-    askedByCareCircle: number;
+    askedByAgent: number;
     accepted: number;
     declined: number;
     unanswered: number;
@@ -101,7 +102,7 @@ export function pilotReport(state: CareState, window: { from: Date; to: Date }):
     return t >= from.getTime() && t <= to.getTime();
   };
   const nameOf = (id: string): string => {
-    if (id === AGENT_ID) return 'CareCircle';
+    if (id === AGENT_ID) return AGENT_IN_A_SENTENCE;
     if (id.startsWith('device:')) return id.slice('device:'.length);
     const m = state.members.find((x) => x.id === id);
     return m ? (m.spokenAs ?? m.name) : 'someone no longer in the circle';
@@ -220,7 +221,7 @@ export function pilotReport(state: CareState, window: { from: Date; to: Date }):
         .length,
       proposedDismissed: proposed.filter((o) => o.status === 'DISMISSED').length,
       asked: asks.length,
-      askedByCareCircle: asks.filter((a) => a.reportedBy === AGENT_ID).length,
+      askedByAgent: asks.filter((a) => a.reportedBy === AGENT_ID).length,
       accepted: answered.filter((x) => x.answer?.data['accepted'] === true).length,
       declined: answered.filter((x) => x.answer?.data['accepted'] === false).length,
       unanswered: answered.filter((x) => !x.answer).length,
@@ -298,14 +299,14 @@ export function renderPilotReport(r: PilotReport, title: string): string {
   out.push(
     `  ${plural(w.created, 'new task')}${
       w.proposed
-        ? `, ${w.proposed} proposed by CareCircle` +
+        ? `, ${w.proposed} proposed by the app` +
           ` (${w.proposedConfirmed} confirmed, ${w.proposedDismissed} dismissed)`
         : ''
     }`,
   );
   if (w.asked > 0) {
     out.push(
-      `  ${plural(w.asked, 'ask')} (${w.askedByCareCircle} by CareCircle): ${w.accepted} yes, ` +
+      `  ${plural(w.asked, 'ask')} (${w.askedByAgent} by the app): ${w.accepted} yes, ` +
         `${w.declined} no, ${w.unanswered} no answer` +
         (w.medianAnswerMinutes !== null
           ? `; median answer in ${minutes(w.medianAnswerMinutes)}`

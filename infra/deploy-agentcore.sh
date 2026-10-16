@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the CareCircle planner (Dockerfile.agentcore) on an arm64 CodeBuild host, push it to
+# Build the planner (Dockerfile.agentcore) on an arm64 CodeBuild host, push it to
 # ECR, and run it on Bedrock AgentCore Runtime over the same DynamoDB table as the MCP
 # server. Idempotent: creates the runtime once, then updates it to the new image.
 #
@@ -109,7 +109,7 @@ runtime() {
 }
 if [ -z "$ID" ] || [ "$ID" = "None" ]; then
   runtime aws bedrock-agentcore-control create-agent-runtime --region "$REGION" --agent-runtime-name "$NAME" \
-    --description "CareCircle planner: a Strands Agent over the CareCircle MCP tools" \
+    --description "We've Got This planner: a Strands Agent over its MCP tools" \
     --agent-runtime-artifact "$ARTIFACT" --role-arn "$ROLE_ARN" --network-configuration "$NETWORK" \
     --protocol-configuration "$PROTOCOL" --environment-variables "$VARS"
   ID=$(aws bedrock-agentcore-control list-agent-runtimes --region "$REGION" \

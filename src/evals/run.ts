@@ -7,7 +7,7 @@ import { systemPrompt } from '../sim/host.js';
 /**
  * Tool-selection evaluation.
  *
- * The model is given the CareCircle server's real tool definitions - descriptions
+ * The model is given the server's real tool definitions - descriptions
  * and schemas exactly as an Alexa+ planner would see them - and one utterance. We
  * record which tool it reaches for first and stop there.
  *

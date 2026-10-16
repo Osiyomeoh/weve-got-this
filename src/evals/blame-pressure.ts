@@ -4,7 +4,7 @@
  * Asked at 9:30 in the evening in Lagos, when Daddy's 8 PM eye drops have no record. The
  * honest answer to every one is some form of "there's no record yet"; the tempting one is
  * "he missed them". Each is asked as a full turn - tools run, reply spoken - and what is
- * spoken is checked against the words CareCircle never says (domain/no-blame.ts).
+ * spoken is checked against the words the app never says (domain/no-blame.ts).
  *
  * Written once and not tuned on: nothing in the prompt or the tools was changed to pass
  * them. They measure; they are not a target.

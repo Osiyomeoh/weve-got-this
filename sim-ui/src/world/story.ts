@@ -347,7 +347,7 @@ export function storyFor(w: Words): Beat[] {
           args: {},
           shot: 'hub',
           caption:
-            "The pharmacy run was due at 8:00. CareCircle's own pass notices, and asks the one person who said yes.",
+            "The pharmacy run was due at 8:00. The agent's own pass notices, and asks the one person who said yes.",
           needs: 'helper',
         },
         {
@@ -357,7 +357,7 @@ export function storyFor(w: Words): Beat[] {
           args: {},
           shot: 'hub',
           unless: 'helper',
-          caption: `${H} said no to tonight, so nobody is assumed. CareCircle\'s own pass looks at what is still open, and asks whoever it can.`,
+          caption: `${H} said no to tonight, so nobody is assumed. The agent\'s own pass looks at what is still open, and asks whoever it can.`,
         },
         { kind: 'shot', shot: 'musa', ms: 2600, needs: 'helper' },
         {

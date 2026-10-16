@@ -1,4 +1,5 @@
 import type { AppointmentInput } from './appointments.js';
+import { BRAND } from './brand.js';
 
 /**
  * Adapter: a real Google Calendar event -> a vendor-neutral appointment intent.
@@ -15,7 +16,7 @@ import type { AppointmentInput } from './appointments.js';
  *    appointment. Nothing about it is treated as done or certain.
  *  - We only bring in events that read as a real dated commitment. A `cancelled`
  *    event, an all-day banner, or one the recipient has `declined` is not an
- *    appointment CareCircle should act on, so it is dropped rather than guessed at.
+ *    appointment the app should act on, so it is dropped rather than guessed at.
  *
  * The event id + last-updated stamp form an idempotency key, because a calendar
  * sync redelivers the same event on every poll and an edited event comes back with
@@ -33,12 +34,12 @@ export interface GoogleCalendarEvent {
   start?: { dateTime?: string; date?: string; timeZone?: string };
   end?: { dateTime?: string; date?: string; timeZone?: string };
   attendees?: Array<{ self?: boolean; responseStatus?: string; email?: string }>;
-  /** App-private metadata. CareCircle stamps its own events here (see write-back). */
+  /** App-private metadata. The app stamps its own events here (see write-back). */
   extendedProperties?: { private?: Record<string, string> };
 }
 
 /**
- * The marker CareCircle writes into `extendedProperties.private.carecircleSource`
+ * The marker the app writes into `extendedProperties.private.carecircleSource`
  * on every event it creates. Its purpose is the loop guard below: an event this
  * system wrote to the calendar must never be read back in as a new appointment, or
  * write-back and inbound sync would feed each other forever.
@@ -65,18 +66,18 @@ export function calendarIdempotencyKey(event: GoogleCalendarEvent): string | nul
 
 /**
  * Map a Google Calendar event to an appointment intent, or explain why it is not one
- * CareCircle should act on. Pure: no clock, no network, no store.
+ * the app should act on. Pure: no clock, no network, no store.
  */
 export function calendarEventToAppointment(event: GoogleCalendarEvent): CalendarMapping {
   if (event.status === 'cancelled') {
     return { apply: false, reason: 'event is cancelled' };
   }
 
-  // The loop guard: an event CareCircle itself wrote to the calendar (write-back)
+  // The loop guard: an event the app itself wrote to the calendar (write-back)
   // must not be re-ingested as a fresh appointment, or the two doors would feed
   // each other. It is already in the record - that is why it is on the calendar.
   if (event.extendedProperties?.private?.['carecircleSource'] === CARECIRCLE_SOURCE) {
-    return { apply: false, reason: 'authored by CareCircle (write-back), not re-ingested' };
+    return { apply: false, reason: `authored by ${BRAND} (write-back), not re-ingested` };
   }
 
   // A timed start is what makes this an appointment. An all-day event (only `date`,

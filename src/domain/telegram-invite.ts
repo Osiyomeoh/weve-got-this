@@ -7,7 +7,7 @@ import { recipientsSpoken } from './who.js';
  *
  * Each member gets a personal link, `t.me/<bot>?start=<invite>`. Tapping it opens a chat
  * with the bot and sends `/start <invite>`, which does the two things Telegram requires
- * and CareCircle needs in one tap: the person starts the bot (a bot may not message
+ * and the app needs in one tap: the person starts the bot (a bot may not message
  * anyone first), and says which member of the circle they are.
  *
  * The invite is signed, not stored: an HMAC of the member id under the webhook secret,

@@ -44,7 +44,7 @@ export interface CareCase {
   helper?: string;
   /**
    * Where Tolu and Funmi live, when it is not near the person they care for. They can take
-   * anything on themselves, but CareCircle never picks them on its own for work that needs
+   * anything on themselves, but the app never picks them on its own for work that needs
    * someone there (see delegation.ts): the people nearby are who it asks.
    */
   childrenLiveIn?: string;

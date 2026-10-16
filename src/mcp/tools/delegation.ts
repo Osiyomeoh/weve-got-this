@@ -11,7 +11,8 @@ import { asTask, dueSpoken } from '../../domain/local-time.js';
 import type { Member, Obligation } from '../../domain/types.js';
 import { OUT } from '../output-schemas.js';
 import { currentAgent } from '../agent.js';
-import { joinSpoken } from '../text.js';
+import { joinSpoken, sentence } from '../text.js';
+import { BRAND } from '../../domain/brand.js';
 import { describeError, guidance, reply, type ToolContext, obligationFrom } from '../toolkit.js';
 
 /**
@@ -48,9 +49,7 @@ export function registerRequestOwner({
         assigneeName: z
           .string()
           .optional()
-          .describe(
-            'Who to ask, as the speaker named them. Omit to let CareCircle suggest someone.',
-          ),
+          .describe('Who to ask, as the speaker named them. Omit to have someone suggested.'),
       },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
       outputSchema: OUT.request_owner,
@@ -205,7 +204,7 @@ export function registerRespondToRequest({
         '"I can take that", "no, I can\'t", "sorry, not this week". Accepting makes them the ' +
         'owner. Declining puts it back with no owner, records that they said no, and suggests ' +
         'who to ask next - a decline is an answer, not a failure. Also the answer to a ' +
-        'CareCircle check-in on work the speaker already has ("still on?"): "can\'t make it ' +
+        `${BRAND} check-in on work the speaker already has ("still on?"): "can't make it ` +
         'after all" hands it back the same way; "on my way" keeps it theirs.',
       inputSchema: {
         obligationId: z.string().describe('Which request they are answering.'),
@@ -341,8 +340,10 @@ export function registerGetMyRequests({ server, actor, state, nameOf, now }: Too
           return reply('Nobody is waiting on an answer from you right now.', { requests: [] });
         }
         const tz = state().household.timezone;
-        const lines = mine.map((o) => {
-          const who = nameOf(o.request!.askedById) ?? 'Someone';
+        const lines = mine.map((o, i) => {
+          const named = nameOf(o.request!.askedById) ?? 'someone';
+          // The agent is "the app", and the first line starts the sentence.
+          const who = i === 0 ? sentence(named) : named;
           const through = o.request!.via ? `, through ${o.request!.via},` : '';
           const due = dueSpoken(o.dueAt, tz, now());
           return `${who} asked${through} if you can ${asTask(o.what)}${due ? ` ${due}` : ''}`;
@@ -385,9 +386,9 @@ export function registerRunCareAgent({
   server.registerTool(
     'run_care_agent',
     {
-      title: 'Let CareCircle look for slipping work itself',
+      title: 'Let the agent look for slipping work itself',
       description:
-        'Have CareCircle proactively review everything unowned and, where it is worth ' +
+        'Have the agent proactively review everything unowned and, where it is worth ' +
         'interrupting somebody, ASK the fairest person to take it on - the same thing it ' +
         'does on its own in the background. Use this for "check on things", "is anything ' +
         'being missed", "chase up the open items", or to see what the agent would do. It ' +

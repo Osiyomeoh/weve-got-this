@@ -1,6 +1,6 @@
 # Production readiness - hardening program
 
-CareCircle is already production-*aware*: env-selected DynamoDB, JWT-behind-gateway
+We've Got This is already production-*aware*: env-selected DynamoDB, JWT-behind-gateway
 identity, diff-based writes, a deployable image, health checks, IAM. This document
 tracks the work to make it production-*ready* - able to serve real families beyond
 the seeded demo - sequenced so each increment is coherent, verified, and safe.

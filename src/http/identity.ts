@@ -4,7 +4,7 @@ import { oauthResolver as oauthTokens } from './oauth.js';
 /**
  * Who is speaking.
  *
- * CareCircle assigns responsibility for someone's medical care, so identity is
+ * The app assigns responsibility for someone's medical care, so identity is
  * established by the credential on the request and never by anything said in the
  * conversation. Two strategies, one interface:
  *

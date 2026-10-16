@@ -6,7 +6,7 @@ import type { CareSignal } from './signals.js';
  * Modelled on Ring's published Partner API event contract (JSON:API format,
  * HMAC-SHA256 X-Signature, `request_id` for idempotency). Ring emits *presence*
  * events - motion, a button press - never absence. "No one has been to the door
- * all day" is therefore not a Ring event: it is an inference CareCircle draws over
+ * all day" is therefore not a Ring event: it is an inference the app draws over
  * the absence of these events (see noActivityWarranted in signals.ts). Keeping that
  * distinction honest matters - the doorbell reports what it saw, and the system is
  * responsible for what it did not.
@@ -32,7 +32,7 @@ export interface RingEvent {
 }
 
 /**
- * Map a Ring event to a CareSignal, or null when the event is not one CareCircle
+ * Map a Ring event to a CareSignal, or null when the event is not one the app
  * acts on (a device coming online, a subscription change).
  *
  * A package/delivery detection is a `motion_detected` with a package sub_type -

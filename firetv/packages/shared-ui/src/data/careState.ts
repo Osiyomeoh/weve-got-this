@@ -1,4 +1,4 @@
-// CareCircle live state - the SAME MCP resource the web console reads.
+// The live care state - the SAME MCP resource the web console reads.
 // This is the fourth surface: the ambient care board on the living-room TV.
 // No new backend; we poll the live sim's /api/state, exactly like public/console.html.
 

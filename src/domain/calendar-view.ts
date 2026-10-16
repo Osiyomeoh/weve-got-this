@@ -142,7 +142,7 @@ export function calendarView(state: CareState, now: Date, days = 7, from?: strin
 
   // A medicine was not expected before it was on the schedule. Older schedules carry no
   // date, so for them the record's first entry stands in: never an empty month of
-  // "no record" from before anyone was using CareCircle.
+  // "no record" from before anyone was using the app.
   const firstEntry = state.events.reduce<string | null>(
     (min, e) => (!min || e.occurredAt < min ? e.occurredAt : min),
     null,

@@ -11,6 +11,7 @@ import {
 import { doseRecord } from '../domain/gaps.js';
 import { clockTime } from '../domain/local-time.js';
 import { can } from '../domain/auth.js';
+import { BRAND } from '../domain/brand.js';
 import { telegramCall } from '../notify/telegram.js';
 import { calendarToken } from '../domain/family-access.js';
 import { sendTelegramMessage } from '../notify/telegram.js';
@@ -77,7 +78,7 @@ export interface TelegramWebhookOptions {
   /** Injectable for tests; defaults to global fetch. */
   fetchImpl?: typeof fetch;
   /**
-   * Talking to CareCircle: anything that isn't an answer to an ask goes here, from a DM
+   * Talking to the app: anything that isn't an answer to an ask goes here, from a DM
    * or from a group message addressed to the bot. Without it, only yes/no is understood.
    */
   chat?: ChatReply;
@@ -152,7 +153,7 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
       }
       await answer(
         msg.chatId,
-        "Hi, I'm CareCircle. I help a family share the care of someone they love. To join your family's circle, tap the personal link they sent you.",
+        `Hi, this is ${BRAND}. I help a family share the care of someone they love. To join your family here, tap the personal link they sent you.`,
       );
       return 'start-without-invite';
     }
@@ -573,7 +574,7 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
             now(),
           );
           // A yes or no that answers an ask is exactly that, and nothing else. One that
-          // answers nothing ("yes, I took my pills") is someone talking to CareCircle.
+          // answers nothing ("yes, I took my pills") is someone talking to the app.
           if (r.ok || !talk) {
             // The bot answers where the reply came from, so the loop is visible: a "yes"
             // in the family group gets "that's yours now" in the family group.

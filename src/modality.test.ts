@@ -10,7 +10,7 @@ import { CARE_BOARD_HTML } from './mcp/app/care-board.ts';
 /**
  * Modality independence.
  *
- * CareCircle is for a population in which sensory impairment is close to the norm
+ * The app is for a population in which sensory impairment is close to the norm
  * rather than an edge case: WHO counts over 1.5 billion people living with hearing
  * loss and at least 2.2 billion with vision impairment, concentrated in the age
  * group this system serves (see docs/EVIDENCE.md).

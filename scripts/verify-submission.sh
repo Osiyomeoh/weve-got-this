@@ -4,7 +4,7 @@
 # Usage: bash scripts/verify-submission.sh [extra-url ...]
 #   extra-url: blog/social/video links; each must return 200.
 set -u
-REPO="Osiyomeoh/carecircle"
+REPO="Osiyomeoh/weve-got-this"
 LIVE="https://ypq2dfq2p7.us-east-1.awsapprunner.com/mcp"
 fail=0; warn=0
 ok()   { printf '  \033[32mOK\033[0m    %s\n' "$1"; }

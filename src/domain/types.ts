@@ -1,5 +1,5 @@
 /**
- * CareCircle domain model.
+ * The domain model.
  *
  * The whole system is one sentence: EVENTS -> OBLIGATIONS -> OWNERSHIP.
  * Something happens, that implies work, and someone must own that work.
@@ -45,7 +45,7 @@ export interface Member {
   /**
    * Where they live, when it is far from the person being cared for (e.g. "London").
    * Common in families with a child abroad: they want to know what is going on, and
-   * cannot drive anyone to a check-up. So CareCircle never picks them on its own for
+   * cannot drive anyone to a check-up. So the app never picks them on its own for
    * work that needs someone there. The family can still ask them by name, and they
    * can take anything on themselves.
    */
@@ -170,7 +170,7 @@ export type EventSource =
   | 'pharmacy' // a pharmacy system produced it (seam)
   | 'whatsapp' // a member answered over WhatsApp
   | 'telegram' // a member answered over Telegram
-  | 'system'; // CareCircle itself derived it
+  | 'system'; // The app itself derived it
 
 /**
  * How sure we are of the observation *itself* - deliberately separate from an

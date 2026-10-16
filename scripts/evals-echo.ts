@@ -1,11 +1,11 @@
 /**
- * The Echo's ear: does what a family says reach CareCircle at all on a real Echo?
+ * The Echo's ear: does what a family says reach the app at all on a real Echo?
  *
  *   npx tsx scripts/evals-echo.ts --skill <skill id> [--model <en-US.json>] [--dialects] [--json]
  *
  * Every case in the corpus (or the dialect set) is sent to Alexa's own language model for the
  * skill with `ask smapi profile-nlu`, the intent Alexa would pick in an open session. Nothing
- * is called on CareCircle and nothing is written: this measures only the step before the planner,
+ * is called on the app and nothing is written: this measures only the step before the planner,
  * which the tool-selection evals never see. With the Alexa Skill bridge an utterance can:
  *
  *   words       land in the catch-all (SpokenRequestIntent / FreeTextIntent): the planner gets
@@ -13,7 +13,7 @@
  *   right tool  land in a tool's own intent, a tool the corpus accepts: the planner gets that
  *               tool as a hint and the slots, not the sentence
  *   wrong tool  land in another tool's intent, so the planner is pointed at the wrong tool
- *   dropped     land in Alexa's fallback, Help, Stop, Cancel or an answer intent: CareCircle
+ *   dropped     land in Alexa's fallback, Help, Stop, Cancel or an answer intent: the app
  *               never hears it (right only for a case that is not care, `expectNone`)
  *
  * `--model` is the skill's interaction model; with it, cases whose exact words are in the model
@@ -114,7 +114,7 @@ async function profile(text: string): Promise<string> {
 function grade(c: EvalCase, intent: string): { route: Route; pass: boolean } {
   if (CATCH_ALL.has(intent)) return { route: 'words', pass: true };
   const tool = toolOf(intent);
-  // Not care ("play some music"): CareCircle not hearing it is as right as the planner leaving it.
+  // Not care ("play some music"): the app not hearing it is as right as the planner leaving it.
   if (!tool) return { route: 'dropped', pass: c.expectNone === true };
   const right = !c.expectNone && (c.expect ?? []).includes(tool);
   return { route: right ? 'right tool' : 'wrong tool', pass: right };

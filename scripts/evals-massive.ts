@@ -1,5 +1,5 @@
 /**
- * Run CareCircle against outside data: Amazon's MASSIVE, US English.
+ * Run the app against outside data: Amazon's MASSIVE, US English.
  *
  *   npm run evals:massive
  *   EVALS_SYSTEM_PROMPT_FILE=evals/results/alexa-bridge-system-prompt.txt npm run evals:massive
@@ -68,10 +68,10 @@ const s = summariseMassive(results);
 const pct = (n: number, d: number) => (d ? `${((n / d) * 100).toFixed(1)}%` : 'n/a');
 
 console.log(
-  `\nCareCircle on Amazon MASSIVE (${set}) · ${provider.modelId} · prompt: ${promptFile ?? 'console'}`,
+  `\nWe've Got This on Amazon MASSIVE (${set}) · ${provider.modelId} · prompt: ${promptFile ?? 'console'}`,
 );
 console.log(`  ${s.total} scored, ${s.errored} errored\n`);
-console.log(`  Not CareCircle's business: ${s.notOurs.total}`);
+console.log(`  Not ours to act on: ${s.notOurs.total}`);
 console.log(
   `    left alone        ${s.notOurs.leftAlone}  (${pct(s.notOurs.leftAlone, s.notOurs.total)})`,
 );

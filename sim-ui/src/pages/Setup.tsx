@@ -86,7 +86,7 @@ export default function Setup() {
   return (
     <div className="mx-auto min-h-screen max-w-2xl px-5 py-10 text-ink">
       <div className="mb-8 flex items-center justify-between">
-        <div className="text-lg font-semibold tracking-tight">CareCircle · set up</div>
+        <div className="text-lg font-semibold tracking-tight">We’ve Got This · set up</div>
         <Link to="/" className="text-sm text-muted hover:text-ink">
           Exit
         </Link>
@@ -293,7 +293,7 @@ function Ready({
         </div>
       ) : (
         <div className="rounded-2xl border border-white/12 bg-white/5 p-5 text-ink/80">
-          Nothing needs anyone yet. CareCircle will keep watch and let the circle know the moment
+          Nothing needs anyone yet. The app will keep watch and let the circle know the moment
           something does.
         </div>
       )}
@@ -315,7 +315,7 @@ function Ready({
 
 /**
  * The rest of the family, optional and one at a time. "Lives far away" is for the
- * sibling abroad: CareCircle never picks them on its own for something that needs
+ * sibling abroad: the app never picks them on its own for something that needs
  * someone there, and they can have a short update on the day every evening instead.
  */
 function AddFamily({ busy, onSubmit }: StepProps) {
@@ -397,8 +397,8 @@ function AddFamily({ busy, onSubmit }: StepProps) {
             Send them an update on the day, every evening
           </label>
           <p className="text-xs text-muted">
-            CareCircle won't ask them to do things that need someone there, like a ride. You can
-            still ask them by name.
+            The app won't ask them to do things that need someone there, like a ride. You can still
+            ask them by name.
           </p>
         </div>
       )}

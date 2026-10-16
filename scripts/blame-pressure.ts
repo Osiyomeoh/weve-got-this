@@ -11,7 +11,7 @@
  *   console   the hand-written loop in src/sim/host.ts, which relies on the prompt
  *   strands   a Strands Agent with the NoBlame plugin (src/strands), which checks every reply
  *
- * What is spoken is checked against the words CareCircle never says (src/domain/no-blame.ts).
+ * What is spoken is checked against the words the app never says (src/domain/no-blame.ts).
  * Needs AWS credentials with Bedrock access. Each case gets a new in-memory family.
  */
 import { writeFileSync } from 'node:fs';

@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 /**
- * The landing page, led by pictures: one big photo that says what CareCircle is about, then
+ * The landing page, led by pictures: one big photo that says what it is about, then
  * a photo per kind of family as you scroll, a few words each, and the way into the simulation.
- * Free Pexels photos of models, credited at the foot; none of them is a CareCircle user.
+ * Free Pexels photos of models, credited at the foot; none of them is a real user.
  */
 
 const ACCENT = '#0f766e';
@@ -35,7 +35,7 @@ const STORIES = [
 
 const STEPS = [
   ['Someone says it', '“Dad’s eye check-up is Thursday at ten.”'],
-  ['CareCircle notices', 'He will need a ride, and nobody has it yet.'],
+  ['It notices', 'He will need a ride, and nobody has it yet.'],
   ['It asks, never assigns', 'The right person says yes, and everyone can see it.'],
 ];
 
@@ -62,7 +62,7 @@ function Video() {
           <iframe
             className="absolute inset-0 h-full w-full"
             src={`https://www.youtube-nocookie.com/embed/${VIDEO_ID}?autoplay=1&rel=0`}
-            title="CareCircle demo video"
+            title="We’ve Got This demo video"
             allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
             allowFullScreen
           />
@@ -71,7 +71,7 @@ function Video() {
             type="button"
             onClick={() => setPlaying(true)}
             className="group absolute inset-0 h-full w-full"
-            aria-label="Play the CareCircle demo video"
+            aria-label="Play the We’ve Got This demo video"
           >
             <img
               src={`https://i.ytimg.com/vi/${VIDEO_ID}/maxresdefault.jpg`}
@@ -108,7 +108,7 @@ export default function Hero() {
 
         <header className="relative z-10 mx-auto flex max-w-6xl items-center px-6 py-5 text-white md:px-10">
           <Link to="/" className="text-lg font-semibold tracking-tight">
-            CareCircle
+            We’ve Got This
           </Link>
           <nav className="ml-auto flex items-center gap-6 text-sm text-white/85">
             <a href="#video" className="hidden hover:text-white sm:inline">
@@ -137,7 +137,7 @@ export default function Hero() {
             Nothing is anyone’s job until they say yes.
           </h1>
           <p className="mt-5 max-w-xl text-lg text-white/85">
-            CareCircle notices the care nobody has taken on yet, and asks the right person.
+            It notices the care nobody has taken on yet, and asks the right person.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link to="/world" className={`${button} bg-white text-[#16181d]`}>
@@ -213,7 +213,7 @@ export default function Hero() {
 
       <footer className="border-t border-black/10">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-6 py-8 text-sm text-[#6b7078] md:px-10">
-          <span className="font-semibold text-[#16181d]">CareCircle</span>
+          <span className="font-semibold text-[#16181d]">We’ve Got This</span>
           <Link to="/world" className="hover:text-[#16181d]">
             Simulation
           </Link>
@@ -227,7 +227,7 @@ export default function Hero() {
             Developers
           </a>
           <span className="w-full text-xs">
-            Stock photos of models, not CareCircle users, from Pexels:{' '}
+            Stock photos of models, not real users, from Pexels:{' '}
             {CREDITS.map(([n, h], i) => (
               <span key={n}>
                 {i > 0 && ', '}

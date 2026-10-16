@@ -1,6 +1,6 @@
-# CareCircle
+# We've Got This
 
-[![CI](https://github.com/Osiyomeoh/carecircle/actions/workflows/ci.yml/badge.svg)](https://github.com/Osiyomeoh/carecircle/actions/workflows/ci.yml)
+[![CI](https://github.com/Osiyomeoh/weve-got-this/actions/workflows/ci.yml/badge.svg)](https://github.com/Osiyomeoh/weve-got-this/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![MCP spec 2025-11-25](https://img.shields.io/badge/MCP-2025--11--25-6f42c1)
 
@@ -9,37 +9,42 @@ on yet, like the ride to Dad's eye check-up, and asks the right person. It never
 
 My dad is going on 70 and lives in Lagos. After his eye surgery he had to time his own
 medicine, and he wanted to know what was going on. We, his children, all work, and my
-brother lives in the UK. CareCircle listens to what the family tells Alexa, spots the jobs no one
+brother lives in the UK. We've Got This listens to what the family tells Alexa, spots the jobs no one
 has claimed, and asks whoever has room. Nothing is anyone's until they say yes.
+
+**Why the name:** most families can't pay a carer to watch over an older parent, or a child
+with a disability, while they keep working. They do the best they can with what they have,
+and what they have is Alexa+, a Ring doorbell and their phones. *We've got this* is what they
+say to each other.
 
 **Try it:** [play a family's week in the simulation](https://krqi2tpsif.us-east-1.awsapprunner.com/world)
 (type, speak, or send a voice note) · [open the console](https://krqi2tpsif.us-east-1.awsapprunner.com/console)
 · [watch the 3-minute demo](https://youtu.be/6IwNvse9Gfk)
 
-[![The CareCircle console: the family on the left, and on the right two pieces of Daddy's care that nobody has taken yet, each with "I'll take it"](docs/console.png)](https://krqi2tpsif.us-east-1.awsapprunner.com/console.html)
+[![The console: the family on the left, and on the right two pieces of Daddy's care that nobody has taken yet, each with "I'll take it"](docs/console.png)](https://krqi2tpsif.us-east-1.awsapprunner.com/console.html)
 
 > **Daddy:** "I have my eye check-up tomorrow at ten."
 >
-> **CareCircle:** "Noted - eye check-up for Daddy. Will Daddy need a ride to the eye
+> **Alexa:** "Noted - eye check-up for Daddy. Will Daddy need a ride to the eye
 > check-up? *I'm guessing from the appointment type, not from anything anyone told me.*"
 >
 > **Tolu, his son:** "Yes, he'll need one."
 >
-> **CareCircle:** "Right - Drive Daddy to the eye check-up. Nobody's taken it yet. Do you want
+> **Alexa:** "Right - Drive Daddy to the eye check-up. Nobody's taken it yet. Do you want
 > it?"
 >
 > **Tolu:** "Ask whoever's free."
 >
-> **CareCircle:** "I've asked Funmi whether they can drive Daddy to the eye check-up tomorrow
+> **Alexa:** "I've asked Funmi whether they can drive Daddy to the eye check-up tomorrow
 > at 10 AM. I picked Funmi because they're the one who has nothing else on the care board
 > right now. It stays unowned until they say yes."
 >
 > **Funmi, on her phone:** "Yes, I can take him."
 >
-> **CareCircle:** "Thanks - Drive Daddy to the eye check-up is yours now."
+> **Alexa:** "Thanks - Drive Daddy to the eye check-up is yours now."
 
 Nobody typed a task. Care tools start from one: a to-do someone wrote, a
-reminder someone set, a change someone reported. CareCircle starts from the sentence
+reminder someone set, a change someone reported. We've Got This starts from the sentence
 before that. In a family where everyone helps and nobody is in charge, the thing that
 fails is not the thing someone forgot. It's the thing **nobody knew was theirs.**
 
@@ -50,7 +55,7 @@ what happened          what must happen        who has it
  Thursday at 10"       take him                has claimed it
 ```
 
-### What only CareCircle does
+### What only We've Got This does
 
 - **It notices work nobody said out loud.** A medical appointment implies a ride, and someone
   to go along and take notes. Each inference says it is a guess, and counts only once a person
@@ -64,7 +69,7 @@ what happened          what must happen        who has it
   missed it": **0%** false accusations, where the raw model it plans with makes them **50-58%** of
   the time on the same cases.
 - **It works across borders.** The Echo sits with whoever coordinates; everyone else talks to
-  CareCircle in Telegram, in any country. With no Echo in the house, Daddy tells the bot "I used
+  We've Got This in Telegram, in any country. With no Echo in the house, Daddy tells the bot "I used
   my eye drops" himself, and a brother abroad gets an evening update instead of being asked to
   drive.
 - **It keeps up with real life.** The doctor stops the drops after two weeks; the check-up
@@ -92,7 +97,7 @@ what happened          what must happen        who has it
 > thing **nobody knew was theirs.**
 
 A brother in the UK wants updates on Dad's health too. So family far away get a short
-evening update on the day, and CareCircle never asks them to drive anyone to a clinic in
+evening update on the day, and the app never asks them to drive anyone to a clinic in
 Lagos. And the person being cared for is a **participant, not a patient on a dashboard**: he
 doesn't want to be watched, he wants to know what's going on, so he logs his own care by
 talking.
@@ -116,9 +121,9 @@ driver) is fictional and modelled on mine. No real names or medical details are 
 
 **And it is real - not a mockup.** A live MCP server you can hit right now, **722 tests**
 (`npm test`, including property-based proofs of the risk model), and one headline number:
-the planner picks the right tool **96.1%** of the time on Amazon Bedrock (149/155; 62/66 on
+the planner picks the right tool **96.1%** of the time on Amazon Bedrock (149/155; 64/66 on
 held-out phrasings never tuned against; 2026-10-16,
-[`evals/results/2026-10-16-claude-sonnet-4-5-asks-not-assigns.json`](evals/results/2026-10-16-claude-sonnet-4-5-asks-not-assigns.json); the answer key changed on 10-08, see [Measured tool selection](#measured-tool-selection)).
+[`evals/results/2026-10-16-claude-sonnet-4-5-weve-got-this.json`](evals/results/2026-10-16-claude-sonnet-4-5-weve-got-this.json); the answer key changed on 10-08, see [Measured tool selection](#measured-tool-selection)).
 Amazon Nova Pro, and Amazon's own MASSIVE set of everyday Alexa requests (does it leave alone
 what isn't care?), are measured too. Every number, with the file it came from:
 [/proof](https://krqi2tpsif.us-east-1.awsapprunner.com/proof.html).
@@ -149,7 +154,7 @@ in all:
    assign: the board shows Funmi was asked, and the check-up stays unowned. Now switch to
    **Funmi** and say *"Yes, I can take him"*. It's hers, and the board says so.
 3. **As Kunle, the brother in London:** *"How was Daddy's day?"* He gets the whole picture,
-   with who logged what. CareCircle never picks him for a ride; he gets an evening update
+   with who logged what. The app never picks him for a ride; he gets an evening update
    instead.
 
 The console drives the same append-only care record the voice surface and the Fire TV board
@@ -158,7 +163,7 @@ read, so a claim you make in the browser shows up everywhere at once.
 ### Or run the whole story locally in ~60 seconds
 
 ```bash
-git clone https://github.com/Osiyomeoh/carecircle && cd carecircle
+git clone https://github.com/Osiyomeoh/weve-got-this && cd weve-got-this
 npm ci && npm run story
 ```
 
@@ -181,7 +186,7 @@ through Claude, if you can..."*, but only Funmi's own yes makes the ride hers.
 
 ## The thesis, in one paragraph
 
-> **CareCircle is a shared responsibility graph that turns everyday events into owned,
+> **We've Got This is a shared responsibility graph that turns everyday events into owned,
 > actionable care — while structurally refusing to turn silence into accusation.**
 > Alexa+ talks to it, the family's Telegram reaches whoever is abroad, Ring feeds evidence
 > into it, and Fire TV shows it. One graph, and a trust model that is arithmetic, not a promise.
@@ -189,7 +194,7 @@ through Claude, if you can..."*, but only Funmi's own yes makes the ride hers.
 ## What this is *not* (scope, on purpose)
 
 Not a medication tracker, a family calendar, elder monitoring or reminders: those exist
-and are well served. CareCircle does one thing: it finds responsibilities hidden inside
+and are well served. We've Got This does one thing: it finds responsibilities hidden inside
 everyday conversation, surfaces the ones nobody owns, and gets a person to own them.
 
 A submission is judged as much by what it refuses to claim as by what it builds. We drew
@@ -198,7 +203,7 @@ these lines deliberately and held to them:
 - **No multi-agent swarm.** One deterministic policy (`deliberate()`) decides; the LLM only
   turns a spoken sentence into a tool call. The safety-critical reasoning is arithmetic we
   can test, not an emergent behaviour we hope for.
-- **No computer vision, robotics, or silent physical actuation.** CareCircle never *does* a
+- **No computer vision, robotics, or silent physical actuation.** It never *does* a
   physical thing on its own. It asks a human, and a human acts.
 - **No phone-first app as the story.** The person being cared for talks; he never touches a
   screen. A dashboard exists for the family, but it is a *reader*, not the product.
@@ -219,7 +224,7 @@ The rule the whole system is built on:
 
 > **The absence of a record is never treated as proof that something did not happen.**
 
-CareCircle will say *"there's no record of his evening dose"*. It will never say
+The system will say *"there's no record of his evening dose"*. It will never say
 *"he missed his evening dose"*, because it does not know that. Every fact carries
 provenance and the four states are never collapsed:
 
@@ -241,8 +246,8 @@ is worse than no system. So ours structurally cannot.
 
 **We measured how much this matters.** Given a care log with a dose that has no record
 and the question "did she take it?", a raw Claude Sonnet 4.5 - the *same* model
-CareCircle plans with - asserted the accusation ("she missed it", "she hasn't taken
-it") in **6 or 7 of 12 cases (50-58%) across runs** - it is sampled, so the count moves. CareCircle's deterministic engine: **0%**, on the same
+the app plans with - asserted the accusation ("she missed it", "she hasn't taken
+it") in **6 or 7 of 12 cases (50-58%) across runs** - it is sampled, so the count moves. Our deterministic engine: **0%**, on the same
 scenarios, because it can only say "there's no record." Every answer is printed and
 auditable; reproduce with `npm run trust-benchmark`. The trust model is not a slogan -
 it is a measurable, 50-point-plus swing on whether a sick, elderly woman gets accused of
@@ -284,7 +289,7 @@ The one model everything else serves is the **responsibility graph** -
 `ENTITY → EVENT → OBLIGATION → OWNERSHIP → STATE`, where no obligation can exist without
 provenance. It has its own deep dive: [`docs/RESPONSIBILITY-GRAPH.md`](docs/RESPONSIBILITY-GRAPH.md).
 
-![CareCircle system architecture](docs/architecture.svg)
+![We've Got This system architecture](docs/architecture.svg)
 
 Signals (Alexa+, Ring) are **captured** by the MCP server into one **shared responsibility
 graph**; deterministic engines **reason** over it (gap ranking, agent policy, the trust
@@ -297,7 +302,7 @@ and a human always confirms an inferred obligation - the dashed feedback loop.
                    MCP  (Streamable HTTP, spec 2025-11-25)
                             v
                 +-----------------------+
-                |   CareCircle server   |
+                | We've Got This server |
                 +-----------+-----------+
                             |
        +-------------+------+------+--------------+
@@ -403,13 +408,13 @@ What is and isn't there, plainly:
   [alexa-skill-mcp-bridge](https://github.com/KayLerch/alexa-skill-mcp-bridge), a Strands agent
   on AgentCore Runtime, deployed in our AWS account. That is its code, not ours. Our changes to
   it (session-expiry reconnect, sessions per runtime version, reasoning kept out of speech,
-  CareCircle's skill config) are six commits on our public fork,
+  our skill config) are six commits on our public fork,
   [Osiyomeoh/alexa-skill-mcp-bridge@carecircle](https://github.com/Osiyomeoh/alexa-skill-mcp-bridge/tree/carecircle).
-- **Deployed:** CareCircle's own planner on AgentCore Runtime, `carecircle_planner`, created
+- **Deployed:** our own planner on AgentCore Runtime, `carecircle_planner`, created
   on 2026-10-02 by `infra/deploy-agentcore.sh` from commit `d98121d`, over the production
   table. Asked "How is Daddy doing today?" as the primary caregiver, it answered through
   `get_care_summary` (HTTP 200, 13 s from a cold start, nothing for NoBlame to stop).
-  **Not yet on a family's path:** the Echo reaches CareCircle through the bridge, and the
+  **Not yet on a family's path:** the Echo reaches the server through the bridge, and the
   Telegram chat runs the same Strands planner inside the App Runner server.
 - **NOT BUILT, on purpose:** AgentCore Memory. The care record is the memory. On the bridge,
   replayed history let the model answer from an old reply instead of the record.
@@ -592,7 +597,7 @@ self-contained demo.
 curl https://ypq2dfq2p7.us-east-1.awsapprunner.com/health
 
 # Option B - clone and reproduce locally (no AWS needed)
-git clone https://github.com/Osiyomeoh/carecircle && cd carecircle
+git clone https://github.com/Osiyomeoh/weve-got-this && cd weve-got-this
 npm ci
 npm run lint      # eslint (typescript-eslint, strict) - 0 findings
 npm run typecheck # tsc under strict + noUncheckedIndexedAccess + exactOptionalPropertyTypes
@@ -677,7 +682,7 @@ npm run demo:reset && npm run dev   # in one shell
 npm run evals                       # in another
 ```
 
-**Latest: 149/155 (96.1%), held-out 62/66, 2026-10-16** (`evals/results/2026-10-16-claude-sonnet-4-5-asks-not-assigns.json`), after `assign_obligation` stopped writing an owner: it now asks, like `request_owner`, and both descriptions were reworded to say so. The total held; two held-out cases now miss and none was gained there. One is h-log-03, already known to flip (3/5 head to head on 10-02). The other is a decline, "Count me out this weekend", which now goes to `get_my_requests` (checking whether someone asked them) instead of `add_note`, as does "I can't drive him Thursday, I'm gon' be out of town" in the dialect set. Declines are what the rewording costs: across the decline cases, 3 runs each, the old descriptions scored 18/21, a first rewording 15/21 (dropped), and the one kept 17/21, with "Count me out this weekend" missing 3 of 3 (1 of 3 before; `evals/results/2026-10-16-declines-head-to-head-sonnet-4-5.json`). Same day: dialects 32/34 (was 33/34), Nova Pro under the Alexa bridge's prompt 144/155 (141 on 10-02), the 30 answers to "still on?" 29/30 (unchanged). 4 throttled cases were re-run alone and merged in; each file names them. Before that: **149/155, held-out 64/66, 2026-10-08** (`evals/results/2026-10-08-claude-sonnet-4-5-get-my-requests-key.json`). **The answer key changed for that run, and here is why.** On 2026-10-03 the planner was told (`src/sim/host.ts`, commit cc42789) that a short answer with no subject - "I've got it", "Handled it", "No, skip that one" - should first check whether someone asked them (`get_my_requests`), because then it is a reply to that request. The key still counted that as wrong, so the same day's run under the old key scored **139/155 (89.7%), held-out 57/66**. We added `get_my_requests` as accepted for those ten cases (listed in `src/evals/corpus.ts`) and re-ran. Before that: 148/155 (95.5%), held-out 63/66, 2026-10-02 (`evals/results/2026-10-02-claude-sonnet-4-5-question-not-report.json`). The run below is the one written up in detail.
+**Latest: 149/155 (96.1%), held-out 64/66, 2026-10-16** (`evals/results/2026-10-16-claude-sonnet-4-5-weve-got-this.json`), after the rename to We've Got This, which touched four tool descriptions and the console's prompt. The name mattered in one place: `respond_to_request` says a decline is also the answer to the product's own "still on?" check-in, and generic wordings for that check-in ("an automatic check-in", "the app's own check-in") sent more declines to `get_my_requests`. A bisect put the cost in that one sentence; naming the brand there scored 21/21 on the decline cases, 3 runs each (`evals/results/2026-10-16-declines-rename-sonnet-4-5.json`). Same wording: dialects 33/34, the 30 answers to "still on?" 29/30, Nova Pro under the Alexa bridge's prompt 146/155. Earlier that day: **149/155, held-out 62/66** (`evals/results/2026-10-16-claude-sonnet-4-5-asks-not-assigns.json`), after `assign_obligation` stopped writing an owner: it now asks, like `request_owner`, and both descriptions were reworded to say so. The total held; two held-out cases now miss and none was gained there. One is h-log-03, already known to flip (3/5 head to head on 10-02). The other is a decline, "Count me out this weekend", which now goes to `get_my_requests` (checking whether someone asked them) instead of `add_note`, as does "I can't drive him Thursday, I'm gon' be out of town" in the dialect set. Declines are what the rewording costs: across the decline cases, 3 runs each, the old descriptions scored 18/21, a first rewording 15/21 (dropped), and the one kept 17/21, with "Count me out this weekend" missing 3 of 3 (1 of 3 before; `evals/results/2026-10-16-declines-head-to-head-sonnet-4-5.json`). Same day: dialects 32/34 (was 33/34), Nova Pro under the Alexa bridge's prompt 144/155 (141 on 10-02), the 30 answers to "still on?" 29/30 (unchanged). 4 throttled cases were re-run alone and merged in; each file names them. Before that: **149/155, held-out 64/66, 2026-10-08** (`evals/results/2026-10-08-claude-sonnet-4-5-get-my-requests-key.json`). **The answer key changed for that run, and here is why.** On 2026-10-03 the planner was told (`src/sim/host.ts`, commit cc42789) that a short answer with no subject - "I've got it", "Handled it", "No, skip that one" - should first check whether someone asked them (`get_my_requests`), because then it is a reply to that request. The key still counted that as wrong, so the same day's run under the old key scored **139/155 (89.7%), held-out 57/66**. We added `get_my_requests` as accepted for those ten cases (listed in `src/evals/corpus.ts`) and re-ran. Before that: 148/155 (95.5%), held-out 63/66, 2026-10-02 (`evals/results/2026-10-02-claude-sonnet-4-5-question-not-report.json`). The run below is the one written up in detail.
 
 **Result: 94.8% first-tool accuracy (147 / 155, 0 errored) - Claude Sonnet 4.5 on Amazon
 Bedrock, 2026-09-23, with 28 tools.** That is one run, and every case of it is in
@@ -822,7 +827,7 @@ Product feedback, written while building. Full detail in
 
 ## Scaling and protocol roadmap
 
-CareCircle speaks **MCP 2025-11-25**, the revision the Alexa+ ecosystem and today's clients
+The server speaks **MCP 2025-11-25**, the revision the Alexa+ ecosystem and today's clients
 speak, and **2026-07-28** alongside it.
 
 **Built and tested, 2026-09-24:**

@@ -28,7 +28,7 @@ test('delivers to the mapped phone and reports the message id', async () => {
   const r = await n.deliver({
     to: 'm_renee',
     toName: 'Renee',
-    from: 'CareCircle',
+    from: "We've Got This",
     message: 'Can you drive Thursday?',
   });
   assert.equal(r.delivered, true);
@@ -47,7 +47,12 @@ test('a member with no number is not messaged, and says so honestly', async () =
     recipients: new Map(),
     fetchImpl: stubFetch(calls, {}),
   });
-  const r = await n.deliver({ to: 'm_unknown', toName: 'X', from: 'CareCircle', message: 'hi' });
+  const r = await n.deliver({
+    to: 'm_unknown',
+    toName: 'X',
+    from: "We've Got This",
+    message: 'hi',
+  });
   assert.equal(r.delivered, false);
   assert.equal(calls.length, 0, 'must not call the API for an unmapped member');
 });
@@ -59,7 +64,12 @@ test('a send failure is reported, never thrown - the ask is already recorded', a
     recipients: new Map([['m_renee', '+234']]),
     fetchImpl: stubFetch([], { ok: false, status: 401 }),
   });
-  const r = await n.deliver({ to: 'm_renee', toName: 'Renee', from: 'CareCircle', message: 'hi' });
+  const r = await n.deliver({
+    to: 'm_renee',
+    toName: 'Renee',
+    from: "We've Got This",
+    message: 'hi',
+  });
   assert.equal(r.delivered, false);
   assert.match(r.detail ?? '', /401/);
 });

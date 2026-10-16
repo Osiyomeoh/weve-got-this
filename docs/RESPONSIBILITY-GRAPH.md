@@ -1,6 +1,6 @@
 # The Responsibility Graph
 
-This is the core intellectual asset of CareCircle. Everything else — the MCP tools, the
+This is the core intellectual asset of We've Got This. Everything else — the MCP tools, the
 Alexa+ conversation, Ring evidence, the Fire TV board, the trust benchmark — is an
 *interface to* or a *proof of* this one model.
 

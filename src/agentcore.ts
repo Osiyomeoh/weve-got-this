@@ -10,7 +10,7 @@ import { bedrockModel } from './strands/host.js';
 import { createAgentRuntime } from './strands/runtime.js';
 
 /**
- * Entrypoint for the CareCircle planner on Bedrock AgentCore Runtime (strands/runtime.ts).
+ * Entrypoint for the planner on Bedrock AgentCore Runtime (strands/runtime.ts).
  *
  * The same configuration as the MCP server (config.ts), on AgentCore's port, 8080. Deployed,
  * it reads and writes the same DynamoDB table as the MCP server, so the two are one care

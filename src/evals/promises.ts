@@ -1,7 +1,7 @@
 import type { EvalCase } from './corpus.js';
 
 /**
- * Answers to "still on?" - what the person who promised says back when CareCircle checks
+ * Answers to "still on?" - what the person who promised says back when the app checks
  * in on work that slipped past its time (src/domain/agent.ts, CHECK_IN).
  *
  * The check-in arrives as a message, not as a turn of the chat, so the planner sees the

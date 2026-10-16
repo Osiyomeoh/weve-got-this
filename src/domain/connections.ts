@@ -1,5 +1,5 @@
 /**
- * What CareCircle is connected to, as a first-class thing the MCP surface can report.
+ * What the app is connected to, as a first-class thing the MCP surface can report.
  *
  * The data doors (Calendar, Gmail, Ring, Bee, WhatsApp, Telegram) live at the edges as
  * webhooks and pollers - they cannot themselves be MCP tools, because a webhook is an

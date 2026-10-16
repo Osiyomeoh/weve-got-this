@@ -136,7 +136,7 @@ export default function World() {
 
       <header className="world-top">
         <Link to="/" className="world-brand">
-          CareCircle
+          We’ve Got This
         </Link>
         <div className="world-clock">
           <span className="world-time">{clockText(view.clock)}</span>
@@ -567,8 +567,8 @@ function CastPicker({
       </button>
       <p className="fine">
         {f.simulated
-          ? 'A simulated family, run on the live CareCircle server. The coordination is real; the family is made up to show it around a different need. Your copy is thrown away when you restart.'
-          : "A simulation of a real family's week, run on the live CareCircle server. Your copy is thrown away when you restart."}
+          ? 'A simulated family, run on the live We’ve Got This server. The coordination is real; the family is made up to show it around a different need. Your copy is thrown away when you restart.'
+          : "A simulation of a real family's week, run on the live We’ve Got This server. Your copy is thrown away when you restart."}
       </p>
     </div>
   );
@@ -643,7 +643,7 @@ function StuckPanel({ stuck, onDecide }: { stuck: Stuck; onDecide: (again: boole
                   checked={consent}
                   onChange={(e) => setConsent(e.target.checked)}
                 />{' '}
-                Save these words so CareCircle can learn this way of saying it. Only the sentence
+                Save these words so the app can learn this way of saying it. Only the sentence
                 above, what the scene needed and what Alexa did are kept. No name, no family,
                 nothing that identifies you.
               </label>

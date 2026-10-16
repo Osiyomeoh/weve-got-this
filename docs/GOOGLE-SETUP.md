@@ -64,7 +64,7 @@ preserved from the live config.
 ## 5. Prove it works
 
 1. On your phone, add a real event to your Google Calendar (e.g. "Dentist Friday 3pm").
-2. Within the poll window (5 min), it appears on the CareCircle board as an **INFERRED**
+2. Within the poll window (5 min), it appears on the board as an **INFERRED**
    appointment, awaiting a human confirm — never written as a fact.
 3. Ask the console *"what are you connected to?"* → `get_connections` now shows **Google
    Calendar: live** and **Gmail: live** once an event/email has landed.

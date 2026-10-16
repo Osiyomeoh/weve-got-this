@@ -3,7 +3,7 @@ import { detectCareGaps } from './gaps.js';
 import { candidatesFor, type Candidate } from './delegation.js';
 
 /**
- * The agent: what CareCircle does when nobody is talking to it.
+ * The agent: what the app does when nobody is talking to it.
  *
  * Everything else in this system waits for a person to speak. That is the failure
  * the product claims to solve, happening inside the product: an unowned cardiology

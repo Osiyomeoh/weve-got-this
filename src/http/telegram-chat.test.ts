@@ -86,7 +86,7 @@ test('on the Strands planner, a reply that blames Daddy never reaches the family
     { tool: 'get_care_summary' },
     { say: 'Daddy forgot his evening eye drops.' },
     (messages) => ({
-      say: /CareCircle check/.test(textIn(messages.at(-1)))
+      say: /We've Got This check/.test(textIn(messages.at(-1)))
         ? "There's no record of Daddy's evening eye drops yet."
         : 'Daddy forgot them.',
     }),

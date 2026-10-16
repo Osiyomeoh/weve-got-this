@@ -1,9 +1,9 @@
 /**
- * Adapter: the real Telegram Bot API update shape <-> what CareCircle acts on.
+ * Adapter: the real Telegram Bot API update shape <-> what the app acts on.
  *
  * Telegram is a stand-in for WhatsApp as the *reply* channel of the delegation loop,
  * and a far lighter one to stand up: a bot token from @BotFather, no business
- * verification, no platform gate. CareCircle asks a specific person to take a job on
+ * verification, no platform gate. The app asks a specific person to take a job on
  * (outbound, via the notifier); they answer "yes" or "I can't" in their own Telegram
  * chat with the bot (inbound, via the webhook). This module is the pure core of the
  * inbound half: reading Telegram's update payload and deciding what a reply means. The

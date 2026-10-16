@@ -1,7 +1,7 @@
 /**
- * Adapter: the real WhatsApp Business Cloud API message shapes <-> what CareCircle acts on.
+ * Adapter: the real WhatsApp Business Cloud API message shapes <-> what the app acts on.
  *
- * WhatsApp is the *reply* channel of the delegation loop. CareCircle asks a specific
+ * WhatsApp is the *reply* channel of the delegation loop. The app asks a specific
  * person to take a job on (outbound, via the notifier); they answer "yes" or "I can't"
  * on their own phone (inbound, via the webhook). This module is the pure core of the
  * inbound half: reading Meta's webhook payload and deciding what a reply means. The

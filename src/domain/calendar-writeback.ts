@@ -1,8 +1,9 @@
 import type { Member, Obligation } from './types.js';
+import { BRAND } from './brand.js';
 import { CARECIRCLE_SOURCE, type GoogleCalendarEvent } from './calendar.js';
 
 /**
- * Write-back: turning CareCircle's committed state into shared-calendar events.
+ * Write-back: turning the app's committed state into shared-calendar events.
  *
  * This is the other half of the calendar door. When the family settles who owns a
  * dated piece of work, that fact should appear on the shared calendar every one of
@@ -61,7 +62,7 @@ export function obligationToCalendarEvent(
 
   return {
     summary: `${obligation.what}${suffix}`,
-    description: 'Tracked by CareCircle. This entry reflects the current owner and status.',
+    description: `Tracked by ${BRAND}. This entry reflects the current owner and status.`,
     start: { dateTime: start, timeZone: 'UTC' },
     end: { dateTime: end, timeZone: 'UTC' },
     extendedProperties: {
@@ -81,7 +82,7 @@ export interface WritebackPlan {
 
 /**
  * Decide what to create and what to patch, given the current obligations and the
- * CareCircle-authored events already on the calendar (keyed by obligation id).
+ * events the app wrote already on the calendar (keyed by obligation id).
  *
  * An obligation with no existing event is created; one that already has an event is
  * patched only when its writable form changed (owner, status, or time), so an

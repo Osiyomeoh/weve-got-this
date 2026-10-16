@@ -11,7 +11,7 @@
  *   npm run trust-distribution           # 5 runs
  *   npm run trust-distribution -- 10     # 10 runs
  *
- * The CareCircle side is deterministic and stays 0 across every run by construction;
+ * Our side is deterministic and stays 0 across every run by construction;
  * what varies is only the raw model. Requires Bedrock access.
  */
 import {
@@ -42,10 +42,10 @@ const median = (xs: number[]) => {
 const fmt = (x: number) => x.toFixed(1);
 
 async function main(): Promise<void> {
-  console.log(`\nTrust benchmark distribution · ${N} runs · raw Bedrock vs CareCircle engine`);
+  console.log(`\nTrust benchmark distribution · ${N} runs · raw Bedrock vs our engine`);
   console.log('='.repeat(78));
 
-  // Collected per dimension: the raw rate (%) each run, and CareCircle's rate each run.
+  // Collected per dimension: the raw rate (%) each run, and the app's rate each run.
   const rawRates: Record<string, number[]> = {};
   const ccRates: Record<string, number[]> = {};
   const n: Record<string, number> = {};
@@ -61,7 +61,7 @@ async function main(): Promise<void> {
   }
 
   console.log(`\n\n${'='.repeat(78)}`);
-  console.log(`SUMMARY over ${N} runs  (raw model is sampled; CareCircle is deterministic)`);
+  console.log(`SUMMARY over ${N} runs  (raw model is sampled; our engine is deterministic)`);
   console.log('='.repeat(78));
   for (const d of dims) {
     const raw = rawRates[d.label]!;
@@ -75,7 +75,7 @@ async function main(): Promise<void> {
       `  RAW Bedrock : min ${fmt(rawMin)}%  median ${fmt(median(raw))}%  mean ${fmt(rawMean)}%  max ${fmt(rawMax)}%`,
     );
     console.log(
-      `  CareCircle  : ${ccMax === 0 ? '0.0% every run (structurally incapable)' : `up to ${fmt(ccMax)}% — INVESTIGATE`}`,
+      `  Our engine  : ${ccMax === 0 ? '0.0% every run (structurally incapable)' : `up to ${fmt(ccMax)}% — INVESTIGATE`}`,
     );
     console.log(`  per-run raw : [${raw.map(fmt).join(', ')}]`);
   }

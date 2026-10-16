@@ -4,7 +4,7 @@ import './tv.css';
 /**
  * Whatever is on. A person cared for spends a lot of the day in front of the set, and the
  * honest picture of a Fire TV in their home is a programme playing, not a care dashboard.
- * So in the world the set is showing something, and CareCircle arrives over it the way
+ * So in the world the set is showing something, and the app arrives over it the way
  * Alexa and a Ring doorbell really do on Fire TV: the programme keeps playing underneath.
  *
  * Every programme here is drawn from shapes and original lines. Nothing is recorded,

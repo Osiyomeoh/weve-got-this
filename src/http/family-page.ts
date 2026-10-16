@@ -1,7 +1,7 @@
 /**
  * The family calendar page. Self-contained (no build step, no framework): it runs inside
  * Telegram as a Mini App and in any browser. It only ever talks to /family/api on the
- * same origin, and every change it makes is a CareCircle tool call made as the person
+ * same origin, and every change it makes is a tool call made as the person
  * signed in, so it can do exactly what that person could say to the bot and nothing more.
  *
  * Written without backticks or template placeholders so it can live in this string.
@@ -11,7 +11,7 @@ export const FAMILY_PAGE = String.raw`<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Family Calendar</title>
+<title>Family Calendar · We’ve Got This</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 :root {
@@ -176,7 +176,7 @@ input, select { width: 100%; font: inherit; color: var(--ink); background: var(-
       return fetch('/family/api/view?days=1' + q(), { headers: headers() })
         .then(function (res) { return res.json().then(function (b) { return { ok: res.ok, b: b }; }); })
         .then(function (x) { if (!x.ok) { gate(x.b.error || 'Something went wrong.'); return; } S.anchor = x.b.view.today; return load(); })
-        .catch(function () { gate('Could not reach CareCircle. Check your connection and try again.'); });
+        .catch(function () { gate('Could not reach the family calendar. Check your connection and try again.'); });
     }
     var r = range();
     S.loading = true;
@@ -188,12 +188,12 @@ input, select { width: 100%; font: inherit; color: var(--ink); background: var(-
         S.data = x.b; if (!S.anchor) S.anchor = x.b.view.today;
         render();
       })
-      .catch(function () { S.loading = false; gate('Could not reach CareCircle. Check your connection and try again.'); });
+      .catch(function () { S.loading = false; gate('Could not reach the family calendar. Check your connection and try again.'); });
   }
 
   function gate(msg) {
     $('app').innerHTML = '<div class="gate"><h1>Family calendar</h1><p>' + esc(msg) + '</p>'
-      + '<p>In Telegram, message CareCircle <b>/calendar</b>. It opens here, just for you.</p>'
+      + '<p>In Telegram, send We’ve Got This <b>/calendar</b>. It opens here, just for you.</p>'
       + '<p><a href="?demo">See the demo family\'s calendar</a></p></div>';
   }
 
@@ -230,7 +230,7 @@ input, select { width: 100%; font: inherit; color: var(--ink); background: var(-
       + '<button class="btn small" data-nav="0">Today</button><button class="btn small" data-nav="1" aria-label="Next">&#8250;</button>'
       + '<span class="range">' + esc(label) + '</span>' + alerts + '</div>'
       + '<div class="chips">' + people + '</div></div>'
-      + (S.data.readOnly ? '<div class="banner">This is the demo family, read-only. Your own family\'s calendar opens from CareCircle in Telegram with /calendar.</div>' : '');
+      + (S.data.readOnly ? '<div class="banner">This is the demo family, read-only. Your own family\'s calendar opens from We’ve Got This in Telegram with /calendar.</div>' : '');
   }
 
   function evButton(item, date, idx, cls) {

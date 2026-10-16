@@ -1,6 +1,6 @@
 # Friction log
 
-This is where we got stuck while building CareCircle. We kept the file open and wrote each
+This is where we got stuck while building We've Got This. We kept the file open and wrote each
 entry when it happened, not at the end. Most of these cost an hour or so. The Bedrock quota
 one cost most of a day, mostly because we believed the wrong explanation for a long time.
 
@@ -258,7 +258,7 @@ Template:
 > one is worse than a plain no.*
 
 ### Ring Partner API - event types are listed, but not what's inside them
-- **Task attempted:** Map Ring webhook events onto CareCircle's care signals, using Ring's
+- **Task attempted:** Map Ring webhook events onto our care signals, using Ring's
   real event format rather than one we made up.
 - **Steps taken:** Read the Ring API reference. It lists the event types (`motion_detected`
   with `attributes.sub_type`, `button_press`, device and subscription events), the JSON:API

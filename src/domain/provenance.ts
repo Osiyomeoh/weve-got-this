@@ -87,7 +87,7 @@ function origin(p: Provenance, nameOf: NameOf, clock: Clock): ProvenanceStep {
         certainty: 'inferred',
         // The load-bearing sentence: named as a guess, and explicitly not yet a fact.
         detail:
-          `CareCircle proposed this, guessing from ${p.from}. Nobody has confirmed it yet, ` +
+          `The app proposed this, guessing from ${p.from}. Nobody has confirmed it yet, ` +
           `so it is still a suggestion, not a fact.`,
       };
     case 'NOT_LOGGED': {
@@ -138,7 +138,7 @@ function sourceStep(
     return {
       at: event.occurredAt,
       certainty: 'inferred',
-      detail: `It started from something CareCircle worked out - "${what}"${on} - which is a suggestion, not a fact.`,
+      detail: `It started from something the app worked out - "${what}"${on} - which is a suggestion, not a fact.`,
     };
   }
   const who = nameOf(event.reportedBy) ?? 'someone';
@@ -161,7 +161,9 @@ function ownershipStep(
   clock: Clock,
 ): ProvenanceStep | undefined {
   // The agent the move came through rides beside the person, never in place of them.
-  const who = `${nameOf(t.byMemberId) ?? 'someone'}${t.via ? `, through ${t.via},` : ''}`;
+  // Every line below starts with who, and the agent's own name ("the app") is lowercase.
+  const named = nameOf(t.byMemberId) ?? 'someone';
+  const who = `${named.charAt(0).toUpperCase() + named.slice(1)}${t.via ? `, through ${t.via},` : ''}`;
   const on = fmt(t.at, clock)?.phrase ?? '';
   const note = t.note ? ` (${t.note})` : '';
   switch (t.to) {

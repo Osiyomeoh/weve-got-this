@@ -72,7 +72,7 @@ test('an untitled event has nothing to name, so it is skipped', () => {
   assert.equal(m.apply, false);
 });
 
-test('an event CareCircle wrote is never re-ingested (loop guard)', () => {
+test('an event the app wrote is never re-ingested (loop guard)', () => {
   const m = calendarEventToAppointment(
     timed({
       extendedProperties: {
@@ -82,7 +82,7 @@ test('an event CareCircle wrote is never re-ingested (loop guard)', () => {
   );
   assert.equal(m.apply, false);
   if (m.apply) return;
-  assert.match(m.reason, /CareCircle/);
+  assert.match(m.reason, /write-back/);
 });
 
 test('idempotency key is id + last-updated, so an edit re-applies and a re-poll does not', () => {

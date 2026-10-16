@@ -3,7 +3,7 @@ import type { Notifier, DeliveryResult } from './notifier.js';
 /**
  * Delivering a message to a member over the WhatsApp Business Cloud API.
  *
- * The outbound half of the WhatsApp door: when CareCircle asks someone to take a job
+ * The outbound half of the WhatsApp door: when the app asks someone to take a job
  * on, this is what makes their phone actually buzz. It sits behind the same `Notifier`
  * seam as SNS and record-only, so the request flow is identical whether or not WhatsApp
  * is configured - and, like the others, a send failure is reported, never thrown: the

@@ -19,7 +19,7 @@ vars, register one webhook. No code changes.
 | `WHATSAPP_TOKEN` | access token — "Temporary access token" (24h) is fine for the demo; a System User token is permanent | API Setup |
 | `WHATSAPP_APP_SECRET` | signs inbound webhooks; **App Settings → Basic → App Secret → Show** | Settings → Basic |
 | `WHATSAPP_VERIFY_TOKEN` | a string **you invent** (e.g. `carecircle-verify-2026`); you paste the *same* string into Meta's webhook config in step 3 | you choose |
-| `WHATSAPP_RECIPIENTS` | JSON member→phone map, e.g. `{"m_renee":"+234XXXXXXXXXX"}` — maps a CareCircle member id to the phone that gets the ask | you |
+| `WHATSAPP_RECIPIENTS` | JSON member→phone map, e.g. `{"m_renee":"+234XXXXXXXXXX"}` — maps a member id to the phone that gets the ask | you |
 | `WHATSAPP_HOUSEHOLD_ID` | household that inbound replies land in (defaults to the Ring household if unset) | you |
 
 > **Test-number limit:** an unverified number only delivers to **whitelisted recipients**.
@@ -61,11 +61,11 @@ update itself redeploys.
 
 ## 5. Prove it end-to-end
 
-1. From the CareCircle sim, have the agent ask the mapped member to take an obligation → the
+1. From the sim, have the agent ask the mapped member to take an obligation → the
    ask arrives as a real WhatsApp on `+234XXXXXXXXXX`.
 2. Reply **"yes"** (or 👍) from that phone → the signed webhook fires →
    `respond_to_request`-equivalent assigns the obligation → the board updates.
 3. Reply from an un-mapped number → acknowledged, acts on nothing (trust gate holds).
 
-On-screen label for the film: *sent via CareCircle's WhatsApp Business line* — the sender is
+On-screen label for the film: *sent via the We've Got This WhatsApp Business line* — the sender is
 always the Business number; Meta forbids driving a personal WhatsApp account.

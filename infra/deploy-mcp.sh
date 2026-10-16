@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the CareCircle MCP server image in the cloud (CodeBuild - no local Docker),
+# Build the MCP server image in the cloud (CodeBuild - no local Docker),
 # push to ECR, and serve it on App Runner with a public HTTPS URL. Idempotent.
 #
 #   AWS_REGION=us-east-1 ./infra/deploy-mcp.sh

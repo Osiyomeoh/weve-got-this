@@ -3,7 +3,7 @@ import { Animated, Easing, StyleSheet, Text, useWindowDimensions, View } from 'r
 import { colors } from '../theme';
 
 /**
- * CareCircle on the TV - the "shared display" surface, as real React Native.
+ * We’ve Got This on the TV - the "shared display" surface, as real React Native.
  *
  * An ambient home (big clock, date, household) over which care gaps arrive as
  * notification cards that slide in, the way a TV OS surfaces an alert - not a
@@ -138,7 +138,7 @@ export default function CareCircleScreen() {
           </View>
           <View style={styles.notifBody}>
             <View style={styles.notifMeta}>
-              <Text style={styles.notifApp}>CARECIRCLE</Text>
+              <Text style={styles.notifApp}>WE’VE GOT THIS</Text>
               <View style={[styles.metaDot, { backgroundColor: accent }]} />
               <Text style={[styles.notifNeeds, { color: accent }]}>NEEDS AN OWNER</Text>
             </View>

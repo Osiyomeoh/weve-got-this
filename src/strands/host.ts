@@ -24,14 +24,14 @@ import { NOTHING_SAID, speakable, toolAnswer } from '../domain/speakable.js';
 import { NoBlame, type NoBlameReport } from './no-blame.js';
 
 /**
- * The CareCircle planner on Strands Agents.
+ * The planner on Strands Agents.
  *
  * The same planner as sim/host.ts - the same system prompt, the same MCP tools with their
  * descriptions untouched, the same step limits - with the loop run by a Strands Agent
  * instead of by hand. What Strands adds is a place to stand between the model and the
  * speaker: the NoBlame plugin (no-blame.ts) sees every finished reply before it is kept.
  *
- * The tools come from the CareCircle MCP server through Strands' own McpClient, over
+ * The tools come from the MCP server through Strands' own McpClient, over
  * whatever transport the caller has: in-process for the Telegram chat and the tests, or
  * Streamable HTTP to a deployed server.
  */
@@ -102,7 +102,7 @@ export class StrandsAlexa {
   }
 
   /**
-   * A planner over a CareCircle server, speaking as the member the transport's credential
+   * A planner over a server, speaking as the member the transport's credential
    * belongs to. `transport` is not yet started; Strands' McpClient starts it.
    */
   static async over(

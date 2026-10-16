@@ -2,7 +2,7 @@
 
 ## IAM policy
 
-`iam-policy.json` is the full permission set CareCircle needs. Attach it to the
+`iam-policy.json` is the full permission set the app needs. Attach it to the
 `conductor-hackathon` user as a **customer-managed policy** (4.2 KB - over the 2 KB
 inline limit, under the 6 KB managed limit).
 
@@ -42,7 +42,7 @@ scoped to specific ARNs later without rewriting the policy.
 
 The daily Bedrock token cap is a **quota**, not a permission. Every model family -
 Amazon Nova, Meta Llama, Anthropic - returns `ThrottlingException: Too many tokens
-per day`, which points at an account-plan limit rather than anything CareCircle
+per day`, which points at an account-plan limit rather than anything the app
 consumed. Credits do not raise a quota; they only pay for usage within it.
 
 What this policy buys is the ability to *see* the limit and *request* an increase,

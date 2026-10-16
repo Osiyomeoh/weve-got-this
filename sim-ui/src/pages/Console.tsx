@@ -393,7 +393,7 @@ export default function Console() {
                 <span className="block h-full w-full rounded-full bg-[#04060b]" />
               </span>
               <span className="text-[1.05rem] font-semibold tracking-tight text-ink">
-                CareCircle
+                We’ve Got This
               </span>
               <span className="hidden rounded-full border border-white/10 px-2 py-0.5 text-[0.6875rem] text-muted sm:inline">
                 for Alexa+

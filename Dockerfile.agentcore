@@ -1,4 +1,4 @@
-# The CareCircle planner (a Strands Agent, src/strands) for Bedrock AgentCore Runtime.
+# The We've Got This planner (a Strands Agent, src/strands) for Bedrock AgentCore Runtime.
 # AgentCore runs linux/arm64 images and talks HTTP to them on 8080: GET /ping,
 # POST /invocations. Built by infra/deploy-agentcore.sh on an arm64 CodeBuild host.
 FROM public.ecr.aws/docker/library/node:22-slim AS build

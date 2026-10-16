@@ -189,10 +189,10 @@ export async function runGoogleCalendarSync(
   return syncCalendarEvents(store, householdId, events, now, forMemberId);
 }
 
-// --- Write-back: CareCircle's committed state -> the shared calendar ----------
+// --- Write-back: the app's committed state -> the shared calendar ----------
 
 /**
- * List the events CareCircle previously wrote to a calendar, keyed by the
+ * List the events the app previously wrote to a calendar, keyed by the
  * obligation each represents. Uses Google's private-extended-property filter so we
  * touch only our own events, never the family's other entries.
  */

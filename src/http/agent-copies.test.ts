@@ -18,7 +18,7 @@ import { RecordOnlyNotifier } from '../notify/notifier.ts';
 /**
  * Bring your own agent.
  *
- * Judges are asked to try CareCircle with their own agent: Claude, ChatGPT, Cursor,
+ * Judges are asked to try the app with their own agent: Claude, ChatGPT, Cursor,
  * whatever they use. Each connection gets its own copy of the demo family, so one
  * judge's "yes, I'll drive him" never lands in another judge's story. A second agent
  * can join the same copy with its family code, and the record says which agent carried
@@ -310,7 +310,7 @@ test('a console sweep never removes an agent family, nor the other way round', a
   );
 });
 
-test("CareCircle does its legwork in an agent's family, not in a console story or an ended copy", async () => {
+test("The app does its legwork in an agent's family, not in a console story or an ended copy", async () => {
   const s = new CareStore();
   await s.reset();
   await seedDemoHousehold(s);

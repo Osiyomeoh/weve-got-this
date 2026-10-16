@@ -1,33 +1,33 @@
 {
-  "built": "2026-10-16T09:31:00.994Z",
+  "built": "2026-10-16T10:55:12.836Z",
   "tests": 722,
   "selection": [
     {
-      "file": "2026-10-16-claude-sonnet-4-5-asks-not-assigns.json",
+      "file": "2026-10-16-claude-sonnet-4-5-weve-got-this.json",
       "planner": "Claude Sonnet 4.5 (Bedrock)",
       "prompt": "our console",
       "passed": 149,
       "total": 155,
       "heldOut": {
-        "passed": 62,
+        "passed": 64,
         "total": 66
       }
     },
     {
-      "file": "2026-10-16-nova-pro-alexa-bridge-prompt-asks-not-assigns.json",
+      "file": "2026-10-16-nova-pro-alexa-bridge-prompt-weve-got-this.json",
       "planner": "Amazon Nova Pro (Bedrock)",
       "prompt": "an Alexa Skill bridge's, not ours",
-      "passed": 144,
+      "passed": 146,
       "total": 155,
       "heldOut": {
-        "passed": 59,
+        "passed": 60,
         "total": 66
       }
     }
   ],
   "dialects": {
-    "file": "2026-10-16-dialects-sonnet-4-5-asks-not-assigns.json",
-    "passed": 32,
+    "file": "2026-10-16-dialects-sonnet-4-5-weve-got-this.json",
+    "passed": 33,
     "total": 34
   },
   "languages": {

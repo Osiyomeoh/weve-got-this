@@ -52,7 +52,7 @@ const s = summarise(results);
 if (asJson) {
   console.log(JSON.stringify({ modelId, ...s }, null, 2));
 } else {
-  console.log(`\nCareCircle tool selection · ${provider.name} · ${modelId}`);
+  console.log(`\nWe've Got This tool selection · ${provider.name} · ${modelId}`);
   console.log(`${'─'.repeat(64)}`);
   if (s.accuracy === null) {
     console.log(`  No cases ran. ${s.errored} failed to reach the model.\n`);

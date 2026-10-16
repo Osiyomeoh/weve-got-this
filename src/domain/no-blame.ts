@@ -1,5 +1,5 @@
 /**
- * The words CareCircle never says about a person.
+ * The words the app never says about a person.
  *
  * The record only knows what somebody recorded. A dose with no record may have been taken
  * and not logged, so "he missed his drops" is a claim nobody made, about a person who is

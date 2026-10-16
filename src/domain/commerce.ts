@@ -2,7 +2,7 @@
  * The purchase moment.
  *
  * Some Care Gaps are closed not by a person doing the task but by buying the thing:
- * a prescription that needs reordering. CareCircle turns that into an OFFER - priced,
+ * a prescription that needs reordering. The app turns that into an OFFER - priced,
  * sourced, with an ETA - that a human confirms in place. It never charges on its own:
  * a purchase follows the same discipline as everything else here, Known != Assumed.
  * The offer is a proposal; only a confirmation makes it real.

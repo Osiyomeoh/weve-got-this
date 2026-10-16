@@ -52,7 +52,7 @@ function textOf(message: Message): string {
 
 function correction(phrase: string): string {
   return (
-    `[CareCircle check, not from the person] Your reply said "${phrase}". CareCircle only knows what someone ` +
+    `[We've Got This check, not from the person] Your reply said "${phrase}". The record only holds what someone ` +
     'recorded: a dose or task with no record may have been done and not logged, so nobody can be said to ' +
     'have missed, skipped or forgotten it, and nothing can be said to have been missed either. Answer again ' +
     'using only what the tool results say. Where there is no record, say there is no record.'

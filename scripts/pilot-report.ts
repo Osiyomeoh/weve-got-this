@@ -1,5 +1,5 @@
 /**
- * What a real family's record shows about their time using CareCircle.
+ * What a real family's record shows about their time using the app.
  *
  *   npm run pilot:report                               the one household that isn't the demo
  *   npm run pilot:report -- --household h_abc123       a particular household
@@ -85,5 +85,5 @@ const report = pilotReport(state, { from, to });
 if (args.includes('--json')) {
   console.log(JSON.stringify({ householdId, ...report }, null, 2));
 } else {
-  console.log(renderPilotReport(report, `CareCircle pilot · ${state.household.name}`));
+  console.log(renderPilotReport(report, `We've Got This pilot · ${state.household.name}`));
 }

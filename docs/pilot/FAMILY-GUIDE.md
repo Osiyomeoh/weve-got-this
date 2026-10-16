@@ -1,4 +1,4 @@
-# CareCircle: a guide for the family
+# We've Got This: a guide for the family
 
 Each section below is written to be pasted into a chat and sent to one person. Swap in
 the names. `npm run telegram:invites` prints each person's own link, and a short message
@@ -8,11 +8,11 @@ to go with it. Send the link first, then this guide.
 
 ## For everyone: getting connected (2 minutes)
 
-1. Tap the personal link you were sent. Telegram opens a chat with **CareCircle**.
-2. Tap **Start**. CareCircle says hello by name and tells you your part.
+1. Tap the personal link you were sent. Telegram opens a chat with **We've Got This**.
+2. Tap **Start**. It says hello by name and tells you your part.
 3. You're in. Keep the link to yourself: it only works once, and only for you.
 
-Talk to CareCircle in its own chat any time, in your own words, in English or Pidgin. You
+Talk to the bot in its own chat any time, in your own words, in English or Pidgin. You
 can **send a voice note** instead of typing: it shows what it heard, answers in writing,
 and sends a voice note back. In the family group it
 only answers when you **@mention it** or **reply to one of its messages**. The rest of
@@ -23,16 +23,16 @@ appointments, every medicine time and whether it's recorded, who is taking what,
 nobody has taken yet. Tap anything to take it on, mark it done, move or cancel it, or add a
 new appointment. There's also a link to open it on a laptop, just for you. Don't forward it.
 
-**Reminders.** CareCircle reminds you privately (never in the group) at your medicine times,
+**Reminders.** The bot reminds you privately (never in the group) at your medicine times,
 with a **✅ Taken** button, and the evening before and two hours before an appointment. Type
 **/reminders off** to stop them, **/reminders on** to have them back.
 
 **Your language.** Type **/language** and tap one: English, Pidgin, Yorùbá, Igbo, Hausa,
-Ẹ̀dó, Français, Español, Português, Deutsch, Italiano, हिन्दी or 中文. CareCircle writes to you in it. Medicine names, names and
+Ẹ̀dó, Français, Español, Português, Deutsch, Italiano, हिन्दी or 中文. The bot writes to you in it. Medicine names, names and
 times stay exactly as the family wrote them. If you call a medicine something else in your
-language, tell CareCircle once ("in Yoruba, Daddy's eye drops are oogun ojú"): from then on
+language, tell the bot once ("in Yoruba, Daddy's eye drops are oogun ojú"): from then on
 your reminders use your word, and it understands your word when you say it. The Yoruba, Igbo, Hausa and Pidgin reminders
-are new, so they come with the English underneath. If a word is wrong, tell CareCircle the
+are new, so they come with the English underneath. If a word is wrong, tell the bot the
 right one. Voice notes in Yoruba, Igbo, Hausa or Edo can't be heard yet (no computer can),
 so speak those in English or Pidgin.
 
@@ -52,17 +52,17 @@ is watching you. You tell it things, the same way you would tell one of us.
 - **If the doctor changes something:** "The doctor says I can stop the drops after Sunday."
 - **Typing is hard?** Hold the microphone button and just say it.
 
-We all see what you record. If something isn't written down, CareCircle only ever says
+We all see what you record. If something isn't written down, it only ever says
 there's **no record** of it. It never says you missed it.
 
 ---
 
 ## For the coordinator (the person who set it up)
 
-You keep the overall picture. Things to say to CareCircle:
+You keep the overall picture. Things to say to the bot:
 
 - "What might fall through the cracks?" shows work nobody has taken on yet.
-- "Ask whoever's free to take Dad to the check-up." CareCircle asks someone and tells you
+- "Ask whoever's free to take Dad to the check-up." It asks someone and tells you
   who and why. Nothing becomes theirs until they say yes.
 - "How was Dad's day?" gives what's been recorded today.
 - "That's done" closes something you've handled.
@@ -73,13 +73,13 @@ You keep the overall picture. Things to say to CareCircle:
 - "Add Daddy's vitamins, every morning at 9" for a new medicine, and "his drops are at 9
   and 9 now" or "stop the drops after Sunday" when the doctor changes one.
 - Caring for more than one person? Add them as someone the circle cares for, and say
-  whose it is ("Grandma's clinic is on Monday"). If it isn't clear, CareCircle asks.
+  whose it is ("Grandma's clinic is on Monday"). If it isn't clear, the bot asks.
 
 ---
 
 ## For a brother or sister who helps
 
-CareCircle may ask you, in the family group, to take something on, like a pickup or a
+The bot may ask you, in the family group, to take something on, like a pickup or a
 ride to a check-up.
 
 - Reply **"yes"** to take it on, or **"can't"** and it asks someone else. Nothing is
@@ -93,7 +93,7 @@ ride to a check-up.
 
 The same as above, with two differences:
 
-- CareCircle **won't ask you on its own** for things that need someone there, like rides
+- The bot **won't ask you on its own** for things that need someone there, like rides
   and pickups. The family can still ask you by name.
 - If the evening update is on, you get **a short summary of Dad's day every evening**.
 
@@ -101,16 +101,16 @@ The same as above, with two differences:
 
 ## If something is wrong
 
-Tell CareCircle straight away: "Daddy has fallen", "he has chest pains", "he's very
+Tell the bot straight away: "Daddy has fallen", "he has chest pains", "he's very
 confused". It messages **everyone at once**, each person privately and the family group,
 so a muted group doesn't hide it. It tells you to **call 112 (or 767 in Lagos)** if it's an
-emergency. CareCircle does not call emergency services itself, so call them if it's an emergency.
+emergency. The bot does not call emergency services itself, so call them if it's an emergency.
 
 ---
 
 ## Privacy, in one paragraph
 
-What you tell CareCircle is stored for this family only, and only the family sees it.
+What you tell the bot is stored for this family only, and only the family sees it.
 Your link connects your own Telegram account and nobody else's. The bot reads the family
 group so it can hear a "yes" or a "can't", but it only replies when someone @mentions it
 or replies to it, and it keeps nothing else that's said there. It only listens to voice

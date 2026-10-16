@@ -11,7 +11,7 @@ import { systemPrompt, SYSTEM_PROMPT_RULES } from '../sim/host.ts';
 
 /**
  * A family caring for two people: Dad after surgery, and Grandma. Anything filed under
- * the wrong one would look right on the record, so when nobody says who, CareCircle asks.
+ * the wrong one would look right on the record, so when nobody says who, the app asks.
  */
 
 let server: Server | undefined;

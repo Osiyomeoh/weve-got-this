@@ -1,6 +1,6 @@
 /**
  * Would a fast "is this about someone's care?" gate, in front of the planner, have stopped
- * the writes CareCircle made on requests that were nobody's care business - without
+ * the writes the app made on requests that were nobody's care business - without
  * turning away the family's real ones? Two gates, one question, measured the same way:
  *
  *  - Amazon Nova Micro on Bedrock, asked for the probability as a number;
@@ -15,7 +15,7 @@
  *  - harm: every MASSIVE request (Amazon's public test set, CC BY 4.0) on which a baseline
  *    run WROTE to the care record or reached a person, though it was nobody's care. A gate
  *    that stops these is doing its job.
- *  - care: every request in our own corpus and the dialect set that CareCircle should act on,
+ *  - care: every request in our own corpus and the dialect set that the app should act on,
  *    in English, Pidgin, Yoruba, Spanish and the rest. A gate that blocks these is breaking
  *    the product. These are written by us, about a fictional family: no real person's data
  *    goes to either service.

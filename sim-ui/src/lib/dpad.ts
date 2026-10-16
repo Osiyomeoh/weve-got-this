@@ -18,7 +18,7 @@
  *
  * Identifying is not a confirmation dialog. A remote in a living room carries no
  * identity: the television cannot know which of four people pressed the button, and
- * CareCircle binds identity to a credential and never infers it. Claiming work in
+ * The app binds identity to a credential and never infers it. Claiming work in
  * someone's name because they were nearest the remote would be exactly the kind of
  * assumption-as-fact this system exists to refuse. So the viewer says who they are,
  * and that is a deliberate act rather than a guess.

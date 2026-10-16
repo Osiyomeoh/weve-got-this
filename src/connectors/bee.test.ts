@@ -95,7 +95,7 @@ test('config needs both a token and an explicit API base (no guessed host)', () 
   assert.equal(cfg!.apiBase, 'https://api.bee.computer'); // trailing slash trimmed
 });
 
-// ---- reminders CareCircle puts in their Bee ----------------------------------
+// ---- reminders the app puts in their Bee ----------------------------------
 
 import { sendDueReminders } from '../domain/reminders.ts';
 import { RecordOnlyNotifier } from '../notify/notifier.ts';

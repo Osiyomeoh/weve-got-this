@@ -1,6 +1,6 @@
-# Using CareCircle's MCP through the UI
+# Using the We've Got This MCP through the UI
 
-CareCircle is an **MCP server** — a set of 25 care tools an AI assistant calls. You never
+We've Got This is an **MCP server** — a set of 25 care tools an AI assistant calls. You never
 call those tools by hand: you drive them the way an Alexa+ user would, by **talking to the
 console**. The console is an MCP *client*; behind it sits the live production MCP server.
 This guide is how to use it.
@@ -33,7 +33,7 @@ in development it runs at `http://localhost:8082`.
 ## Driving the console (`/console`)
 
 1. **Pick who you are.** The member buttons (Musa, Tolu, Daddy, Funmi) set *who is
-   speaking*. This is the identity every tool sees — CareCircle only lets you do what that
+   speaking*. This is the identity every tool sees — the app only lets you do what that
    person is allowed to do.
 2. **Talk or type.** Tap the **orb** (or the Speak button) and talk, or type in the box.
    Speech uses your browser's recogniser, cleaned up against the household's own names.
@@ -67,11 +67,11 @@ The full tool set also includes `claim_obligation`, `assign_obligation`, `confir
 
 ## Seeing the delegation loop end to end
 
-The strongest thing to show: an ask leaving CareCircle and an answer coming back over a real
+The strongest thing to show: an ask leaving the app and an answer coming back over a real
 channel.
 
 1. As **Tolu**, say: *"Ask Funmi if she can take Daddy to his eye check-up on Thursday."*
-2. CareCircle asks Funmi and **sends her a Telegram** (in the family group, if group mode is on).
+2. The app asks Funmi and **sends her a Telegram** (in the family group, if group mode is on).
 3. Funmi replies **"yes"** in Telegram → the board flips the ride to **ASSIGNED, owner Funmi**,
    and the bot answers in the chat. No one touched the console for the reply.
 

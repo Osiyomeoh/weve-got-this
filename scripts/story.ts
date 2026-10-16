@@ -1,7 +1,7 @@
 /**
  * The crazy user story, executed end to end.
  *
- * One command. It seeds the exact opening state, starts the real CareCircle MCP
+ * One command. It seeds the exact opening state, starts the real MCP
  * server in-process (Streamable HTTP, spec 2025-11-25), and walks every beat
  * through real MCP clients - one per member of the care circle, each on their own
  * credential. Nothing is faked or narrated by hand: every line the assistant says
@@ -183,7 +183,7 @@ async function main(): Promise<void> {
   const musa = await connect(url, 'aide-token');
 
   const tools = await tolu.listTools();
-  console.log(bold('\nCareCircle - the one-day story, over real MCP'));
+  console.log(bold("\nWe've Got This - the one-day story, over real MCP"));
   console.log(dim(`  server: ${url}  ·  spec 2025-11-25  ·  ${tools.tools.length} tools`));
   console.log(dim(`  the eye check-up is genuinely ${when} in ${TZ}`));
 
@@ -249,7 +249,7 @@ async function main(): Promise<void> {
     }),
   );
 
-  // ── Beat 5 · 8:16pm - a promise slips, and CareCircle follows up ─────────
+  // ── Beat 5 · 8:16pm - a promise slips, and the agent follows up ─────────
   clockAt = wallClockToday(19, 58, TZ);
   beat('7:58pm', 'Ring sees someone at the door - evidence, not a verdict');
   say('Ring doorbell', '(motion at the front door)');
@@ -258,7 +258,7 @@ async function main(): Promise<void> {
   clockAt = wallClockToday(20, 16, TZ);
   beat('8:16pm', 'Saying yes is not doing it: the agent checks in on a slipping promise');
   say(
-    'CareCircle',
+    'The agent',
     "(its own pass, every 15 minutes - nobody asked; Musa's pharmacy run was due at 8:00)",
   );
   alexa(await call(tolu, 'run_care_agent', {}));
@@ -306,7 +306,7 @@ async function main(): Promise<void> {
     }),
   );
 
-  console.log(bold(cyan("\n  CareCircle doesn't just tell a family what happened.")));
+  console.log(bold(cyan("\n  It doesn't just tell a family what happened.")));
   console.log(bold(cyan('  It tells them what still needs someone.\n')));
 
   await Promise.all([daddy.close(), tolu.close(), funmi.close(), musa.close()]);

@@ -212,7 +212,7 @@ test('the agent\'s "still on?" shows on the household state as it was sent', asy
     };
     const checkIn = state.notifications.find((n) => n.to === 'Musa' && n.message.includes(o.what));
     assert.ok(checkIn, JSON.stringify(state.notifications));
-    assert.equal(checkIn.from, 'CareCircle');
+    assert.equal(checkIn.from, "We've Got This");
     assert.match(checkIn.message, /Still on\?/);
   } finally {
     await c.close();

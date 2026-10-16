@@ -1,9 +1,9 @@
-# The evidence CareCircle rests on
+# The evidence We've Got This rests on
 
-This is the research base for the claim that CareCircle addresses a real, large and
+This is the research base for the claim that We've Got This addresses a real, large and
 worsening problem — and the economic case for why it matters beyond one family.
 
-**We apply our own trust model to our own claims.** CareCircle refuses to state an
+**We apply our own trust model to our own claims.** The app refuses to state an
 inference as a fact, and it would be incoherent to abandon that discipline when
 arguing for itself. So every figure carries a provenance:
 
@@ -33,7 +33,7 @@ Global ageing is not a forecast; it is arithmetic that has already happened.
 
 ## 2. The conditions — why one channel is never enough
 
-This is the research behind CareCircle's multimodal design. These are not rare
+This is the research behind the app's multimodal design. These are not rare
 edge cases; among people over 60 they are close to the norm.
 
 | Figure | Provenance |
@@ -46,14 +46,14 @@ edge cases; among people over 60 they are close to the norm.
 voice excludes a large share of the people it is for. A care system delivered only
 by screen excludes a different large share. Both groups are counted in billions.
 
-This is why CareCircle treats **modality independence as an architectural
+This is why the app treats **modality independence as an architectural
 invariant** rather than an accessibility feature bolted on late: the spoken answer
 is complete without the board, and the board is complete without the spoken answer.
 Neither is allowed to become load-bearing. There is a test enforcing each half.
 
 ## 3. The mechanism — coordination failure, not ignorance
 
-CareCircle's specific claim is narrower than "care is hard". It is that **work is
+Our specific claim is narrower than "care is hard". It is that **work is
 known to be needed and nobody owns it**. Three independent literatures support that
 this is where harm enters.
 
@@ -70,7 +70,7 @@ this is where harm enters.
 not a scheduling problem — it is a missed appointment, and missed appointments are
 measurably common and measurably expensive. More than half of caregiving is already
 shared between multiple people, and shared responsibility with no owner is exactly
-the failure state CareCircle detects.
+the failure state the app detects.
 
 ## 4. The economics
 
@@ -82,7 +82,7 @@ the failure state CareCircle detects.
 
 **The argument this supports.** The world's largest care workforce is unpaid,
 uncoordinated, and has no shared system of record. An $11 trillion economy runs on
-memory and text messages. CareCircle is infrastructure for the part of the care
+memory and text messages. We've Got This is infrastructure for the part of the care
 economy that never had any — and the counterfactual is not "a worse app", it is
 nothing at all.
 
@@ -106,7 +106,7 @@ of it.**
 **This is the strongest version of the argument.** Where a nation of 28 million has
 fewer than 50 nursing-home places, the coordination layer is not competing with a
 care system — it *is* the care system's only realistic form. And the distributed
-family CareCircle is built for (one person in the village, one in Lagos, one
+family the app is built for (one person in the village, one in Lagos, one
 abroad, a paid aide on shift) is not a hypothetical persona. It is the documented,
 default structure of African elder care.
 
@@ -115,13 +115,13 @@ institution is paying for it. Neither assumption holds here. **Voice on a shared
 device, with a screen anyone in the room can glance at, assumes only that a family
 talks to each other.**
 
-## 6. What CareCircle does about each of these
+## 6. What We've Got This does about each of these
 
 Evidence is only worth citing if the system answers it.
 
 | Finding | What the system does |
 |---|---|
-| ~50% non-adherence | Missing doses surfaced as **"there is no record"** — never as an accusation. A trust benchmark measures this: a raw model asserts a false accusation in 6 or 7 of 12 cases across runs; CareCircle, 0. |
+| ~50% non-adherence | Missing doses surfaced as **"there is no record"** — never as an accusation. A trust benchmark measures this: a raw model asserts a false accusation in 6 or 7 of 12 cases across runs; our engine, 0. |
 | Transport barriers → missed appointments | A medical appointment **infers** a transport obligation, which appears as an unowned Care Gap until a person takes it. |
 | >50% of care is shared between several people | EVENTS → OBLIGATIONS → **OWNERSHIP**. The unit of the system is who is responsible, not what is scheduled. |
 | Distance and migration | Household state is shared, persistent, and reachable from any surface — a child abroad and an aide in the house see one record. |
@@ -153,7 +153,7 @@ US and Canada). Alexa's answers show in a strip along the bottom without stoppin
 and Alexa notifications and reminders take priority while you watch ([Amazon help](https://digprjsurvey.amazon.com/csad/help/node/TKJlykVDNHBOxKS6It),
 [Les Alexiens](https://www.lesalexiens.fr/actualites/fire-tv-affichage-des-reponses-alexa-et-notifications-ring/)).
 Alexa+ is included on compatible US Fire TV devices ([Amazon](https://aboutamazon.com/news/devices/alexa-plus-fire-tv-free-ai)).
-CareCircle's card over a programme is drawn in that style; it is our page, labelled as a
+The app's card over a programme is drawn in that style; it is our page, labelled as a
 simulation, not a claim about an Amazon API.
 
 **What we could not read.** Reddit blocks automated readers, so r/AgingParents and
@@ -165,7 +165,7 @@ WebMD instead.
 
 - Several cost figures are US-centric. We cite them as directional evidence that
   coordination failure is expensive, not as a claim about Nigeria.
-- The medication-adherence and transport findings are **associations**; CareCircle
+- The medication-adherence and transport findings are **associations**; the app
   has not been trialled and we make no clinical-outcome claim.
 - The ILO figures value unpaid care in aggregate. They establish the size of the
   economy, not that software captures any share of it.

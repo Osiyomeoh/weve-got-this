@@ -70,7 +70,7 @@ npm run build
 
 ## Where this comes from
 
-Extracted from [CareCircle](../../README.md), an Alexa+ MCP server that turns care
+Extracted from [We've Got This](../../README.md), an Alexa+ MCP server that turns care
 signals into shared obligations and surfaces the ones nobody owns. This package is
 the device-agnostic core of that idea, packaged so any project can adopt the pattern.
 

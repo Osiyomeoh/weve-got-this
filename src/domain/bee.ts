@@ -2,7 +2,7 @@ import type { ConsequenceClass } from './types.js';
 
 /**
  * Adapter: a real Bee item (a fact or a todo an ambient wearable captured) -> the
- * vendor-neutral shape CareCircle acts on.
+ * vendor-neutral shape the app acts on.
  *
  * Bee (bee.computer) is a wearable that overhears ordinary conversation and distils
  * it into `facts` ("Dad's eye check-up is on the 24th") and `todos`
@@ -12,7 +12,7 @@ import type { ConsequenceClass } from './types.js';
  *
  *   A thing Bee heard is HEARD, not KNOWN. It enters as something a human confirms -
  *   a todo becomes a PROPOSED obligation, a fact becomes a recorded observation - and
- *   never as a fact CareCircle asserts on its own. The wearable overhearing "she said
+ *   never as a fact the app asserts on its own. The wearable overhearing "she said
  *   she'd skip her pill" is not evidence that she skipped it.
  *
  * Two consequences of that rule, enforced below and in the tests:
@@ -40,7 +40,7 @@ export interface BeeTodo {
 export interface BeeFact {
   id: string;
   text: string;
-  /** Whether Bee itself marks the fact confirmed. Independent of CareCircle's gate. */
+  /** Whether Bee itself marks the fact confirmed. Independent of the app's gate. */
   confirmed: boolean;
 }
 
@@ -52,7 +52,7 @@ export interface BeeItems {
 
 /**
  * A proposal Bee raises: a piece of work the family might take on, always entering as
- * PROPOSED. The `ask` is what CareCircle puts to a human before any of it becomes real.
+ * PROPOSED. The `ask` is what the app puts to a human before any of it becomes real.
  */
 export interface BeeProposal {
   what: string;

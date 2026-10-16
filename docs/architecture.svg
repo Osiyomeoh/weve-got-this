@@ -30,7 +30,7 @@
   </defs>
 
   <rect width="1360" height="720" fill="#ffffff"/>
-  <text x="40" y="46" fill="#1f2733" font-size="24" font-weight="700">CareCircle - System Architecture</text>
+  <text x="40" y="46" fill="#1f2733" font-size="24" font-weight="700">We've Got This - System Architecture</text>
   <text x="40" y="68" class="s" font-size="12.5">One responsibility graph — evidence in, accountability out.</text>
 
   <!-- ============ IN: signals ============ -->

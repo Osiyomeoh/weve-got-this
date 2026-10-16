@@ -1,4 +1,4 @@
-# Languages: who needs them, where the money is, and what CareCircle does
+# Languages: who needs them, where the money is, and what We've Got This does
 
 Researched 2026-09-23/24. Every figure has its source at the end.
 
@@ -60,7 +60,7 @@ of that group.
 **African American English** is not counted by the Census, because it is English. The known gap
 is in speech recognition: across Amazon, Apple, Google, IBM and Microsoft, the word error rate
 was 0.35 for Black speakers and 0.19 for white speakers (Koenecke et al., PNAS 2020).
-CareCircle's job is to **understand** it, and the dialect evals below measure that. It is not a
+The app's job is to **understand** it, and the dialect evals below measure that. It is not a
 language to reply in: writing back in someone's dialect reads as mimicry.
 
 ## What AWS can do in each language
@@ -78,9 +78,9 @@ language to reply in: writing back in someone's dialect reads as mimicry.
 | Hausa | ha-NG **batch only** | **no** | yes |
 | Yoruba, Igbo, Edo | **no** | **no** | **no** |
 
-## What CareCircle does
+## What We've Got This does
 
-Each person picks a language with **/language** in Telegram. What CareCircle promises depends
+Each person picks a language with **/language** in Telegram. What the app promises depends
 on the language:
 
 | | Languages | Chat replies | Reminders and buttons | Voice note in | Voice note back |

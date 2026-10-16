@@ -16,7 +16,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 /**
- * CareCircle on Fire TV - the "shared display" surface.
+ * We've Got This on Fire TV - the "shared display" surface.
  *
  * The living-room TV is where the whole family sees the assembled care picture.
  * This activity hosts the 10-foot care board (a WebView over the same /api/state
@@ -26,7 +26,7 @@ import android.webkit.WebViewClient;
  */
 public class MainActivity extends Activity {
 
-    // The live care board: the React /tv route on the CareCircle simulator.
+    // The live care board: the React /tv route on the simulator.
     private static final String BOARD_URL = "https://krqi2tpsif.us-east-1.awsapprunner.com/tv";
 
     private static final String CHANNEL_ID = "care_gaps";

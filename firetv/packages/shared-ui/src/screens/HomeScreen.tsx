@@ -1,4 +1,4 @@
-// CareCircle - the CareBoard. The fourth surface in "four surfaces, one system":
+// The CareBoard. The fourth surface in "four surfaces, one system":
 // the ambient care board on the living-room TV. Renders the SAME live MCP state
 // the web console reads (today's Care Gaps, who owns what, proposed obligations)
 // at 10-foot / glanceable scale, with the CONFIRMED / INFERRED / NO RECORD
@@ -201,7 +201,7 @@ export default function HomeScreen() {
       <View style={styles.container}>
         <View style={styles.header}>
           <View>
-            <Text style={styles.brand}>CareCircle</Text>
+            <Text style={styles.brand}>We’ve Got This</Text>
             <Text style={styles.household}>
               {state?.household?.name ?? 'Care circle'}
             </Text>

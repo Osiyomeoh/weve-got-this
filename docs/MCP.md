@@ -1,9 +1,9 @@
-# Connecting to the CareCircle MCP server
+# Connecting to the We've Got This MCP server
 
 Everything a client needs: how to connect, what the server exposes, who is allowed
 to call what, and how to run your own.
 
-CareCircle is a **self-hosted MCP server** implementing spec **2025-11-25** over
+We've Got This is a **self-hosted MCP server** implementing spec **2025-11-25** over
 **Streamable HTTP**, built on `@modelcontextprotocol/sdk` 1.30.0. It exposes 23
 tools, 2 resources, 2 prompts, and one interactive view via the
 [MCP Apps extension](#the-care-board-mcp-apps).
@@ -58,9 +58,9 @@ The server supports the full MCP authorization flow, including dynamic client
 registration (RFC 7591), so Claude can connect with no config file and no token:
 
 1. **Settings → Connectors → Add custom connector.**
-2. Name `CareCircle`, URL `https://ypq2dfq2p7.us-east-1.awsapprunner.com/mcp`. Add.
+2. Name `We've Got This`, URL `https://ypq2dfq2p7.us-east-1.awsapprunner.com/mcp`. Add.
 3. **Connect.** Claude discovers the auth server from the 401, registers itself, and
-   opens the CareCircle sign-in page. Pick who you are in the demo household.
+   opens the We've Got This sign-in page. Pick who you are in the demo household.
 4. Ask *"What care gaps still need an owner?"*
 
 The sign-in page is a demo sign-in: it asks which member you are instead of
@@ -223,10 +223,10 @@ rather than the same one twice.
 
 | Tool | Arguments | Notes |
 |---|---|---|
-| `request_owner` | `obligationId`, `assigneeName?` | **Asks** someone to take work on; it does not assign. The work stays unowned until they accept. Omit `assigneeName` to let CareCircle suggest who to ask and say why. |
+| `request_owner` | `obligationId`, `assigneeName?` | **Asks** someone to take work on; it does not assign. The work stays unowned until they accept. Omit `assigneeName` to have someone suggested, with the reason. |
 | `respond_to_request` | `obligationId`, `accepted`, `note?` | The asked person's answer. `accepted: false` is kept as information, not discarded. |
 | `get_my_requests` | – | "What have I been asked to do?" Read-only. Use before `respond_to_request` when the id is not known. |
-| `run_care_agent` | `dryRun?` | Lets CareCircle look for slipping work itself and ask an owner - never assigns. `dryRun` reports what it would do without doing it. |
+| `run_care_agent` | `dryRun?` | Lets the agent look for slipping work itself and ask an owner - never assigns. `dryRun` reports what it would do without doing it. |
 
 ### Reading the situation
 
@@ -341,7 +341,7 @@ Verified rendering in MCPJam against this live server.
 ## Running your own
 
 ```bash
-git clone https://github.com/Osiyomeoh/carecircle && cd carecircle
+git clone https://github.com/Osiyomeoh/weve-got-this && cd weve-got-this
 npm ci
 npm run story      # the whole scenario end to end, no AWS and no keys
 npm run dev        # the MCP server on :8787 (override with PORT)

@@ -139,7 +139,7 @@ export function Doorbell({
 }
 
 /**
- * The CareCircle MCP server, drawn as one place above the town: every device's words
+ * The MCP server, drawn as one place above the town: every device's words
  * travel up to it and every answer comes back down from it.
  */
 export function Hub({ busy, ...rest }: JSX.IntrinsicElements['group'] & { busy: boolean }) {
@@ -174,7 +174,7 @@ export function Hub({ busy, ...rest }: JSX.IntrinsicElements['group'] & { busy: 
         />
       </mesh>
       <Html position={[0, -0.95, 0]} center pointerEvents="none" zIndexRange={[5, 0]}>
-        <div className="world-label hub">CareCircle · MCP server</div>
+        <div className="world-label hub">We’ve Got This · MCP server</div>
       </Html>
     </group>
   );

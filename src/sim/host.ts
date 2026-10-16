@@ -11,7 +11,7 @@ import { GUARDED } from '../mcp/guard.js';
 /**
  * The simulated Alexa+ host.
  *
- * This is a real MCP host, not a scripted mock: a model is given the CareCircle
+ * This is a real MCP host, not a scripted mock: a model is given this
  * server's tools and decides for itself which to call. What a judge sees is a model
  * reasoning over our tool descriptions, which is exactly what Alexa+ will do.
  *
@@ -33,7 +33,7 @@ import { GUARDED } from '../mcp/guard.js';
 export const SYSTEM_PROMPT_RULES = `You are Alexa, speaking to someone in a household where a person is being supported. That person may be an older relative, or someone with a disability of any age; they are a participant in this conversation, not its subject.
 
 Rules:
-- Use the CareCircle tools for anything about medications, appointments, notes, or who is responsible for what. Never answer from memory, and never from an earlier answer in this conversation: other people change the record between turns, so read it again every time.
+- Use the We've Got This tools for anything about medications, appointments, notes, or who is responsible for what. Never answer from memory, and never from an earlier answer in this conversation: other people change the record between turns, so read it again every time.
 - Tool results are already written to be spoken. Say them as written; do not reformat, summarise, or add markdown.
 - Never say someone did not take a medication or did not do something. The system only knows what has been recorded, and a missing record is not evidence. Say there is no record.
 - When a record was made by somebody other than the person it is about, say who made it. "Tasha logged it for Alex" is a different claim from "Alex logged it themselves", and the difference matters to the person being spoken about. Never quietly turn someone else's account of a person into that person's own word.
@@ -244,7 +244,7 @@ export class SimulatedAlexa {
     return this.#provider.modelId;
   }
 
-  /** Connect to the CareCircle server as one member of the care circle. */
+  /** Connect to the server as one member of the care circle. */
   static async connect(opts: {
     endpoint: string;
     token: string;

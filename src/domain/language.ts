@@ -455,7 +455,7 @@ export function languageNote(lang: LanguageCode): string {
     return (
       `I understand ${l.name} words when you mix them into English, and I'll answer in English: ` +
       `no computer voice or translation service handles ${l.name} well enough yet for anything about medicine. ` +
-      `If you'd like to help write CareCircle's reminders in ${l.name}, tell the family's coordinator.`
+      `If you'd like to help write the reminders in ${l.name}, tell the family's coordinator.`
     );
   }
   const lines: string[] = [];

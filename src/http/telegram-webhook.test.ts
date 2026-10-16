@@ -200,7 +200,7 @@ test('a redelivered update id is not acted on twice', async () => {
   );
 });
 
-// --- Talking to CareCircle, not only answering it ----------------------------
+// --- Talking to the app, not only answering it ----------------------------
 
 const dm = (text: string, updateId: number): unknown => ({
   update_id: updateId,
@@ -232,7 +232,7 @@ function chatHandler(said: Array<{ memberId: string; text: string }>) {
   });
 }
 
-test('in a private chat, anything that is not an answer goes to CareCircle as that member', async () => {
+test('in a private chat, anything that is not an answer goes to the app as that member', async () => {
   const said: Array<{ memberId: string; text: string }> = [];
   const res = mockRes();
   await chatHandler(said)(postReq(dm('I picked up the eye drops', 101), SECRET), res);
@@ -246,7 +246,7 @@ test('family chatter in the group is left alone', async () => {
   assert.deepEqual(said, []);
 });
 
-test('in the group, a message that mentions or replies to the bot is for CareCircle', async () => {
+test('in the group, a message that mentions or replies to the bot is for the app', async () => {
   const said: Array<{ memberId: string; text: string }> = [];
   await chatHandler(said)(
     postReq(group("@carecircle0111_bot how was Grace's day?", 103), SECRET),

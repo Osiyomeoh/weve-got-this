@@ -1,7 +1,7 @@
 /**
  * The Ring API client: authenticating to a real Ring account and reading its devices.
  *
- * This is the *outbound* half of the Ring integration - the calls CareCircle makes to
+ * This is the *outbound* half of the Ring integration - the calls the app makes to
  * Ring. The *inbound* half (device events) already exists as the HMAC-verified webhook
  * (`http/ring-webhook.ts`), because Ring has no polling API: events are delivered only
  * by webhook POST. So this client's job is not to fetch events - it is to prove the

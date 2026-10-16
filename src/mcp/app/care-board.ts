@@ -1,5 +1,5 @@
 /**
- * The Care Board - CareCircle's MCP App view.
+ * The Care Board - the app's MCP App view.
  *
  * This is the answer to the loudest entry in our own friction log: a voice turn
  * can carry about three items before a person stops holding the list, but the

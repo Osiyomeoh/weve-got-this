@@ -1,4 +1,5 @@
 import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
+import { BRAND } from '../domain/brand.js';
 import { WhatsAppNotifier, whatsAppConfigFromEnv } from './whatsapp.js';
 import { TelegramNotifier, telegramConfigFromEnv, type TelegramConfig } from './telegram.js';
 
@@ -88,7 +89,7 @@ export class SnsNotifier implements Notifier {
       const result = await this.#sns.send(
         new PublishCommand({
           TopicArn: this.#topicArn,
-          Subject: `CareCircle: a message from ${input.from}`,
+          Subject: `${BRAND}: a message from ${input.from}`,
           Message: `${input.from} for ${input.toName}:\n\n${input.message}`,
           MessageAttributes: {
             recipient: { DataType: 'String', StringValue: input.to },

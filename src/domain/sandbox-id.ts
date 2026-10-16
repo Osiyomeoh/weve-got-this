@@ -33,7 +33,7 @@ export function sandboxOf(
 
 /**
  * Whether a household is an agent's copy that has not ended. Such a copy lives on the
- * server's clock, so CareCircle's own pass runs in it as it does in a real family.
+ * server's clock, so the app's own pass runs in it as it does in a real family.
  */
 export function isLiveAgentCopy(householdId: string, now: Date): boolean {
   const copy = sandboxOf(householdId);

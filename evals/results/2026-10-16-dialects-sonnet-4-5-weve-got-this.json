@@ -1,0 +1,49 @@
+{
+  "modelId": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+  "total": 34,
+  "passed": 33,
+  "accuracy": 0.9705882352941176,
+  "errored": 0,
+  "byCategory": [
+    {
+      "category": "hd",
+      "passed": 33,
+      "total": 34
+    }
+  ],
+  "splits": [
+    {
+      "split": "authored",
+      "passed": 0,
+      "total": 0
+    },
+    {
+      "split": "held-out",
+      "passed": 31,
+      "total": 32
+    },
+    {
+      "split": "seen",
+      "passed": 2,
+      "total": 2
+    }
+  ],
+  "failures": [
+    {
+      "case": {
+        "id": "hd-ha-02",
+        "member": "m_margaret",
+        "utterance": "Na sha maganina.",
+        "expect": [
+          "log_care_event"
+        ],
+        "note": "All Hausa: \"I have taken my medicine.\""
+      },
+      "chosen": "get_care_summary",
+      "args": {},
+      "pass": false,
+      "reason": "chose get_care_summary; expected log_care_event"
+    }
+  ],
+  "errors": []
+}

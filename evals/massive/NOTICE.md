@@ -7,7 +7,7 @@ line for line against Amazon's release 1.1.
 
 The test partition's failures were read before the tool descriptions were changed on
 2026-09-24, so it no longer measures anything held out. The dev partition was added on
-2026-10-02, after those changes, and no failure from it has been used to change CareCircle.
+2026-10-02, after those changes, and no failure from it has been used to change the app.
 
 `en-US.train-focus.jsonl` is 1,599 utterances from the **train** partition (seed 20261003), drawn
 on 2026-10-03 to tune against, so dev stays held out. Same fields.
@@ -19,5 +19,5 @@ on 2026-10-03 to tune against, so dev stays held out. Same fields.
 
 We use it as outside data for `npm run evals:massive`: phrasings that Amazon collected and
 labelled, which nobody on this project wrote or tuned against. The labelling rules, which say
-what counts as right for CareCircle on each intent, are in `src/evals/massive.ts` and were
+what counts as right for the app on each intent, are in `src/evals/massive.ts` and were
 fixed before any model was run.

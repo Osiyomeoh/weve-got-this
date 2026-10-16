@@ -7,6 +7,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { McpServer as McpServerV2 } from '@modelcontextprotocol/server';
 import { z } from 'zod';
 import { AGENT_ID } from '../domain/agent.js';
+import { AGENT_IN_A_SENTENCE, BRAND } from '../domain/brand.js';
 import type { Member } from '../domain/types.js';
 import { RecordOnlyNotifier, type Notifier } from '../notify/notifier.js';
 import type { CareStore } from '../store/store.js';
@@ -53,7 +54,7 @@ import {
 import { registerDailyCheckPrompt, registerWeeklyReviewPrompt } from './prompts.js';
 
 /**
- * The CareCircle MCP server: one per session, bound to the member its credential
+ * The MCP server: one per session, bound to the member its credential
  * speaks for.
  *
  * This file only assembles it. Each tool lives with its neighbours in `tools/`, built
@@ -78,11 +79,12 @@ export interface ServerContext {
 
 type Handler = (...args: unknown[]) => unknown;
 
-const SERVER_INFO = { name: 'carecircle', version: '0.1.0' };
+// `name` is the id clients already know this server by; `title` is what they show people.
+const SERVER_INFO = { name: 'carecircle', title: BRAND, version: '0.1.0' };
 const SERVER_OPTIONS = {
   capabilities: { tools: {}, resources: {}, prompts: {} },
   instructions:
-    'CareCircle tracks what needs to happen for someone being cared for, and who is ' +
+    `${BRAND} tracks what needs to happen for someone being cared for, and who is ` +
     'responsible for it. Speak results as written - they are phrased for a voice ' +
     'assistant. Never say that someone did not take a medication or did not do ' +
     'something: the system only knows what has been recorded, and an absent record ' +
@@ -160,7 +162,7 @@ function populate(server: McpServer, { store, actorId, ...opts }: ServerContext)
       if (!id) return undefined;
       // The agent is a reporter in the log like anyone else, and must be nameable, or
       // its requests read as coming from nobody. It is not a member and holds no work.
-      if (id === AGENT_ID) return 'CareCircle';
+      if (id === AGENT_ID) return AGENT_IN_A_SENTENCE;
       try {
         const m = store.getMember(id);
         return m.spokenAs ?? m.name;

@@ -75,10 +75,10 @@ for (const m of state.members) {
       : `to help us share ${them}'s care`;
   console.log(
     [
-      `Hi ${m.name}, I've set up CareCircle ${why}. It works in Telegram.`,
+      `Hi ${m.name}, I've set up We've Got This ${why}. It works in Telegram.`,
       '',
       `1. Tap this link on your phone: ${link}`,
-      '2. Telegram opens a chat with CareCircle. Tap Start.',
+      "2. Telegram opens a chat with We've Got This. Tap Start.",
       '',
       "It will tell you what you can do. The link is just for you, so please don't forward it.",
     ]

@@ -1,6 +1,6 @@
-# CareCircle on the TV
+# We've Got This on the TV
 
-The living-room TV is CareCircle's shared display: the whole family can see what the care
+The living-room TV is the family's shared display: the whole family can see what the care
 plan needs and who has picked it up. Every screen in this folder reads the same live
 `/api/state` that the voice side writes to, so there is no second backend.
 
@@ -34,7 +34,7 @@ All commands run from this folder. The JavaScript targets use Yarn 4 workspaces,
 # -> app/build/outputs/apk/release/app-release.apk
 ```
 
-**Web export** (served by the CareCircle server at `/tv-native/`):
+**Web export** (served by the server at `/tv-native/`):
 
 ```sh
 cd apps/expo-multi-tv

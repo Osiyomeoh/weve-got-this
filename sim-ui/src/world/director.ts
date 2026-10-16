@@ -528,7 +528,7 @@ export function useDirector(opts: {
   const signal = async (step: Extract<Step, { kind: 'signal' }>, token: number) => {
     set({
       caption: {
-        who: step.source === 'ring' ? 'Ring' : 'CareCircle',
+        who: step.source === 'ring' ? 'Ring' : 'We’ve Got This',
         text: step.caption,
         tone: step.source === 'ring' ? 'device' : 'agent',
       },
@@ -711,7 +711,7 @@ export function useDirector(opts: {
       phones: {
         ...v.phones,
         [step.who]: {
-          from: 'CareCircle on Telegram',
+          from: 'We’ve Got This on Telegram',
           text: `It's time for your ${w.evening}. [Taken] [In 15 minutes]`,
           key: `tg-${Date.now()}`,
         },

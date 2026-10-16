@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>CareCircle Developer Docs</title>
+<title>We've Got This Developer Docs</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
 <style>
   :root{
@@ -135,9 +135,9 @@ const PAGES = [
   { id:'overview', group:'Get started', title:'Overview',
     toc:[['what','What it is'],['why','Why MCP']],
     body:`
-    <div class="tag">CareCircle · MCP 2026-07-28 and 2025-11-25</div>
+    <div class="tag">We've Got This · MCP 2026-07-28 and 2025-11-25</div>
     <h1>The care layer, as an MCP server</h1>
-    <p class="lead">CareCircle tracks what needs to happen for someone being cared for, and who is responsible for it - and exposes that as <b>28 MCP tools</b> an AI assistant (Alexa+, or any MCP client) calls. Real events flow in from real accounts and devices; every one enters as a guess a human confirms, never a fact written by a machine.</p>
+    <p class="lead">We've Got This tracks what needs to happen for someone being cared for, and who is responsible for it - and exposes that as <b>28 MCP tools</b> an AI assistant (Alexa+, or any MCP client) calls. Real events flow in from real accounts and devices; every one enters as a guess a human confirms, never a fact written by a machine.</p>
     <h2 id="what">What it is</h2>
     <div class="cards">
       <div class="card"><h4>Self-hosted MCP</h4><p>Streamable HTTP, live on AWS App Runner. It speaks MCP 2025-11-25 (sessions) and 2026-07-28 (stateless) on the same endpoint, with the same tools.</p></div>
@@ -145,7 +145,7 @@ const PAGES = [
       <div class="card"><h4>Provenance-first</h4><p>Known ≠ assumed. Every claim carries where it came from; a guess stays a guess until confirmed.</p></div>
     </div>
     <h2 id="why">Why MCP</h2>
-    <p>The Model Context Protocol lets an assistant call typed tools over a standard transport. CareCircle is a self-hosted MCP server on <a href="https://modelcontextprotocol.io/specification/2025-11-25/basic/transports#streamable-http" target="_blank" rel="noreferrer">Streamable HTTP</a>, so the whole care layer is one clean surface an Alexa+ agent drives - the messy platform APIs never leak into it.</p>` },
+    <p>The Model Context Protocol lets an assistant call typed tools over a standard transport. We've Got This is a self-hosted MCP server on <a href="https://modelcontextprotocol.io/specification/2025-11-25/basic/transports#streamable-http" target="_blank" rel="noreferrer">Streamable HTTP</a>, so the whole care layer is one clean surface an Alexa+ agent drives - the messy platform APIs never leak into it.</p>` },
 
   { id:'architecture', group:'Get started', title:'Architecture',
     toc:[['spine','The spine'],['edges','Network at the edges']],
@@ -350,7 +350,7 @@ npm run format:check   # Prettier, also checked in CI
 npm run evals          # tool choice against a real model (needs AWS Bedrock)</code></pre>
     <p>Domain logic is pure and network-free, so most tests need no mocks; connectors are tested against recorded real payloads as fixtures.</p>
     <h2 id="household">Test a whole household</h2>
-    <p><a href="https://github.com/Osiyomeoh/household-sim" target="_blank" rel="noreferrer">household-sim</a> (MIT) is CareCircle's simulator as its own tool, for any MCP server. <code>check &lt;url&gt;</code> lints a server for what a voice host trips on; <code>run scenarios/*.yaml</code> plays a family's story against it, several people with their own credentials, devices sending signed webhooks, and a story clock. Runs record once and replay free in CI.</p>` },
+    <p><a href="https://github.com/Osiyomeoh/household-sim" target="_blank" rel="noreferrer">household-sim</a> (MIT) is our simulator as its own tool, for any MCP server. <code>check &lt;url&gt;</code> lints a server for what a voice host trips on; <code>run scenarios/*.yaml</code> plays a family's story against it, several people with their own credentials, devices sending signed webhooks, and a story clock. Runs record once and replay free in CI.</p>` },
 
   { id:'ui', group:'Operate', title:'Using the UI',
     toc:[['surfaces','Surfaces'],['api','The two endpoints']],
@@ -414,7 +414,7 @@ function App(){
     <${React.Fragment}>
       <header>
         <button class="burger" onClick=${()=>{setNavOpen(v=>{const n=!v;document.body.classList.toggle('nav-open',n);return n;});}} aria-label="Menu">☰</button>
-        <a class="logo" href="/"><span class="dot"></span>CareCircle</a>
+        <a class="logo" href="/"><span class="dot"></span>We've Got This</a>
         <span class="ver">MCP 2026-07-28</span>
         <div class="search"><span>⌕</span><input placeholder="Search docs…" onInput=${e=>{
           const q=e.target.value.toLowerCase();
@@ -422,7 +422,7 @@ function App(){
           const hit=PAGES.find(p=>p.title.toLowerCase().includes(q));
           if(hit && e.nativeEvent.inputType===undefined) go(hit.id);
         }} onKeyDown=${e=>{ if(e.key==='Enter'){ const q=e.target.value.toLowerCase(); const hit=PAGES.find(p=>p.title.toLowerCase().includes(q)||p.id.includes(q)); if(hit) go(hit.id); } }}/></div>
-        <a class="top-link" href="https://github.com/Osiyomeoh/carecircle" target="_blank" rel="noreferrer">GitHub ↗</a>
+        <a class="top-link" href="https://github.com/Osiyomeoh/weve-got-this" target="_blank" rel="noreferrer">GitHub ↗</a>
       </header>
       <div class="shell">
         <nav class="side">

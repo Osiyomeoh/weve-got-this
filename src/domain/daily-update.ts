@@ -6,6 +6,7 @@ import type { Notifier } from '../notify/notifier.js';
 import { doseRecord, localParts, parseHHMM, spokenClock } from './gaps.js';
 import { attributionOf, sayWhoSaysSo } from './attribution.js';
 import { AGENT_ID } from './agent.js';
+import { BRAND } from './brand.js';
 
 /**
  * The evening update, for family who want to know how the day went.
@@ -155,7 +156,7 @@ export async function sendDailyUpdates(
       const delivery = await deps.notifier.deliver({
         to: member.id,
         toName: member.name,
-        from: 'CareCircle',
+        from: BRAND,
         message,
       });
       if (!delivery.delivered && delivery.channel !== 'none') continue;

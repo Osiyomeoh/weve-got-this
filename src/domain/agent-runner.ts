@@ -2,6 +2,7 @@ import type { CareStore } from '../store/store.js';
 import type { Notifier } from '../notify/notifier.js';
 import { checkInEvidence } from './evidence.js';
 import { deliberate, AGENT_ID, type AgentAction, type Deliberation } from './agent.js';
+import { BRAND } from './brand.js';
 import { isLiveAgentCopy } from './sandbox-id.js';
 
 /**
@@ -14,7 +15,7 @@ import { isLiveAgentCopy } from './sandbox-id.js';
  *
  * Every act the agent takes becomes an event in the same append-only log as every
  * human act, attributed to `system:carecircle`. That attribution is not cosmetic:
- * `attribution.ts` will render an agent-made request as "CareCircle asked Funmi",
+ * the record renders an agent-made request as "the app asked for someone to take this on",
  * never as a person having asked, so "why did I get this?" is always answerable and
  * the machine is held to the same standard of saying who-said-so as everyone else.
  */
@@ -69,7 +70,7 @@ export async function runAgentOnce(householdId: string, deps: RunnerDeps): Promi
           ownerId: null,
           request: { askedOfId: member.id, askedById: AGENT_ID, askedAt: now.toISOString() },
         },
-        `CareCircle asked ${name}`,
+        `asked ${name} automatically`,
       );
     }
 
@@ -84,7 +85,7 @@ export async function runAgentOnce(householdId: string, deps: RunnerDeps): Promi
     const delivery = await deps.notifier.deliver({
       to: member.id,
       toName: name,
-      from: 'CareCircle',
+      from: BRAND,
       message,
     });
 
@@ -93,7 +94,7 @@ export async function runAgentOnce(householdId: string, deps: RunnerDeps): Promi
       kind: 'owner_requested',
       reportedBy: AGENT_ID,
       occurredAt: now.toISOString(),
-      // The agent is CareCircle itself deciding to act on what it inferred - so the
+      // The agent is the app itself deciding to act on what it inferred - so the
       // channel is `system` and the certainty is `inferred`, and the act is linked
       // back to the event the obligation came from when there is one.
       source: 'system',
@@ -135,22 +136,22 @@ function messageFor(
     return `"${what}" was due a little while ago and nothing's been marked yet.${seen} Still on?\n\nReply "done" if it's handled, or "can't" and I'll find someone.`;
   }
   if (action.kind === 'ASK') {
-    return `CareCircle noticed nobody has "${what}" yet. Can you take it on?\n\nReply "yes" or "can't".`;
+    return `Nobody has "${what}" yet. Can you take it on?\n\nReply "yes" or "can't".`;
   }
   if (action.followUp) {
     const name = owner?.spokenAs ?? owner?.name ?? 'Whoever took it on';
     return `"${what}" is past its time and nothing's recorded. ${name} hasn't answered my check-in.${seen} It may be fine, but you may want to call.`;
   }
-  return `CareCircle couldn't find anyone for "${what}". It may need you to step in.`;
+  return `I couldn't find anyone for "${what}". It may need you to step in.`;
 }
 
 /** Run the agent over every household the store knows. */
 export async function runAgentAll(deps: RunnerDeps): Promise<AgentRun[]> {
   // A console visitor's sandbox copy (`<household>~<suffix>`) lives on its own story clock:
-  // the story runs CareCircle's pass when its day reaches it. Run on the server's clock, the
+  // the story runs the agent's pass when its day reaches it. Run on the server's clock, the
   // pass would ask the helper about tonight's refill before the story's own asking does.
   // An agent's copy has no story; it lives on the server's clock like a real family, so
-  // CareCircle does its legwork there too, until the copy ends.
+  // the agent does its legwork there too, until the copy ends.
   const now = deps.now?.() ?? new Date();
   const householdIds = [...new Set(deps.store.allMembers().map((m) => m.householdId))].filter(
     (id) => !id.includes('~') || isLiveAgentCopy(id, now),

@@ -1,4 +1,4 @@
-# CareCircle docs
+# We've Got This docs
 
 Start with the [project README](../README.md). This folder is grouped by who it's for.
 

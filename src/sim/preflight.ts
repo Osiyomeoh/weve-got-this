@@ -104,7 +104,7 @@ export interface PreflightOptions {
 }
 
 /**
- * Quota codes for the models CareCircle uses, so the common case is a handful of
+ * Quota codes for the models the app uses, so the common case is a handful of
  * direct lookups rather than a full enumeration.
  */
 const KNOWN_QUOTA_CODES: Record<string, string[]> = {

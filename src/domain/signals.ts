@@ -3,7 +3,7 @@ import type { CareEvent, ConsequenceClass } from './types.js';
 /**
  * Physical-world signals as a care-event source.
  *
- * CareCircle's premise is that obligations come loose in the real world and nobody
+ * The app's premise is that obligations come loose in the real world and nobody
  * notices. A Ring event is the real world noticing on the family's behalf: a
  * delivery that physically arrived, a door that did or did not open. No one typed
  * anything - which is exactly the point.

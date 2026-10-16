@@ -38,7 +38,7 @@ import {
  * Simulated Alexa+ experience.
  *
  * Serves the device mock and brokers turns between the browser, a Bedrock model,
- * and the CareCircle MCP server. One host per member, so each device in the demo
+ * and the MCP server. One host per member, so each device in the demo
  * (Daddy's Echo at home, Tolu's phone) keeps its own conversation.
  */
 

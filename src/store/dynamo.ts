@@ -12,7 +12,7 @@ import { StaleRecordError, type Persistence, type StoreSnapshot } from './store.
 /**
  * DynamoDB persistence.
  *
- * A deployed CareCircle runs on a serverless runtime with no durable filesystem, so
+ * A deployed server runs on a serverless runtime with no durable filesystem, so
  * the care record has to live somewhere the process does not own. This is the same
  * `Persistence` interface the JSON file implements - the store has no idea which is
  * behind it.

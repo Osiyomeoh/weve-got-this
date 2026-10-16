@@ -1,8 +1,8 @@
-# CareCircle - Design
+# We've Got This - Design
 
 **The responsibility layer for families caring for someone.**
 
-Most assistants answer *"what is Daddy's status?"*. CareCircle answers a harder question:
+Most assistants answer *"what is Daddy's status?"*. We've Got This answers a harder question:
 **"What needs to happen for Daddy, and who is responsible for it?"**
 
 ---
@@ -117,9 +117,9 @@ will not have.
                             |
                         MCP (Streamable HTTP, 2025-11-25)
                             v
-                  +---------------------+
-                  |  CareCircle server  |
-                  +----------+----------+
+                 +-----------------------+
+                 | We've Got This server |
+                 +-----------+-----------+
                              |
         +------------+-------+-------+------------+
         v            v               v            v

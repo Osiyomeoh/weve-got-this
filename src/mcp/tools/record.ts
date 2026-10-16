@@ -366,7 +366,7 @@ export function registerAddNote({ server, store, now, actor, state, nameOf }: To
           return reply("Noted - I'll keep that in mind.", { eventId: event.id, orphaned: [] });
         }
 
-        // Reopen the orphaned work rather than silently reassigning it: CareCircle
+        // Reopen the orphaned work rather than silently reassigning it: the app
         // notices, and asks. It never moves someone else's responsibility on its own.
         for (const o of orphaned) {
           await store.transition(

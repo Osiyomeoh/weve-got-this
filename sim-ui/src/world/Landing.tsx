@@ -16,7 +16,7 @@ const SEEN_KEY = 'carecircle-intro-seen';
 const STEPS = [
   {
     name: 'Alexa+',
-    line: 'Say it once, in your own words. Alexa+ asks CareCircle, and the whole family is on one record.',
+    line: 'Say it once, in your own words. Alexa+ hands it to We’ve Got This, and the whole family is on one record.',
     device: 'echo',
   },
   {
@@ -85,14 +85,14 @@ export function Intro({ muted, onDone }: { muted: boolean; onDone: () => void })
         {s ? (
           <>
             <div className="kicker">
-              Works with CareCircle · {step + 1} of {STEPS.length}
+              Works with We’ve Got This · {step + 1} of {STEPS.length}
             </div>
             <h1>{s.name}</h1>
             <p>{s.line}</p>
           </>
         ) : (
           <>
-            <div className="kicker">CareCircle for Alexa+</div>
+            <div className="kicker">We’ve Got This for Alexa+</div>
             <h1>One family's day, played for real</h1>
             <p>
               Three Amazon devices, one care record, and a family who never has to open an app. Turn

@@ -11,7 +11,7 @@ import { StrandsAlexa } from '../strands/host.js';
 import { StrandsProvider } from '../strands/provider.js';
 
 /**
- * Talking to CareCircle in Telegram.
+ * Talking to the app in Telegram.
  *
  * Without an Echo in the house - the case in Lagos today - the person being cared for
  * still has to be able to say "I used my eye drops" himself, or the record is always

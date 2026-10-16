@@ -169,7 +169,7 @@ test('doses are counted from the record, and a late record is told apart', () =>
 test('asks are paired with their own answers, including a no that moved on to the next person', () => {
   const { work } = pilotReport(week(), { from: FROM, to: TO });
   assert.equal(work.asked, 3);
-  assert.equal(work.askedByCareCircle, 2);
+  assert.equal(work.askedByAgent, 2);
   assert.equal(work.declined, 1);
   assert.equal(work.accepted, 1);
   assert.equal(work.unanswered, 1);
@@ -185,7 +185,7 @@ test('only work created in the window counts as new; unowned work is what is ope
   assert.equal(work.stillUnowned, 1);
 });
 
-test('people, devices and CareCircle are kept apart', () => {
+test('people, devices and the app are kept apart', () => {
   const r = pilotReport(week(), { from: FROM, to: TO });
   assert.deepEqual(
     r.people.map((p) => p.name),
@@ -216,7 +216,7 @@ test('the text never turns a missing record into a missed dose', () => {
   );
   assert.match(
     text,
-    /3 asks \(2 by CareCircle\): 1 yes, 1 no, 1 no answer; median answer in 45 minutes/,
+    /3 asks \(2 by the app\): 1 yes, 1 no, 1 no answer; median answer in 45 minutes/,
   );
   assert.match(text, /Evening updates: 1 sent to Kunle/);
   assert.doesNotMatch(text, /\b(was|were) missed\b|didn't take|did not take|forgot/i);

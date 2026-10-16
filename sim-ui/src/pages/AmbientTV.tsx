@@ -27,7 +27,7 @@ import { RingPip } from '../tv/RingPip';
  * WebView bridge (AndroidBridge.notify); here it is shown on-screen so the surface
  * reads as ambient TV with a notification, whether or not the native bridge exists.
  *
- * It is also **operable by the remote**. That is the third channel: CareCircle's
+ * It is also **operable by the remote**. That is the third channel: the app's
  * thesis is that no single modality is load-bearing, and until now the television
  * proved only half of it. Voice serves someone who cannot see; the screen serves
  * someone who cannot hear; neither serves someone who cannot easily speak - after a
@@ -36,7 +36,7 @@ import { RingPip } from '../tv/RingPip';
  * tested without a browser.
  *
  * **Watching.** In the world, and at /tv?watch, the set is doing what a set in their home
- * mostly does: playing something. CareCircle then behaves the way Alexa and Ring behave on
+ * mostly does: playing something. The app then behaves the way Alexa and Ring behave on
  * Fire TV today: its question rises along the bottom over the programme, which keeps
  * playing, and a doorbell opens a live view in the corner. While they watch, the set
  * interrupts only for what is theirs to answer, their own dose. Who drives on Thursday is
@@ -409,7 +409,7 @@ export default function AmbientTV() {
     if (notified.current.has(key)) return;
     notified.current.add(key);
     try {
-      bridge.notify('CareCircle', current.spoken);
+      bridge.notify('We’ve Got This', current.spoken);
     } catch {
       /* no bridge */
     }
@@ -492,7 +492,7 @@ export default function AmbientTV() {
               <div className="flex items-center gap-[2.4vw] px-[2vw] py-[2.4vh]">
                 <div className="min-w-0 flex-1">
                   <div className="text-[1vw] uppercase tracking-[0.25em] text-white/50">
-                    CareCircle · for {recipient.spoken} · {clockOf(dose!.time)}
+                    We’ve Got This · for {recipient.spoken} · {clockOf(dose!.time)}
                   </div>
                   <div className="mt-[0.6vh] text-[2.6vw] font-light leading-tight">
                     Have you taken your {dose!.name}?
@@ -519,7 +519,7 @@ export default function AmbientTV() {
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="text-[1vw] uppercase tracking-[0.25em] text-white/50">
-                    CareCircle · via Alexa
+                    We’ve Got This · via Alexa
                   </div>
                   <div className="mt-[0.3vh] text-[2vw] font-medium leading-snug">
                     {recipient.spoken}, it's time for your {dose!.name}. Have you taken it?
@@ -560,7 +560,7 @@ export default function AmbientTV() {
           <span className="h-[2vw] w-[2vw] rounded-full bg-[conic-gradient(from_200deg,#00e0c6,#3b82f6,#8b5cf6,#00e0c6)] p-[0.22vw]">
             <span className="block h-full w-full rounded-full bg-[#03050a]" />
           </span>
-          <span className="text-[1.5vw] font-semibold tracking-tight">CareCircle</span>
+          <span className="text-[1.5vw] font-semibold tracking-tight">We’ve Got This</span>
         </div>
         <div className="flex items-center gap-[0.7vw] text-[1.1vw] text-white/55">
           <span
@@ -730,7 +730,7 @@ export default function AmbientTV() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-[0.7vw] text-[0.95vw] uppercase tracking-[0.2em] text-white/50">
-                    CareCircle
+                    We’ve Got This
                     <span
                       className="h-[0.4vw] w-[0.4vw] rounded-full"
                       style={{ background: accent }}

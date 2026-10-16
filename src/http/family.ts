@@ -8,12 +8,13 @@ import { calendarView } from '../domain/calendar-view.js';
 import { capabilitiesOf } from '../domain/auth.js';
 import { memberFromCalendarToken, telegramUserFromInitData } from '../domain/family-access.js';
 import { FAMILY_PAGE } from './family-page.js';
+import { BRAND } from '../domain/brand.js';
 
 /**
  * The family calendar on the web: the same page inside Telegram (as a Mini App) and in
  * any browser (from a personal link the bot gives). Every change made on it goes through
  * the same MCP tools, as the same person, with the same permissions as saying it to the
- * bot - the calendar is another way to talk to CareCircle, not a second system.
+ * bot - the calendar is another way to talk to the app, not a second system.
  */
 
 export interface FamilyOptions {
@@ -75,7 +76,7 @@ export function createFamilyRoutes(opts: FamilyOptions): express.Router {
       if (lead) return { memberId: lead.id, readOnly: true };
     }
     return {
-      error: 'Open the calendar from CareCircle in Telegram (type /calendar).',
+      error: `Open the calendar from ${BRAND} in Telegram (type /calendar).`,
       status: 401,
     };
   };

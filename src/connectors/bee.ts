@@ -17,7 +17,7 @@ import { doseRecord } from '../domain/gaps.js';
  *
  *  - a todo becomes a PROPOSED obligation (INFERRED provenance) a human confirms;
  *  - a fact becomes a recorded observation, attributed to the device, `observed` and
- *    no higher - it is "heard, unconfirmed", never a fact CareCircle asserts.
+ *    no higher - it is "heard, unconfirmed", never a fact the app asserts.
  *
  * Network at the edges, pure core, matching the Gmail door:
  *  - `fetchBeeItems` is the only function that talks to Bee;
@@ -42,7 +42,7 @@ export interface BeeSyncResult {
   /** PROPOSED obligations raised from todos, and observations recorded from facts. */
   proposed: Array<{ obligationId: string; eventId: string; spoken: string }>;
   observed: Array<{ eventId: string; spoken: string }>;
-  /** Doses recorded because they ticked CareCircle's own reminder done in Bee. */
+  /** Doses recorded because they ticked the app's own reminder done in Bee. */
   taken: Array<{ eventId: string; medicationId: string }>;
   skipped: Array<{ id: string; reason: string }>;
 }
@@ -144,7 +144,7 @@ export async function syncBeeItems(
     detail: text,
   });
 
-  // Reminders CareCircle itself put in their Bee, by Bee's id: the dose each one is about.
+  // Reminders the app itself put in their Bee, by Bee's id: the dose each one is about.
   const ours = new Map<string, { medicationId: string; slot: string; to: string }>();
   for (const e of state.events) {
     if (e.kind !== 'reminder_sent' || typeof e.data['beeTodoId'] !== 'string') continue;

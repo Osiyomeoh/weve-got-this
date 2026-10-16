@@ -27,7 +27,7 @@ test('delivers to the mapped chat and reports the message id', async () => {
   const r = await n.deliver({
     to: 'm_renee',
     toName: 'Renee',
-    from: 'CareCircle',
+    from: "We've Got This",
     message: 'Can you drive Thursday?',
   });
   assert.equal(r.delivered, true);
@@ -65,7 +65,12 @@ test('a member with no chat is not messaged, and says so honestly', async () => 
     recipients: new Map(),
     fetchImpl: stubFetch(calls, {}),
   });
-  const r = await n.deliver({ to: 'm_unknown', toName: 'X', from: 'CareCircle', message: 'hi' });
+  const r = await n.deliver({
+    to: 'm_unknown',
+    toName: 'X',
+    from: "We've Got This",
+    message: 'hi',
+  });
   assert.equal(r.delivered, false);
   assert.equal(calls.length, 0, 'must not call the API for an unmapped member');
 });
@@ -76,7 +81,12 @@ test('a send failure is reported, never thrown - the ask is already recorded', a
     recipients: new Map([['m_renee', '1']]),
     fetchImpl: stubFetch([], { ok: false, status: 403 }),
   });
-  const r = await n.deliver({ to: 'm_renee', toName: 'Renee', from: 'CareCircle', message: 'hi' });
+  const r = await n.deliver({
+    to: 'm_renee',
+    toName: 'Renee',
+    from: "We've Got This",
+    message: 'hi',
+  });
   assert.equal(r.delivered, false);
   assert.match(r.detail ?? '', /403/);
 });
@@ -114,7 +124,7 @@ test('attack: group mode never posts a member from another household into the fa
   const r = await n.deliver({
     to: 'm_david~sbx1',
     toName: 'David',
-    from: 'CareCircle',
+    from: "We've Got This",
     message: 'hi',
   });
   assert.equal(r.delivered, false);
@@ -140,13 +150,13 @@ test("a member who joined by invite is reached: in the group if it is their fami
     fetchImpl,
   });
   assert.equal(
-    (await n.deliver({ to: 'm_sis', toName: 'Ada', from: 'CareCircle', message: 'can you?' }))
+    (await n.deliver({ to: 'm_sis', toName: 'Ada', from: "We've Got This", message: 'can you?' }))
       .delivered,
     true,
   );
   assert.deepEqual(calls.at(-1), { chat_id: '-100', text: 'Ada, can you?' });
   assert.equal(
-    (await n.deliver({ to: 'm_other', toName: 'Bo', from: 'CareCircle', message: 'can you?' }))
+    (await n.deliver({ to: 'm_other', toName: 'Bo', from: "We've Got This", message: 'can you?' }))
       .delivered,
     true,
   );
