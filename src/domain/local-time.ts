@@ -85,6 +85,15 @@ export function asTask(what: string): string {
     : `take on ${what.trim()}`;
 }
 
+/**
+ * A time phrase for the end of a sentence that already ends in "on" ("took it on", "still
+ * on"): " on Tuesday" becomes ", on Tuesday", so it never reads "took it on on Tuesday".
+ * " at 8:16 PM" and " yesterday at 8:16 PM" read fine as they are.
+ */
+export function afterOn(phrase: string): string {
+  return phrase.startsWith(' on ') ? `,${phrase}` : phrase;
+}
+
 /** How far past "now" a report of something that already happened may sit (clock skew). */
 const FUTURE_SLACK_MS = 10 * 60_000;
 

@@ -13,7 +13,7 @@
 import type { CareEvent, Obligation, ObligationStatus, Provenance } from './types.ts';
 import type { ObligationTransition } from '../store/store.ts';
 import { evidenceLine } from './evidence.js';
-import { clockTime, isLocalToday } from './local-time.js';
+import { afterOn, clockTime, isLocalToday } from './local-time.js';
 
 /** How sure the record is at a given link. Deliberately not a single scalar - a chain
  *  can mix a confirmed origin with an inferred source, and flattening that loses the point. */
@@ -123,7 +123,11 @@ function sourceStep(
 ): ProvenanceStep | undefined {
   if (!event) return undefined;
   const what = event.detail ?? event.kind.replace(/_/g, ' ');
-  const on = fmt(event.occurredAt, clock)?.phrase ?? '';
+  // An appointment's time is when it is, not when anyone logged it: "logged ... on
+  // October 18" said a record was made two days from now.
+  const time = fmt(event.occurredAt, clock);
+  const on =
+    (event.kind === 'appointment_scheduled' && time ? ` for ${time.text}` : time?.phrase) ?? '';
   // Prefer the event's own first-class source/confidence; fall back to the legacy
   // data.source and the actor for events written before those fields existed.
   const src =
@@ -190,7 +194,7 @@ function ownershipStep(
       return {
         at: t.at,
         certainty: 'recorded',
-        detail: `${who} asked for someone to take this on${on}${note}.`,
+        detail: `${who} asked for someone to take this on${afterOn(on)}${note}.`,
       };
     case 'ASSIGNED':
       // Who owns it is authoritative from the obligation. When the person who wrote this
@@ -199,7 +203,7 @@ function ownershipStep(
       if (t.byMemberId && t.byMemberId === ownerId && nameOf(t.byMemberId)) {
         // Pressed on their own client's form, not read by a model from what they said.
         const took = t.onForm ? 'pressed Yes and took it on' : 'took it on';
-        return { at: t.at, certainty: 'recorded', detail: `${who} ${took}${on}${note}.` };
+        return { at: t.at, certainty: 'recorded', detail: `${who} ${took}${afterOn(on)}${note}.` };
       }
       return { at: t.at, certainty: 'recorded', detail: `It became owned${on}${note}.` };
     case 'RESOLVED':

@@ -246,6 +246,11 @@ test('offering is said as offering, not as answering an ask', () => {
   assert.match(p!.spoken, /^Funmi offered to pick up/);
 });
 
+test('an offer from earlier in the week never reads "take it on on Tuesday"', () => {
+  const [p] = week(obligation(), [], [move('OPEN', 'ASSIGNED', 'm_funmi', '2026-10-13T08:05:00Z')]);
+  assert.equal(p!.steps[0]!.detail, 'Funmi offered to take it on, on Tuesday.');
+});
+
 test('work put on someone’s name by somebody else is never called their yes', () => {
   // An old record: the primary caregiver wrote the assignment, and no answer from Funmi exists.
   const [p] = week(

@@ -86,7 +86,7 @@ export function proposeFromAppointment(
     provenance: {
       kind: 'INFERRED' as const,
       rule: rule.id,
-      from: `${appointmentKind} appointment`,
+      from: `the ${appointmentKind} appointment`,
     },
     ask: rule.ask(subject, appointmentKind),
     // The work is due when the appointment starts, not after it.

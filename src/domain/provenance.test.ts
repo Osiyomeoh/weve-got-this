@@ -105,7 +105,8 @@ test('a confirmed guess does not still say nobody confirmed it', () => {
   // ...but the chain no longer contradicts itself once someone has moved it on.
   assert.doesNotMatch(e.spoken, /nobody has confirmed|still a suggestion/i);
   assert.match(e.spoken, /confirmed as real work/);
-  assert.match(e.spoken, /Renee took it on/);
+  assert.match(e.spoken, /Renee took it on, on March 10\./);
+  assert.doesNotMatch(e.spoken, /\bon on\b/);
   assert.doesNotMatch(e.spoken, OVERCLAIM);
   assert.doesNotMatch(e.spoken, ACCUSATORY);
 
@@ -114,6 +115,30 @@ test('a confirmed guess does not still say nobody confirmed it', () => {
   const seeded = explainProvenance({ ...o, status: 'OPEN', ownerId: null }, [], [], nameOf);
   assert.doesNotMatch(seeded.spoken, /nobody has confirmed|still a suggestion|confirmed as/i);
   assert.match(seeded.spoken, /guessing from the cardiology appointment/);
+});
+
+test('an appointment is spoken by when it is for, never as logged on that day', () => {
+  // An appointment's event carries the appointment's own time, two days after it was logged.
+  const booked: CareEvent = {
+    id: 'e5',
+    householdId: 'h1',
+    kind: 'appointment_scheduled',
+    reportedBy: 'm_renee',
+    occurredAt: '2026-03-12T15:00:00Z',
+    recordedAt: '2026-03-10T09:00:00Z',
+    detail: 'Cardiology, Thursday at 10',
+    source: 'voice',
+    confidence: 'reported',
+    data: {},
+  };
+  const o = obligation({
+    provenance: { kind: 'INFERRED', rule: 'r', from: 'the cardiology appointment' },
+    sourceEventId: 'e5',
+    status: 'PROPOSED',
+  });
+  const e = explainProvenance(o, [], [booked], nameOf);
+  assert.match(e.spoken, /Renee logged - "Cardiology, Thursday at 10" for March 12\./);
+  assert.doesNotMatch(e.spoken, /on March 12/);
 });
 
 test('a not-logged record is never turned into "she didn\'t do it"', () => {

@@ -15,7 +15,7 @@ import type { CareEvent, CareState, Obligation } from './types.ts';
 import type { ObligationTransition } from '../store/store.ts';
 import { evidenceLine } from './evidence.js';
 import { localParts } from './gaps.js';
-import { asTask, clockTime, dueSpoken, isLocalToday } from './local-time.js';
+import { afterOn, asTask, clockTime, dueSpoken, isLocalToday } from './local-time.js';
 
 /** Where a promise stands now. */
 export type PromiseStage =
@@ -154,8 +154,8 @@ function eventSteps(
         ...via,
         ...(pressed ? { onForm: true as const } : {}),
         detail: pressed
-          ? `${by} pressed Yes to say it's still on${on}.`
-          : `${by} said it's still on${on}.`,
+          ? `${by} pressed Yes to say it's still on${afterOn(on)}.`
+          : `${by} said it's still on${afterOn(on)}.`,
       });
     }
   }
@@ -213,8 +213,8 @@ function transitionSteps(
           kind: 'took_on',
           ...base,
           detail: t.onForm
-            ? `${by} pressed Yes to take it on${on}.`
-            : `${by} offered to take it on${on}.`,
+            ? `${by} pressed Yes to take it on${afterOn(on)}.`
+            : `${by} offered to take it on${afterOn(on)}.`,
         });
       else {
         const holder = t === lastAssign ? nameOf(o.ownerId) : undefined;
