@@ -137,7 +137,7 @@ const PAGES = [
     body:`
     <div class="tag">We've Got This · MCP 2026-07-28 and 2025-11-25</div>
     <h1>The care layer, as an MCP server</h1>
-    <p class="lead">We've Got This tracks what needs to happen for someone being cared for, and who is responsible for it - and exposes that as <b>28 MCP tools</b> an AI assistant (Alexa+, or any MCP client) calls. Real events flow in from real accounts and devices; every one enters as a guess a human confirms, never a fact written by a machine.</p>
+    <p class="lead">We've Got This tracks what needs to happen for someone being cared for, and who is responsible for it - and exposes that as <b>29 MCP tools</b> an AI assistant (Alexa+, or any MCP client) calls. Real events flow in from real accounts and devices; every one enters as a guess a human confirms, never a fact written by a machine.</p>
     <h2 id="what">What it is</h2>
     <div class="cards">
       <div class="card"><h4>Self-hosted MCP</h4><p>Streamable HTTP, live on AWS App Runner. It speaks MCP 2025-11-25 (sessions) and 2026-07-28 (stateless) on the same endpoint, with the same tools.</p></div>
@@ -188,13 +188,14 @@ an expected record that is missing, or something now past its time.</div>
     toc:[['read','See the state'],['own','Ownership'],['record','Record reality'],['act','Act outward'],['admin','Setup & admin']],
     body:`
     <div class="crumb">Reference <b>› MCP tools</b></div>
-    <h1>MCP tools <span class="tag" style="vertical-align:middle">28</span></h1>
+    <h1>MCP tools <span class="tag" style="vertical-align:middle">29</span></h1>
     <p class="lead">You don't call these by hand - you speak, and the planner picks the tool. Grouped by what they do.</p>
     <h2 id="read">See the state · read-only</h2>
     <div class="cards">
       <div class="card"><h4>get_care_gaps</h4><p>The core tool: everything unowned, missing, or overdue - ranked, phrased for speech.</p></div>
       <div class="card"><h4>get_care_summary</h4><p>The day: what's logged, notes, what's coming up.</p></div>
       <div class="card"><h4>get_shift_brief</h4><p>What this shift needs to know - meds due, what's on you.</p></div>
+      <div class="card"><h4>get_promises</h4><p>This week's promises: who said yes to what, any "still on?" and its answer, what's done, and what the doorbell saw beside it.</p></div>
       <div class="card"><h4>get_my_requests</h4><p>What you've been asked to take on and not yet answered.</p></div>
       <div class="card"><h4>get_provenance</h4><p>Walks the whole chain behind one item - "how do you know that?"</p></div>
       <div class="card"><h4>get_connections</h4><p>Each data door: live / configured / not connected. Honest, env-checked.</p></div>

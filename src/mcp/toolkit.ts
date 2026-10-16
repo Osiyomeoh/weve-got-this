@@ -43,6 +43,9 @@ export interface ToolContext {
 /** Where the Care Board view lives. Referenced by the tool that renders it. */
 export const CARE_BOARD_URI = 'ui://carecircle/care-board.html';
 
+/** Where the view of this week's promises lives. Referenced by get_promises. */
+export const PROMISES_URI = 'ui://carecircle/promises.html';
+
 /** A tool result shaped for a voice client: one speakable line plus structure. */
 export function reply(spoken: string, structured?: Record<string, unknown>) {
   return {

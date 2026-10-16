@@ -22,7 +22,7 @@ Start with the [project README](../README.md). This folder is grouped by who it'
 
 | Doc | What it is |
 |---|---|
-| [MCP.md](MCP.md) | Point any MCP client at it: endpoint, OAuth, all 25 tools |
+| [MCP.md](MCP.md) | Point any MCP client at it: endpoint, OAuth, all 29 tools |
 | [USING-THE-UI.md](USING-THE-UI.md) | The Alexa+ console, the TV board and the setup flow |
 | [PILOT.md](PILOT.md) | Running a real family on it for a week or two |
 

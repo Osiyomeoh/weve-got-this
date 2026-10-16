@@ -114,6 +114,14 @@ test('"can\'t make it after all" from the owner hands the work back; "on my way"
     accepted: true,
   });
   assert.match(still.text, /stays with you/);
+  // Kept on the record, so the promise trail can say it and the app tells nobody else.
+  const said = store
+    .getCareState('h_margaret')
+    .events.filter((e) => e.kind === 'request_answered' && e.data['obligationId'] === o.id);
+  assert.deepEqual(
+    said.map((e) => [e.reportedBy, e.data['stillOn']]),
+    [['m_david', true]],
+  );
 
   const other = await call('renee-token', 'respond_to_request', {
     obligationId: o.id,

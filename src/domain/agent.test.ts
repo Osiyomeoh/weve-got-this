@@ -392,6 +392,22 @@ test('silence after the check-in tells the primary caregiver, once, and moves no
   assert.deepEqual(deliberate(told, opts(DAYTIME)).actions, []);
 });
 
+test('"still on" after the check-in is their word: nobody else is told', () => {
+  const checkIn = followUpEvent('m_renee', new Date(DAYTIME.getTime() - 40 * 60_000).toISOString());
+  const answer: CareEvent = {
+    ...askEvent('m_renee', new Date(DAYTIME.getTime() - 38 * 60_000).toISOString()),
+    kind: 'request_answered',
+    reportedBy: 'm_renee',
+    data: { obligationId: 'o1', accepted: true, stillOn: true },
+  };
+  const { actions, restraint } = deliberate(
+    state({ obligations: [promised()], events: [checkIn, answer] }),
+    opts(DAYTIME),
+  );
+  assert.deepEqual(actions, []);
+  assert.match(restraint.find((r) => r.obligationId === 'o1')!.because, /is still on/);
+});
+
 test('a slipped promise does not wake anyone at night over a social visit', () => {
   const visit = state({
     obligations: [promised({ consequence: 'social', dueAt: '2026-10-14T05:00:00Z' })],

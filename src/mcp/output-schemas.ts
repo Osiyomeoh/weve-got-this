@@ -27,6 +27,7 @@ export const OUT = {
     cancelled: z.boolean().optional(),
   },
   raise_urgent: { eventId: z.string().optional(), reached: z.array(z.string()).optional() },
+  get_promises: { promises: arr.optional() },
   record_appointment: { eventId: z.string().optional(), proposals: arr.optional() },
   add_note: {
     eventId: z.string().optional(),

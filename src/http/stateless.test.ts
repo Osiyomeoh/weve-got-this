@@ -104,7 +104,7 @@ test('a 2026-07-28 client is served by whichever instance each request reaches',
     assert.equal(client.getNegotiatedProtocolVersion(), '2026-07-28');
 
     const { tools } = await client.listTools();
-    assert.equal(tools.length, 28);
+    assert.equal(tools.length, 29);
 
     // Daddy logs his drops on one instance; the next request, on the other, reads it back.
     const logged = await client.callTool({

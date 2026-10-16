@@ -547,6 +547,27 @@ export const CORPUS: EvalCase[] = [
     args: { unavailable: (v) => typeof v === 'object' && v !== null },
   },
 
+  // --- This week's promises (added 2026-10-16 with get_promises) ---------
+  {
+    id: 'prom-01',
+    member: 'm_david',
+    utterance: 'And what did everyone say yes to this week?',
+    expect: ['get_promises'],
+    note: "Tolu's line in the sim, after the check-in.",
+  },
+  {
+    id: 'prom-02',
+    member: 'm_renee',
+    utterance: 'Who promised what?',
+    expect: ['get_promises'],
+  },
+  {
+    id: 'prom-03',
+    member: 'm_david',
+    utterance: 'Is everything people signed up for still on?',
+    expect: ['get_promises'],
+  },
+
   // ======================================================================
   // HELD-OUT SET. Written after the descriptions were tuned, and never tuned
   // against: harder phrasings, distractors, multi-intent, wrong-role attempts,
@@ -1066,6 +1087,59 @@ export const CORPUS: EvalCase[] = [
     utterance: 'How much would a refill of his eye drops cost?',
     expect: ['reorder_prescription'],
     note: 'Asking the price is asking for the offer, which never charges.',
+  },
+
+  // ======================================================================
+  // HELD-OUT, THIRD SET (2026-10-16). Written with get_promises, before any run
+  // against it: what the family took on, asked without the words its description
+  // uses, a question shaped like blame, a helper who may not read the whole week,
+  // and a promise that is nothing to do with care.
+  // ======================================================================
+  {
+    id: 'h3-prom-01',
+    member: 'm_renee',
+    utterance: "Who's doing what for Daddy this week?",
+    expect: ['get_promises', 'get_care_summary'],
+  },
+  {
+    id: 'h3-prom-02',
+    member: 'm_david',
+    utterance: 'Has everyone kept to what they agreed?',
+    expect: ['get_promises'],
+    note: 'Shaped like blame; the answer must not be.',
+  },
+  {
+    id: 'h3-prom-03',
+    member: 'm_renee',
+    utterance: 'What have people taken on since Monday?',
+    expect: ['get_promises'],
+  },
+  {
+    id: 'h3-prom-04',
+    member: 'm_david',
+    utterance: "Run me through the family's commitments.",
+    expect: ['get_promises'],
+  },
+  {
+    id: 'h3-prom-05',
+    member: 'm_renee',
+    utterance: 'Is anything I said yes to still waiting on me?',
+    expect: ['get_my_requests', 'get_promises', 'get_care_gaps'],
+    note: 'Her own yeses: her requests, or the week, are both right.',
+  },
+  {
+    id: 'h3-prom-06',
+    member: 'm_aide',
+    utterance: 'What has everybody agreed to do this week?',
+    expect: ['get_promises'],
+    note: "Musa may not read the whole family's week; choosing it is still correct, and the server refuses.",
+  },
+  {
+    id: 'h3-prom-07',
+    member: 'm_david',
+    utterance: 'Remind me what I promised the plumber.',
+    expectNone: true,
+    note: 'Says "promised", but it is not care.',
   },
 
   // --- Nothing to call ----------------------------------------------------

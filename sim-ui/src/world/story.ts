@@ -387,6 +387,19 @@ export function storyFor(w: Words): Beat[] {
           expect: ['get_provenance'],
           shot: 'tolu',
         },
+        {
+          kind: 'line',
+          who: 'tolu',
+          via: 'echo',
+          text: 'And what did everyone say yes to this week?',
+          expect: ['get_promises'],
+          shot: 'tolu',
+        },
+        {
+          kind: 'caption',
+          text: 'Agents ask; people promise. The week is read back from the record: each yes, each “still on?”, each done, and what the doorbell saw beside it.',
+          ms: 4200,
+        },
       ],
     },
     {

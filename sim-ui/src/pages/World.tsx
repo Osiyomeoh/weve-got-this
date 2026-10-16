@@ -9,7 +9,7 @@ import { SPEECH_LANGUAGES, setSpeechLanguage, speechLanguage } from '../lib/spee
 import { tellStoryTime } from '../lib/storyTime';
 import { CAST, PLAYABLE, type PersonKey } from '../world/cast';
 import { SAY_NO, STAY_QUIET, useDirector, type WorldView } from '../world/director';
-import type { BoardState } from '../lib/api';
+import type { BoardState, WeekPromise } from '../lib/api';
 import { MODEL, preloadWorld } from '../world/models';
 import { Scene } from '../world/Scene';
 import { clockText, homeToday, STORY, type ShotName } from '../world/story';
@@ -391,6 +391,17 @@ function Impact({ log, playing }: { log: WorldView['log']; playing: string | nul
   );
 }
 
+/** Where a promise stands, as the card in a chat host words it. Nothing here is an alarm. */
+const PROMISE_STAGE: Record<WeekPromise['stage'], string> = {
+  checking: 'Checking in',
+  open: 'Back with nobody',
+  asking: 'Asking someone',
+  still_on: 'Still on',
+  promised: 'Said yes',
+  done: 'Done',
+  set_aside: 'Set aside',
+};
+
 /**
  * The day's score, read from the record the day left behind, not from the script: doses
  * with someone's word on them, work that has an owner, work that has none, and what it cost
@@ -410,6 +421,7 @@ function DayScore({ view }: { view: WorldView }) {
   const open = work.filter((o) => !o.owner || o.status === 'PROPOSED');
   const covered = recorded + owned.length;
   const score = 10 * covered - 10 * open.length - view.interrupts;
+  const promises = state.promises ?? [];
   return (
     <div className="world-score" aria-label="How the day went">
       <div className="head">
@@ -440,6 +452,19 @@ function DayScore({ view }: { view: WorldView }) {
             <li key={o.id}>Still nobody's: {o.what}</li>
           ))}
         </ul>
+      )}
+      {promises.length > 0 && (
+        <div className="world-score-promises" aria-label="This week’s promises">
+          <div className="sub">The family’s word this week</div>
+          <ul>
+            {promises.map((p) => (
+              <li key={p.obligationId} className={`stage-${p.stage}`}>
+                <span className="chip">{PROMISE_STAGE[p.stage]}</span>
+                {p.spoken}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
       {view.choices.length > 0 && (
         <ul className="world-score-choices">

@@ -353,6 +353,23 @@ export function deliberate(state: CareState, opts: PolicyOptions): Deliberation 
       continue;
     }
 
+    // They answered "still on": that is their word, and nobody else needs telling.
+    const stillOn = state.events.some(
+      (e) =>
+        e.kind === 'request_answered' &&
+        e.data['stillOn'] === true &&
+        e.data['obligationId'] === o.id &&
+        e.reportedBy === owner.id &&
+        e.occurredAt >= done[0]!.occurredAt,
+    );
+    if (stillOn) {
+      restraint.push({
+        obligationId: o.id,
+        because: `${name} said "${o.what}" is still on, so there is nobody else to tell.`,
+        value: { harmAvoided: 0, interruptionCost: 0, net: 0 },
+      });
+      continue;
+    }
     const boss = primaryCaregiver(state);
     const escalated = done.some((e) => e.data['escalation'] === true);
     const waited = (opts.now.getTime() - new Date(done[0]!.occurredAt).getTime()) / 60_000;

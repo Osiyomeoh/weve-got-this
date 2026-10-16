@@ -8,10 +8,12 @@ import { BRAND } from '../domain/brand.js';
 import { capabilitiesOf } from '../domain/auth.js';
 import { activeMedications } from '../domain/care-changes.js';
 import { detectCareGaps, doseRecord } from '../domain/gaps.js';
-import { isLocalToday } from '../domain/local-time.js';
+import { dueSpoken, isLocalToday } from '../domain/local-time.js';
+import { promisesThisWeek } from '../domain/promises.js';
 import { CARE_BOARD_HTML } from './app/care-board.js';
+import { PROMISES_HTML } from './app/promises-card.js';
 import { APP_MIME_TYPE } from './app/protocol.js';
-import { CARE_BOARD_URI, type ToolContext } from './toolkit.js';
+import { CARE_BOARD_URI, PROMISES_URI, type ToolContext } from './toolkit.js';
 
 /**
  * Who is speaking.
@@ -75,7 +77,13 @@ export function registerMeResource({ server, actor, state }: ToolContext): void 
 /**
  * The care record, readable as a document.
  */
-export function registerCareStateResource({ server, now, state, nameOf }: ToolContext): void {
+export function registerCareStateResource({
+  server,
+  store,
+  now,
+  state,
+  nameOf,
+}: ToolContext): void {
   server.registerResource(
     'care-state',
     'carecircle://household/state',
@@ -159,6 +167,11 @@ export function registerCareStateResource({ server, now, state, nameOf }: ToolCo
                   }),
                 ),
                 gaps: detectCareGaps(s, { now: now() }),
+                // This week's promises: what each person said yes to and where it stands,
+                // so the console and the world can draw the family's word beside the gaps.
+                promises: promisesThisWeek(s, (id) => store.getTransitions(id), nameOf, now()).map(
+                  (p) => ({ ...p, due: dueSpoken(p.dueAt, s.household.timezone, now()) }),
+                ),
                 // Purchase offers still awaiting a decision - the in-place buy moment.
                 offers: (() => {
                   const settled = new Set(
@@ -242,6 +255,32 @@ export function registerCareBoardResource({ server }: ToolContext): void {
           text: CARE_BOARD_HTML,
         },
       ],
+    }),
+  );
+}
+
+/** This week's promises, drawn: the view get_promises renders on a host that can. */
+export function registerPromisesResource({ server }: ToolContext): void {
+  server.registerResource(
+    'promises',
+    PROMISES_URI,
+    {
+      title: "This week's promises",
+      description:
+        'What each person in the family said yes to this week, where it stands, and the ' +
+        'trail behind it: the ask, the yes, any "still on?", the done, and what the ' +
+        'doorbell saw beside it.',
+      mimeType: APP_MIME_TYPE,
+      _meta: {
+        ui: {
+          // Self-contained like the Care Board: nothing to allowlist.
+          csp: { resourceDomains: [], connectDomains: [] },
+          prefersBorder: false,
+        },
+      },
+    },
+    async (uri) => ({
+      contents: [{ uri: uri.href, mimeType: APP_MIME_TYPE, text: PROMISES_HTML }],
     }),
   );
 }

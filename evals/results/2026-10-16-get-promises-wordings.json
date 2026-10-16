@@ -1,0 +1,1036 @@
+{
+  "what": "Choosing get_promises' description, 2026-10-16. Nova Pro under the Alexa bridge's prompt ran the whole corpus for each wording, in parallel batches against one local server per wording; Nova runs close together are correlated, so compare within a batch. Claude Sonnet 4.5 (console prompt) ran one full corpus on the kept wording (2026-10-16-claude-sonnet-4-5-get-promises.json); the cases that moved were then run alone, 3 times per wording. A full Sonnet comparison was not possible: these runs hit the account's daily Bedrock token quota. A Sonnet run keeps only its failures, so a passing row has chosen: null.",
+  "descriptions": {
+    "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps": "What people in the family said yes to this week, and what has happened since: who said yes, any \"still on?\" check-in and its answer, whether it was handed back or marked done. For \"what did everyone say yes to?\", \"who promised what?\". Only what was agreed in this family's care; for what still needs doing or has no owner, use get_care_gaps. Read-only. Speak the result as written: work due with nothing marked is \"nothing's been marked yet\", never a promise broken.",
+    "V2 (dropped): current plus V1's get_care_gaps sentence": "The kept description with \"what has the family taken on this week?\" shortened to \"...taken on?\" and this added before \"Read-only.\": \"Only what someone agreed to in this family's care; for what still needs doing or has no owner, use get_care_gaps.\""
+  },
+  "nova_full_runs": [
+    {
+      "wording": "HEAD c53622b, no get_promises",
+      "batch": "14:30-15:00 batch 1",
+      "file": "nfull-c53-1.json",
+      "original155": {
+        "passed": 142,
+        "of": 155
+      },
+      "errored": 0
+    },
+    {
+      "wording": "HEAD c53622b, no get_promises",
+      "batch": "14:30-15:00 batch 2",
+      "file": "nfull-c53-2.json",
+      "original155": {
+        "passed": 141,
+        "of": 151
+      },
+      "errored": 4
+    },
+    {
+      "wording": "current (kept)",
+      "batch": "14:30-15:00 batch 1",
+      "file": "nfull-now-1.json",
+      "original155": {
+        "passed": 138,
+        "of": 154
+      },
+      "errored": 2,
+      "new10": {
+        "passed": 7,
+        "of": 9
+      }
+    },
+    {
+      "wording": "current (kept)",
+      "batch": "14:30-15:00 batch 2",
+      "file": "nfull-now-2.json",
+      "original155": {
+        "passed": 139,
+        "of": 155
+      },
+      "errored": 0,
+      "new10": {
+        "passed": 8,
+        "of": 10
+      }
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "batch": "14:30-15:00 batch 1",
+      "file": "nfull-v1-1.json",
+      "original155": {
+        "passed": 141,
+        "of": 155
+      },
+      "errored": 1,
+      "new10": {
+        "passed": 7,
+        "of": 9
+      }
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "batch": "14:30-15:00 batch 2",
+      "file": "nfull-v1-2.json",
+      "original155": {
+        "passed": 142,
+        "of": 151
+      },
+      "errored": 4,
+      "new10": {
+        "passed": 8,
+        "of": 10
+      }
+    },
+    {
+      "wording": "HEAD c53622b, no get_promises",
+      "batch": "15:40 batch 3",
+      "file": "nb2-c53-1.json",
+      "original155": {
+        "passed": 140,
+        "of": 151
+      },
+      "errored": 4
+    },
+    {
+      "wording": "current (kept)",
+      "batch": "15:40 batch 3",
+      "file": "nb2-now-1.json",
+      "original155": {
+        "passed": 136,
+        "of": 150
+      },
+      "errored": 5,
+      "new10": {
+        "passed": 8,
+        "of": 10
+      }
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "batch": "15:40 batch 3",
+      "file": "nb2-v1-1.json",
+      "original155": {
+        "passed": 135,
+        "of": 149
+      },
+      "errored": 6,
+      "new10": {
+        "passed": 8,
+        "of": 10
+      }
+    },
+    {
+      "wording": "V2 (dropped): current plus V1's get_care_gaps sentence",
+      "batch": "15:40 batch 3 (3 errored cases re-run alone)",
+      "file": "nb2-v2-merged.json",
+      "original155": {
+        "passed": 141,
+        "of": 155
+      },
+      "errored": 0,
+      "new10": {
+        "passed": 8,
+        "of": 10
+      }
+    },
+    {
+      "wording": "current (kept)",
+      "batch": "15:50 batch 4 (the other three runs in it lost to a local DNS failure)",
+      "file": "nb2-now-2.json",
+      "original155": {
+        "passed": 137,
+        "of": 154
+      },
+      "errored": 1,
+      "new10": {
+        "passed": 8,
+        "of": 10
+      }
+    }
+  ],
+  "sonnet_cases_alone": {
+    "HEAD c53622b, no get_promises, original cases": {
+      "passed": 18,
+      "of": 21
+    },
+    "current (kept), new cases": {
+      "passed": 26,
+      "of": 27
+    },
+    "current (kept), original cases": {
+      "passed": 7,
+      "of": 21
+    },
+    "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps, new cases": {
+      "passed": 20,
+      "of": 28
+    },
+    "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps, original cases": {
+      "passed": 12,
+      "of": 21
+    }
+  },
+  "sonnet_rows": [
+    {
+      "wording": "HEAD c53622b, no get_promises",
+      "run": 1,
+      "id": "gap-05",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "HEAD c53622b, no get_promises",
+      "run": 2,
+      "id": "gap-05",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "HEAD c53622b, no get_promises",
+      "run": 3,
+      "id": "gap-05",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 1,
+      "id": "gap-05",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 2,
+      "id": "gap-05",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 3,
+      "id": "gap-05",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 1,
+      "id": "gap-05",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 2,
+      "id": "gap-05",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 3,
+      "id": "gap-05",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "HEAD c53622b, no get_promises",
+      "run": 1,
+      "id": "h-cons-01",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "HEAD c53622b, no get_promises",
+      "run": 2,
+      "id": "h-cons-01",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "HEAD c53622b, no get_promises",
+      "run": 3,
+      "id": "h-cons-01",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 1,
+      "id": "h-cons-01",
+      "chosen": "get_my_requests",
+      "pass": false
+    },
+    {
+      "wording": "current (kept)",
+      "run": 2,
+      "id": "h-cons-01",
+      "chosen": "get_my_requests",
+      "pass": false
+    },
+    {
+      "wording": "current (kept)",
+      "run": 3,
+      "id": "h-cons-01",
+      "chosen": "get_my_requests",
+      "pass": false
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 1,
+      "id": "h-cons-01",
+      "chosen": "get_my_requests",
+      "pass": false
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 2,
+      "id": "h-cons-01",
+      "chosen": "get_my_requests",
+      "pass": false
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 3,
+      "id": "h-cons-01",
+      "chosen": "get_my_requests",
+      "pass": false
+    },
+    {
+      "wording": "HEAD c53622b, no get_promises",
+      "run": 1,
+      "id": "h-gap-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "HEAD c53622b, no get_promises",
+      "run": 2,
+      "id": "h-gap-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "HEAD c53622b, no get_promises",
+      "run": 3,
+      "id": "h-gap-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 1,
+      "id": "h-gap-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 2,
+      "id": "h-gap-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 3,
+      "id": "h-gap-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 1,
+      "id": "h-gap-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 2,
+      "id": "h-gap-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 3,
+      "id": "h-gap-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "HEAD c53622b, no get_promises",
+      "run": 1,
+      "id": "h-log-03",
+      "chosen": "get_care_gaps",
+      "pass": false
+    },
+    {
+      "wording": "HEAD c53622b, no get_promises",
+      "run": 2,
+      "id": "h-log-03",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "HEAD c53622b, no get_promises",
+      "run": 3,
+      "id": "h-log-03",
+      "chosen": "get_care_gaps",
+      "pass": false
+    },
+    {
+      "wording": "current (kept)",
+      "run": 1,
+      "id": "h-log-03",
+      "chosen": "get_care_gaps",
+      "pass": false
+    },
+    {
+      "wording": "current (kept)",
+      "run": 2,
+      "id": "h-log-03",
+      "chosen": "get_care_gaps",
+      "pass": false
+    },
+    {
+      "wording": "current (kept)",
+      "run": 3,
+      "id": "h-log-03",
+      "chosen": "get_care_gaps",
+      "pass": false
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 1,
+      "id": "h-log-03",
+      "chosen": "get_care_gaps",
+      "pass": false
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 2,
+      "id": "h-log-03",
+      "chosen": "get_care_gaps",
+      "pass": false
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 3,
+      "id": "h-log-03",
+      "chosen": "get_care_gaps",
+      "pass": false
+    },
+    {
+      "wording": "current (kept)",
+      "run": 1,
+      "id": "h3-prom-01",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 2,
+      "id": "h3-prom-01",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 3,
+      "id": "h3-prom-01",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 1,
+      "id": "h3-prom-01",
+      "chosen": "get_promises\" />",
+      "pass": false
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 2,
+      "id": "h3-prom-01",
+      "chosen": "get_promises\" />",
+      "pass": false
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 3,
+      "id": "h3-prom-01",
+      "chosen": "get_promises\" />",
+      "pass": false
+    },
+    {
+      "wording": "current (kept)",
+      "run": 1,
+      "id": "h3-prom-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 2,
+      "id": "h3-prom-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 3,
+      "id": "h3-prom-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 1,
+      "id": "h3-prom-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 2,
+      "id": "h3-prom-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 3,
+      "id": "h3-prom-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 1,
+      "id": "h3-prom-03",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 2,
+      "id": "h3-prom-03",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 3,
+      "id": "h3-prom-03",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 1,
+      "id": "h3-prom-03",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 2,
+      "id": "h3-prom-03",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 3,
+      "id": "h3-prom-03",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 1,
+      "id": "h3-prom-04",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 2,
+      "id": "h3-prom-04",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 3,
+      "id": "h3-prom-04",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 1,
+      "id": "h3-prom-04",
+      "chosen": "get_care_summary",
+      "pass": false
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 2,
+      "id": "h3-prom-04",
+      "chosen": "get_care_summary",
+      "pass": false
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 3,
+      "id": "h3-prom-04",
+      "chosen": "get_care_summary",
+      "pass": false
+    },
+    {
+      "wording": "current (kept)",
+      "run": 1,
+      "id": "h3-prom-05",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 2,
+      "id": "h3-prom-05",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 3,
+      "id": "h3-prom-05",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 1,
+      "id": "h3-prom-05",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 2,
+      "id": "h3-prom-05",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 3,
+      "id": "h3-prom-05",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 1,
+      "id": "h3-prom-06",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 2,
+      "id": "h3-prom-06",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 3,
+      "id": "h3-prom-06",
+      "chosen": "errored",
+      "pass": null
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 1,
+      "id": "h3-prom-06",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 2,
+      "id": "h3-prom-06",
+      "chosen": "errored",
+      "pass": null
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 3,
+      "id": "h3-prom-06",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 1,
+      "id": "h3-prom-07",
+      "chosen": "errored",
+      "pass": null
+    },
+    {
+      "wording": "current (kept)",
+      "run": 2,
+      "id": "h3-prom-07",
+      "chosen": "get_promises",
+      "pass": false
+    },
+    {
+      "wording": "current (kept)",
+      "run": 3,
+      "id": "h3-prom-07",
+      "chosen": "errored",
+      "pass": null
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 1,
+      "id": "h3-prom-07",
+      "chosen": "get_promises",
+      "pass": false
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 2,
+      "id": "h3-prom-07",
+      "chosen": "errored",
+      "pass": null
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 3,
+      "id": "h3-prom-07",
+      "chosen": "get_promises",
+      "pass": false
+    },
+    {
+      "wording": "HEAD c53622b, no get_promises",
+      "run": 1,
+      "id": "log-05",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "HEAD c53622b, no get_promises",
+      "run": 2,
+      "id": "log-05",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "HEAD c53622b, no get_promises",
+      "run": 3,
+      "id": "log-05",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 1,
+      "id": "log-05",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 2,
+      "id": "log-05",
+      "chosen": null,
+      "pass": false
+    },
+    {
+      "wording": "current (kept)",
+      "run": 3,
+      "id": "log-05",
+      "chosen": null,
+      "pass": false
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 1,
+      "id": "log-05",
+      "chosen": null,
+      "pass": false
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 2,
+      "id": "log-05",
+      "chosen": null,
+      "pass": false
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 3,
+      "id": "log-05",
+      "chosen": null,
+      "pass": false
+    },
+    {
+      "wording": "current (kept)",
+      "run": 1,
+      "id": "prom-01",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 2,
+      "id": "prom-01",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 3,
+      "id": "prom-01",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 1,
+      "id": "prom-01",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 2,
+      "id": "prom-01",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 3,
+      "id": "prom-01",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 1,
+      "id": "prom-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 2,
+      "id": "prom-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 3,
+      "id": "prom-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 1,
+      "id": "prom-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 2,
+      "id": "prom-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 3,
+      "id": "prom-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 1,
+      "id": "prom-03",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 2,
+      "id": "prom-03",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 3,
+      "id": "prom-03",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 1,
+      "id": "prom-03",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 2,
+      "id": "prom-03",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 3,
+      "id": "prom-03",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "HEAD c53622b, no get_promises",
+      "run": 1,
+      "id": "shift-01",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "HEAD c53622b, no get_promises",
+      "run": 2,
+      "id": "shift-01",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "HEAD c53622b, no get_promises",
+      "run": 3,
+      "id": "shift-01",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "current (kept)",
+      "run": 1,
+      "id": "shift-01",
+      "chosen": "get_care_summary\" />",
+      "pass": false
+    },
+    {
+      "wording": "current (kept)",
+      "run": 2,
+      "id": "shift-01",
+      "chosen": "get_care_summary",
+      "pass": false
+    },
+    {
+      "wording": "current (kept)",
+      "run": 3,
+      "id": "shift-01",
+      "chosen": "get_care_summary",
+      "pass": false
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 1,
+      "id": "shift-01",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 2,
+      "id": "shift-01",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 3,
+      "id": "shift-01",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "HEAD c53622b, no get_promises",
+      "run": 1,
+      "id": "sum-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "HEAD c53622b, no get_promises",
+      "run": 2,
+      "id": "sum-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "HEAD c53622b, no get_promises",
+      "run": 3,
+      "id": "sum-02",
+      "chosen": "get_care_summary\" />",
+      "pass": false
+    },
+    {
+      "wording": "current (kept)",
+      "run": 1,
+      "id": "sum-02",
+      "chosen": "get_care_summary\" />",
+      "pass": false
+    },
+    {
+      "wording": "current (kept)",
+      "run": 2,
+      "id": "sum-02",
+      "chosen": "get_care_summary\" />",
+      "pass": false
+    },
+    {
+      "wording": "current (kept)",
+      "run": 3,
+      "id": "sum-02",
+      "chosen": "get_care_summary\" />",
+      "pass": false
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 1,
+      "id": "sum-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 2,
+      "id": "sum-02",
+      "chosen": null,
+      "pass": true
+    },
+    {
+      "wording": "V1 (dropped): shorter, fewer example questions, points gaps to get_care_gaps",
+      "run": 3,
+      "id": "sum-02",
+      "chosen": null,
+      "pass": true
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "modelId": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+  "total": 30,
+  "passed": 29,
+  "accuracy": 0.9666666666666667,
+  "errored": 0,
+  "byCategory": [
+    {
+      "category": "hpdone",
+      "passed": 9,
+      "total": 10
+    },
+    {
+      "category": "hpcant",
+      "passed": 10,
+      "total": 10
+    },
+    {
+      "category": "hplate",
+      "passed": 10,
+      "total": 10
+    }
+  ],
+  "splits": [
+    {
+      "split": "authored",
+      "passed": 0,
+      "total": 0
+    },
+    {
+      "split": "held-out",
+      "passed": 19,
+      "total": 20
+    },
+    {
+      "split": "seen",
+      "passed": 10,
+      "total": 10
+    }
+  ],
+  "failures": [
+    {
+      "case": {
+        "id": "hpdone-06",
+        "member": "m_aide",
+        "utterance": "I don carry Daddy go hospital since morning.",
+        "expect": [
+          "resolve_obligation",
+          "get_care_gaps",
+          "get_my_requests"
+        ],
+        "note": "Pidgin: I took Daddy to the hospital this morning."
+      },
+      "chosen": "log_care_event",
+      "args": {
+        "kind": "check_in",
+        "aboutMemberId": "Daddy",
+        "detail": "I don carry Daddy go hospital since morning"
+      },
+      "pass": false,
+      "reason": "chose log_care_event; expected resolve_obligation or get_care_gaps or get_my_requests"
+    }
+  ],
+  "errors": []
+}

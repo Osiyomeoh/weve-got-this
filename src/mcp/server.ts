@@ -34,6 +34,7 @@ import {
 import {
   registerGetCareSummary,
   registerGetConnections,
+  registerGetPromises,
   registerGetProvenance,
   registerGetShiftBrief,
 } from './tools/insight.js';
@@ -50,6 +51,7 @@ import {
   registerCareBoardResource,
   registerCareStateResource,
   registerMeResource,
+  registerPromisesResource,
 } from './resources.js';
 import { registerDailyCheckPrompt, registerWeeklyReviewPrompt } from './prompts.js';
 
@@ -202,10 +204,13 @@ function populate(server: McpServer, { store, actorId, ...opts }: ServerContext)
   registerChangeMedication(ctx);
   registerChangeAppointment(ctx);
   registerRaiseUrgent(ctx);
+  // Last, so adding it left every earlier tool where the selection evals measured it.
+  registerGetPromises(ctx);
 
   registerMeResource(ctx);
   registerCareStateResource(ctx);
   registerCareBoardResource(ctx);
+  registerPromisesResource(ctx);
   registerDailyCheckPrompt(ctx);
   registerWeeklyReviewPrompt(ctx);
 

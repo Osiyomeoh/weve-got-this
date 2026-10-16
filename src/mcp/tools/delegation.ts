@@ -223,6 +223,18 @@ export function registerRespondToRequest({
         // yes leaves it where it is. Nobody else can hand back someone else's work.
         const owned = o.status === 'ASSIGNED' && o.ownerId === me.id;
         if (owned && accepted) {
+          // Kept, so "still on" is on the trail beside the yes, and the app does not tell
+          // the primary caregiver later that the check-in went unanswered.
+          await store.appendEvent({
+            householdId: me.householdId,
+            kind: 'request_answered',
+            reportedBy: me.id,
+            occurredAt: now().toISOString(),
+            source: 'voice',
+            confidence: 'confirmed',
+            ...(note ? { detail: note } : {}),
+            data: { obligationId, accepted: true, stillOn: true },
+          });
           return reply(`Thanks - ${asTask(o.what)} stays with you.`, {
             obligationId,
             ownerId: me.id,

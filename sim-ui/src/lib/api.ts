@@ -56,6 +56,20 @@ export interface DoseSlot {
   recorded: { at: string; saidBy: string | null; via?: string } | null;
 }
 
+/** Something a person said yes to this week, and where it stands (see src/domain/promises.ts). */
+export interface WeekPromise {
+  obligationId: string;
+  what: string;
+  dueAt?: string;
+  due?: string | null;
+  promisedBy: string;
+  owner: string | null;
+  stage: 'promised' | 'checking' | 'still_on' | 'done' | 'open' | 'asking' | 'set_aside';
+  steps: { kind: string; at: string; who?: string; to?: string; detail: string }[];
+  evidence: string[];
+  spoken: string;
+}
+
 export interface BoardState {
   household?: { id: string; name: string; timezone: string };
   members?: BoardMember[];
@@ -64,6 +78,7 @@ export interface BoardState {
   obligations?: Obligation[];
   offers?: Offer[];
   notifications?: Notification[];
+  promises?: WeekPromise[];
 }
 
 export interface ToolCall {

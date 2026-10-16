@@ -970,6 +970,59 @@
 .world-score-open li {
   color: #ffb4a8;
 }
+/* The family's word: what each person said yes to. Waiting is amber, never red. */
+.world-score-promises {
+  margin-top: 12px;
+}
+.world-score-promises .sub {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 6px;
+}
+.world-score-promises ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+.world-score-promises li {
+  background: rgba(255, 255, 255, 0.05);
+  border-left: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.82);
+}
+.world-score-promises .chip {
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+.world-score-promises .stage-done,
+.world-score-promises .stage-still_on {
+  border-left-color: #7cf0c8;
+}
+.world-score-promises .stage-done .chip,
+.world-score-promises .stage-still_on .chip {
+  color: #7cf0c8;
+}
+.world-score-promises .stage-checking,
+.world-score-promises .stage-open,
+.world-score-promises .stage-asking {
+  border-left-color: #ffd27a;
+}
+.world-score-promises .stage-checking .chip,
+.world-score-promises .stage-open .chip,
+.world-score-promises .stage-asking .chip {
+  color: #ffd27a;
+}
 .world-score-total {
   margin-top: 12px;
   font-size: 14px;

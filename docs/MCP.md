@@ -3,9 +3,10 @@
 Everything a client needs: how to connect, what the server exposes, who is allowed
 to call what, and how to run your own.
 
-We've Got This is a **self-hosted MCP server** implementing spec **2025-11-25** over
-**Streamable HTTP**, built on `@modelcontextprotocol/sdk` 1.30.0. It exposes 23
-tools, 2 resources, 2 prompts, and one interactive view via the
+We've Got This is a **self-hosted MCP server** over **Streamable HTTP**. It speaks spec
+**2025-11-25** (sessions, `@modelcontextprotocol/sdk` 1.30.0) and **2026-07-28** (stateless,
+the v2 SDK 2.1.0) on the same endpoint, with the same tools. It exposes 29 tools,
+4 resources, 2 prompts, and two interactive views via the
 [MCP Apps extension](#the-care-board-mcp-apps).
 
 One idea governs the whole surface, and a client that ignores it will produce
@@ -184,7 +185,7 @@ to do next, and should be acted on rather than reported as a failure.
 
 ## Tools
 
-23 tools. Every one exists because a person says a sentence that needs it; there is
+29 tools. Every one exists because a person says a sentence that needs it; there is
 no tool here that mirrors a database table for its own sake.
 
 `?` marks an optional argument.
@@ -197,6 +198,14 @@ no tool here that mirrors a database table for its own sake.
 | `record_appointment` | `kind`, `startsAt`, `forMemberId?`, `detail?` | May generate `PROPOSED` work (a ride, someone to take notes) that a human must confirm. |
 | `add_note` | `note`, `aboutMemberId?`, `unavailable?` | `unavailable` (`memberName`, `from`, `to`) records that someone *cannot* cover a window - work they were quietly covering may stop being covered. |
 | `ingest_signal` | `source`, `kind`, `occurredAt?`, `detail?` | The device seam. Any external observation (Ring, a wearable) enters here and becomes an `INFERRED` proposal, never a fact. |
+
+### When care changes
+
+| Tool | Arguments | Notes |
+|---|---|---|
+| `change_medication` | `medicationName`, `forMemberId?`, `times?`, `until?`, `stopNow?`, `newName?`, `alsoCalled?` | New dose times, a last day, stopped now, or a corrected name. The record keeps what it was; it is just no longer expected. |
+| `change_appointment` | `appointment`, `forMemberId?`, `newStartsAt?`, `cancel?` | Moves or cancels one already on the record. What was arranged for it, like a ride, moves or is called off with it, and whoever had it is told. Needs `create_obligation`. |
+| `raise_urgent` | `what`, `forMemberId?` | A fall, chest pain, can't be reached: tells everyone in the family at once. It does not call emergency services; it tells the person to, with the local number. |
 
 ### Finding and moving responsibility
 
@@ -234,6 +243,8 @@ rather than the same one twice.
 |---|---|---|
 | `get_care_summary` | – | How the person being cared for is doing. Read-only. |
 | `get_shift_brief` | – | What this shift needs to know. The one read a `helper` is allowed. |
+| `get_promises` | – | "What did everyone say yes to this week?" Each promise with its trail: who said yes and when, any "still on?" check-in and its answer, a hand-back, a done, and what the doorbell saw around then. Due work with nothing marked is "nothing's been marked yet", never a promise broken. Read-only; needs `read_full_state`. Renders [its own view](#this-weeks-promises). |
+| `get_connections` | – | What the family's record is connected to (Calendar, Gmail, Ring, Bee, WhatsApp, Telegram), each LIVE, CONFIGURED or NOT CONNECTED. A door that has never carried an event is not called live. Read-only. |
 | `get_provenance` | `obligationId` | "How do you know that?" Walks the whole chain behind one obligation - how it arose (confirmed, guessed, or no record), the signal it came from, every ownership move - and speaks it without ever stating more certainty than the record carries. Read-only. |
 | `notify_member` | `recipientName`, `message` | Records the message, and delivers over SNS when configured. |
 
@@ -252,6 +263,7 @@ payment is taken - but the shape is what a real merchant integration would retur
 
 | Tool | Arguments | Notes |
 |---|---|---|
+| `get_started` | – | Call first for someone new. Returns the single next setup step, phrased to speak, and on a demo copy its family code. Read-only. |
 | `create_household` | `name`, `timezone`, `callerName`, `spokenAs?` | Bootstrap. `timezone` must be a valid IANA name. |
 | `add_member` | `name`, `role`, `spokenAs?`, `subject?` | `manage_circle`. |
 | `add_medication` | `name`, `times`, `until?`, `forMemberId?`, `alsoCalled?` | `times` are 24-hour `"HH:MM"`. These are what "no record" is measured against. `alsoCalled` is `[{ language, name }]`: what the family calls it in another language (`change_medication` takes it too). A reader in that language hears that name, and it is matched when said. |
@@ -293,15 +305,17 @@ what they need is a person to say what actually happened.
 
 | URI | MIME | What |
 |---|---|---|
-| `carecircle://household/state` | `application/json` | The whole care picture: members, obligations with owner and provenance, gaps, open purchase offers, recent notifications. |
+| `carecircle://session/me` | `application/json` | Who this credential speaks for, what they may do, and who else is in the circle by name and part. A host reads it once and never asks the person who they are. |
+| `carecircle://household/state` | `application/json` | The whole care picture: members, obligations with owner and provenance, today's doses and schedule, gaps, this week's promises, open purchase offers, recent notifications. |
 | `ui://carecircle/care-board.html` | `text/html;profile=mcp-app` | The Care Board view. See below. |
+| `ui://carecircle/promises.html` | `text/html;profile=mcp-app` | This week's promises, drawn. See below. |
 
 ## Prompts
 
 | Name | What it asks |
 |---|---|
 | `daily-check` | Today's summary, then anything that still has no owner. |
-| `weekly-review` | What is going to fall through the cracks this week. |
+| `weekly-review` | What is going to fall through the cracks this week, then who said yes to what. |
 
 ---
 
@@ -335,6 +349,16 @@ its ranking, and claim work with a tap. Claiming issues a real `tools/call` to
 that is already taken.
 
 Verified rendering in MCPJam against this live server.
+
+### This week's promises
+
+`get_promises` is an MCP App too, declared the same way: both metadata spellings, one
+self-contained document, empty CSP domain lists. It draws each promise with where it
+stands (said yes, checking in, still on, done, handed back) and a "How we know" trail
+under it: the ask, the yes, any "still on?" and its answer, the done, and what the doorbell
+saw beside it. It is read-only on purpose. Promising is a person's act, so the view shows
+promises and never makes one, and work due with nothing marked is drawn as "Checking in",
+never in an alarm colour.
 
 ---
 

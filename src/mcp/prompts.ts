@@ -40,7 +40,8 @@ export function registerWeeklyReviewPrompt({ server }: ToolContext): void {
     'weekly-review',
     {
       title: 'Weekly review',
-      description: 'What is coming up this week, and what nobody has claimed.',
+      description:
+        'What is coming up this week, what nobody has claimed, and who said yes to what.',
       argsSchema: {},
     },
     () => ({
@@ -51,7 +52,8 @@ export function registerWeeklyReviewPrompt({ server }: ToolContext): void {
             type: 'text' as const,
             text:
               'What is going to fall through the cracks this week? Use the care gaps for the ' +
-              'next seven days, read the most urgent ones, and ask who can take them.',
+              'next seven days, read the most urgent ones, and ask who can take them. Then read ' +
+              "this week's promises, so the family hears what is already covered and by whom.",
           },
         },
       ],

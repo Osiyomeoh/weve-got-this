@@ -16,10 +16,19 @@ import { describeConnections } from '../../domain/connections.js';
 import { detectCareGaps, pendingProposals } from '../../domain/gaps.js';
 import { asReadBy } from '../../domain/language.js';
 import { asTask, clockTime, dueSpoken, isLocalToday } from '../../domain/local-time.js';
+import { promisesThisWeek } from '../../domain/promises.js';
 import { explainProvenance } from '../../domain/provenance.js';
+import { appToolMeta } from '../app/protocol.js';
 import { OUT } from '../output-schemas.js';
 import { countPhrase, joinSpoken, sentence, speakGaps } from '../text.js';
-import { describeError, guidance, reply, type ToolContext, obligationFrom } from '../toolkit.js';
+import {
+  describeError,
+  guidance,
+  reply,
+  type ToolContext,
+  obligationFrom,
+  PROMISES_URI,
+} from '../toolkit.js';
 
 /**
  * "How do we know that?"
@@ -74,6 +83,69 @@ export function registerGetProvenance({
           what: explanation.what,
           owner: explanation.owner,
           chain: explanation.chain,
+        });
+      } catch (err) {
+        return guidance(describeError(err));
+      }
+    },
+  );
+}
+
+/** Beyond this many, a spoken week of promises stops being something a person can hold. */
+const PROMISES_SPOKEN = 3;
+
+/**
+ * "What did everyone say yes to this week?"
+ */
+export function registerGetPromises({
+  server,
+  store,
+  now,
+  actor,
+  state,
+  nameOf,
+}: ToolContext): void {
+  server.registerTool(
+    'get_promises',
+    {
+      title: "This week's promises",
+      description:
+        "This week's promises: everything somebody in the family said yes to, and what " +
+        'has happened since - "what did everyone say yes to this week?", "who promised ' +
+        'what?", "is everything people signed up for still on?", "what has the family taken ' +
+        'on this week?". For each one: who said yes and when, any "still on?" check-in and ' +
+        'its answer, whether it was handed back, and whether it was marked done, with what ' +
+        'the doorbell saw around then. Read-only. Speak the result as written: work that is ' +
+        'due with nothing marked is "nothing\'s been marked yet", never a promise broken.',
+      inputSchema: {},
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
+      outputSchema: OUT.get_promises,
+      // On a host that can draw, the week also renders as a card (./app/promises-card.ts).
+      _meta: appToolMeta(PROMISES_URI),
+    },
+    async () => {
+      try {
+        const me = actor();
+        requireCap(me, 'read_full_state');
+        const s = state();
+        const at = now();
+        const tz = s.household.timezone;
+        const promises = promisesThisWeek(s, (id) => store.getTransitions(id), nameOf, at);
+        if (!promises.length) {
+          return reply('Nobody has said yes to anything this week yet.', { promises: [] });
+        }
+        const rest = promises.length - PROMISES_SPOKEN;
+        const spoken =
+          `${sentence(countPhrase(promises.length, 'promise'))} this week. ` +
+          promises
+            .slice(0, PROMISES_SPOKEN)
+            .map((p) => p.spoken)
+            .join(' ') +
+          (rest > 0
+            ? ` There ${rest === 1 ? 'is' : 'are'} ${countPhrase(rest, 'more', 'more')}.`
+            : '');
+        return reply(spoken, {
+          promises: promises.map((p) => ({ ...p, due: dueSpoken(p.dueAt, tz, at) })),
         });
       } catch (err) {
         return guidance(describeError(err));
