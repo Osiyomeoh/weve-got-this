@@ -102,6 +102,10 @@ it was, because the workaround usually shows what the platform should have done.
   works however long the gap is, with nothing parked. It works, but it's working around a
   protocol assumption that doesn't hold for voice. Either document the pattern, or let a
   server mark a tool's elicitation as something that can be answered later.
+- **Since then:** MCP 2026-07-28's `input_required` lets the answer come back on a later
+  request, carrying state the server signed. That fits a voice turn. We now use it for a
+  person's own yes (MCP.md, "The yes comes from the person"). What's still open is how
+  Alexa+ would show the form.
 
 ### Confirmation before actions that matter
 - **Urgency:** important

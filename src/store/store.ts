@@ -30,6 +30,8 @@ export interface ObligationTransition {
   note?: string;
   /** The AI agent the move came through, when it named itself as one we know. */
   via?: string;
+  /** The person pressed Yes on their own client's form (see mcp/elicit.ts). */
+  onForm?: true;
 }
 
 /** Persistence is deliberately behind an interface so hosting can change later. */
@@ -340,7 +342,7 @@ export class CareStore {
     byMemberId: string,
     changes: Partial<
       Pick<Obligation, 'ownerId' | 'resolutionNote' | 'resolvedAt' | 'request' | 'declinedBy'>
-    > & { clearRequest?: boolean } = {},
+    > & { clearRequest?: boolean; onForm?: boolean } = {},
     note?: string,
   ): Promise<Obligation> {
     // The obligation as the caller saw it when it decided. Two claims at once both saw the
@@ -376,6 +378,7 @@ export class CareStore {
         ),
         ...(note ? { note } : {}),
         ...(via ? { via } : {}),
+        ...(changes.onForm ? { onForm: true as const } : {}),
       });
       return o;
     });

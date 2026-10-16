@@ -124,9 +124,9 @@ will not have.
         +------------+-------+-------+------------+
         v            v               v            v
     Resources      Tools          Prompts     Elicitation
-    care state     log event      daily check  confirm a
-    timeline       claim gap      weekly       proposed
-    family         add note       review       obligation
+    care state     log event      daily check  the person's
+    timeline       claim gap      weekly       own yes to
+    family         add note       review       take work on
         |            |
         +------------+
                   v
@@ -141,7 +141,9 @@ Design rules for the tool layer:
 - Errors instruct the model on what to do next; they are not stack traces.
 - Ambiguity is resolved by asking ("which Thursday appointment?"), never by guessing.
 - Responses are shaped to be **spoken aloud** without reformatting.
-- Write actions that carry consequence require confirmation via elicitation.
+- A yes that makes a promise is pressed by the person, on a client that can show a form
+  (elicitation); the model's call only puts the question in front of them. Clients without
+  forms keep the spoken path. See MCP.md, "The yes comes from the person".
 
 ---
 

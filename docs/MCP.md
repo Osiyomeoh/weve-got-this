@@ -237,6 +237,36 @@ rather than the same one twice.
 | `get_my_requests` | – | "What have I been asked to do?" Read-only. Use before `respond_to_request` when the id is not known. |
 | `run_care_agent` | `dryRun?` | Lets the agent look for slipping work itself and ask an owner - never assigns. `dryRun` reports what it would do without doing it. |
 
+#### The yes comes from the person (elicitation)
+
+A yes makes a promise, so on a client that can show forms the person gives it themselves.
+When the model calls `claim_obligation`, or `respond_to_request` with `accepted: true`, the
+server puts a form in front of the person and records only what they press. The model
+cannot fill that form in.
+
+| The model calls | The form shows | Choices |
+|---|---|---|
+| `claim_obligation` | "Take this on?" and the work | Yes, it's mine / Not now |
+| `respond_to_request` on an ask | who asked, and the work | Yes, I'll do it / Not this time |
+| `respond_to_request` on a "still on?" check-in | "Is this still on?" and the work | Yes, still on / Can't make it after all |
+
+- **What gets recorded:**
+  - Yes is recorded, marked as pressed. The promises page and `get_provenance` then say "pressed Yes".
+  - The second choice is the person's own no, even though the model heard a yes:
+    - for an ask, it is recorded as a decline;
+    - for a check-in, it hands the work back;
+    - for `claim_obligation`, nothing changes.
+  - A form closed without an answer records nothing. The model is told that the work is still waiting for the person's yes.
+- **No is never gated.** `respond_to_request` with `accepted: false` never shows a form.
+- **Clients without forms are unchanged.** A client that does not declare the `elicitation` capability gets today's spoken path: the model's call is the answer.
+- **On MCP 2025-11-25:**
+  - The form is an `elicitation/create` request sent on the open tool call's response stream.
+  - Only a session whose client declared `elicitation` at initialize gets streamed (SSE) responses. Every other session stays on plain JSON.
+- **On MCP 2026-07-28:**
+  - The tool answers `input_required` with the form inside, and the client retries with the person's answer.
+  - The answer is believed only alongside the server's signed `requestState`. The signature is an HMAC, and the state names the person and the work, and lasts ten minutes. Any instance can verify it.
+  - A retry whose state was altered is refused. A yes the server never asked for brings the form back instead.
+
 ### Reading the situation
 
 | Tool | Arguments | Notes |

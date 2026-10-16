@@ -57,6 +57,8 @@ export interface PromiseStep {
   to?: string;
   /** The AI agent it came through, when one named itself. */
   via?: string;
+  /** The person pressed it on their own client's form; no model gave this answer for them. */
+  onForm?: true;
   /** One line, safe to read aloud. */
   detail: string;
 }
@@ -144,12 +146,16 @@ function eventSteps(
         steps.push({ kind: 'asked', ...base, detail: `${by} asked ${askedOf}${on}.` });
       }
     } else if (e.kind === 'request_answered' && e.data['stillOn'] === true) {
+      const pressed = e.data['onForm'] === true;
       steps.push({
         kind: 'still_on',
         at: e.occurredAt,
         who,
         ...via,
-        detail: `${by} said it's still on${on}.`,
+        ...(pressed ? { onForm: true as const } : {}),
+        detail: pressed
+          ? `${by} pressed Yes to say it's still on${on}.`
+          : `${by} said it's still on${on}.`,
       });
     }
   }
@@ -186,15 +192,30 @@ function transitionSteps(
     const who = named ?? 'someone';
     const by = `${capital(who)}${t.via ? `, through ${t.via},` : ''}`;
     const on = when(t.at, timezone, now);
-    const base = { at: t.at, who, ...(t.via ? { via: t.via } : {}) };
+    const base = {
+      at: t.at,
+      who,
+      ...(t.via ? { via: t.via } : {}),
+      ...(t.onForm ? { onForm: true as const } : {}),
+    };
     if (t.to === 'ASSIGNED') {
       const own =
         !!named &&
         ((t === lastAssign && t.byMemberId === o.ownerId) || answered(t.byMemberId, true));
       if (own && t.from === 'REQUESTED')
-        steps.push({ kind: 'yes', ...base, detail: `${by} said yes${on}.` });
+        steps.push({
+          kind: 'yes',
+          ...base,
+          detail: t.onForm ? `${by} pressed Yes${on}.` : `${by} said yes${on}.`,
+        });
       else if (own)
-        steps.push({ kind: 'took_on', ...base, detail: `${by} offered to take it on${on}.` });
+        steps.push({
+          kind: 'took_on',
+          ...base,
+          detail: t.onForm
+            ? `${by} pressed Yes to take it on${on}.`
+            : `${by} offered to take it on${on}.`,
+        });
       else {
         const holder = t === lastAssign ? nameOf(o.ownerId) : undefined;
         steps.push({

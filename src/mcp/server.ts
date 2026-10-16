@@ -12,6 +12,7 @@ import type { Member } from '../domain/types.js';
 import { RecordOnlyNotifier, type Notifier } from '../notify/notifier.js';
 import type { CareStore } from '../store/store.js';
 import { closed, type ToolContext } from './toolkit.js';
+import { verifyFormState } from './elicit.js';
 import {
   registerAddNote,
   registerLogCareEvent,
@@ -105,8 +106,11 @@ export function createCareCircleServer(context: ServerContext): McpServer {
  */
 export function createCareCircleServerV2(context: ServerContext): McpServerV2 {
   // The v2 McpServer takes the same register* calls this module makes; the type is v1's.
+  // A form's answer comes back on a later request, so it is believed only with the signed
+  // state this server sent out with the form (see elicit.ts).
+  const options = { ...SERVER_OPTIONS, requestState: { verify: verifyFormState } };
   return populate(
-    new McpServerV2(SERVER_INFO, SERVER_OPTIONS) as unknown as McpServer,
+    new McpServerV2(SERVER_INFO, options) as unknown as McpServer,
     context,
   ) as unknown as McpServerV2;
 }

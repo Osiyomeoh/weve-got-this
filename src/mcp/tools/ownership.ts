@@ -13,6 +13,8 @@ import { appToolMeta } from '../app/protocol.js';
 import { OUT } from '../output-schemas.js';
 import { joinSpoken, speakGaps } from '../text.js';
 import { askMember } from './delegation.js';
+import { askOnForm, canAskOnForm, dueLine, unansweredGuidance, unchangedSince } from '../elicit.js';
+import { RecordChangedError } from '../../store/store.js';
 import {
   CARE_BOARD_URI,
   describeError,
@@ -132,7 +134,14 @@ export function registerGetCareGaps({ server, now, actor, state, nameOf }: ToolC
 /**
  * "I'll take that one."
  */
-export function registerClaimObligation({ server, store, actor, nameOf }: ToolContext): void {
+export function registerClaimObligation({
+  server,
+  store,
+  now,
+  actor,
+  state,
+  nameOf,
+}: ToolContext): void {
   server.registerTool(
     'claim_obligation',
     {
@@ -148,7 +157,7 @@ export function registerClaimObligation({ server, store, actor, nameOf }: ToolCo
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
       outputSchema: OUT.claim_obligation,
     },
-    async ({ obligationId: ref }) => {
+    async ({ obligationId: ref }, extra: unknown) => {
       try {
         const me = actor();
         requireCap(me, 'claim_obligation');
@@ -165,8 +174,34 @@ export function registerClaimObligation({ server, store, actor, nameOf }: ToolCo
             `${nameOf(o.ownerId)} already has "${o.what}". Ask whether they want to take it over.`,
           );
         }
+        // Taking work on is a promise, so on a client that can show a form it is the
+        // person's own Yes, not the model's reading of what they said (see ../elicit.ts).
+        let onForm = false;
+        if (o.ownerId !== me.id && canAskOnForm(server, extra)) {
+          const answer = await askOnForm(extra, {
+            kind: 'claim',
+            actorId: me.id,
+            obligationId,
+            message: `Take this on?\n\n${o.what}${dueLine(o, state().household.timezone, now())}`,
+            yes: "Yes, it's mine",
+            no: 'Not now',
+          });
+          if (answer.kind === 'shown') return answer.result;
+          if (answer.kind === 'unanswered') return guidance(unansweredGuidance(o.what));
+          if (answer.kind === 'not_now') {
+            return reply(`Okay - nothing's changed, and ${asTask(o.what)} is still open.`, {
+              obligationId,
+              ownerId: o.ownerId,
+            });
+          }
+          if (!unchangedSince(o, store.getObligation(obligationId, me.householdId))) {
+            return guidance(describeError(new RecordChangedError()));
+          }
+          onForm = true;
+        }
         const updated = await store.transition(obligationId, me.householdId, 'ASSIGNED', me.id, {
           ownerId: me.id,
+          onForm,
         });
         return reply(`Done - ${o.what} is yours.`, { obligationId: updated.id, ownerId: me.id });
       } catch (err) {

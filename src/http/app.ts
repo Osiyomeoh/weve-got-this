@@ -25,6 +25,7 @@ import { DEMO_HOUSEHOLD_ID } from '../demo/seed.js';
 import { STORY_TIME_HEADER, storyAware, storyTimeFor, withStoryTime } from './story-clock.js';
 import { CHANNEL_HEADER, channelOf, withChannel } from '../mcp/channel.js';
 import { agentOfRequest, currentAgent, withAgent } from '../mcp/agent.js';
+import { declaresForms } from '../mcp/elicit.js';
 
 /**
  * Streamable HTTP transport (MCP spec 2025-11-25).
@@ -457,9 +458,16 @@ export function createCareCircleApp({
     const server = createCareCircleServer({ store, actorId, notifier: messenger, now: clock });
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: () => randomUUID(),
-      enableJsonResponse: true,
+      // Plain JSON answers, except for a client that can show forms: a form is sent while
+      // the tool call is open, on that call's response stream (see mcp/elicit.ts).
+      enableJsonResponse: !declaresForms(req.body),
       onsessioninitialized: (id) => {
         sessions.set(id, { server, transport, actorId, agent: agentOfRequest(req.body) });
+        // Which clients can show the person a form. The client's name and a yes/no only.
+        log.info('session started', {
+          agent: agentOfRequest(req.body) ?? 'unnamed',
+          forms: declaresForms(req.body),
+        });
       },
       onsessionclosed: (id) => {
         sessions.delete(id);

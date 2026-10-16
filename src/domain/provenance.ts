@@ -188,7 +188,9 @@ function ownershipStep(
       // row is that owner, they took it on themselves and we can say so; otherwise we only
       // record that it became owned, never inferring the owner from who wrote the row.
       if (t.byMemberId && t.byMemberId === ownerId && nameOf(t.byMemberId)) {
-        return { at: t.at, certainty: 'recorded', detail: `${who} took it on${on}${note}.` };
+        // Pressed on their own client's form, not read by a model from what they said.
+        const took = t.onForm ? 'pressed Yes and took it on' : 'took it on';
+        return { at: t.at, certainty: 'recorded', detail: `${who} ${took}${on}${note}.` };
       }
       return { at: t.at, certainty: 'recorded', detail: `It became owned${on}${note}.` };
     case 'RESOLVED':

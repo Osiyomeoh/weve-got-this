@@ -14,6 +14,8 @@ import { currentAgent } from '../agent.js';
 import { joinSpoken, sentence } from '../text.js';
 import { BRAND } from '../../domain/brand.js';
 import { describeError, guidance, reply, type ToolContext, obligationFrom } from '../toolkit.js';
+import { askOnForm, canAskOnForm, dueLine, unansweredGuidance, unchangedSince } from '../elicit.js';
+import { RecordChangedError } from '../../store/store.js';
 
 /**
  * "Ask Funmi if she can take him."
@@ -214,7 +216,7 @@ export function registerRespondToRequest({
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
       outputSchema: OUT.respond_to_request,
     },
-    async ({ obligationId: ref, accepted, note }) => {
+    async ({ obligationId: ref, accepted, note }, extra: unknown) => {
       try {
         const me = actor();
         const o = obligationFrom(store, ref, me.householdId);
@@ -222,25 +224,6 @@ export function registerRespondToRequest({
         // The owner answering a check-in: a no hands the work back like any decline, a
         // yes leaves it where it is. Nobody else can hand back someone else's work.
         const owned = o.status === 'ASSIGNED' && o.ownerId === me.id;
-        if (owned && accepted) {
-          // Kept, so "still on" is on the trail beside the yes, and the app does not tell
-          // the primary caregiver later that the check-in went unanswered.
-          await store.appendEvent({
-            householdId: me.householdId,
-            kind: 'request_answered',
-            reportedBy: me.id,
-            occurredAt: now().toISOString(),
-            source: 'voice',
-            confidence: 'confirmed',
-            ...(note ? { detail: note } : {}),
-            data: { obligationId, accepted: true, stillOn: true },
-          });
-          return reply(`Thanks - ${asTask(o.what)} stays with you.`, {
-            obligationId,
-            ownerId: me.id,
-            status: 'ASSIGNED',
-          });
-        }
         if (!owned && (o.status !== 'REQUESTED' || !o.request)) {
           return guidance(
             `Nobody has an outstanding request for "${o.what}". ` +
@@ -256,13 +239,73 @@ export function registerRespondToRequest({
           );
         }
 
-        if (accepted) {
+        // A yes is a promise, so on a client that can show a form the person gives it
+        // themselves (see ../elicit.ts). What they press is the answer: "Not this time"
+        // there is their no, even though the model heard a yes.
+        let yes = accepted;
+        let onForm = false;
+        if (accepted && canAskOnForm(server, extra)) {
+          const due = dueLine(o, state().household.timezone, now());
+          const asker = o.request && (nameOf(o.request.askedById) ?? 'Someone');
+          const answer = await askOnForm(
+            extra,
+            owned
+              ? {
+                  kind: 'still_on',
+                  actorId: me.id,
+                  obligationId,
+                  message: `Is this still on?\n\n${o.what}${due}`,
+                  yes: 'Yes, still on',
+                  no: "Can't make it after all",
+                }
+              : {
+                  kind: 'ask',
+                  actorId: me.id,
+                  obligationId,
+                  message:
+                    `${asker} asked${o.request?.via ? `, through ${o.request.via},` : ''} ` +
+                    `if you can take this on:\n\n${o.what}${due}`,
+                  yes: "Yes, I'll do it",
+                  no: 'Not this time',
+                },
+          );
+          if (answer.kind === 'shown') return answer.result;
+          if (answer.kind === 'unanswered') return guidance(unansweredGuidance(o.what));
+          if (!unchangedSince(o, store.getObligation(obligationId, me.householdId))) {
+            return guidance(describeError(new RecordChangedError()));
+          }
+          onForm = true;
+          yes = answer.kind === 'yes';
+        }
+        const form = onForm ? { onForm: true } : {};
+
+        if (owned && yes) {
+          // Kept, so "still on" is on the trail beside the yes, and the app does not tell
+          // the primary caregiver later that the check-in went unanswered.
+          await store.appendEvent({
+            householdId: me.householdId,
+            kind: 'request_answered',
+            reportedBy: me.id,
+            occurredAt: now().toISOString(),
+            source: 'voice',
+            confidence: 'confirmed',
+            ...(note ? { detail: note } : {}),
+            data: { obligationId, accepted: true, stillOn: true, ...form },
+          });
+          return reply(`Thanks - ${asTask(o.what)} stays with you.`, {
+            obligationId,
+            ownerId: me.id,
+            status: 'ASSIGNED',
+          });
+        }
+
+        if (yes) {
           await store.transition(
             obligationId,
             me.householdId,
             'ASSIGNED',
             me.id,
-            { ownerId: me.id, clearRequest: true },
+            { ownerId: me.id, clearRequest: true, onForm },
             note,
           );
           await store.appendEvent({
@@ -273,7 +316,7 @@ export function registerRespondToRequest({
             source: 'voice',
             confidence: 'confirmed',
             ...(note ? { detail: note } : {}),
-            data: { obligationId, accepted: true },
+            data: { obligationId, accepted: true, ...form },
           });
           return reply(`Thanks, that's yours now: ${asTask(o.what)}.`, {
             obligationId,
@@ -290,7 +333,7 @@ export function registerRespondToRequest({
           me.householdId,
           'OPEN',
           me.id,
-          { ownerId: null, clearRequest: true, declinedBy },
+          { ownerId: null, clearRequest: true, declinedBy, onForm },
           note,
         );
         await store.appendEvent({
@@ -301,7 +344,7 @@ export function registerRespondToRequest({
           source: 'voice',
           confidence: 'confirmed',
           ...(note ? { detail: note } : {}),
-          data: { obligationId, accepted: false },
+          data: { obligationId, accepted: false, ...form },
         });
         // A decline should move the loop forward, not dead-end it.
         const next = candidatesFor(
