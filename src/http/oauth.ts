@@ -114,8 +114,26 @@ export interface OAuthOptions {
    * than letting an open redirector pass unnoticed.
    */
   allowedRedirects?: string[];
+  /**
+   * Give each connection a private copy of the demo family instead of the shared one
+   * (see sandbox.ts `agentCopies`). Absent: everyone signs in to `members` as they are.
+   */
+  copies?: ConnectionCopies;
   now?: () => Date;
 }
+
+/** Private copies of the demo family, one per connection. Implemented in sandbox.ts. */
+export interface ConnectionCopies {
+  /** A fresh copy: the id `memberId` has inside it, and when the copy ends (ms). */
+  create(memberId: string): Promise<{ memberId: string; expiresAt: number }>;
+  /** `memberId` in the live copy a family code names, or null if there is none. */
+  join(code: string, memberId: string): { memberId: string; expiresAt: number } | null;
+  /** When the copy this member is in ends (ms), or null when they are not in a copy. */
+  expiresAt(memberId: string): number | null;
+}
+
+/** New copies one visitor may make in an hour. Generous for a person, a wall for a script. */
+const COPIES_PER_HOUR = 12;
 
 /**
  * Whether we will hand a code to this redirect URI.
@@ -147,6 +165,9 @@ export class OAuthProvider {
   readonly #opts: OAuthOptions;
 
   readonly #allowed: string[];
+
+  /** When each visitor made their recent copies, for COPIES_PER_HOUR. Per instance. */
+  readonly #made = new Map<string, number[]>();
 
   constructor(opts: OAuthOptions) {
     if (!opts.secret) throw new Error('OAuth requires a signing secret.');
@@ -266,7 +287,7 @@ export class OAuthProvider {
    * the household they are, which is honest about what it is rather than pretending
    * to a login it does not have.
    */
-  authorize = (req: Request, res: Response): void => {
+  authorize = async (req: Request, res: Response): Promise<void> => {
     const q = req.query as Record<string, string | undefined>;
     const { client_id, redirect_uri, code_challenge, code_challenge_method, state, member } = q;
 
@@ -324,10 +345,52 @@ export class OAuthProvider {
       return;
     }
 
+    // With copies on, the person signs in to a copy of the family, never the shared one:
+    // the one a family code names, or a new one of their own.
+    let sub = member;
+    const copies = this.#opts.copies;
+    if (copies) {
+      const family = q['family']?.trim();
+      if (family) {
+        const joined = copies.join(family, member);
+        if (!joined) {
+          res
+            .status(400)
+            .type('html')
+            .send(
+              this.#consentPage(
+                req,
+                'No family has that code. It may have ended; pick who you are to start a new one.',
+              ),
+            );
+          return;
+        }
+        sub = joined.memberId;
+      } else {
+        if (!this.#mayMakeCopy(req)) {
+          res.status(429).json({
+            error: 'temporarily_unavailable',
+            error_description: 'Too many new demo families from here. Try again in an hour.',
+          });
+          return;
+        }
+        try {
+          sub = (await copies.create(member)).memberId;
+        } catch (err) {
+          console.warn('[oauth] could not make a demo copy', { reason: (err as Error).message });
+          res.status(503).json({
+            error: 'temporarily_unavailable',
+            error_description: 'Could not set up a demo family just now. Try again.',
+          });
+          return;
+        }
+      }
+    }
+
     const iat = Math.floor(this.#now() / 1000);
     const code = signToken(
       {
-        sub: member,
+        sub,
         iss: this.#opts.issuer,
         aud: this.#opts.issuer,
         iat,
@@ -357,6 +420,15 @@ export class OAuthProvider {
         : null;
       if (!claims || claims.typ !== 'refresh') {
         res.status(400).json({ error: 'invalid_grant' });
+        return;
+      }
+      // A copy that has ended takes its members with it: sign in again for a new one.
+      const ends = this.#opts.copies?.expiresAt(claims.sub) ?? null;
+      if (ends !== null && ends <= this.#now()) {
+        res.status(400).json({
+          error: 'invalid_grant',
+          error_description: 'This demo family has ended. Connect again for a new one.',
+        });
         return;
       }
       res.json(this.#issue(claims.sub));
@@ -417,31 +489,53 @@ export class OAuthProvider {
   #issue(memberId: string): Record<string, unknown> {
     const iat = Math.floor(this.#now() / 1000);
     const base = { sub: memberId, iss: this.#opts.issuer, aud: this.#opts.issuer, iat };
+    // Nothing issued for a copy outlives it, so a token can only ever act inside it.
+    const ends = this.#opts.copies?.expiresAt(memberId) ?? null;
+    const cap = (exp: number): number =>
+      ends === null ? exp : Math.max(iat + 1, Math.min(exp, Math.floor(ends / 1000)));
+    const accessExp = cap(iat + TOKEN_TTL_S);
     return {
       access_token: signToken(
         {
           ...base,
-          exp: iat + TOKEN_TTL_S,
+          exp: accessExp,
           typ: 'access',
           scope: 'carecircle.read carecircle.write',
         },
         this.#opts.secret,
       ),
       token_type: 'Bearer',
-      expires_in: TOKEN_TTL_S,
+      expires_in: accessExp - iat,
       refresh_token: signToken(
-        { ...base, exp: iat + REFRESH_TTL_S, typ: 'refresh' },
+        { ...base, exp: cap(iat + REFRESH_TTL_S), typ: 'refresh' },
         this.#opts.secret,
       ),
       scope: 'carecircle.read carecircle.write',
     };
   }
 
-  #consentPage(req: Request): string {
+  /** Whether this visitor may make another copy now; records it when they may. */
+  #mayMakeCopy(req: Request): boolean {
+    const who = visitorOf(req);
+    // Development on this machine is never limited.
+    if (who === null) return true;
+    const now = this.#now();
+    for (const [k, times] of this.#made) {
+      const recent = times.filter((t) => now - t < 3600_000);
+      if (recent.length) this.#made.set(k, recent);
+      else this.#made.delete(k);
+    }
+    const recent = this.#made.get(who) ?? [];
+    if (recent.length >= COPIES_PER_HOUR) return false;
+    this.#made.set(who, [...recent, now]);
+    return true;
+  }
+
+  #consentPage(req: Request, problem?: string): string {
     const q = req.query as Record<string, string | undefined>;
     const keep = ['client_id', 'redirect_uri', 'code_challenge', 'code_challenge_method', 'state'];
-    const buttons = this.#opts
-      .members()
+    const members = this.#opts.members();
+    const buttons = members
       .map((m) => {
         const url = new URL(`${this.#opts.issuer}/oauth/authorize`);
         for (const k of keep) if (q[k]) url.searchParams.set(k, q[k]!);
@@ -449,6 +543,27 @@ export class OAuthProvider {
         return `<a class="who" href="${url.pathname}${url.search}">${escapeHtml(m.name)}</a>`;
       })
       .join('');
+    const copies = !!this.#opts.copies;
+    const lead = copies
+      ? "You get your own copy of a demo family: the same people and the same week, and nothing you do reaches anyone else's. Who are you in it?"
+      : 'Who is setting this up? What you can do depends on your role in the care circle.';
+    // A second agent can join the copy the first one made, so one person can ask from
+    // Claude and another answer from ChatGPT. get_started tells each copy its code.
+    const join = copies
+      ? `<details${problem ? ' open' : ''}><summary>Joining a family another agent already has?</summary>
+<form method="get" action="/oauth/authorize">
+${keep
+  .filter((k) => q[k])
+  .map((k) => `<input type="hidden" name="${k}" value="${escapeHtml(q[k]!)}">`)
+  .join('\n')}
+<label>Family code <input name="family" required autocomplete="off" spellcheck="false" placeholder="3f9a21bc" value="${escapeHtml(q['family'] ?? '')}"></label>
+<label>You are <select name="member">${members
+          .map((m) => `<option value="${escapeHtml(m.id)}">${escapeHtml(m.name)}</option>`)
+          .join('')}</select></label>
+<button>Join that family</button>
+</form>
+</details>`
+      : '';
     return `<!doctype html><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Connect CareCircle</title>
@@ -461,14 +576,52 @@ p{color:#8b93a7;margin:0 0 1.5rem}
 .who{display:block;padding:.9rem 1rem;margin:.5rem 0;border:1px solid rgba(255,255,255,.12);border-radius:.7rem;text-decoration:none;color:inherit}
 .who:hover{border-color:#7cf0c8}
 small{color:#8b93a7;display:block;margin-top:1.5rem}
+details{margin-top:1.5rem;color:#8b93a7}
+summary{cursor:pointer}
+form{display:grid;gap:.7rem;margin-top:.8rem}
+label{display:grid;gap:.3rem;color:#eef2fb}
+input,select,button{font:inherit;padding:.6rem .7rem;border-radius:.5rem;border:1px solid rgba(255,255,255,.18);background:transparent;color:inherit}
+button{cursor:pointer;border-color:#7cf0c8}
+.problem{color:#ffb4a8}
 </style>
 <main>
 <h1>Connect to CareCircle</h1>
-<p>Who is setting this up? What you can do depends on your role in the care circle.</p>
+<p>${lead}</p>
+${problem ? `<p class="problem">${escapeHtml(problem)}</p>` : ''}
 ${buttons}
+${join}
 <small>Demo sign-in. A production deployment authenticates here instead of asking.</small>
 </main>`;
   }
+}
+
+/**
+ * Who is asking, for rate limits: the last public address in X-Forwarded-For. Each proxy
+ * appends the address it saw, so entries to the left are the client's to write and
+ * private ones to the right are our own proxies. Null when the request comes straight
+ * from this machine.
+ */
+export function visitorOf(req: {
+  header(name: string): string | undefined;
+  socket?: { remoteAddress?: string | undefined };
+}): string | null {
+  const hops = (req.header('x-forwarded-for') ?? '')
+    .split(',')
+    .map((h) => h.trim())
+    .filter(Boolean);
+  const outside = hops.filter((h) => !isPrivateAddress(h)).at(-1);
+  if (outside) return outside;
+  const socket = req.socket?.remoteAddress ?? '';
+  if (hops.length === 0 && /^(::1|127\.|::ffff:127\.)/.test(socket)) return null;
+  return hops.at(0) ?? (socket || 'unknown');
+}
+
+function isPrivateAddress(ip: string): boolean {
+  const v4 = ip.replace(/^::ffff:/, '');
+  return (
+    /^(10\.|127\.|169\.254\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(v4) ||
+    /^(::1$|f[cd][0-9a-f]{2}:|fe80:)/i.test(ip)
+  );
 }
 
 function escapeHtml(s: string): string {

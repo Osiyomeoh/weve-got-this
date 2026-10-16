@@ -204,6 +204,8 @@ export interface CareEvent {
   data: Record<string, unknown>;
   /** The channel it arrived through. Absent on older events; treat as `voice`. */
   source?: EventSource;
+  /** The AI agent that carried it, when it named itself as one we know ("Claude"). */
+  via?: string;
   /** How sure we are of the observation itself. Absent on older events. */
   confidence?: EventConfidence;
   /** Ids of the events this one was derived from, when it is itself an inference. */
@@ -271,6 +273,8 @@ export interface Obligation {
     askedOfId: string;
     askedById: string;
     askedAt: string;
+    /** The AI agent the ask came through, when it named itself as one we know. */
+    via?: string;
   };
   /**
    * Everyone who has said no to this particular piece of work. Kept so the agent

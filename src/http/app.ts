@@ -20,9 +20,11 @@ import { createTelegramWebhook } from './telegram-webhook.js';
 import { createTelegramChat } from './telegram-chat.js';
 import { providerFromEnv } from '../sim/providers.js';
 import { OAuthProvider, oauthResolver } from './oauth.js';
-import { createSandboxRoute } from './sandbox.js';
+import { createSandboxRoute, agentCopies } from './sandbox.js';
+import { DEMO_HOUSEHOLD_ID } from '../demo/seed.js';
 import { STORY_TIME_HEADER, storyAware, storyTimeFor, withStoryTime } from './story-clock.js';
 import { CHANNEL_HEADER, channelOf, withChannel } from '../mcp/channel.js';
+import { agentOfRequest, currentAgent, withAgent } from '../mcp/agent.js';
 
 /**
  * Streamable HTTP transport (MCP spec 2025-11-25).
@@ -42,6 +44,8 @@ interface Session {
   transport: StreamableHTTPServerTransport;
   /** The member this session speaks for, fixed at initialize. */
   actorId: string;
+  /** The AI agent its initialize named, if it is one we know ("Claude"). */
+  agent: string | null;
 }
 
 const sessions = new Map<string, Session>();
@@ -102,6 +106,8 @@ export function createCareCircleApp({
   const clock = storyAware(now ?? (() => new Date()));
   // The record's own times about the work (who asked, who took it on) follow the same clock.
   store.useClock(clock);
+  // And what it records says which AI agent carried it, when the client named one we know.
+  store.useAgent(currentAgent);
   const app = express();
 
   // Before anything touches the care record, make sure this process has the latest of it: another
@@ -277,6 +283,12 @@ export function createCareCircleApp({
         .split(',')
         .map((u) => u.trim())
         .filter(Boolean),
+      // Every agent that connects gets its own copy of the demo family (see sandbox.ts),
+      // so two judges trying it at once never meet each other's yes. Only the demo family
+      // can be copied; `off` keeps everyone in the shared one.
+      ...(oauthHousehold === DEMO_HOUSEHOLD_ID && process.env['CARECIRCLE_OAUTH_COPIES'] !== 'off'
+        ? { copies: agentCopies({ store, ...(now ? { now } : {}) }) }
+        : {}),
       ...(now ? { now } : {}),
     });
     // RFC 9728 - how an MCP client finds the authorization server for this resource.
@@ -410,7 +422,8 @@ export function createCareCircleApp({
         scopes: [],
         extra: { actorId },
       };
-      await modern(req, res, req.body);
+      // No session to remember the client by: each request names it in its own `_meta`.
+      await withAgent(agentOfRequest(req.body), () => modern(req, res, req.body));
       return;
     }
 
@@ -432,7 +445,7 @@ export function createCareCircleApp({
         );
         return;
       }
-      await session.transport.handleRequest(req, res, req.body);
+      await withAgent(session.agent, () => session.transport.handleRequest(req, res, req.body));
       return;
     }
 
@@ -446,7 +459,7 @@ export function createCareCircleApp({
       sessionIdGenerator: () => randomUUID(),
       enableJsonResponse: true,
       onsessioninitialized: (id) => {
-        sessions.set(id, { server, transport, actorId });
+        sessions.set(id, { server, transport, actorId, agent: agentOfRequest(req.body) });
       },
       onsessionclosed: (id) => {
         sessions.delete(id);

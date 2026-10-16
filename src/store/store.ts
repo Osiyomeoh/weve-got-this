@@ -28,6 +28,8 @@ export interface ObligationTransition {
   byMemberId: string;
   at: string;
   note?: string;
+  /** The AI agent the move came through, when it named itself as one we know. */
+  via?: string;
 }
 
 /** Persistence is deliberately behind an interface so hosting can change later. */
@@ -138,6 +140,8 @@ export class CareStore {
    * `recordedAt` stays on the real clock: it is when the server heard it.
    */
   #now: () => Date = () => new Date();
+  /** Which AI agent the write in progress came through, if any (see useAgent). */
+  #agent: () => string | undefined = () => undefined;
   #persistence: Persistence | undefined;
   /** Serialises writes so concurrent tool calls cannot interleave a save. */
   #writeQueue: Promise<unknown> = Promise.resolve();
@@ -296,9 +300,11 @@ export class CareStore {
   appendEvent(
     event: Omit<CareEvent, 'id' | 'recordedAt'> & Partial<Pick<CareEvent, 'id'>>,
   ): Promise<CareEvent> {
+    const via = event.via ?? this.#agent();
     return this.#write(() => {
       const full: CareEvent = {
         ...event,
+        ...(via ? { via } : {}),
         id: event.id ?? `evt_${randomUUID()}`,
         recordedAt: after(this.#snapshot.events.at(-1)?.recordedAt),
       };
@@ -344,6 +350,7 @@ export class CareStore {
       (x) => x.id === id && x.householdId === householdId,
     );
     const was = seen && { status: seen.status, ownerId: seen.ownerId };
+    const via = this.#agent();
     return this.#write(() => {
       const o = this.getObligation(id, householdId);
       if (was && (o.status !== was.status || o.ownerId !== was.ownerId))
@@ -368,6 +375,7 @@ export class CareStore {
           this.#now().getTime(),
         ),
         ...(note ? { note } : {}),
+        ...(via ? { via } : {}),
       });
       return o;
     });
@@ -376,6 +384,11 @@ export class CareStore {
   /** Use this clock for the times the record keeps about the work (see #now). */
   useClock(now: () => Date): void {
     this.#now = now;
+  }
+
+  /** Where to read which AI agent the current write came through (see mcp/agent.ts). */
+  useAgent(agent: () => string | undefined): void {
+    this.#agent = agent;
   }
 
   // --- setup -------------------------------------------------------------

@@ -250,7 +250,7 @@ The tools are thin. The intelligence and the safety live in the graph.
 |---------|---------|--------|
 | Write an event with provenance | `log_care_event`, `record_appointment`, `add_note`, `ingest_signal` | BUILT |
 | Ranked unowned / at-risk work | `get_care_gaps` | BUILT |
-| Create ownership | `claim_obligation`, `assign_obligation` | BUILT |
+| Create ownership | `claim_obligation` (own yes); `assign_obligation` asks, like `request_owner` | BUILT |
 | Ask, not assign | `request_owner`, `respond_to_request`, `get_my_requests` | BUILT |
 | Proposal → open or rejected | `confirm_proposal` | BUILT |
 | Close with a resolution | `resolve_obligation` | BUILT |

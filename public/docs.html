@@ -205,7 +205,7 @@ an expected record that is missing, or something now past its time.</div>
       <div class="card"><h4>request_owner</h4><p>Ask someone to take work on - and message them (Telegram/WhatsApp). Asks, never assigns.</p></div>
       <div class="card"><h4>respond_to_request</h4><p>Answer a request made of you: accept (assign) or decline (reopen).</p></div>
       <div class="card"><h4>claim_obligation</h4><p>The speaker takes something on themselves.</p></div>
-      <div class="card"><h4>assign_obligation</h4><p>The primary caregiver puts work on a name outright.</p></div>
+      <div class="card"><h4>assign_obligation</h4><p>The primary caregiver gives work to someone. It asks them; it is theirs once they say yes.</p></div>
       <div class="card"><h4>confirm_proposal</h4><p>Confirm or dismiss something the system guessed.</p></div>
       <div class="card"><h4>resolve_obligation</h4><p>Mark something done.</p></div>
     </div>
@@ -328,7 +328,7 @@ AWS_PROFILE=conductor aws apprunner start-deployment \
     <div class="tablewrap"><table id="vars">
       <tr><th>Area</th><th>Variables</th></tr>
       <tr><td>Core</td><td><code>CARECIRCLE_TABLE</code>, <code>AWS_REGION</code>, <code>CARECIRCLE_AGENT_INTERVAL_MS</code>, <code>CARECIRCLE_ALLOW_SELF_SIGNUP</code></td></tr>
-      <tr><td>Auth</td><td><code>CARECIRCLE_OAUTH_SECRET</code>, <code>CARECIRCLE_PUBLIC_URL</code>, <code>CARECIRCLE_OAUTH_REDIRECTS</code></td></tr>
+      <tr><td>Auth</td><td><code>CARECIRCLE_OAUTH_SECRET</code>, <code>CARECIRCLE_PUBLIC_URL</code>, <code>CARECIRCLE_OAUTH_REDIRECTS</code>, <code>CARECIRCLE_OAUTH_COPIES</code> (<code>off</code>: every connection shares the demo family instead of getting its own copy)</td></tr>
       <tr><td>Ring</td><td><code>RING_HMAC_KEY</code>, <code>RING_HOUSEHOLD_ID</code></td></tr>
       <tr><td>Google</td><td><code>GOOGLE_CLIENT_ID</code>, <code>GOOGLE_CLIENT_SECRET</code>, <code>GOOGLE_REFRESH_TOKEN</code>, <code>GMAIL_QUERY</code></td></tr>
       <tr><td>Bee</td><td><code>BEE_TOKEN</code>, <code>BEE_API_BASE</code></td></tr>
@@ -343,7 +343,7 @@ AWS_PROFILE=conductor aws apprunner start-deployment \
     <h1>Testing</h1>
     <p class="lead">The suite runs on the Node test runner (not vitest).</p>
     <h2 id="run">Run the suite</h2>
-    <pre><code class="language-bash">npm test               # 710 tests: unit, adversarial and property-based
+    <pre><code class="language-bash">npm test               # 722 tests: unit, adversarial and property-based
 npm run typecheck      # tsc --noEmit
 npm run lint
 npm run format:check   # Prettier, also checked in CI

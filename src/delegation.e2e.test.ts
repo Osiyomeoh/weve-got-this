@@ -218,6 +218,34 @@ test('the person being cared for can ask for help herself', async () => {
   assert.match(spoken(assign), /primary caregiver/i);
 });
 
+test('even the primary caregiver giving work away only asks: it is theirs once they say yes', async () => {
+  const david = await openSession('david-token');
+  const renee = await openSession('renee-token');
+  const id = await theRide('david-token', david);
+
+  // Tolu, the primary caregiver, puts it on Funmi's name. CareCircle asks her instead.
+  const given = await call('david-token', david, 'assign_obligation', {
+    obligationId: id,
+    assigneeName: 'Funmi',
+  });
+  assert.match(spoken(given), /asked Funmi/i);
+  assert.equal(structured(given).status, 'REQUESTED');
+  assert.equal(structured(given).ownerId, null);
+  assert.equal(store.getObligation(id, 'h_margaret').ownerId, null);
+
+  // Nobody can answer for her, not even the person who gave it.
+  const forHer = await call('david-token', david, 'respond_to_request', {
+    obligationId: id,
+    accepted: true,
+  });
+  assert.match(spoken(forHer), /theirs to answer/i);
+  assert.equal(store.getObligation(id, 'h_margaret').ownerId, null);
+
+  // Her own yes is what makes it hers.
+  await call('renee-token', renee, 'respond_to_request', { obligationId: id, accepted: true });
+  assert.equal(store.getObligation(id, 'h_margaret').ownerId, 'm_renee');
+});
+
 test('with no name given, CareCircle picks someone and says why', async () => {
   const renee = await openSession('renee-token');
   const id = await theRide('renee-token', renee);

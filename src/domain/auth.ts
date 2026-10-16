@@ -115,8 +115,8 @@ const DENIAL_BY_ROLE: Partial<Record<Capability, Partial<Record<Role, string>>>>
 
 const DENIAL: Partial<Record<Capability, string>> = {
   assign_obligation:
-    "Only the primary caregiver can put work on someone else's name. You can take it on " +
-    'yourself, or I can ask them whether they will.',
+    'Only the primary caregiver can give work to someone else, and even then I ask them ' +
+    'first. You can take it on yourself, or I can ask them whether they will.',
   request_owner:
     'Asking the family to take something on is for the family to do. You can take it on yourself instead.',
   escalate:

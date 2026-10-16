@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { require as requireCap } from '../../domain/auth.js';
 import { onboardingProgress } from '../../domain/onboarding.js';
 import { bootstrapSubject } from '../../http/identity.js';
+import { familyCodeOf } from '../../domain/sandbox-id.js';
 import { OUT } from '../output-schemas.js';
 import { countPhrase, joinSpoken, sentence } from '../text.js';
 import {
@@ -52,11 +53,19 @@ export function registerGetStarted({ server, actorId, now, state }: ToolContext)
         // create_household is the only move, and the only time state is null.
         const unmapped = bootstrapSubject(actorId) !== null;
         const progress = onboardingProgress(unmapped ? null : state(), { now: now() });
-        return reply(progress.spoken, {
+        // An agent that connected over OAuth is in its own copy of the demo family. Say so,
+        // and give the code that lets a second agent join it.
+        const familyCode = unmapped ? null : familyCodeOf(state().household.id);
+        const spoken = familyCode
+          ? `${progress.spoken} This is your own copy of the demo family, so nobody else sees what you do in it. ` +
+            `To bring another agent into it, connect that one and enter family code ${familyCode}.`
+          : progress.spoken;
+        return reply(spoken, {
           step: progress.step,
           done: progress.done,
           complete: progress.complete,
           ...(progress.firstGap ? { firstGap: progress.firstGap } : {}),
+          ...(familyCode ? { familyCode } : {}),
         });
       } catch (err) {
         return guidance(describeError(err));

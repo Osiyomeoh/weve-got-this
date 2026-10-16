@@ -2,6 +2,7 @@ import type { CareStore } from '../store/store.js';
 import type { Notifier } from '../notify/notifier.js';
 import { checkInEvidence } from './evidence.js';
 import { deliberate, AGENT_ID, type AgentAction, type Deliberation } from './agent.js';
+import { isLiveAgentCopy } from './sandbox-id.js';
 
 /**
  * Carrying out what the policy decided.
@@ -145,11 +146,14 @@ function messageFor(
 
 /** Run the agent over every household the store knows. */
 export async function runAgentAll(deps: RunnerDeps): Promise<AgentRun[]> {
-  // A visitor's sandbox copy (`<household>~<suffix>`) lives on its own story clock: the
-  // story runs CareCircle's pass when its day reaches it. Run on the server's clock, the
+  // A console visitor's sandbox copy (`<household>~<suffix>`) lives on its own story clock:
+  // the story runs CareCircle's pass when its day reaches it. Run on the server's clock, the
   // pass would ask the helper about tonight's refill before the story's own asking does.
+  // An agent's copy has no story; it lives on the server's clock like a real family, so
+  // CareCircle does its legwork there too, until the copy ends.
+  const now = deps.now?.() ?? new Date();
   const householdIds = [...new Set(deps.store.allMembers().map((m) => m.householdId))].filter(
-    (id) => !id.includes('~'),
+    (id) => !id.includes('~') || isLiveAgentCopy(id, now),
   );
   const runs: AgentRun[] = [];
   for (const id of householdIds) runs.push(await runAgentOnce(id, deps));

@@ -4,7 +4,15 @@ import type { CareStore } from '../store/store.js';
 import { seedDemoHousehold, DEMO_HOUSEHOLD_ID } from '../demo/seed.js';
 import { seedScenario } from '../demo/scenario.js';
 import { isCareCase, isFamilyNames } from '../demo/cases.js';
-import { signToken } from './oauth.js';
+import { signToken, type ConnectionCopies } from './oauth.js';
+import { sandboxOf, AGENT_COPY_TTL_MS, type SandboxKind } from '../domain/sandbox-id.js';
+
+export {
+  sandboxOf,
+  familyCodeOf,
+  AGENT_COPY_TTL_MS,
+  type SandboxKind,
+} from '../domain/sandbox-id.js';
 
 /**
  * Per-visitor demo sandboxes.
@@ -23,37 +31,42 @@ import { signToken } from './oauth.js';
  *   real family are never touched: only ids with a sandbox suffix are candidates.
  * - Access is a signed token per member (the same HS256 tokens OAuth issues), valid
  *   only as long as the copy, so a sandbox token can only ever act inside its copy.
+ *
+ * An agent that connects over OAuth (Claude, ChatGPT, Cursor, the MCP Inspector) gets a
+ * copy of its own too, made when the person picks who they are on the consent screen (see
+ * `agentCopies`). Its ids separate time and random with `_` instead of `-`, so each kind is
+ * swept on its own terms: a console visit lasts hours, a connected agent may come back
+ * next week.
  */
 
 /** The demo members a sandbox copy contains, by their logical (unsuffixed) ids. */
 const SANDBOX_MEMBERS = ['m_margaret', 'm_david', 'm_renee', 'm_aide', 'm_kunle'] as const;
 
-const SUFFIX = /~([0-9a-z]+)-[0-9a-f]{8}$/;
-
-export function sandboxSuffix(now: Date): string {
-  return `~${now.getTime().toString(36)}-${randomBytes(4).toString('hex')}`;
+export function sandboxSuffix(now: Date, kind: SandboxKind = 'console'): string {
+  const sep = kind === 'agent' ? '_' : '-';
+  return `~${now.getTime().toString(36)}${sep}${randomBytes(4).toString('hex')}`;
 }
 
 /** When a sandbox household was created, or null if the id is not a sandbox's. */
 export function sandboxCreatedAt(householdId: string): number | null {
-  const m = SUFFIX.exec(householdId);
-  if (!m || !householdId.startsWith(`${DEMO_HOUSEHOLD_ID}~`)) return null;
-  const t = parseInt(m[1]!, 36);
-  return Number.isFinite(t) ? t : null;
+  return sandboxOf(householdId)?.createdAt ?? null;
 }
 
 /**
- * Remove expired sandbox copies, and the oldest beyond `keepAtMost`. Real households
- * are never candidates. Returns how many copies were removed.
+ * Remove expired sandbox copies of one kind, and the oldest beyond `keepAtMost`. Real
+ * households and the other kind's copies are never candidates. Returns how many copies
+ * were removed.
  */
 export async function sweepSandboxes(
   store: CareStore,
-  opts: { ttlMs: number; keepAtMost: number; now: Date },
+  opts: { ttlMs: number; keepAtMost: number; now: Date; kind?: SandboxKind },
 ): Promise<number> {
+  const kind = opts.kind ?? 'console';
   const copies = store
     .householdIds()
-    .map((id) => ({ id, at: sandboxCreatedAt(id) }))
-    .filter((c): c is { id: string; at: number } => c.at !== null)
+    .map((id) => ({ id, copy: sandboxOf(id) }))
+    .filter((c) => c.copy?.kind === kind)
+    .map((c) => ({ id: c.id, at: c.copy!.createdAt }))
     .sort((a, b) => a.at - b.at);
   const expired = copies.filter((c) => opts.now.getTime() - c.at > opts.ttlMs);
   const live = copies.filter((c) => opts.now.getTime() - c.at <= opts.ttlMs);
@@ -154,5 +167,78 @@ export function createSandboxRoute(opts: SandboxOptions) {
     } catch (err) {
       res.status(500).json({ error: (err as Error).message });
     }
+  };
+}
+
+/**
+ * A private copy of the demo family for every agent that connects over OAuth.
+ *
+ * Judges are asked to try it with their own agent. With one shared family, the first
+ * judge's "yes, I'll drive him" is already on the record when the next one arrives, and
+ * each reads the other's work. So picking who you are on the consent screen makes a copy,
+ * and the tokens that come back act inside it alone, for as long as it lasts.
+ *
+ * Its family code, the random part of its ids, lets a second agent join the same copy: ask
+ * from Claude as Tolu, answer from ChatGPT as Funmi.
+ */
+export function agentCopies(opts: {
+  store: CareStore;
+  ttlMs?: number;
+  max?: number;
+  now?: () => Date;
+}): ConnectionCopies {
+  const ttlMs = opts.ttlMs ?? AGENT_COPY_TTL_MS;
+  const max = opts.max ?? 300;
+  const now = opts.now ?? (() => new Date());
+  const live = (householdId: string): boolean => {
+    const copy = sandboxOf(householdId);
+    return (
+      copy?.kind === 'agent' &&
+      now().getTime() - copy.createdAt <= ttlMs &&
+      opts.store.householdIds().includes(householdId)
+    );
+  };
+  const memberIn = (householdId: string, memberId: string): string | null => {
+    const id = `${memberId}${householdId.slice(DEMO_HOUSEHOLD_ID.length)}`;
+    try {
+      return opts.store.getMember(id).householdId === householdId ? id : null;
+    } catch {
+      return null;
+    }
+  };
+
+  return {
+    async create(memberId) {
+      const at = now();
+      // Leave room for the one we are about to create.
+      await sweepSandboxes(opts.store, { ttlMs, keepAtMost: max - 1, now: at, kind: 'agent' });
+      const suffix = sandboxSuffix(at, 'agent');
+      const householdId = `${DEMO_HOUSEHOLD_ID}${suffix}`;
+      await seedDemoHousehold(opts.store, { suffix });
+      await seedScenario(opts.store, householdId, { suffix, now: at, refillDueTonight: true });
+      const id = memberIn(householdId, memberId);
+      if (!id) throw new Error('That person is not in the demo family.');
+      return { memberId: id, expiresAt: at.getTime() + ttlMs };
+    },
+
+    join(code, memberId) {
+      const wanted = code.toLowerCase().replace(/[^0-9a-f]/g, '');
+      if (wanted.length !== 8) return null;
+      const householdId = opts.store
+        .householdIds()
+        .find((id) => sandboxOf(id)?.code === wanted && live(id));
+      const id = householdId ? memberIn(householdId, memberId) : null;
+      return householdId && id
+        ? { memberId: id, expiresAt: sandboxOf(householdId)!.createdAt + ttlMs }
+        : null;
+    },
+
+    expiresAt(memberId) {
+      // The member id carries the copy's suffix, so this holds even once the copy is gone.
+      const m = /~[0-9a-z]+_[0-9a-f]{8}$/.exec(memberId);
+      const copy = m ? sandboxOf(`${DEMO_HOUSEHOLD_ID}${m[0]}`) : null;
+      if (!copy) return null;
+      return live(`${DEMO_HOUSEHOLD_ID}${m![0]}`) ? copy.createdAt + ttlMs : 0;
+    },
   };
 }

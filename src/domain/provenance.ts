@@ -160,7 +160,8 @@ function ownershipStep(
   nameOf: NameOf,
   clock: Clock,
 ): ProvenanceStep | undefined {
-  const who = nameOf(t.byMemberId) ?? 'someone';
+  // The agent the move came through rides beside the person, never in place of them.
+  const who = `${nameOf(t.byMemberId) ?? 'someone'}${t.via ? `, through ${t.via},` : ''}`;
   const on = fmt(t.at, clock)?.phrase ?? '';
   const note = t.note ? ` (${t.note})` : '';
   switch (t.to) {

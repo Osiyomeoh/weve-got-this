@@ -114,11 +114,11 @@ reported yet, so no pilot number appears anywhere in this submission.
 The demo family (Daddy, his children Tolu and Funmi, Kunle in London, and Musa the
 driver) is fictional and modelled on mine. No real names or medical details are used.
 
-**And it is real - not a mockup.** A live MCP server you can hit right now, **710 tests**
+**And it is real - not a mockup.** A live MCP server you can hit right now, **722 tests**
 (`npm test`, including property-based proofs of the risk model), and one headline number:
-the planner picks the right tool **96.1%** of the time on Amazon Bedrock (149/155; 64/66 on
-held-out phrasings never tuned against; 2026-10-08,
-[`evals/results/2026-10-08-claude-sonnet-4-5-get-my-requests-key.json`](evals/results/2026-10-08-claude-sonnet-4-5-get-my-requests-key.json); the answer key changed that day, see [Measured tool selection](#measured-tool-selection)).
+the planner picks the right tool **96.1%** of the time on Amazon Bedrock (149/155; 62/66 on
+held-out phrasings never tuned against; 2026-10-16,
+[`evals/results/2026-10-16-claude-sonnet-4-5-asks-not-assigns.json`](evals/results/2026-10-16-claude-sonnet-4-5-asks-not-assigns.json); the answer key changed on 10-08, see [Measured tool selection](#measured-tool-selection)).
 Amazon Nova Pro, and Amazon's own MASSIVE set of everyday Alexa requests (does it leave alone
 what isn't care?), are measured too. Every number, with the file it came from:
 [/proof](https://krqi2tpsif.us-east-1.awsapprunner.com/proof.html).
@@ -169,6 +169,13 @@ MCP endpoint (for your own client): `https://ypq2dfq2p7.us-east-1.awsapprunner.c
 integration guide: endpoint and handshake, ready-made Claude Desktop and MCPJam
 configuration, all 28 tools with their arguments, the resources and prompts, the
 role/capability matrix, and how to run your own instance.
+
+**Bring your own agent.** Add the endpoint as a custom connector in Claude, or in any other
+MCP client that does OAuth, and pick who you are. Each connection gets its own copy of the demo
+family, so nothing you do reaches anyone else. To put a second agent in the same family,
+connect it with the family code `get_started` gives you: Claude can be Tolu while ChatGPT
+is Funmi. The record says which agent carried each word, so Funmi hears *"Tolu asked,
+through Claude, if you can..."*, but only Funmi's own yes makes the ride hers.
 
 ---
 
@@ -589,7 +596,7 @@ git clone https://github.com/Osiyomeoh/carecircle && cd carecircle
 npm ci
 npm run lint      # eslint (typescript-eslint, strict) - 0 findings
 npm run typecheck # tsc under strict + noUncheckedIndexedAccess + exactOptionalPropertyTypes
-npm test          # 710 tests (unit, adversarial, and property-based)
+npm test          # 722 tests (unit, adversarial, and property-based)
 npm run story     # the whole one-day story, end to end, over real MCP
 ```
 
@@ -670,7 +677,7 @@ npm run demo:reset && npm run dev   # in one shell
 npm run evals                       # in another
 ```
 
-**Latest: 149/155 (96.1%), held-out 64/66, 2026-10-08** (`evals/results/2026-10-08-claude-sonnet-4-5-get-my-requests-key.json`). **The answer key changed for this run, and here is why.** On 2026-10-03 the planner was told (`src/sim/host.ts`, commit cc42789) that a short answer with no subject - "I've got it", "Handled it", "No, skip that one" - should first check whether someone asked them (`get_my_requests`), because then it is a reply to that request. The key still counted that as wrong, so the same day's run under the old key scored **139/155 (89.7%), held-out 57/66**. We added `get_my_requests` as accepted for those ten cases (listed in `src/evals/corpus.ts`) and re-ran. Before that: 148/155 (95.5%), held-out 63/66, 2026-10-02 (`evals/results/2026-10-02-claude-sonnet-4-5-question-not-report.json`). The run below is the one written up in detail.
+**Latest: 149/155 (96.1%), held-out 62/66, 2026-10-16** (`evals/results/2026-10-16-claude-sonnet-4-5-asks-not-assigns.json`), after `assign_obligation` stopped writing an owner: it now asks, like `request_owner`, and both descriptions were reworded to say so. The total held; two held-out cases now miss and none was gained there. One is h-log-03, already known to flip (3/5 head to head on 10-02). The other is a decline, "Count me out this weekend", which now goes to `get_my_requests` (checking whether someone asked them) instead of `add_note`, as does "I can't drive him Thursday, I'm gon' be out of town" in the dialect set. Declines are what the rewording costs: across the decline cases, 3 runs each, the old descriptions scored 18/21, a first rewording 15/21 (dropped), and the one kept 17/21, with "Count me out this weekend" missing 3 of 3 (1 of 3 before; `evals/results/2026-10-16-declines-head-to-head-sonnet-4-5.json`). Same day: dialects 32/34 (was 33/34), Nova Pro under the Alexa bridge's prompt 144/155 (141 on 10-02), the 30 answers to "still on?" 29/30 (unchanged). 4 throttled cases were re-run alone and merged in; each file names them. Before that: **149/155, held-out 64/66, 2026-10-08** (`evals/results/2026-10-08-claude-sonnet-4-5-get-my-requests-key.json`). **The answer key changed for that run, and here is why.** On 2026-10-03 the planner was told (`src/sim/host.ts`, commit cc42789) that a short answer with no subject - "I've got it", "Handled it", "No, skip that one" - should first check whether someone asked them (`get_my_requests`), because then it is a reply to that request. The key still counted that as wrong, so the same day's run under the old key scored **139/155 (89.7%), held-out 57/66**. We added `get_my_requests` as accepted for those ten cases (listed in `src/evals/corpus.ts`) and re-ran. Before that: 148/155 (95.5%), held-out 63/66, 2026-10-02 (`evals/results/2026-10-02-claude-sonnet-4-5-question-not-report.json`). The run below is the one written up in detail.
 
 **Result: 94.8% first-tool accuracy (147 / 155, 0 errored) - Claude Sonnet 4.5 on Amazon
 Bedrock, 2026-09-23, with 28 tools.** That is one run, and every case of it is in
@@ -770,7 +777,7 @@ Every tool exists because a person says a sentence that needs it.
 | `add_note` | "Daddy asked who is taking him on Thursday" |
 | **`get_care_gaps`** | **"What's going to fall through the cracks this week?"** |
 | `claim_obligation` | "I'll take it" |
-| `assign_obligation` | "Give the pharmacy run to Funmi" |
+| `assign_obligation` | "Give the pharmacy run to Funmi" (it asks Funmi; hers once she says yes) |
 | `confirm_proposal` | "Yes, he'll need a ride" |
 | `resolve_obligation` | "Picked up the prescription" |
 | `get_shift_brief` | "What do I need to know today?" |

@@ -8,10 +8,11 @@ import { canActOn, require as requireCap } from '../../domain/auth.js';
 import { evidenceFor, evidenceLine } from '../../domain/evidence.js';
 import { detectCareGaps } from '../../domain/gaps.js';
 import { asReadBy } from '../../domain/language.js';
-import { clockTime, isLocalToday } from '../../domain/local-time.js';
+import { asTask, clockTime, isLocalToday } from '../../domain/local-time.js';
 import { appToolMeta } from '../app/protocol.js';
 import { OUT } from '../output-schemas.js';
 import { joinSpoken, speakGaps } from '../text.js';
+import { askMember } from './delegation.js';
 import {
   CARE_BOARD_URI,
   describeError,
@@ -176,16 +177,26 @@ export function registerClaimObligation({ server, store, actor, nameOf }: ToolCo
 }
 
 /**
- * "Give the pharmacy run to Funmi."
+ * "Give the pharmacy run to Funmi." Giving work to someone asks them: even the primary
+ * caregiver cannot put it on their name without their yes.
  */
-export function registerAssignObligation({ server, store, actor, state }: ToolContext): void {
+export function registerAssignObligation({
+  server,
+  store,
+  now,
+  notifier,
+  actor,
+  state,
+  nameOf,
+}: ToolContext): void {
   server.registerTool(
     'assign_obligation',
     {
       title: 'Give a piece of work to someone',
       description:
-        'Assign work to another member of the care circle. Only the primary caregiver can do ' +
-        'this. When the speaker is taking it on themselves, use claim_obligation instead.',
+        'Give work to another member of the care circle. Only the primary caregiver can do ' +
+        'this. It asks them, and it is theirs once they accept. When the speaker is taking it ' +
+        'on themselves, use claim_obligation instead.',
       inputSchema: {
         obligationId: z.string().describe('Which piece of work. From get_care_gaps.'),
         assigneeName: z.string().describe('Who to give it to, as the speaker named them.'),
@@ -198,7 +209,17 @@ export function registerAssignObligation({ server, store, actor, state }: ToolCo
         const me = actor();
         requireCap(me, 'assign_obligation');
         const o = obligationFrom(store, ref, me.householdId);
-        const obligationId = o.id;
+        if (o.status === 'PROPOSED') {
+          return guidance(
+            `"${o.what}" hasn't been confirmed as actually needed yet. Confirm it first with ` +
+              'confirm_proposal, then give it to someone.',
+          );
+        }
+        if (o.ownerId) {
+          return guidance(
+            `${nameOf(o.ownerId)} already has "${o.what}". Ask whether they want to hand it over.`,
+          );
+        }
         const assignee = store.findMemberByName(me.householdId, assigneeName);
         if (!assignee) {
           const others = state()
@@ -209,14 +230,35 @@ export function registerAssignObligation({ server, store, actor, state }: ToolCo
               `The people here are ${joinSpoken(others)}. Ask which one they meant.`,
           );
         }
-        const updated = await store.transition(obligationId, me.householdId, 'ASSIGNED', me.id, {
-          ownerId: assignee.id,
-        });
         const who = assignee.spokenAs ?? assignee.name;
-        return reply(`Done - ${o.what} is assigned to ${who}.`, {
-          obligationId: updated.id,
-          ownerId: assignee.id,
+        // The primary caregiver taking it on is their own yes.
+        if (assignee.id === me.id) {
+          const updated = await store.transition(o.id, me.householdId, 'ASSIGNED', me.id, {
+            ownerId: me.id,
+          });
+          return reply(`Done - ${o.what} is yours.`, {
+            obligationId: updated.id,
+            ownerId: me.id,
+            status: 'ASSIGNED',
+          });
+        }
+        if ((o.declinedBy ?? []).includes(assignee.id)) {
+          return guidance(
+            `${who} has already said no to "${o.what}". Ask someone else, or take it on yourself.`,
+          );
+        }
+        // Even the primary caregiver cannot put work on someone's name. Nothing is anyone's
+        // until they say yes, so giving it to someone means asking them, and it stays
+        // unowned until they answer.
+        const { updated, due } = await askMember({ store, now, notifier, state }, me, o, {
+          memberId: assignee.id,
+          name: who,
         });
+        return reply(
+          `I've asked ${who} whether they can ${asTask(o.what)}${due ? ` ${due}` : ''}. ` +
+            `It becomes theirs when they say yes - I don't put work on anyone's name for them.`,
+          { obligationId: updated.id, askedOfId: assignee.id, ownerId: null, status: 'REQUESTED' },
+        );
       } catch (err) {
         return guidance(describeError(err));
       }

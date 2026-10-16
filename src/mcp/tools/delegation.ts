@@ -8,7 +8,9 @@ import { deliberate } from '../../domain/agent.js';
 import { require as requireCap } from '../../domain/auth.js';
 import { candidatesFor } from '../../domain/delegation.js';
 import { asTask, dueSpoken } from '../../domain/local-time.js';
+import type { Member, Obligation } from '../../domain/types.js';
 import { OUT } from '../output-schemas.js';
+import { currentAgent } from '../agent.js';
 import { joinSpoken } from '../text.js';
 import { describeError, guidance, reply, type ToolContext, obligationFrom } from '../toolkit.js';
 
@@ -39,7 +41,7 @@ export function registerRequestOwner({
         'Thursday?", "who can do this?". This ASKS; it does not assign. They still have to ' +
         'say yes, and the work stays unowned until they do. If no name is given, leave ' +
         'assigneeName empty and this picks who to ask and explains why. Use assign_obligation ' +
-        "only when the primary caregiver is putting it on someone's name outright, and " +
+        'when the primary caregiver hands it to someone outright (it asks too), and ' +
         'claim_obligation when the speaker is taking it themselves.',
       inputSchema: {
         obligationId: z.string().describe('Which piece of work. From get_care_gaps.'),
@@ -59,7 +61,6 @@ export function registerRequestOwner({
         requireCap(me, 'request_owner');
         const s = state();
         const o = obligationFrom(store, ref, me.householdId);
-        const obligationId = o.id;
         if (o.status === 'PROPOSED') {
           return guidance(
             `"${o.what}" hasn't been confirmed as actually needed yet. Confirm it first with ` +
@@ -107,42 +108,7 @@ export function registerRequestOwner({
           );
         }
 
-        const due = dueSpoken(o.dueAt, state().household.timezone, now());
-        const updated = await store.transition(
-          obligationId,
-          me.householdId,
-          'REQUESTED',
-          me.id,
-          {
-            ownerId: null,
-            request: { askedOfId: target.memberId, askedById: me.id, askedAt: now().toISOString() },
-          },
-          `Asked ${target.name}`,
-        );
-        const message =
-          `${me.spokenAs ?? me.name} asked if you can take this on:\n\n${o.what}` +
-          `${due ? `, ${due}` : ''}\n\nReply "yes" or "can't".`;
-        const delivery = await notifier.deliver({
-          to: target.memberId,
-          toName: target.name,
-          from: me.spokenAs ?? me.name,
-          message,
-        });
-        await store.appendEvent({
-          householdId: me.householdId,
-          kind: 'owner_requested',
-          reportedBy: me.id,
-          occurredAt: now().toISOString(),
-          source: 'voice',
-          confidence: 'confirmed',
-          detail: o.what,
-          data: {
-            obligationId,
-            askedOfId: target.memberId,
-            delivered: delivery.delivered,
-            message,
-          },
-        });
+        const { updated, due } = await askMember({ store, now, notifier, state }, me, o, target);
 
         // Say what is true: they were asked, and nobody owns it yet.
         const suggested =
@@ -159,6 +125,64 @@ export function registerRequestOwner({
       }
     },
   );
+}
+
+/**
+ * Ask one member to take a piece of work on: the obligation goes to REQUESTED with
+ * nobody as owner, and the ask is delivered and recorded. request_owner and
+ * assign_obligation both come through here, so the only way work reaches a person
+ * ends in that person's own answer.
+ */
+export async function askMember(
+  { store, now, notifier, state }: Pick<ToolContext, 'store' | 'now' | 'notifier' | 'state'>,
+  me: Member,
+  o: Obligation,
+  target: { memberId: string; name: string },
+): Promise<{ updated: Obligation; due: string | null }> {
+  const due = dueSpoken(o.dueAt, state().household.timezone, now());
+  // Which agent carried the ask, so the person asked can hear "Tolu asked, through Claude".
+  const via = currentAgent();
+  const updated = await store.transition(
+    o.id,
+    me.householdId,
+    'REQUESTED',
+    me.id,
+    {
+      ownerId: null,
+      request: {
+        askedOfId: target.memberId,
+        askedById: me.id,
+        askedAt: now().toISOString(),
+        ...(via ? { via } : {}),
+      },
+    },
+    `Asked ${target.name}`,
+  );
+  const message =
+    `${me.spokenAs ?? me.name} asked${via ? `, through ${via},` : ''} if you can take this on:\n\n${o.what}` +
+    `${due ? `, ${due}` : ''}\n\nReply "yes" or "can't".`;
+  const delivery = await notifier.deliver({
+    to: target.memberId,
+    toName: target.name,
+    from: me.spokenAs ?? me.name,
+    message,
+  });
+  await store.appendEvent({
+    householdId: me.householdId,
+    kind: 'owner_requested',
+    reportedBy: me.id,
+    occurredAt: now().toISOString(),
+    source: 'voice',
+    confidence: 'confirmed',
+    detail: o.what,
+    data: {
+      obligationId: o.id,
+      askedOfId: target.memberId,
+      delivered: delivery.delivered,
+      message,
+    },
+  });
+  return { updated, due };
 }
 
 /**
@@ -319,8 +343,9 @@ export function registerGetMyRequests({ server, actor, state, nameOf, now }: Too
         const tz = state().household.timezone;
         const lines = mine.map((o) => {
           const who = nameOf(o.request!.askedById) ?? 'Someone';
+          const through = o.request!.via ? `, through ${o.request!.via},` : '';
           const due = dueSpoken(o.dueAt, tz, now());
-          return `${who} asked if you can ${asTask(o.what)}${due ? ` ${due}` : ''}`;
+          return `${who} asked${through} if you can ${asTask(o.what)}${due ? ` ${due}` : ''}`;
         });
         return reply(`${joinSpoken(lines)}. You haven't answered yet.`, {
           requests: mine.map((o) => ({
@@ -328,6 +353,7 @@ export function registerGetMyRequests({ server, actor, state, nameOf, now }: Too
             what: o.what,
             askedBy: nameOf(o.request!.askedById) ?? null,
             askedAt: o.request!.askedAt,
+            via: o.request!.via ?? null,
             dueAt: o.dueAt ?? null,
             due: dueSpoken(o.dueAt, tz, now()),
           })),

@@ -67,6 +67,15 @@ The sign-in page is a demo sign-in: it asks which member you are instead of
 authenticating you, so it only ever offers the demo household
 (`CARECIRCLE_OAUTH_HOUSEHOLD`, default `h_margaret`), never a real family's members.
 
+Each connection gets **its own copy** of the demo family: the same people and the same
+week, and nothing you do reaches anyone else's. `get_started` gives the copy's family
+code. To put a second agent in the same family, say ChatGPT as Funmi beside Claude as
+Tolu, connect it, open **Joining a family another agent already has?** on the sign-in page, and
+enter the code. What each agent records says which agent carried it: Funmi's list reads
+*"Tolu asked, through Claude, if you can..."*, and the provenance trail keeps the same
+line. A copy lasts 30 days, and no token outlives it. Set `CARECIRCLE_OAUTH_COPIES=off`
+to have every connection share the one demo household instead.
+
 ### Claude Desktop: config file with a demo token
 
 The older path, with no OAuth. Remote servers go through the `mcp-remote` shim. In
@@ -201,7 +210,7 @@ person which one.
 |---|---|---|
 | **`get_care_gaps`** | `withinDays?` | **The core tool.** Everything needing attention with no owner, ranked. Read-only, idempotent. Renders the [Care Board](#the-care-board-mcp-apps). Also the way to resolve "that one" / "yes" / "I've got it" to a specific id. |
 | `claim_obligation` | `obligationId` | The speaker takes it on themselves. |
-| `assign_obligation` | `obligationId`, `assigneeName` | Gives it to someone else. Primary caregiver only. |
+| `assign_obligation` | `obligationId`, `assigneeName` | Gives it to someone else by asking them; theirs once they say yes. Primary caregiver only. |
 | `confirm_proposal` | `obligationId`, `confirmed` | Turns a system guess into real work, or dismisses it. |
 | `resolve_obligation` | `obligationId`, `note?` | Marks it done. |
 

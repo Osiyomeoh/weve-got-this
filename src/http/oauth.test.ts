@@ -28,6 +28,8 @@ import { resolverFromEnv } from './identity.ts';
  */
 
 const SECRET = 'test-oauth-signing-secret';
+/** A member's id inside a connection's own copy of the demo family (see sandbox.ts). */
+const COPY_OF = (member: string): RegExp => new RegExp(`^${member}~[0-9a-z]+_[0-9a-f]{8}$`);
 const ISSUER = 'http://localhost';
 const REDIRECT = 'https://client.example/cb';
 const store = new CareStore();
@@ -118,7 +120,12 @@ test('the full authorization code flow issues a usable token', async () => {
   assert.ok(json.access_token && json.refresh_token);
 
   const claims = verifyToken(json.access_token, SECRET);
-  assert.equal(claims?.sub, 'm_renee', 'the token must name the member who consented');
+  // The member who consented, in a copy of the demo family made for this connection.
+  assert.match(
+    claims?.sub ?? '',
+    COPY_OF('m_renee'),
+    'the token must name the member who consented',
+  );
 });
 
 test('the issued token actually authenticates an MCP session', async () => {
@@ -136,7 +143,7 @@ test('the issued token actually authenticates an MCP session', async () => {
     header: (h: string) =>
       h.toLowerCase() === 'authorization' ? `Bearer ${json.access_token}` : undefined,
   };
-  assert.equal(resolver.resolve(fake as never), 'm_david');
+  assert.match(resolver.resolve(fake as never) ?? '', COPY_OF('m_david'));
 });
 
 test('an issued token opens a real MCP session as the right member', async () => {
@@ -234,7 +241,11 @@ test('a refresh token gets a new access token', async () => {
     refresh_token: first.json.refresh_token,
   });
   assert.equal(second.status, 200);
-  assert.equal(verifyToken(second.json.access_token, SECRET)?.sub, 'm_renee');
+  // The same person, in the same copy: refreshing never moves anyone to a new family.
+  assert.equal(
+    verifyToken(second.json.access_token, SECRET)?.sub,
+    verifyToken(first.json.access_token, SECRET)?.sub,
+  );
 });
 
 // --- the attacks ---------------------------------------------------------
@@ -409,9 +420,9 @@ test('a code issued by one instance is redeemed by another sharing the secret', 
       },
     );
     assert.equal(res.status, 200);
-    assert.equal(
-      verifyToken(((await res.json()) as { access_token: string }).access_token, SECRET)?.sub,
-      'm_renee',
+    assert.match(
+      verifyToken(((await res.json()) as { access_token: string }).access_token, SECRET)?.sub ?? '',
+      COPY_OF('m_renee'),
     );
   } finally {
     s2.close();
@@ -522,7 +533,7 @@ test('a new MCP client can register itself and complete the flow (RFC 7591)', as
     redirect_uri: REDIRECT,
   });
   assert.equal(status, 200);
-  assert.equal(verifyToken(json.access_token, SECRET)?.sub, 'm_david');
+  assert.match(verifyToken(json.access_token, SECRET)?.sub ?? '', COPY_OF('m_david'));
 });
 
 test('registration without redirect URIs is refused', async () => {

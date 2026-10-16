@@ -40,7 +40,9 @@ export const OUT = {
   },
   assign_obligation: {
     obligationId: z.string().optional(),
+    askedOfId: z.string().optional(),
     ownerId: z.string().nullable().optional(),
+    status: z.string().optional(),
   },
   request_owner: {
     obligationId: z.string().optional(),
@@ -122,6 +124,7 @@ export const OUT = {
     done: arr.optional(),
     complete: z.boolean().optional(),
     firstGap: z.unknown().optional(),
+    familyCode: z.string().optional(),
   },
   create_household: { householdId: z.string().optional(), memberId: z.string().optional() },
   add_member: { memberId: z.string().optional() },
