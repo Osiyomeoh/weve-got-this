@@ -10,7 +10,7 @@
  * It is a pure function of the recorded state, so its honesty is testable: see
  * provenance.test.ts, which asserts the two refusals hold over the whole chain.
  */
-import type { CareEvent, Obligation, Provenance } from './types.ts';
+import type { CareEvent, Obligation, ObligationStatus, Provenance } from './types.ts';
 import type { ObligationTransition } from '../store/store.ts';
 import { evidenceLine } from './evidence.js';
 import { clockTime, isLocalToday } from './local-time.js';
@@ -71,7 +71,12 @@ function fmt(at: string | undefined, clock: Clock): { text: string; phrase: stri
   return { text, phrase: ` on ${text}` };
 }
 
-function origin(p: Provenance, nameOf: NameOf, clock: Clock): ProvenanceStep {
+function origin(
+  p: Provenance,
+  status: ObligationStatus,
+  nameOf: NameOf,
+  clock: Clock,
+): ProvenanceStep {
   switch (p.kind) {
     case 'CONFIRMED': {
       const who = nameOf(p.byMemberId) ?? 'someone in the circle';
@@ -85,10 +90,14 @@ function origin(p: Provenance, nameOf: NameOf, clock: Clock): ProvenanceStep {
     case 'INFERRED':
       return {
         certainty: 'inferred',
-        // The load-bearing sentence: named as a guess, and explicitly not yet a fact.
+        // The load-bearing sentence: named as a guess, and explicitly not yet a fact while it
+        // is still only proposed. Once someone has moved it on, the steps after this one say
+        // what they did; repeating "nobody has confirmed it" would contradict them.
         detail:
-          `The app proposed this, guessing from ${p.from}. Nobody has confirmed it yet, ` +
-          `so it is still a suggestion, not a fact.`,
+          status === 'PROPOSED'
+            ? `The app proposed this, guessing from ${p.from}. Nobody has confirmed it yet, ` +
+              `so it is still a suggestion, not a fact.`
+            : `The app proposed this, guessing from ${p.from}.`,
       };
     case 'NOT_LOGGED': {
       const when = fmt(p.expectedAt, clock)?.text;
@@ -270,7 +279,7 @@ export function explainProvenance(
   now?: Date,
 ): ProvenanceExplanation {
   const clock: Clock = { timezone, ...(now ? { now } : {}) };
-  const chain: ProvenanceStep[] = [origin(obligation.provenance, nameOf, clock)];
+  const chain: ProvenanceStep[] = [origin(obligation.provenance, obligation.status, nameOf, clock)];
 
   const source = obligation.sourceEventId
     ? events.find((e) => e.id === obligation.sourceEventId)

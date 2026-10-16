@@ -72,6 +72,50 @@ test('an inferred obligation is spoken as a guess, never as a fact', () => {
   assert.equal(e.chain[0]?.certainty, 'inferred');
 });
 
+test('a confirmed guess does not still say nobody confirmed it', () => {
+  const o = obligation({
+    provenance: {
+      kind: 'INFERRED',
+      rule: 'appointment_implies_ride',
+      from: 'the cardiology appointment',
+    },
+    status: 'ASSIGNED',
+    ownerId: 'm_renee',
+  });
+  const ts: ObligationTransition[] = [
+    {
+      obligationId: 'o1',
+      from: 'PROPOSED',
+      to: 'OPEN',
+      byMemberId: 'm_renee',
+      at: '2026-03-10T10:00:00Z',
+    },
+    {
+      obligationId: 'o1',
+      from: 'OPEN',
+      to: 'ASSIGNED',
+      byMemberId: 'm_renee',
+      at: '2026-03-10T11:00:00Z',
+    },
+  ];
+  const e = explainProvenance(o, ts, [], nameOf);
+  // Where it came from is still a guess, and said as one...
+  assert.match(e.spoken, /guessing from the cardiology appointment/);
+  assert.equal(e.chain[0]?.certainty, 'inferred');
+  // ...but the chain no longer contradicts itself once someone has moved it on.
+  assert.doesNotMatch(e.spoken, /nobody has confirmed|still a suggestion/i);
+  assert.match(e.spoken, /confirmed as real work/);
+  assert.match(e.spoken, /Renee took it on/);
+  assert.doesNotMatch(e.spoken, OVERCLAIM);
+  assert.doesNotMatch(e.spoken, ACCUSATORY);
+
+  // Moved on with nothing on record to say how (the demo's seeded ride): no contradiction,
+  // and no confirmation claimed that the record does not hold.
+  const seeded = explainProvenance({ ...o, status: 'OPEN', ownerId: null }, [], [], nameOf);
+  assert.doesNotMatch(seeded.spoken, /nobody has confirmed|still a suggestion|confirmed as/i);
+  assert.match(seeded.spoken, /guessing from the cardiology appointment/);
+});
+
 test('a not-logged record is never turned into "she didn\'t do it"', () => {
   const o = obligation({
     provenance: { kind: 'NOT_LOGGED', expectedAt: '2026-03-10T20:00:00Z' },
