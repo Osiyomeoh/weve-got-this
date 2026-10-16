@@ -14,6 +14,7 @@ has claimed, and asks whoever has room. Nothing is anyone's until they say yes.
 
 **Try it:** [play a family's week in the simulation](https://krqi2tpsif.us-east-1.awsapprunner.com/world)
 (type, speak, or send a voice note) · [open the console](https://krqi2tpsif.us-east-1.awsapprunner.com/console)
+· [watch the 3-minute demo](https://youtu.be/6IwNvse9Gfk)
 
 [![The CareCircle console: the family on the left, and on the right two pieces of Daddy's care that nobody has taken yet, each with "I'll take it"](docs/console.png)](https://krqi2tpsif.us-east-1.awsapprunner.com/console.html)
 
@@ -124,12 +125,14 @@ what isn't care?), are measured too. Every number, with the file it came from:
 
 ### Judge links
 
+- Demo video (2:58): https://youtu.be/6IwNvse9Gfk
 - Live console, your own private copy of the demo family: https://krqi2tpsif.us-east-1.awsapprunner.com/console.html
 - Every measured number, with the file it came from: https://krqi2tpsif.us-east-1.awsapprunner.com/proof.html
 - Live MCP endpoint (OAuth 2.1; 401 without a token): https://ypq2dfq2p7.us-east-1.awsapprunner.com/mcp
 - Friction log, dated while building: [`docs/FRICTION-LOG.md`](docs/FRICTION-LOG.md)
 - Product feedback per tool: [`docs/PRODUCT-FEEDBACK.md`](docs/PRODUCT-FEEDBACK.md) · feature requests: [`docs/FEATURE-REQUESTS.md`](docs/FEATURE-REQUESTS.md)
 - Open Source mini entry: [household-sim](https://github.com/Osiyomeoh/household-sim), this repo's simulator released as a test harness for any MCP server
+- Fire TV: the Vega app in [`firetv/apps/vega/`](firetv/apps/vega/), run on the Vega Virtual Device (see [The shared display](#sources-and-surfaces-one-responsibility-layer))
 - The Alexa Skill bridge fork it was tested through on a real Echo: [Osiyomeoh/alexa-skill-mcp-bridge@carecircle](https://github.com/Osiyomeoh/alexa-skill-mcp-bridge/tree/carecircle)
 
 ### Try it live in your browser - no clone, no keys
@@ -522,7 +525,7 @@ is a fact until a person says so.
 | **Gmail** | SCHEDULED - a calendar invite (.ics) | **LIVE** (OAuth read): an appointment-confirmation email's invite becomes an appointment. Never guesses a date from prose. |
 | **Ring** | PHYSICAL - a sensor observed it | **Real** HMAC-verified webhook → `INFERRED`, plus a real API client ([`src/connectors/ring.ts`](src/connectors/ring.ts)); a live doorbell event needs the webhook URL set in the Ring portal + a device. |
 | Bee / other sensors | AMBIENT | Not built - but `ingest_signal` is source-agnostic, so any sensor enters the same way. |
-| Fire TV | not evidence: the SHARED DISPLAY | Live ambient TV screen (below) |
+| Fire TV | the SHARED DISPLAY, and one button of DECLARED evidence | **Runs on Vega OS** (Vega Virtual Device): the remote records Daddy's own dose (below) |
 
 The Google doors are real inbound/outbound connectors ([`src/connectors/`](src/connectors/)):
 given a linked Google account they read the real calendar and invite emails, and write
@@ -543,6 +546,25 @@ Android TV / web from the same code) built as **ambient TV content**: a calm clo
 which care gaps arrive as sliding notification cards, the way a TV OS surfaces an alert -
 not a dashboard a family has to read. It polls the same live `/api/state` the voice
 surface does. Try it: **[`/tv-native/`](https://krqi2tpsif.us-east-1.awsapprunner.com/tv-native/)**.
+
+**On Vega OS.** [`firetv/apps/vega/`](firetv/apps/vega/) is a Vega app (React Native for Vega,
+SDK 0.24) that opens the family's [`/tv`](https://krqi2tpsif.us-east-1.awsapprunner.com/tv)
+page full screen in the Vega WebView and hands it the remote. The D-pad moves between what
+needs an owner, OK answers, BACK goes back. When a dose is due, the set asks Daddy *"Have you
+taken your eye drops?"*; one OK puts his own word on the record, shown as
+*"7:31 PM · pressed on this TV"*, which the family sees everywhere at once. It is the one thing
+the TV writes, and it is what the person said, never a guess. We ran it on the **Vega Virtual
+Device**, not on a physical Fire TV; the demo video shows that run. Each set gets its own copy
+of the demo family, as a browser does, so a press never touches a real record. Build it:
+
+```bash
+cd firetv && corepack yarn install && cd apps/vega
+CI=true corepack yarn build:debug      # CI=true: watchman can't watch ~/Documents
+vega virtual-device start
+vega run-app build/aarch64-debug/vega_aarch64.vpkg com.giolaq.multitv.vega.main
+```
+
+What it took, error by error: [`docs/FRICTION-LOG.md`](docs/FRICTION-LOG.md).
 
 ---
 
