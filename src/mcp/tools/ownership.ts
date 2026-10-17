@@ -9,7 +9,7 @@ import { evidenceFor, evidenceLine } from '../../domain/evidence.js';
 import { detectCareGaps } from '../../domain/gaps.js';
 import { asReadBy } from '../../domain/language.js';
 import { asTask, clockTime, isLocalToday } from '../../domain/local-time.js';
-import { closeAlongside } from '../../domain/orders.js';
+import { closeAlongside, justOrdered, takeInHeldBy } from '../../domain/orders.js';
 import { appToolMeta } from '../app/protocol.js';
 import { OUT } from '../output-schemas.js';
 import { joinSpoken, speakGaps } from '../text.js';
@@ -386,7 +386,10 @@ export function registerResolveObligation({
       try {
         const me = actor();
         requireCap(me, 'resolve_obligation');
-        const o = obligationFrom(store, ref, me.householdId);
+        const said = obligationFrom(store, ref, me.householdId);
+        // Said about what someone else ordered in, by whoever is taking it in: they are
+        // closing the taking in, and the order follows below.
+        const o = takeInHeldBy(said, me.id, state()) ?? said;
         const obligationId = o.id;
         // Closing it again would put a second "done" on the record under someone else's name.
         // Say who closed it and when instead; that is usually what the question was.
@@ -410,6 +413,8 @@ export function registerResolveObligation({
         // What the devices saw around the due time travels with the verdict, so "how do
         // we know it was done?" has more to stand on than one person's word.
         const s = state();
+        const notYet = justOrdered(o, s, now());
+        if (notYet) return guidance(notYet);
         const seen = evidenceFor(o, s.events, now());
         await store.transition(obligationId, me.householdId, 'RESOLVED', me.id, {
           resolvedAt: now().toISOString(),

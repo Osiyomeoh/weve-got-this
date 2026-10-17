@@ -1,7 +1,7 @@
 // The people in the world, and where things are. Every person here is a real member of
 // the visitor's own copy of the demo household, reached with their own credential.
 
-export type Place = 'daddy' | 'tolu' | 'street' | 'pharmacy';
+export type Place = 'daddy' | 'tolu' | 'street' | 'pharmacy' | 'away';
 
 export interface Person {
   /** The member this person is, in the care record. */
@@ -58,6 +58,18 @@ export const CAST: Record<string, Person> = {
     fallbackPitch: 1.1,
     color: '#9cc3ff',
     place: 'street',
+  },
+  // Far away: he can order things in and ask someone to take them in, never be at the door.
+  kunle: {
+    memberId: 'm_kunle',
+    name: 'Kunle',
+    role: "Tolu's brother, in London",
+    playAs: "You're a long way away. What you can do from there, you do by phone.",
+    model: 'character-male-a',
+    voice: 'Arthur',
+    fallbackPitch: 0.95,
+    color: '#ff9ecf',
+    place: 'away',
   },
 };
 

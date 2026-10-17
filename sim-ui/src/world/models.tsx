@@ -91,6 +91,8 @@ interface CharacterProps {
   typing?: boolean;
   /** A nod or a shake of the head, played once each time `key` changes. */
   gesture?: Gesture | null;
+  /** A parcel held in both hands, in front of them. */
+  carrying?: boolean;
 }
 
 /**
@@ -139,6 +141,7 @@ export function Character({
   phone = false,
   typing = false,
   gesture = null,
+  carrying = false,
 }: CharacterProps) {
   const { scene, animations } = useGLTF(MODEL.character(model));
   // In a wheelchair they sit to rest and roll to move; the chair goes everywhere they do.
@@ -185,6 +188,7 @@ export function Character({
     talk: 0,
     phone: 0,
     type: 0,
+    carry: 0,
     gestureAt: -10,
     gestureKind: 'nod' as Gesture['kind'],
   });
@@ -262,6 +266,7 @@ export function Character({
     L.talk += ((talking ? 1 : 0) - L.talk) * ease(dt, 6);
     L.phone += ((phone ? 1 : 0) - L.phone) * ease(dt, 4);
     L.type += ((typing && !talking && !phone ? 1 : 0) - L.type) * ease(dt, 4);
+    L.carry += ((carrying ? 1 : 0) - L.carry) * ease(dt, 6);
     if (L.gestureAt === -1) L.gestureAt = clock.elapsedTime;
 
     // Where the eyes go: the phone in their hand, the thing that matters, or nowhere much.
@@ -315,13 +320,15 @@ export function Character({
     const talkHand = L.talk * (1 - L.phone);
     bones.armR?.apply(
       -0.95 * L.phone -
+        0.85 * L.carry -
         L.type * (0.75 + Math.sin(t * 17) * 0.06) +
         talkHand * (Math.sin(t * 2.6) * 0.22 - 0.3),
       0,
       0.4 * L.phone + talkHand * Math.sin(t * 1.7) * 0.1,
     );
     bones.armL?.apply(
-      -L.type * (0.75 + Math.sin(t * 15 + 1) * 0.06) +
+      -0.85 * L.carry -
+        L.type * (0.75 + Math.sin(t * 15 + 1) * 0.06) +
         talkHand * (Math.sin(t * 2.1 + 1.3) * 0.1 - 0.1),
       0,
       0,
@@ -335,6 +342,29 @@ export function Character({
       {aid === 'glasses' && <Accessory url={MODEL.character('aid-glasses')} rig={rig} />}
       {aid === 'wheelchair' && <Model url={MODEL.character('wheelchair')} center={false} />}
       {bones.armR && <Handset arm={bones.armR.bone} shown={phone} />}
+      {carrying && <ParcelBox position={[0, 0.4, 0.2]} scale={0.77} />}
+    </group>
+  );
+}
+
+/** A cardboard box, taped: what was ordered, on the step or in someone's hands. */
+export function ParcelBox({
+  position,
+  scale = 1,
+}: {
+  position: [number, number, number];
+  scale?: number;
+}) {
+  return (
+    <group position={position} scale={scale}>
+      <mesh castShadow receiveShadow position={[0, 0.08, 0]}>
+        <boxGeometry args={[0.22, 0.16, 0.18]} />
+        <meshStandardMaterial color="#c79a5b" roughness={0.9} />
+      </mesh>
+      <mesh position={[0, 0.161, 0]}>
+        <boxGeometry args={[0.05, 0.004, 0.181]} />
+        <meshStandardMaterial color="#e8d6a8" roughness={0.6} />
+      </mesh>
     </group>
   );
 }

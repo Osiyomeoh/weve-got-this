@@ -3,7 +3,15 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, type BoardState, type ToolCall } from '../lib/api';
 import { ALEXA_VOICE, CAST, type PersonKey } from './cast';
 import { DEVICE, HUB, SHOTS, SPOT, v3, type V3 } from './layout';
-import { clockText, homeToday, STORY, type ShotName, type Stage, type Step } from './story';
+import {
+  clockText,
+  homeToday,
+  STORY,
+  type Parcel,
+  type ShotName,
+  type Stage,
+  type Step,
+} from './story';
 import { family, familyNames, setFamily } from './families';
 import { hush, prepare, speak, wait } from './voice';
 import { onTvDid, powerTv, pressRemote, ringTv } from '../lib/remote';
@@ -97,6 +105,8 @@ export interface WorldView {
   log: TraceItem[];
   pulses: PulseSpec[];
   musa: Stage;
+  /** What was ordered in: on its way, on the step, in someone's hands, or inside. */
+  delivery: Parcel;
   ringActive: boolean;
   evidence: Evidence | null;
   hubBusy: boolean;
@@ -118,6 +128,7 @@ const AT_REST: Record<PersonKey, Presence> = {
   // Tolu is at work: eyes on the laptop until something needs them.
   tolu: { look: 'laptop', talking: false, phone: false, gesture: null, at: 'home' },
   musa: { look: null, talking: false, phone: false, gesture: null, at: 'home' },
+  kunle: { look: null, talking: false, phone: false, gesture: null, at: 'home' },
 };
 
 const START: WorldView = {
@@ -137,6 +148,7 @@ const START: WorldView = {
   log: [],
   pulses: [],
   musa: 'midday',
+  delivery: 'none',
   ringActive: false,
   evidence: null,
   hubBusy: false,
@@ -151,6 +163,7 @@ const START: WorldView = {
 function deviceOf(who: PersonKey): V3 {
   if (who === 'daddy') return DEVICE.daddyEcho;
   if (who === 'tolu') return DEVICE.toluEcho;
+  if (who === 'kunle') return DEVICE.awayPhone;
   return [SPOT.musaCarMidday[0], 0.9, SPOT.musaCarMidday[2]];
 }
 
@@ -158,7 +171,7 @@ function deviceOf(who: PersonKey): V3 {
 function personNamed(name: string): PersonKey | null {
   const n = name.toLowerCase();
   // The names this family goes by now (the US family, or a visitor's own), then the old ones.
-  for (const k of ['musa', 'tolu', 'daddy'] as PersonKey[])
+  for (const k of ['musa', 'tolu', 'daddy', 'kunle'] as PersonKey[])
     if (CAST[k] && n.includes(CAST[k]!.name.toLowerCase())) return k;
   if (n.includes('musa') || n.includes('bisi')) return 'musa';
   if (n.includes('tolu')) return 'tolu';
@@ -313,6 +326,8 @@ export function useDirector(opts: {
     const from = storyNow().getTime();
     const target = homeToday(to[0], to[1]).getTime();
     if (target <= from) return;
+    // What was said before the clock ran on isn't still being said when it stops.
+    set({ caption: null, phones: {} });
     const start = performance.now();
     while (true) {
       if (run.current !== token) return;
@@ -553,11 +568,18 @@ export function useDirector(opts: {
       set({
         evidence: {
           at: storyNow(),
-          saw: 'A person at the front door',
-          cannot: 'Who it was, or what they brought',
+          ...(step.evidence ?? {
+            saw: 'A person at the front door',
+            cannot: 'Who it was, or what they brought',
+          }),
         },
       });
     await wait(2200);
+    // The server's own words back, when they are the point: a delivery is a question, not a tick.
+    if (step.says && !call.isError && run.current === token) {
+      set({ caption: { who: 'We’ve Got This', text: call.result, tone: 'agent' } });
+      await wait(readingTime(call.result));
+    }
     set({ ringActive: false });
     await deliver();
     await wait(1600);
@@ -778,6 +800,10 @@ export function useDirector(opts: {
             case 'musa':
               set({ musa: step.stage });
               await wait(step.ms ?? 2500);
+              break;
+            case 'delivery':
+              set({ delivery: step.stage });
+              await wait(step.ms ?? 1500);
               break;
             case 'line':
               await line(step, token);

@@ -3,10 +3,23 @@ import { useFrame } from '@react-three/fiber';
 import { CameraControls, Html, Sky, Stars } from '@react-three/drei';
 import * as THREE from 'three';
 import { CAST, type PersonKey } from './cast';
-import { Character, Model, MODEL, type Anim } from './models';
+import { Character, Model, MODEL, ParcelBox, type Anim } from './models';
 import { Doorbell, Echo, FireTV, Hub, Pulse, type PulseSpec } from './devices';
-import { CAR, DADDY, DEVICE, HUB, PHARMACY, ROAD_Z, SHOTS, SPOT, TOLU, type V3 } from './layout';
-import { homeHour, type ShotName, type Stage } from './story';
+import {
+  AWAY,
+  CAR,
+  DADDY,
+  DEVICE,
+  HUB,
+  PHARMACY,
+  ROAD_Z,
+  SHOTS,
+  SPOT,
+  TOLU,
+  VAN,
+  type V3,
+} from './layout';
+import { homeHour, type Parcel, type ShotName, type Stage } from './story';
 import type { LookAt, Presence, WorldView } from './director';
 import { wait } from './voice';
 import { family } from './families';
@@ -36,9 +49,12 @@ export function Scene({
         <Neighbourhood />
         <DaddysHouse view={view} night={isNight(hour)} />
         <ToluFlat view={view} night={isNight(hour)} />
+        <AwayFlat view={view} night={isNight(hour)} />
         <Pharmacy night={isNight(hour)} />
+        <DeliveryRig stage={view.delivery} />
         <MusaRig
           stage={view.musa}
+          delivery={view.delivery}
           phone={view.phones.musa}
           listening={view.phoneListening === 'musa'}
           life={alive('musa', view.people)}
@@ -569,6 +585,52 @@ function ToluFlat({ view, night }: { view: WorldView; night: boolean }) {
 }
 
 /**
+ * The one far away, in a room of their own behind the street with their city over it. From
+ * there they can order things in and ask someone to take them in; they can't come to the door.
+ */
+function AwayFlat({ view, night }: { view: WorldView; night: boolean }) {
+  const away = CAST.kunle!;
+  return (
+    <group>
+      <Room at={AWAY} w={3.6} d={3.2} floor="#9c8f86" wall="#ebe3ef" low={['front', 'right']} />
+      <Html position={local(AWAY, 0, 3.0, 0)} center pointerEvents="none" zIndexRange={[5, 0]}>
+        <div className="world-label city">{family().words.order.city}</div>
+      </Html>
+      <Window at={local(AWAY, -0.6, 0.7, -1.55)} night={night} w={1.2} />
+      <Model url={MODEL.furniture('rugRectangle')} position={local(AWAY, 0.1, 0.04, 0.2)} />
+      <Model url={MODEL.furniture('loungeChair')} position={SPOT.awayChair} />
+      <Model
+        url={MODEL.furniture('sideTable')}
+        position={local(AWAY, 1.0, 0.04, 0.1)}
+        rotation={[0, Math.PI / 2, 0]}
+      />
+      <Model
+        url={MODEL.furniture('bookcaseOpen')}
+        position={local(AWAY, -1.6, 0.04, -1.3)}
+        rotation={[0, FACE.right, 0]}
+      />
+      <Model url={MODEL.furniture('pottedPlant')} position={local(AWAY, 1.55, 0.04, -1.3)} />
+      <Lamp at={local(AWAY, 0, 1.0, 0)} night={night} />
+      <group position={SPOT.awayChair}>
+        <PhoneBubble
+          who="kunle"
+          message={view.phones.kunle}
+          listening={view.phoneListening === 'kunle'}
+        />
+      </group>
+      <Character
+        model={away.model}
+        anim="sit"
+        position={local(SPOT.awayChair, 0, 0.12, -0.08)}
+        facing={FACE.toward}
+        scale={PERSON_SCALE}
+        {...alive('kunle', view.people)}
+      />
+    </group>
+  );
+}
+
+/**
  * When a family is not all in one city, each home says where it is. The street between them
  * stands for the two hours of road: the world is a stage, not a map.
  */
@@ -626,11 +688,13 @@ function Pharmacy({ night }: { night: boolean }) {
  */
 function MusaRig({
   stage,
+  delivery,
   phone,
   listening,
   life,
 }: {
   stage: Stage;
+  delivery: Parcel;
   phone?: { from: string; text: string; key: string };
   listening: boolean;
   life: ReturnType<typeof alive>;
@@ -677,6 +741,12 @@ function MusaRig({
           if (!live()) return;
           await drive(CAR.daddy);
           break;
+        // Straight over from where he waits, to take in what someone ordered.
+        case 'toDaddy':
+          await walk(beside(CAR.midday, 0.75), 'idle', FACE.away);
+          if (!live()) return;
+          await drive(CAR.daddy);
+          break;
         case 'atDoor':
           setMe({ at: beside(CAR.daddy), anim: 'idle', shown: true, facing: FACE.away });
           await wait(200);
@@ -696,17 +766,27 @@ function MusaRig({
     })();
   }, [stage]);
 
+  // He bends for the parcel on the step, and carries it in both hands until it is handed over.
+  const [bending, setBending] = useState(false);
+  useEffect(() => {
+    if (delivery !== 'pickedUp') return;
+    setBending(true);
+    const id = setTimeout(() => setBending(false), 900);
+    return () => clearTimeout(id);
+  }, [delivery]);
+
   return (
     <group>
       <Car to={car} />
       <Character
         model={musa.model}
-        anim={me.anim}
+        anim={bending ? 'pick-up' : me.anim}
         position={me.at}
         facing={me.facing}
         scale={PERSON_SCALE}
         visible={me.shown}
         speed={1.4}
+        carrying={delivery === 'pickedUp' && !bending}
         {...life}
       />
       <MovingLabel at={me.at}>
@@ -732,8 +812,11 @@ function MovingLabel({ at, children }: { at: V3; children: React.ReactNode }) {
   return <group ref={g}>{children}</group>;
 }
 
-/** Musa's car drives along the road to wherever the story needs it. */
-function Car({ to }: { to: V3 }) {
+/**
+ * A car drives along the road to wherever the story needs it: Musa's, or the delivery van.
+ * Off the street (`shown` false) it waits where it was sent, facing up the road.
+ */
+function Car({ to, model = 'sedan', shown = true }: { to: V3; model?: string; shown?: boolean }) {
   const g = useRef<THREE.Group>(null);
   const target = useMemo(() => new THREE.Vector3(...to), [to[0], to[1], to[2]]);
   useEffect(() => {
@@ -743,6 +826,12 @@ function Car({ to }: { to: V3 }) {
   useFrame((_, dt) => {
     const car = g.current;
     if (!car) return;
+    car.visible = shown;
+    if (!shown) {
+      car.position.copy(target);
+      car.rotation.y = Math.PI / 2;
+      return;
+    }
     const d = target.clone().sub(car.position);
     const len = d.length();
     if (len < 0.01) return;
@@ -754,7 +843,95 @@ function Car({ to }: { to: V3 }) {
   });
   return (
     <group ref={g}>
-      <Model url={MODEL.car('sedan')} scale={0.5} tint={undefined} />
+      <Model url={MODEL.car(model)} scale={0.5} tint={undefined} />
+    </group>
+  );
+}
+
+/** Who brings it: someone the family doesn't know, so none of the family's own faces. */
+const COURIERS = [
+  'character-male-a',
+  'character-female-d',
+  'character-male-e',
+  'character-female-c',
+];
+
+/**
+ * What was ordered comes the way deliveries do: a van pulls up, the courier leaves it on the
+ * step, and they go. Nobody's word comes with it; the doorbell sees it, and that is all.
+ */
+function DeliveryRig({ stage }: { stage: Parcel }) {
+  const [van, setVan] = useState<{ to: V3; shown: boolean }>({ to: VAN.from, shown: false });
+  const [courier, setCourier] = useState({
+    at: SPOT.courierVan,
+    shown: false,
+    carrying: false,
+    bending: false,
+  });
+  const [onStep, setOnStep] = useState(false);
+  const model =
+    COURIERS.find((m) => !Object.values(CAST).some((p) => p.model === m)) ?? COURIERS[0]!;
+  const token = useRef(0);
+
+  useEffect(() => {
+    const t = ++token.current;
+    const live = () => token.current === t;
+    void (async () => {
+      switch (stage) {
+        case 'none':
+          setVan({ to: VAN.from, shown: false });
+          setCourier({ at: SPOT.courierVan, shown: false, carrying: false, bending: false });
+          setOnStep(false);
+          break;
+        case 'arriving':
+          setVan({ to: VAN.stop, shown: true });
+          await wait(5200);
+          if (!live()) return;
+          setCourier({ at: SPOT.courierVan, shown: true, carrying: true, bending: false });
+          await wait(300);
+          if (!live()) return;
+          setCourier((c) => ({ ...c, at: SPOT.courierDoor }));
+          await wait(2600);
+          if (!live()) return;
+          setCourier((c) => ({ ...c, carrying: false, bending: true }));
+          setOnStep(true);
+          await wait(700);
+          if (!live()) return;
+          setCourier((c) => ({ ...c, at: SPOT.courierVan, bending: false }));
+          await wait(2600);
+          if (!live()) return;
+          setCourier((c) => ({ ...c, shown: false }));
+          setVan({ to: VAN.pullOut, shown: true });
+          await wait(900);
+          if (!live()) return;
+          setVan({ to: VAN.gone, shown: true });
+          await wait(7000);
+          if (!live()) return;
+          setVan({ to: VAN.from, shown: false });
+          break;
+        case 'pickedUp':
+        case 'inside':
+          setOnStep(false);
+          break;
+      }
+    })();
+  }, [stage]);
+
+  return (
+    <group>
+      <Car to={van.to} model="delivery" shown={van.shown} />
+      {courier.shown && (
+        <Character
+          model={model}
+          anim={courier.bending ? 'pick-up' : 'idle'}
+          position={courier.at}
+          facing={FACE.away}
+          scale={PERSON_SCALE}
+          speed={1.3}
+          carrying={courier.carrying}
+        />
+      )}
+      {onStep && <ParcelBox position={SPOT.parcel} />}
     </group>
   );
 }

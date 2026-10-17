@@ -7,9 +7,21 @@ import type { Key } from '../lib/dpad';
 // whatever the server says.
 
 export type ShotName =
-  'overview' | 'daddy' | 'daddyTv' | 'tolu' | 'musa' | 'pharmacy' | 'door' | 'both' | 'hub';
+  | 'overview'
+  | 'daddy'
+  | 'daddyTv'
+  | 'tolu'
+  | 'musa'
+  | 'pharmacy'
+  | 'door'
+  | 'doorstep'
+  | 'both'
+  | 'hub'
+  | 'away';
 export type Device = 'echo' | 'phone';
-export type Stage = 'midday' | 'pharmacy' | 'driving' | 'atDoor' | 'backInCar';
+export type Stage = 'midday' | 'pharmacy' | 'driving' | 'toDaddy' | 'atDoor' | 'backInCar';
+/** Something ordered in: on its way and left on the step, in someone's hands, or inside. */
+export type Parcel = 'none' | 'arriving' | 'pickedUp' | 'inside';
 
 /**
  * Where the day can go another way. `id` names a moment someone can say no to, or let go;
@@ -42,6 +54,10 @@ export type Step = Branch &
         args: Record<string, unknown>;
         caption: string;
         shot?: ShotName;
+        /** What the doorbell's card says it saw, and can't know, when it is not a person. */
+        evidence?: { saw: string; cannot: string };
+        /** Show what the server said back: the question it asks after a delivery. */
+        says?: boolean;
       }
     /** A caption on screen, nobody's words. */
     | { kind: 'caption'; text: string; ms?: number; shot?: ShotName }
@@ -49,6 +65,8 @@ export type Step = Branch &
     | { kind: 'lapse'; to: [number, number]; seconds: number; shot?: ShotName }
     /** Musa moves through his evening. */
     | { kind: 'musa'; stage: Stage; shot?: ShotName; ms?: number }
+    /** The van brings what was ordered, and leaves it on the step. Nobody's word, no tool. */
+    | { kind: 'delivery'; stage: Parcel; shot?: ShotName; ms?: number }
     /** People speaking to each other, not to Alexa. Never sent to the server, never on the record. */
     | {
         kind: 'aside';
@@ -143,6 +161,30 @@ export interface Words {
    */
   rideSteps?: Step[];
   ridePoint?: string;
+  /**
+   * Bought in rather than done by hand. The family member far away orders it wherever they
+   * already order things, asks someone nearby to take it in, and only that person's word
+   * says it reached them. Nothing is bought here.
+   */
+  order: {
+    /** Who orders it, and from where. */
+    by: string;
+    city: string;
+    /** The caption over their home. */
+    intro: string;
+    /** What they say to Alexa: the order, as said. */
+    line: string;
+    /** What it is, as the helper speaks of it: "his lunch", "the groceries". */
+    thing: string;
+    /** When it is due, as said: "at one". */
+    said: string;
+    /** When it is due at the door, on the clock. */
+    at: [number, number];
+    /** What the helper says, handing it over. */
+    handover: string;
+    /** What they say back, when it is not "Thank you" and the helper's name. */
+    thanks?: string;
+  };
 }
 
 export const EYES: Words = {
@@ -158,12 +200,32 @@ export const EYES: Words = {
   evening: 'eye drops',
   use: { present: 'use', past: 'used' },
   handover: 'Good evening, sir. Your eye drops.',
+  // Not from the real week, and the caption says so.
+  order: {
+    by: 'Kunle',
+    city: 'London',
+    intro:
+      "Simulated, not from Daddy's real week. Lunch at one has nobody nearby. In London, Tolu's brother Kunle can't bring it, but he can order it.",
+    line: "Alexa, I've ordered Daddy's lunch from Mama Titi's kitchen. It'll be there at one.",
+    thing: 'his lunch',
+    said: 'at one',
+    at: [13, 0],
+    handover: "Good afternoon, sir. Your lunch, from Mama Titi's.",
+  },
+};
+
+/** A few minutes before a time of day. */
+const before = ([h, m]: [number, number], minutes: number): [number, number] => {
+  const t = h * 60 + m - minutes;
+  return [Math.floor(t / 60), t % 60];
 };
 
 export function storyFor(w: Words): Beat[] {
   const helper = w.helper ?? { name: 'Musa', they: 'he' };
   const H = helper.name;
   const T = w.primary?.name ?? 'Tolu';
+  const o = w.order;
+  const A = o.by;
   return [
     {
       id: 'morning',
@@ -264,6 +326,119 @@ export function storyFor(w: Words): Beat[] {
           shot: 'both',
           ms: 3800,
           text: `Nobody has said they'll take ${w.ride}. It stays on the record as work with no owner: a gap, not a promise.`,
+        },
+      ],
+    },
+    {
+      id: 'order',
+      at: [12, 40],
+      title: `${A}, from ${o.city}`,
+      point: `Far away still helps. ${A} orders it wherever the family already orders things; the record keeps who ordered it, and who takes it in.`,
+      steps: [
+        { kind: 'caption', text: o.intro, shot: 'away', ms: 3600 },
+        {
+          kind: 'line',
+          who: 'kunle',
+          via: 'phone',
+          text: o.line,
+          expect: ['record_order'],
+          shot: 'away',
+          id: 'ordered',
+          no: "I can't sort it out from here today.",
+        },
+        {
+          kind: 'caption',
+          unless: 'ordered',
+          shot: 'both',
+          ms: 3600,
+          text: 'Nothing is ordered, so the record says nothing is coming. Nobody is told to expect it.',
+        },
+        {
+          kind: 'line',
+          needs: 'ordered',
+          who: 'kunle',
+          via: 'phone',
+          text: `Ask ${H} if ${helper.they} can take the delivery in to ${w.who} ${o.said}.`,
+          expect: ['request_owner'],
+          id: 'askedIn',
+        },
+        { kind: 'shot', shot: 'musa', ms: 1800, needs: 'askedIn' },
+        {
+          kind: 'line',
+          needs: 'askedIn',
+          who: 'musa',
+          via: 'phone',
+          text: "Yes, I'll take it in.",
+          // An answer to the ask, or the job taken on: either way it is on their name now.
+          expect: ['respond_to_request', 'claim_obligation'],
+          shot: 'musa',
+          id: 'takein',
+          no: `Sorry, I can't ${o.said}.`,
+        },
+      ],
+    },
+    {
+      id: 'door',
+      at: before(o.at, 4),
+      title: 'At the door',
+      point: `"Delivered" is not "${w.who} has it". The doorbell asks; only a person's word closes it.`,
+      steps: [
+        { needs: 'ordered', kind: 'lapse', to: before(o.at, 4), seconds: 3, shot: 'overview' },
+        // The van pulls up; then, at the door, the courier leaves it on the step and goes.
+        { needs: 'ordered', kind: 'delivery', stage: 'arriving', shot: 'overview', ms: 5000 },
+        { needs: 'ordered', kind: 'shot', shot: 'doorstep', ms: 3400 },
+        {
+          needs: 'ordered',
+          kind: 'signal',
+          source: 'ring',
+          tool: 'ingest_signal',
+          args: { source: 'ring', kind: 'delivery_arrived' },
+          shot: 'doorstep',
+          caption: `Ring sees a delivery left at ${w.who}'s door. It can say a parcel came. It can't say it reached ${w.him}.`,
+          evidence: {
+            saw: 'A delivery left at the front door',
+            cannot: `Whether it reached ${w.who}`,
+          },
+          says: true,
+        },
+        { needs: 'takein', kind: 'musa', stage: 'toDaddy', shot: 'overview', ms: 4600 },
+        { needs: 'takein', kind: 'musa', stage: 'atDoor', shot: 'doorstep', ms: 3200 },
+        { needs: 'takein', kind: 'delivery', stage: 'pickedUp', ms: 1200 },
+        { needs: 'takein', kind: 'move', who: 'daddy', to: 'door', shot: 'doorstep' },
+        { needs: 'takein', kind: 'aside', who: 'musa', to: 'daddy', text: o.handover },
+        {
+          needs: 'takein',
+          kind: 'aside',
+          who: 'daddy',
+          to: 'musa',
+          text: o.thanks ?? `Thank you, ${H}.`,
+          listener: 'nod',
+        },
+        { needs: 'takein', kind: 'delivery', stage: 'inside', ms: 600 },
+        { needs: 'takein', kind: 'move', who: 'daddy', to: 'home' },
+        {
+          needs: 'takein',
+          kind: 'line',
+          who: 'musa',
+          via: 'phone',
+          text: `Done. I took ${o.thing} in to ${w.who}.`,
+          expect: ['resolve_obligation'],
+          shot: 'doorstep',
+        },
+        { needs: 'takein', kind: 'musa', stage: 'backInCar', shot: 'overview', ms: 3000 },
+        {
+          needs: 'takein',
+          kind: 'caption',
+          text: `${A} ordered it from ${o.city}. Ring saw a delivery come. Only ${H}'s word says it reached ${w.who}, and that closed both: the order, and the taking in.`,
+          ms: 4200,
+        },
+        {
+          needs: 'ordered',
+          unless: 'takein',
+          kind: 'caption',
+          shot: 'both',
+          ms: 4200,
+          text: `Nobody nearby has said they'll take it in. The record knows a delivery came, not that it reached ${w.who}, so it stays open on ${A}'s name.`,
         },
       ],
     },

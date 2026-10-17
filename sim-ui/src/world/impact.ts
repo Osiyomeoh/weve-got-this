@@ -63,7 +63,15 @@ export function impactOf(
     `${plural(claimed.length, 'job', 'jobs')} taken on by someone who volunteered, from wherever they were.`,
   );
 
-  add(of('ingest_signal'), 'The doorbell added evidence. It said a person came, never who.');
+  add(
+    of('record_order'),
+    'An order went on the record: who ordered it, from where, and who takes it in. Nothing was bought here.',
+  );
+
+  add(
+    of('ingest_signal'),
+    'The doorbell added evidence. It said what it saw at the door, never who.',
+  );
 
   add(
     of('run_care_agent'),

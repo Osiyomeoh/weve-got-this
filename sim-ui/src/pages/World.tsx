@@ -39,12 +39,13 @@ const TRACE_ROWS = 10;
 preloadWorld([
   ...Object.values(CAST).map((p) => MODEL.character(p.model)),
   ...Object.values(FAMILIES)
-    .flatMap((f) => [f.recipient.model, f.tolu?.model, f.helper?.model])
+    .flatMap((f) => [f.recipient.model, f.tolu?.model, f.helper?.model, f.away?.model])
     .filter((m): m is string => !!m)
     .map((m) => MODEL.character(m)),
   MODEL.character('aid-sunglasses'),
   MODEL.character('wheelchair'),
   MODEL.car('sedan'),
+  MODEL.car('delivery'),
 ]);
 
 /**

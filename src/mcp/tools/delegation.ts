@@ -7,7 +7,7 @@ import { runAgentOnce, takenOnTimes } from '../../domain/agent-runner.js';
 import { deliberate } from '../../domain/agent.js';
 import { require as requireCap } from '../../domain/auth.js';
 import { candidatesFor } from '../../domain/delegation.js';
-import { AFTER_ORDER_YES, askedToOrder } from '../../domain/orders.js';
+import { AFTER_ORDER_YES, askedToOrder, takeInFor } from '../../domain/orders.js';
 import { asTask, dueSpoken } from '../../domain/local-time.js';
 import type { Member, Obligation } from '../../domain/types.js';
 import { OUT } from '../output-schemas.js';
@@ -62,7 +62,8 @@ export function registerRequestOwner({
         const me = actor();
         requireCap(me, 'request_owner');
         const s = state();
-        const o = obligationFrom(store, ref, me.householdId);
+        const said = obligationFrom(store, ref, me.householdId);
+        const o = takeInFor(said, me.id, s) ?? said;
         if (o.status === 'PROPOSED') {
           return guidance(
             `"${o.what}" hasn't been confirmed as actually needed yet. Confirm it first with ` +

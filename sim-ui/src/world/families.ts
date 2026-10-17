@@ -38,6 +38,8 @@ export interface Family {
   tolu?: Pick<Person, 'name' | 'model' | 'voice' | 'fallbackPitch'>;
   /** Who helps in person, over CAST.musa, when it is not the family's driver. */
   helper?: Pick<Person, 'name' | 'role' | 'playAs' | 'model' | 'voice' | 'fallbackPitch'>;
+  /** Who is far away and orders things in, over CAST.kunle. */
+  away?: Pick<Person, 'name' | 'role' | 'model' | 'voice' | 'fallbackPitch'>;
   /** Where each home is, when the family is not all in one city. */
   places?: { home: string; tolu: string };
   words: Words;
@@ -49,6 +51,7 @@ const EYES_RECIPIENT = { ...CAST.daddy! };
 const TOLU = { ...CAST.tolu! };
 const TOLU_ROLE = TOLU.role;
 const MUSA = { ...CAST.musa! };
+const KUNLE = { ...CAST.kunle! };
 
 /** Mummy presses OK on the remote: wake the set, open her dose, say yes. */
 const PRESS_YES = ['ok', 'ok', 'ok'] as const;
@@ -65,7 +68,7 @@ export const FAMILIES: Record<CareCaseId, Family> = {
     toluRole: TOLU_ROLE,
     words: EYES,
     ending:
-      'Daddy logged his own care by voice. A promise made on one phone was followed up by the agent when it slipped. A doorbell added evidence without claiming to know who. And when nobody knew, it was said as a question.',
+      "Daddy logged his own care by voice. A promise made on one phone was followed up by the agent when it slipped. A doorbell added evidence without claiming to know who. And when nobody knew, it was said as a question. In one simulated beat, not from the real week, Kunle ordered lunch from London: the doorbell saw it come, and only Musa's word said it reached Daddy.",
   },
   memory: {
     id: 'memory',
@@ -84,6 +87,13 @@ export const FAMILIES: Record<CareCaseId, Family> = {
       fallbackPitch: 1.05,
     },
     toluRole: 'Her son, coordinating care around a full-time job',
+    away: {
+      name: 'Kunle',
+      role: 'Her son, in London',
+      model: 'character-male-a',
+      voice: 'Arthur',
+      fallbackPitch: 0.95,
+    },
     words: {
       who: 'Mama',
       his: 'her',
@@ -97,6 +107,17 @@ export const FAMILIES: Record<CareCaseId, Family> = {
       evening: 'blood pressure tablet',
       use: { present: 'take', past: 'took' },
       handover: 'Good evening, Mama. Your tablets.',
+      order: {
+        by: 'Kunle',
+        city: 'London',
+        intro:
+          "In London, her son Kunle can't be at Mama's table, but he can get her shopping to the door.",
+        line: "Alexa, I've ordered Mama's groceries from Iya Basira's shop. They'll be there at one.",
+        thing: 'her groceries',
+        said: 'at one',
+        at: [13, 0],
+        handover: 'Good afternoon, Mama. Your groceries, from Kunle.',
+      },
       extraMorning: [
         { kind: 'lapse', to: [9, 5], seconds: 2, shot: 'daddy' },
         {
@@ -115,7 +136,7 @@ export const FAMILIES: Record<CareCaseId, Family> = {
       ],
     },
     ending:
-      'Mama logged her own tablet, and asked twice whether she had: the record answered the same way both times. A promise made on one phone was followed up when it slipped. A doorbell added evidence without claiming to know who. And when nobody knew, it was said as a question.',
+      "Mama logged her own tablet, and asked twice whether she had: the record answered the same way both times. A promise made on one phone was followed up when it slipped. A doorbell added evidence without claiming to know who. And when nobody knew, it was said as a question. Kunle ordered her shopping from London: the doorbell saw it come, and only Musa's word said it reached her.",
   },
   wheelchair: {
     id: 'wheelchair',
@@ -134,6 +155,13 @@ export const FAMILIES: Record<CareCaseId, Family> = {
       aid: 'wheelchair',
     },
     toluRole: TOLU_ROLE,
+    away: {
+      name: 'Kunle',
+      role: 'His son, in London',
+      model: 'character-male-a',
+      voice: 'Gregory',
+      fallbackPitch: 0.95,
+    },
     words: {
       who: 'Baba',
       his: 'his',
@@ -147,6 +175,16 @@ export const FAMILIES: Record<CareCaseId, Family> = {
       evening: 'blood pressure tablet',
       use: { present: 'take', past: 'took' },
       handover: 'Good evening, sir. Your tablets.',
+      order: {
+        by: 'Kunle',
+        city: 'London',
+        intro: "In London, his son Kunle can't carry Baba's water in, but he can order it.",
+        line: "Alexa, I've ordered Baba's drinking water from the water depot on his road. It'll be there at one.",
+        thing: 'his water',
+        said: 'at one',
+        at: [13, 0],
+        handover: 'Good afternoon, sir. Your water, from Kunle.',
+      },
       ridePoint:
         "A no is an answer, not a dead end. Musa's car can't take the chair, so he says so, and the ride never quietly hangs.",
       rideSteps: [
@@ -178,7 +216,7 @@ export const FAMILIES: Record<CareCaseId, Family> = {
       ],
     },
     ending:
-      "Baba logged his own care by voice. Musa said no to a ride his car couldn't do, and the no moved the loop on instead of stalling it. A promise made on one phone was followed up when it slipped. And when nobody knew, it was said as a question.",
+      "Baba logged his own care by voice. Musa said no to a ride his car couldn't do, and the no moved the loop on instead of stalling it. A promise made on one phone was followed up when it slipped. And when nobody knew, it was said as a question. Kunle ordered his water from London: the doorbell saw it come, and only Musa's word said it reached him.",
   },
   hometown: {
     id: 'hometown',
@@ -207,6 +245,13 @@ export const FAMILIES: Record<CareCaseId, Family> = {
       fallbackPitch: 1.15,
     },
     places: { home: 'Abeokuta', tolu: 'Lagos' },
+    away: {
+      name: 'Kunle',
+      role: 'Her son, in London',
+      model: 'character-male-a',
+      voice: 'Arthur',
+      fallbackPitch: 0.95,
+    },
     words: {
       who: 'Mummy',
       his: 'her',
@@ -237,6 +282,17 @@ export const FAMILIES: Record<CareCaseId, Family> = {
       evening: 'blood pressure tablet',
       use: { present: 'take', past: 'took' },
       handover: 'Good evening, Mummy. Your tablets.',
+      order: {
+        by: 'Kunle',
+        city: 'London',
+        intro:
+          "In London, her son Kunle can't get to Abeokuta, but he can order Mummy's groceries to her door.",
+        line: "Alexa, I've ordered Mummy's groceries from Mama Ronke's shop. They'll be there at one.",
+        thing: 'her groceries',
+        said: 'at one',
+        at: [13, 0],
+        handover: 'Good afternoon, Mummy. Your groceries, from Kunle.',
+      },
       helper: { name: 'Bisi', they: 'she' },
       toluWhere: 'In Lagos, two hours away',
       askPoint:
@@ -271,7 +327,7 @@ export const FAMILIES: Record<CareCaseId, Family> = {
         'One press on a remote in Abeokuta. The question cleared for her whole family at once, in Lagos too.',
     },
     ending:
-      'Mummy logged her own care with the TV remote she already holds, twice. Her children, two hours away in Lagos, saw it the moment she pressed. Tolu took Thursday from Lagos; Bisi, next door, took tonight. A doorbell said someone came without claiming to know who, and the agent followed up when the promise slipped.',
+      "Mummy logged her own care with the TV remote she already holds, twice. Her children, two hours away in Lagos, saw it the moment she pressed. Tolu took Thursday from Lagos; Bisi, next door, took tonight. A doorbell said someone came without claiming to know who, and the agent followed up when the promise slipped. Kunle ordered her groceries from London, and Bisi's word, not the doorbell's, said they reached her.",
   },
   // An American family. Mom lives alone in Dayton, Ohio; her children are in three other
   // states, and the one fifteen minutes away ends up doing most of it. Simulated, labelled.
@@ -303,6 +359,13 @@ export const FAMILIES: Record<CareCaseId, Family> = {
       fallbackPitch: 1.0,
     },
     places: { home: 'Dayton, OH', tolu: 'Chicago, IL' },
+    away: {
+      name: 'Tom',
+      role: 'Her son, in Phoenix',
+      model: 'character-male-e',
+      voice: 'Matthew',
+      fallbackPitch: 0.95,
+    },
     words: {
       who: 'Mom',
       his: 'her',
@@ -334,6 +397,16 @@ export const FAMILIES: Record<CareCaseId, Family> = {
       evening: 'blood pressure pill',
       use: { present: 'take', past: 'took' },
       handover: 'Hey Mom. Got your pills.',
+      order: {
+        by: 'Tom',
+        city: 'Phoenix',
+        intro: "In Phoenix, Tom can't bring Mom dinner, but he can order it.",
+        line: "Alexa, I ordered Mom's dinner from Rosa's Kitchen. It'll be there at six.",
+        thing: 'her dinner',
+        said: 'at six',
+        at: [18, 0],
+        handover: "Hey Mom. Dinner's here, from Rosa's. Tom ordered it.",
+      },
       helper: { name: 'Mike', they: 'he' },
       primary: { name: 'Sarah', self: 'herself' },
       toluWhere: 'In Chicago, four hours from Mom',
@@ -369,7 +442,7 @@ export const FAMILIES: Record<CareCaseId, Family> = {
         'One press on a remote in Dayton. The question cleared for the whole family at once: Chicago, Seattle and Phoenix too.',
     },
     ending:
-      'Mom logged her own care with the remote already in her hand. Sarah, four hours away, saw it the moment she pressed, and took Thursday from Chicago. Mike, fifteen minutes away, took tonight, and was asked, not assumed: three in four caregivers say they get no consistent help from family, and the one nearby is not the only name on the record. A doorbell said someone came without claiming to know who, and the agent followed up when the promise slipped.',
+      "Mom logged her own care with the remote already in her hand. Sarah, four hours away, saw it the moment she pressed, and took Thursday from Chicago. Mike, fifteen minutes away, took tonight, and was asked, not assumed: three in four caregivers say they get no consistent help from family, and the one nearby is not the only name on the record. A doorbell said someone came without claiming to know who, and the agent followed up when the promise slipped. Tom ordered her dinner from Phoenix: the doorbell saw it come, and only Mike's word said it reached her.",
   },
   // A child with Down syndrome in Columbus, Ohio. Her mom coordinates from work; Grandpa
   // Luis, ten minutes away, does most of the driving. Simulated, labelled.
@@ -401,6 +474,13 @@ export const FAMILIES: Record<CareCaseId, Family> = {
       fallbackPitch: 0.85,
     },
     places: { home: 'Columbus, OH', tolu: 'At work, downtown' },
+    away: {
+      name: 'Aunt Priya',
+      role: "Maya's aunt, in Austin",
+      model: 'character-female-f',
+      voice: 'Kendra',
+      fallbackPitch: 1.1,
+    },
     words: {
       who: 'Maya',
       his: 'her',
@@ -415,6 +495,17 @@ export const FAMILIES: Record<CareCaseId, Family> = {
       evening: 'medicine',
       use: { present: 'take', past: 'took' },
       handover: 'Here you go, Maya. Your medicine.',
+      order: {
+        by: 'Aunt Priya',
+        city: 'Austin',
+        intro: "In Austin, Aunt Priya can't do the shopping in Columbus, but she can order it.",
+        line: "Alexa, I ordered groceries for Maya's house from Lupe's Market. They'll be there at four.",
+        thing: 'the groceries',
+        said: 'at four',
+        at: [16, 0],
+        handover: 'Maya, look what Aunt Priya sent. Groceries!',
+        thanks: 'Thank you, Grandpa!',
+      },
       helper: { name: 'Luis', they: 'he' },
       primary: { name: 'Danielle', self: 'herself' },
       toluWhere: 'At the hospital, across town',
@@ -444,7 +535,7 @@ export const FAMILIES: Record<CareCaseId, Family> = {
       ],
     },
     ending:
-      'Maya logged her own medicine by voice, and her mom saw it at work without a call. Grandpa was asked for Thursday, not assigned, and his yes is on the record for everyone. A doorbell said someone came without claiming to know who, and the agent followed up when the promise slipped.',
+      "Maya logged her own medicine by voice, and her mom saw it at work without a call. Grandpa was asked for Thursday, not assigned, and his yes is on the record for everyone. A doorbell said someone came without claiming to know who, and the agent followed up when the promise slipped. Aunt Priya ordered the groceries from Austin, and only Grandpa's word said they reached the house.",
   },
   // A woman who uses a wheelchair and lives on her own in Philadelphia. Her brother checks
   // in from Boston; her friend Sam has a van that takes the chair. Simulated, labelled.
@@ -476,6 +567,13 @@ export const FAMILIES: Record<CareCaseId, Family> = {
       fallbackPitch: 1.0,
     },
     places: { home: 'Philadelphia, PA', tolu: 'Boston, MA' },
+    away: {
+      name: 'Carol',
+      role: "Erin's mom, in Tampa",
+      model: 'character-female-c',
+      voice: 'Kendra',
+      fallbackPitch: 1.1,
+    },
     words: {
       who: 'Erin',
       his: 'her',
@@ -490,6 +588,18 @@ export const FAMILIES: Record<CareCaseId, Family> = {
       evening: 'medication',
       use: { present: 'take', past: 'took' },
       handover: 'Hey Erin. Got your prescription.',
+      order: {
+        by: 'Carol',
+        city: 'Tampa',
+        intro:
+          'Erin asked her mom to sort out the groceries this week. From Tampa, Carol orders them.',
+        line: "Alexa, I ordered Erin's groceries from the market on her block. They'll be there at one.",
+        thing: 'the groceries',
+        said: 'at one',
+        at: [13, 0],
+        handover: 'Hey Erin. Groceries are here. Where do you want them?',
+        thanks: 'On the counter. Thanks, Sam.',
+      },
       helper: { name: 'Sam', they: 'he' },
       primary: { name: 'Chris', self: 'himself' },
       toluWhere: 'In Boston, five hours from Erin',
@@ -518,7 +628,7 @@ export const FAMILIES: Record<CareCaseId, Family> = {
       ],
     },
     ending:
-      'Erin logged her own care, on her own terms. Chris, in Boston, saw it without a call. Sam was asked for the ride, not assumed, and the van that takes the chair is on the record for Thursday. A doorbell said someone came without claiming to know who, and the agent followed up when the promise slipped.',
+      "Erin logged her own care, on her own terms. Chris, in Boston, saw it without a call. Sam was asked for the ride, not assumed, and the van that takes the chair is on the record for Thursday. A doorbell said someone came without claiming to know who, and the agent followed up when the promise slipped. Erin asked, and Carol ordered her groceries from Tampa: Sam carried them in, and his word, not the doorbell's, closed it.",
   },
   // Mummy in Ibadan; her children went abroad. Tolu coordinates from London, where in October
   // the clock reads the same as hers. Segun, her nephew, is the only family nearby.
@@ -550,6 +660,13 @@ export const FAMILIES: Record<CareCaseId, Family> = {
       fallbackPitch: 1.0,
     },
     places: { home: 'Ibadan', tolu: 'London' },
+    away: {
+      name: 'Kunle',
+      role: 'Her son, in Houston',
+      model: 'character-male-a',
+      voice: 'Matthew',
+      fallbackPitch: 0.95,
+    },
     words: {
       who: 'Mummy',
       his: 'her',
@@ -564,6 +681,17 @@ export const FAMILIES: Record<CareCaseId, Family> = {
       evening: 'blood pressure tablet',
       use: { present: 'take', past: 'took' },
       handover: 'Good evening, Mummy. Your tablets.',
+      order: {
+        by: 'Kunle',
+        city: 'Houston',
+        intro:
+          "In Houston it isn't seven yet. Kunle can't bring Mummy lunch, but he can order it before work.",
+        line: "Alexa, I've ordered Mummy's lunch from Iya Sade's kitchen. It'll be there at one.",
+        thing: 'her lunch',
+        said: 'at one',
+        at: [13, 0],
+        handover: "Good afternoon, Mummy. Your lunch, from Iya Sade's.",
+      },
       helper: { name: 'Segun', they: 'he' },
       toluWhere: 'In London, five thousand kilometres away',
       askPoint:
@@ -597,7 +725,7 @@ export const FAMILIES: Record<CareCaseId, Family> = {
         'One sentence in Ibadan. The question cleared for her whole family at once, in three countries.',
     },
     ending:
-      "Mummy logged her own care by voice, and her children abroad saw it without a call. Tolu couldn't take Thursday from London, so he asked, and Segun said yes: nobody was assumed just because they live nearby. A doorbell said someone came without claiming to know who, and the agent followed up when the promise slipped.",
+      "Mummy logged her own care by voice, and her children abroad saw it without a call. Tolu couldn't take Thursday from London, so he asked, and Segun said yes: nobody was assumed just because they live nearby. A doorbell said someone came without claiming to know who, and the agent followed up when the promise slipped. Kunle ordered her lunch from Houston before work, and only Segun's word said it reached her.",
   },
   // A Kenyan family. Mum is at home in Nyeri; Wanjiru coordinates from Nairobi, a few hours'
   // drive; Mwangi works in Dubai. Njeri, the neighbour, is the one who is there. Simulated.
@@ -629,6 +757,13 @@ export const FAMILIES: Record<CareCaseId, Family> = {
       fallbackPitch: 1.15,
     },
     places: { home: 'Nyeri', tolu: 'Nairobi' },
+    away: {
+      name: 'Mwangi',
+      role: 'Her son, in Dubai',
+      model: 'character-male-a',
+      voice: 'Gregory',
+      fallbackPitch: 0.95,
+    },
     words: {
       who: 'Mum',
       his: 'her',
@@ -643,6 +778,16 @@ export const FAMILIES: Record<CareCaseId, Family> = {
       evening: 'diabetes tablet',
       use: { present: 'take', past: 'took' },
       handover: 'Habari ya jioni, Mum. Your tablets.',
+      order: {
+        by: 'Mwangi',
+        city: 'Dubai',
+        intro: "In Dubai, Mwangi can't make sure Mum has lunch, but he can order it.",
+        line: "Alexa, I've ordered Mum's lunch from Mama Muthoni's kitchen. It'll be there at one.",
+        thing: 'her lunch',
+        said: 'at one',
+        at: [13, 0],
+        handover: "Mum, your lunch is here, from Mama Muthoni's.",
+      },
       helper: { name: 'Njeri', they: 'she' },
       primary: { name: 'Wanjiru', self: 'herself' },
       toluWhere: "In Nairobi, a few hours' drive away",
@@ -668,7 +813,7 @@ export const FAMILIES: Record<CareCaseId, Family> = {
         'One sentence in Nyeri. The question cleared for the whole family at once: Nairobi and Dubai too.',
     },
     ending:
-      'Mum logged her own care by voice. Wanjiru, in Nairobi, saw it without a call, and took Thursday herself. Njeri, next door, took tonight, and was asked, not assumed. A doorbell said someone came without claiming to know who, and the agent followed up when the promise slipped.',
+      "Mum logged her own care by voice. Wanjiru, in Nairobi, saw it without a call, and took Thursday herself. Njeri, next door, took tonight, and was asked, not assumed. A doorbell said someone came without claiming to know who, and the agent followed up when the promise slipped. Mwangi ordered her lunch from Dubai, and only Njeri's word said it reached her.",
   },
 };
 
@@ -813,6 +958,8 @@ export function setFamily(id: CareCaseId, own: FamilyNames | null = null): void 
   CAST.daddy = mine({ ...EYES_RECIPIENT, aid: undefined, size: undefined, ...f.recipient });
   CAST.tolu = mine({ ...TOLU, ...f.tolu, role: f.toluRole, playAs: f.toluPlayAs ?? TOLU.playAs });
   CAST.musa = mine({ ...MUSA, ...f.helper });
+  // From the family as written, so the visitor's names go on once.
+  CAST.kunle = mine({ ...KUNLE, ...FAMILIES[id].away });
   setHomeZone(COUNTRIES[f.country].zone);
   STORY.splice(0, STORY.length, ...onTheDays(mine(storyFor(f.words))));
 }

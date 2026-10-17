@@ -112,6 +112,43 @@ test('"I ordered Dad\'s lunch from Houston, it\'ll be there at one": on Kunle, a
   });
 });
 
+test('"ask Sandra to take it in", said about the lunch he ordered: she is asked about the delivery', async () => {
+  const { use, order, work } = await family();
+  await order('kunle', { obligationId: 'Bring Dad lunch', arrives: '13:00' });
+  const lunch = work('Bring Dad lunch')!;
+  const asked = await use('kunle', 'request_owner', {
+    obligationId: lunch.id,
+    assigneeName: 'Sandra',
+  });
+  assert.equal(asked.isError, false, asked.text);
+  assert.match(
+    asked.text,
+    /^I've asked Sandra whether they can take the delivery from Mama Titi's/,
+  );
+  const takeIn = work("Take the delivery from Mama Titi's kitchen in to Dad")!;
+  assert.equal(takeIn.status, 'REQUESTED');
+  assert.equal(takeIn.request?.askedOfId, 'm_sandra');
+  assert.equal(work('Bring Dad lunch')!.ownerId, 'm_kunle', 'the lunch stays on his name');
+});
+
+test('"done, I took the lunch in", said about the lunch by whoever is taking it in: the taking in closes, and the lunch with it', async () => {
+  const { use, order, work } = await family();
+  await order('kunle', { obligationId: 'Bring Dad lunch', arrives: '13:00' });
+  const takeIn = work("Take the delivery from Mama Titi's kitchen in to Dad")!;
+  await use('sandra', 'claim_obligation', { obligationId: takeIn.id });
+  clock = new Date('2026-09-24T11:58:00Z');
+  const done = await use('sandra', 'resolve_obligation', {
+    obligationId: work('Bring Dad lunch')!.id,
+  });
+  assert.equal(done.isError, false, done.text);
+  assert.equal(
+    done.text,
+    `Marked done - Take the delivery from Mama Titi's kitchen in to Dad. That closes "Bring Dad lunch" too.`,
+  );
+  assert.equal(work("Take the delivery from Mama Titi's kitchen in to Dad")!.status, 'RESOLVED');
+  assert.equal(work('Bring Dad lunch')!.resolutionNote, 'Sandra took the delivery in');
+});
+
 test('said as the thing ordered, with nothing on the board for it: it goes on as theirs', async () => {
   const { order, work } = await family();
   const r = await order('sandra', {
@@ -158,9 +195,23 @@ test('ordered twice, already done, or ordered by Dad himself: said, not recorded
   assert.match(bad.text, /I couldn't read "soon" as a time/);
   assert.equal(store.getCareState('h').events.filter((e) => e.kind === 'order_placed').length, 1);
 
+  clock = new Date('2026-09-24T12:05:00Z');
   await use('kunle', 'resolve_obligation', { obligationId: lunch.id });
   const after = await order('kunle', { obligationId: lunch.id });
   assert.match(after.text, /already marked done/);
+});
+
+test('"I ordered it" heard as done, minutes after ordering: nothing has reached Dad yet', async () => {
+  const { use, order, work } = await family();
+  await order('kunle', { obligationId: 'Bring Dad lunch', arrives: '13:00' });
+  const r = await use('kunle', 'resolve_obligation', { obligationId: work('Bring Dad lunch')!.id });
+  assert.equal(r.isError, true);
+  assert.equal(
+    r.text,
+    `"Bring Dad lunch" was only just ordered, due today at 1 PM. It isn't done until someone says it reached Dad, so it stays open. Tell the person that.`,
+  );
+  assert.equal(work('Bring Dad lunch')!.status, 'ASSIGNED');
+  assert.equal(work("Take the delivery from Mama Titi's kitchen in to Dad")!.status, 'OPEN');
 });
 
 test('the doorbell asks about the order; taking it in closes both, and Dad hears who did what', async () => {

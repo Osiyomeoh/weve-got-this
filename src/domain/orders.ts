@@ -303,6 +303,43 @@ export async function recordOrder(
 const LIVE = new Set<Obligation['status']>(['OPEN', 'REQUESTED', 'ASSIGNED']);
 
 /**
+ * "Ask Musa to take it in", said about the lunch Kunle ordered: the lunch stays on his
+ * name, so the ask is about the delivery. The take-in job for work this member ordered in,
+ * while it is still open to someone.
+ */
+export function takeInFor(
+  o: Obligation,
+  memberId: string,
+  state: Pick<CareState, 'events' | 'obligations'>,
+): Obligation | undefined {
+  return o.ownerId === memberId ? liveTakeIn(o, state) : undefined;
+}
+
+/**
+ * "Done, I took the lunch in to Daddy", from Musa about the lunch Kunle ordered: what Musa
+ * is closing is the taking in, and that closes the lunch too. The take-in job for work
+ * someone ordered in, when this member has it.
+ */
+export function takeInHeldBy(
+  o: Obligation,
+  memberId: string,
+  state: Pick<CareState, 'events' | 'obligations'>,
+): Obligation | undefined {
+  const takeIn = liveTakeIn(o, state);
+  return takeIn?.ownerId === memberId ? takeIn : undefined;
+}
+
+function liveTakeIn(
+  o: Obligation,
+  state: Pick<CareState, 'events' | 'obligations'>,
+): Obligation | undefined {
+  const order = orderOn(o.id, state);
+  if (!order?.takeInId || order.obligationId !== o.id) return undefined;
+  const takeIn = state.obligations.find((x) => x.id === order.takeInId);
+  return takeIn && LIVE.has(takeIn.status) ? takeIn : undefined;
+}
+
+/**
  * After a person marks one half of an order done, the other half follows on their word.
  * Taking the delivery in to him is the order reaching him, so the work it covers is done.
  * And once whoever ordered it says it reached him, nobody needs to be found to take it in.
@@ -356,6 +393,31 @@ export async function closeAlongside(
     byMemberId,
     { ownerId: null, clearRequest: true },
     `${name} said it already reached ${cared?.spokenAs ?? cared?.name ?? 'them'}`,
+  );
+}
+
+/** How long after it is ordered nothing can have reached him yet. */
+const JUST_ORDERED_MINUTES = 10;
+
+/**
+ * "I ordered Mom's dinner, it'll be there at six" is said in the past tense, and can be heard
+ * as done. Nothing ordered minutes ago, and not due yet, has reached anyone. What to say
+ * instead of marking it done, if that is the case.
+ */
+export function justOrdered(o: Obligation, state: CareState, now: Date): string | undefined {
+  const order = orderOn(o.id, state);
+  if (!order || now.getTime() - Date.parse(order.at) > JUST_ORDERED_MINUTES * 60_000) {
+    return undefined;
+  }
+  if (order.arrivesAt && Date.parse(order.arrivesAt) <= now.getTime()) return undefined;
+  const work = state.obligations.find((x) => x.id === order.obligationId);
+  const cared = state.members.find((m) => m.id === order.forMemberId);
+  const due = order.arrivesAt
+    ? `, due${spokenDue(order.arrivesAt, state.household.timezone, now)}`
+    : '';
+  return (
+    `"${work?.what ?? o.what}" was only just ordered${due}. It isn't done until someone says ` +
+    `it reached ${cared?.spokenAs ?? cared?.name ?? 'them'}, so it stays open. Tell the person that.`
   );
 }
 

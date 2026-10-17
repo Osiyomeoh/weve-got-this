@@ -9,6 +9,8 @@ export const DADDY: V3 = [-6, 0, -3.4];
 export const TOLU: V3 = [6.5, 0, -3.4];
 export const PHARMACY: V3 = [0, 0, 6.2];
 export const HUB: V3 = [0, 5.2, -2.5];
+/** Where the family member far away lives: behind the street, a city of its own. */
+export const AWAY: V3 = [0.3, 0, -11];
 export const ROAD_Z = 2.3;
 
 const at = (base: V3, x: number, y: number, z: number): V3 => [
@@ -20,6 +22,7 @@ const at = (base: V3, x: number, y: number, z: number): V3 => [
 /** Devices, in world space, so a message can be drawn leaving one and reaching another. */
 export const DEVICE = {
   daddyEcho: at(DADDY, 0.95, 0.38, 0.45),
+  awayPhone: at(AWAY, 0.2, 0.9, 0.1),
   daddyTv: at(DADDY, 0, 0.62, -1.68),
   doorbell: at(DADDY, 1.95, 0.62, 1.86),
   toluEcho: at(TOLU, 0.5, 0.38, -0.85),
@@ -35,12 +38,29 @@ export const SPOT = {
   musaPharmacy: [0.9, 0, PHARMACY[2] - 1.1] as V3,
   musaDoorPath: at(DADDY, 1.6, 0, 2.6),
   musaAtDoor: at(DADDY, 1.6, 0, 2.05),
+  awayChair: at(AWAY, 0.2, 0, 0.1),
+  /** Where a delivery is left: on the step, beside the door. */
+  parcel: at(DADDY, 2.05, 0, 2.05),
+  /** The courier: down from the van at the kerb, and up the path to leave it. */
+  courierVan: [DADDY[0] + 1.4, 0, ROAD_Z - 1.15] as V3,
+  courierDoor: at(DADDY, 2.3, 0, 2.5),
 };
 
 export const CAR = {
   midday: [3.2, 0, ROAD_Z] as V3,
   pharmacy: [0.2, 0, ROAD_Z + 0.55] as V3,
   daddy: [DADDY[0] + 1.6, 0, ROAD_Z] as V3,
+};
+
+/**
+ * The delivery van: in from the far end of the street, a stop at the door, and away along the
+ * far side of the road, clear of Musa's car where it waits at midday.
+ */
+export const VAN = {
+  from: [-16, 0, ROAD_Z - 0.4] as V3,
+  stop: [DADDY[0] + 1.4, 0, ROAD_Z - 0.4] as V3,
+  pullOut: [0.6, 0, ROAD_Z + 0.8] as V3,
+  gone: [22, 0, ROAD_Z + 0.8] as V3,
 };
 
 export interface Shot {
@@ -57,6 +77,10 @@ export const SHOTS: Record<string, Shot> = {
   musa: { pos: [5.6, 1.5, ROAD_Z + 3.6], look: [3.2, 0.45, ROAD_Z + 0.7] },
   pharmacy: { pos: [2.4, 1.8, ROAD_Z - 1.2], look: [0.3, 0.6, PHARMACY[2] - 1] },
   door: { pos: at(DADDY, 3.6, 1.5, 4.8), look: at(DADDY, 1.6, 0.5, 1.9) },
+  // The step from the side, west of the path and clear of the tree east of the door, so
+  // nobody's back is between us and the parcel being left, picked up and carried in.
+  doorstep: { pos: at(DADDY, -1.3, 2.2, 4.7), look: at(DADDY, 2.0, 0.35, 2.0) },
+  away: { pos: at(AWAY, 1.9, 2.2, 3.1), look: at(AWAY, -0.1, 0.55, -0.4) },
   both: { pos: [0, 6.2, 9.5], look: [0, 1.6, -2.5] },
   hub: { pos: [0, 5.6, 5.5], look: [0, 4.6, -2.5] },
 };
