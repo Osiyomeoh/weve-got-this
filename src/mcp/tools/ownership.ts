@@ -9,6 +9,7 @@ import { evidenceFor, evidenceLine } from '../../domain/evidence.js';
 import { detectCareGaps } from '../../domain/gaps.js';
 import { asReadBy } from '../../domain/language.js';
 import { asTask, clockTime, isLocalToday } from '../../domain/local-time.js';
+import { closeAlongside } from '../../domain/orders.js';
 import { appToolMeta } from '../app/protocol.js';
 import { OUT } from '../output-schemas.js';
 import { joinSpoken, speakGaps } from '../text.js';
@@ -428,7 +429,14 @@ export function registerResolveObligation({
         const also = seen.length
           ? ` The doorbell also saw ${evidenceLine(seen[0]!, s.household.timezone)}.`
           : '';
-        return reply(`Marked done - ${o.what}.${also}`, { obligationId });
+        // One half of an order done on a person's word: the other half follows.
+        const followed = await closeAlongside(store, me.householdId, o, me.id, now());
+        const after = followed
+          ? followed.status === 'RESOLVED'
+            ? ` That closes "${followed.what}" too.`
+            : ` "${followed.what}" is off the board now.`
+          : '';
+        return reply(`Marked done - ${o.what}.${also}${after}`, { obligationId });
       } catch (err) {
         return guidance(describeError(err));
       }

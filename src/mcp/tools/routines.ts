@@ -92,12 +92,18 @@ export function registerSetRoutine({ server, store, actor, state, now }: ToolCon
           .describe(
             'True only when the speaker says they will do it themselves every time ("I\'ll bring his lunch every day").',
           ),
+        orderFrom: z
+          .string()
+          .optional()
+          .describe(
+            'Where it can be ordered from when nobody nearby is free, as the family says it: a kitchen, a supplier, a link they use.',
+          ),
         stop: z.boolean().optional().describe('True to end a routine the family no longer needs.'),
       },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
       outputSchema: OUT.set_routine,
     },
-    async ({ what, area, times, days, forMemberId, mine, stop }) => {
+    async ({ what, area, times, days, forMemberId, mine, orderFrom, stop }) => {
       try {
         const me = actor();
         requireCap(me, 'create_obligation');
@@ -180,10 +186,15 @@ export function registerSetRoutine({ server, store, actor, state, now }: ToolCon
             forMemberId: who.member.id,
             // A person can promise their own time, never someone else's.
             ...(mine ? { ownerId: me.id } : {}),
+            ...(orderFrom?.trim() ? { orderFrom: orderFrom.trim() } : {}),
           },
         });
         await putRoutinesOnRecord(store, me.householdId, at);
-        const said = `Set up "${what}" ${when(times, dayNumbers)}.`;
+        const said =
+          `Set up "${what}" ${when(times, dayNumbers)}.` +
+          (orderFrom?.trim()
+            ? ` If nobody nearby can, it can be ordered from ${orderFrom.trim()}.`
+            : '');
         return reply(
           mine
             ? `${said} Each time is yours, and goes on the board a day ahead.`

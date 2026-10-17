@@ -206,6 +206,26 @@ it was, because the workaround usually shows what the platform should have done.
   `src/domain/language.ts`: medicine names and times are never translated, and "no record"
   never becomes "missed".
 
+### Hand a purchase to Alexa's own shopping, and hear back where it is
+- **Urgency:** important
+- **What:** A way for an add-on to pass a purchase to Alexa's shopping ("order this, for
+  this address, for this person"), with the customer confirming and paying there, not in the
+  add-on. Then a way to read that order's status back: placed, on its way, due at one,
+  delivered.
+- **Why it matters:** Much of looking after someone is bought, not done by hand: lunch, the
+  groceries, a refill, water. When nobody nearby is free, the person who can help is often
+  far away, a son in another state or a daughter in another country, and ordering it in is
+  what they can do. Alexa already shops and already knows where an order is. Today an add-on
+  that wanted to help would have to build its own checkout, payments and parcel tracking,
+  which is the part that already works and the part a family should never have to trust a
+  new add-on with.
+- **Instead:** We built no checkout. The agent asks the family member who lives away whether
+  they could order it in, they order wherever they already shop, and they tell us with
+  `record_order` ("I ordered Daddy's lunch from Mama Titi's, it'll be there at one"). Someone
+  nearby is asked to take it in, and a Ring delivery near that time asks whether it reached
+  him. What we can't know is whether it is on its way: only the shop knows, and it doesn't
+  tell us.
+
 ---
 
 ## AWS (Transcribe, Polly) and Ring

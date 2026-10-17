@@ -602,6 +602,35 @@ export const CORPUS: EvalCase[] = [
     args: { stop: (v) => v === true },
   },
 
+  // --- Ordering in (added 2026-10-17 with record_order) ---------------------
+  {
+    id: 'ord-01',
+    member: 'm_renee',
+    utterance: "I've ordered Daddy's lunch from Mama Titi's, it'll be there at one.",
+    expect: ['record_order'],
+    args: { from: contains('titi'), arrives: (v) => v === '13:00' },
+  },
+  {
+    id: 'ord-02',
+    member: 'm_david',
+    utterance: "I ordered his groceries online, they're coming at four.",
+    expect: ['record_order'],
+    args: { arrives: (v) => v === '16:00' },
+  },
+  {
+    id: 'ord-03',
+    member: 'm_david',
+    utterance: 'The diesel is ordered, the supplier brings it on Saturday morning.',
+    expect: ['record_order'],
+  },
+  {
+    id: 'ord-04',
+    member: 'm_renee',
+    utterance: "I'll take the delivery in for Daddy when it comes.",
+    expect: ['claim_obligation'],
+    note: 'Taking it in is work someone does, not an order.',
+  },
+
   // ======================================================================
   // HELD-OUT SET. Written after the descriptions were tuned, and never tuned
   // against: harder phrasings, distractors, multi-intent, wrong-role attempts,
@@ -1230,6 +1259,58 @@ export const CORPUS: EvalCase[] = [
     utterance: 'Remind me to water my plants every Sunday.',
     expectNone: true,
     note: 'Comes round every week, but it is not care.',
+  },
+
+  // ======================================================================
+  // HELD-OUT, FIFTH SET (2026-10-17). Written with record_order, before any run
+  // against it: an order said without "ordered", a pharmacy that delivers beside
+  // the refill offer, a request to buy that nothing here can do, the doorbell's
+  // answer, doing it by hand, and an order that is nothing to do with care.
+  // ======================================================================
+  {
+    id: 'h5-ord-01',
+    member: 'm_renee',
+    utterance: "Lunch is sorted, I've had it sent from the canteen near his house.",
+    expect: ['record_order'],
+  },
+  {
+    id: 'h5-ord-02',
+    member: 'm_david',
+    utterance: 'I just paid for his food on the delivery app, it should reach him by half twelve.',
+    expect: ['record_order'],
+  },
+  {
+    id: 'h5-ord-03',
+    member: 'm_david',
+    utterance: 'I ordered his eye drops from the pharmacy myself, they deliver tonight.',
+    expect: ['record_order'],
+    note: 'Bought elsewhere, so it is a record of an order, not a request for the refill offer.',
+  },
+  {
+    id: 'h5-ord-04',
+    member: 'm_renee',
+    utterance: 'Can you order Daddy some lunch?',
+    expectNone: true,
+    note: 'Nothing here buys a meal. The answer is to say so, not to record an order nobody placed.',
+  },
+  {
+    id: 'h5-ord-05',
+    member: 'm_david',
+    utterance: 'The food came, Funmi took it in to him.',
+    expect: ['resolve_obligation', 'log_care_event'],
+  },
+  {
+    id: 'h5-ord-06',
+    member: 'm_renee',
+    utterance: "Don't bother ordering, I'll bring his lunch myself today.",
+    expect: ['claim_obligation'],
+  },
+  {
+    id: 'h5-ord-07',
+    member: 'm_david',
+    utterance: 'I ordered a new phone case, it comes on Tuesday.',
+    expectNone: true,
+    note: 'Says "ordered", but it is not care.',
   },
 
   // --- Nothing to call ----------------------------------------------------

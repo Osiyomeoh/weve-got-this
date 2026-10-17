@@ -6,6 +6,7 @@ import { deliberate, AGENT_ID, type AgentAction, type Deliberation } from './age
 import { BRAND } from './brand.js';
 import { spokenDue } from './gaps.js';
 import { isLiveAgentCopy } from './sandbox-id.js';
+import { usualSource } from './orders.js';
 import { putRoutinesOnRecord } from './routines.js';
 
 /**
@@ -93,6 +94,7 @@ export async function runAgentOnce(householdId: string, deps: RunnerDeps): Promi
         ? checkInEvidence(obligation, state.events, now, state.household.timezone)
         : '',
       spokenDue(obligation.dueAt, state.household.timezone, now),
+      usualSource(obligation, state),
     );
     const delivery = await deps.notifier.deliver({
       to: member.id,
@@ -119,6 +121,7 @@ export async function runAgentOnce(householdId: string, deps: RunnerDeps): Promi
         escalation: action.kind === 'ESCALATE',
         ...(action.followUp ? { followUp: true } : {}),
         ...(action.ahead ? { ahead: true } : {}),
+        ...(action.order ? { order: true } : {}),
         delivered: delivery.delivered,
         // What the person was actually sent, so the board can show it as they saw it.
         message,
@@ -168,6 +171,7 @@ function messageFor(
   owner?: { name: string; spokenAs?: string },
   seen = '',
   due = '',
+  usuallyFrom?: string,
 ): string {
   if (action.kind === 'CHECK_IN' && action.ahead) {
     return `"${what}" is${due}. Still on?\n\nReply "yes" if it is, or "can't" and I'll find someone.`;
@@ -175,12 +179,19 @@ function messageFor(
   if (action.kind === 'CHECK_IN') {
     return `"${what}" was due a little while ago and nothing's been marked yet.${seen} Still on?\n\nReply "done" if it's handled, or "can't" and I'll find someone.`;
   }
+  if (action.kind === 'ASK' && action.order) {
+    const from = usuallyFrom ? ` It usually comes from ${usuallyFrom}.` : '';
+    return `Nobody nearby is free for "${what}"${due}. Could you order it in instead?${from}\n\nReply "yes" or "can't".`;
+  }
   if (action.kind === 'ASK') {
     return `Nobody has "${what}" yet. Can you take it on?\n\nReply "yes" or "can't".`;
   }
   if (action.followUp) {
     const name = owner?.spokenAs ?? owner?.name ?? 'Whoever took it on';
     return `"${what}" is past its time and nothing's recorded. ${name} hasn't answered my check-in.${seen} It may be fine, but you may want to call.`;
+  }
+  if (action.order) {
+    return `I couldn't find anyone for "${what}". It may need you to step in, or it could be ordered in.`;
   }
   return `I couldn't find anyone for "${what}". It may need you to step in.`;
 }

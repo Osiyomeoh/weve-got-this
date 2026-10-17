@@ -65,6 +65,12 @@ what happened          what must happen        who has it
   the board a day ahead each time, and someone free is asked to take it on. Whoever said "I'll
   do it every day" isn't checked on every day. Daddy can ask "did someone bring my lunch?" and
   hear who marked it done, or that nothing's marked yet, never that nobody came.
+- **Someone far away can order it in, wherever they already shop.** When nobody nearby is free
+  for lunch, groceries, diesel or a refill, it asks a brother abroad whether he could order it
+  instead. It buys nothing: he orders in the app or shop he already uses and says "I ordered
+  Daddy's lunch from Mama Titi's, it'll be there at one". The lunch is then on his name, and
+  someone nearby is asked to take it in. The doorbell can say a delivery came and ask whether
+  it reached Daddy; only a person's answer closes it, and it closes both jobs at once.
 - **It asks; it never assigns.** It picks who is free around then, from what each person has
   already said yes to (then whoever has least on), asks them, and the work stays unowned until
   they say yes. The day before, it asks whoever said yes "still on?", and if they can't, it asks
@@ -125,7 +131,7 @@ reported yet, so no pilot number appears anywhere in this submission.
 The demo family (Daddy, his children Tolu and Funmi, Kunle in London, and Musa the
 driver) is fictional and modelled on mine. No real names or medical details are used.
 
-**And it is real - not a mockup.** A live MCP server you can hit right now, **794 tests**
+**And it is real - not a mockup.** A live MCP server you can hit right now, **811 tests**
 (`npm test`, including property-based proofs of the risk model), and one headline number:
 the planner picks the right tool **96.1%** of the time on Amazon Bedrock (149/155; 64/66 on
 held-out phrasings never tuned against; 2026-10-16,
@@ -178,7 +184,7 @@ MCP endpoint (for your own client): `https://ypq2dfq2p7.us-east-1.awsapprunner.c
 
 **Want to point your own client at it?** [`docs/MCP.md`](docs/MCP.md) is the
 integration guide: endpoint and handshake, ready-made Claude Desktop and MCPJam
-configuration, all 30 tools with their arguments, the resources and prompts, the
+configuration, all 31 tools with their arguments, the resources and prompts, the
 role/capability matrix, and how to run your own instance.
 
 **Bring your own agent.** Add the endpoint as a custom connector in Claude, or in any other
@@ -216,6 +222,11 @@ these lines deliberately and held to them:
 - **No Bee integration.** We are submitting **Alexa+**, and the rules require showing *live*
   Bee-device data being used. We have no device, so we do not claim one — Ring is the single
   external-evidence seam, exercised end-to-end with Ring's real HMAC-signed payload shape.
+- **No checkout of our own.** It never buys, pays, or tracks a parcel, and no shop is
+  integrated. People order wherever they already do, from a market app in Lagos to a
+  supermarket's delivery in Houston; We've Got This records who ordered what, who is taking it
+  in, and whether a person says it arrived. The one priced offer, a prescription refill in the
+  demo, is simulated and labelled so.
 - **No overclaimed production integrations.** Where a surface is simulated (the Ring device,
   the Alexa+ console), the docs and the video say so plainly. What is simulated is the
   device; what is exercised is the integration.
@@ -314,7 +325,7 @@ and a human always confirms an inferred obligation - the dashed feedback loop.
        +-------------+------+------+--------------+
        v             v             v              v
    Resources       Tools        Prompts      MCP Apps
-   who I am,     30 tools    daily check    the Care Board and
+   who I am,     31 tools    daily check    the Care Board and
    care state                weekly review  the week's promises,
                                             drawn in the host
        |             |
@@ -438,11 +449,12 @@ src/
     agent.ts           the autonomous policy: value = harm avoided - interruption cost
     attribution.ts     "Musa logged it for Daddy" is never shortened to "Daddy did"
     commerce.ts        priced offers; what "refill his prescription" means
+    orders.ts          work ordered in elsewhere: who ordered it, who takes it in
     daily-update.ts    the evening update for family far away
   mcp/
     server.ts          assembles one server per session (tools listed in order)
-    tools/             the 30 tools, grouped: record, ownership, delegation,
-                       insight, signals, commerce, onboarding, routines
+    tools/             the 31 tools, grouped: record, ownership, delegation,
+                       insight, signals, commerce, onboarding, routines, orders
     output-schemas.ts  every tool's output contract, strictly enforced
   http/          Streamable HTTP, OAuth 2.1 + PKCE, Ring and Telegram webhooks
   store/         append-only event log; DynamoDB or a local file
@@ -608,7 +620,7 @@ git clone https://github.com/Osiyomeoh/weve-got-this && cd weve-got-this
 npm ci
 npm run lint      # eslint (typescript-eslint, strict) - 0 findings
 npm run typecheck # tsc under strict + noUncheckedIndexedAccess + exactOptionalPropertyTypes
-npm test          # 794 tests (unit, adversarial, and property-based)
+npm test          # 811 tests (unit, adversarial, and property-based)
 npm run story     # the whole one-day story, end to end, over real MCP
 ```
 
@@ -689,7 +701,7 @@ npm run demo:reset && npm run dev   # in one shell
 npm run evals                       # in another
 ```
 
-**Latest: 163/176 (92.6%), held-out 72/80, 2026-10-17** (`evals/results/2026-10-17-claude-sonnet-4-5-set-routine.json`), after `set_routine` (lunch every day, someone there at night, diesel on Saturdays) became the 30th tool, with eleven cases for it. Seven of those are held-out, written before any run against the tool, and scored 6/7; the miss is Daddy's "I'd like someone to help me bathe on Tuesday and Friday mornings", where the model called nothing (the tool needs a time). No case from before went to `set_routine`, including the new tablet every morning (medicine) and watering the plants (not care). The 165 from before scored 153/165, held-out 66/73: five cases missed that passed then, and three that missed then passed. Of the five: "Count me out this weekend" and "I can't drive Thursday" went to nothing or `get_my_requests`, as declines have since the 10-16 rewording; "Move his eye check-up to Friday instead" called nothing; "Okay, order it." went to `get_care_gaps`; and "Is he okay today?" came back as a malformed tool name (`get_care_summary" />`), as another case did on 10-16. One full Sonnet run, so this is one sample, not an average. Before that: **155/165 (93.9%), held-out 68/73, 2026-10-16** (`evals/results/2026-10-16-claude-sonnet-4-5-get-promises.json`), after `get_promises` ("what did everyone say yes to this week?") became the 29th tool, with ten cases for it. Seven of those are held-out, written before any run against the tool, and scored 6/7; the miss is "Remind me what I promised the plumber", which is not care. A new tool costs the others something: the 155 from before scored 146/155, held-out 62/66, and Nova Pro under the Alexa bridge's prompt 136/155, against 140-142 for the previous server run beside it, with "What does Daddy need this week?" now going to `get_promises`. A shorter description, and one with a pointer to `get_care_gaps`, were tried: on Nova the differences were within run-to-run noise, and a full Sonnet comparison ran into the account's daily Bedrock token quota, so the kept wording is the only one with a full Sonnet run (`evals/results/2026-10-16-get-promises-wordings.json`). Same wording: dialects 32/34, the 30 answers to "still on?" 29/30. Earlier that day: **149/155 (96.1%), held-out 64/66** (`evals/results/2026-10-16-claude-sonnet-4-5-weve-got-this.json`), after the rename to We've Got This, which touched four tool descriptions and the console's prompt. The name mattered in one place: `respond_to_request` says a decline is also the answer to the product's own "still on?" check-in, and generic wordings for that check-in ("an automatic check-in", "the app's own check-in") sent more declines to `get_my_requests`. A bisect put the cost in that one sentence; naming the brand there scored 21/21 on the decline cases, 3 runs each (`evals/results/2026-10-16-declines-rename-sonnet-4-5.json`). Same wording: dialects 33/34, the 30 answers to "still on?" 29/30, Nova Pro under the Alexa bridge's prompt 146/155. Before that, the same day: **149/155, held-out 62/66** (`evals/results/2026-10-16-claude-sonnet-4-5-asks-not-assigns.json`), after `assign_obligation` stopped writing an owner: it now asks, like `request_owner`, and both descriptions were reworded to say so. The total held; two held-out cases now miss and none was gained there. One is h-log-03, already known to flip (3/5 head to head on 10-02). The other is a decline, "Count me out this weekend", which now goes to `get_my_requests` (checking whether someone asked them) instead of `add_note`, as does "I can't drive him Thursday, I'm gon' be out of town" in the dialect set. Declines are what the rewording costs: across the decline cases, 3 runs each, the old descriptions scored 18/21, a first rewording 15/21 (dropped), and the one kept 17/21, with "Count me out this weekend" missing 3 of 3 (1 of 3 before; `evals/results/2026-10-16-declines-head-to-head-sonnet-4-5.json`). Same day: dialects 32/34 (was 33/34), Nova Pro under the Alexa bridge's prompt 144/155 (141 on 10-02), the 30 answers to "still on?" 29/30 (unchanged). 4 throttled cases were re-run alone and merged in; each file names them. Before that: **149/155, held-out 64/66, 2026-10-08** (`evals/results/2026-10-08-claude-sonnet-4-5-get-my-requests-key.json`). **The answer key changed for that run, and here is why.** On 2026-10-03 the planner was told (`src/sim/host.ts`, commit cc42789) that a short answer with no subject - "I've got it", "Handled it", "No, skip that one" - should first check whether someone asked them (`get_my_requests`), because then it is a reply to that request. The key still counted that as wrong, so the same day's run under the old key scored **139/155 (89.7%), held-out 57/66**. We added `get_my_requests` as accepted for those ten cases (listed in `src/evals/corpus.ts`) and re-ran. Before that: 148/155 (95.5%), held-out 63/66, 2026-10-02 (`evals/results/2026-10-02-claude-sonnet-4-5-question-not-report.json`). The run below is the one written up in detail.
+**Latest: 168/187 (89.8%), held-out 75/87, 2026-10-17** (`evals/results/2026-10-17-claude-sonnet-4-5-record-order.json`), after `record_order` ("I ordered Daddy's lunch from Mama Titi's, it'll be there at one") became the 31st tool, with eleven cases for it. Seven of those are held-out, written before any run against the tool, and scored 5/7. Every sentence whose answer is `record_order` went to it (6/6), including an eye-drop order placed with a pharmacy, which did not go to `reorder_prescription`; a phone case someone ordered was left alone. The three misses all went to `get_care_gaps` first: "I'll take the delivery in for Daddy when it comes" and "Don't bother ordering, I'll bring his lunch myself today" (expected `claim_obligation`), and "Can you order Daddy some lunch?", where nothing here buys a meal and the right answer is to say so. No case from before went to `record_order`. The 176 from before scored 160/176, held-out 70/80: five cases missed that passed then, and two that missed then passed (cons-01, h-cons-02). Of the five: "How's Daddy doing today?" and "What's due while I'm here?" came back as the malformed tool name seen before (`get_care_summary" />`); "That's sorted now." went to `get_my_requests`; "Ping Tolu about the dose change" to `get_care_summary`; and "Musa brought my lunch" to `get_care_gaps`. One full Sonnet run, so this is one sample, not an average. Before that: **163/176 (92.6%), held-out 72/80, 2026-10-17** (`evals/results/2026-10-17-claude-sonnet-4-5-set-routine.json`), after `set_routine` (lunch every day, someone there at night, diesel on Saturdays) became the 30th tool, with eleven cases for it. Seven of those are held-out, written before any run against the tool, and scored 6/7; the miss is Daddy's "I'd like someone to help me bathe on Tuesday and Friday mornings", where the model called nothing (the tool needs a time). No case from before went to `set_routine`, including the new tablet every morning (medicine) and watering the plants (not care). The 165 from before scored 153/165, held-out 66/73: five cases missed that passed then, and three that missed then passed. Of the five: "Count me out this weekend" and "I can't drive Thursday" went to nothing or `get_my_requests`, as declines have since the 10-16 rewording; "Move his eye check-up to Friday instead" called nothing; "Okay, order it." went to `get_care_gaps`; and "Is he okay today?" came back as a malformed tool name (`get_care_summary" />`), as another case did on 10-16. One full Sonnet run, so this is one sample, not an average. Before that: **155/165 (93.9%), held-out 68/73, 2026-10-16** (`evals/results/2026-10-16-claude-sonnet-4-5-get-promises.json`), after `get_promises` ("what did everyone say yes to this week?") became the 29th tool, with ten cases for it. Seven of those are held-out, written before any run against the tool, and scored 6/7; the miss is "Remind me what I promised the plumber", which is not care. A new tool costs the others something: the 155 from before scored 146/155, held-out 62/66, and Nova Pro under the Alexa bridge's prompt 136/155, against 140-142 for the previous server run beside it, with "What does Daddy need this week?" now going to `get_promises`. A shorter description, and one with a pointer to `get_care_gaps`, were tried: on Nova the differences were within run-to-run noise, and a full Sonnet comparison ran into the account's daily Bedrock token quota, so the kept wording is the only one with a full Sonnet run (`evals/results/2026-10-16-get-promises-wordings.json`). Same wording: dialects 32/34, the 30 answers to "still on?" 29/30. Earlier that day: **149/155 (96.1%), held-out 64/66** (`evals/results/2026-10-16-claude-sonnet-4-5-weve-got-this.json`), after the rename to We've Got This, which touched four tool descriptions and the console's prompt. The name mattered in one place: `respond_to_request` says a decline is also the answer to the product's own "still on?" check-in, and generic wordings for that check-in ("an automatic check-in", "the app's own check-in") sent more declines to `get_my_requests`. A bisect put the cost in that one sentence; naming the brand there scored 21/21 on the decline cases, 3 runs each (`evals/results/2026-10-16-declines-rename-sonnet-4-5.json`). Same wording: dialects 33/34, the 30 answers to "still on?" 29/30, Nova Pro under the Alexa bridge's prompt 146/155. Before that, the same day: **149/155, held-out 62/66** (`evals/results/2026-10-16-claude-sonnet-4-5-asks-not-assigns.json`), after `assign_obligation` stopped writing an owner: it now asks, like `request_owner`, and both descriptions were reworded to say so. The total held; two held-out cases now miss and none was gained there. One is h-log-03, already known to flip (3/5 head to head on 10-02). The other is a decline, "Count me out this weekend", which now goes to `get_my_requests` (checking whether someone asked them) instead of `add_note`, as does "I can't drive him Thursday, I'm gon' be out of town" in the dialect set. Declines are what the rewording costs: across the decline cases, 3 runs each, the old descriptions scored 18/21, a first rewording 15/21 (dropped), and the one kept 17/21, with "Count me out this weekend" missing 3 of 3 (1 of 3 before; `evals/results/2026-10-16-declines-head-to-head-sonnet-4-5.json`). Same day: dialects 32/34 (was 33/34), Nova Pro under the Alexa bridge's prompt 144/155 (141 on 10-02), the 30 answers to "still on?" 29/30 (unchanged). 4 throttled cases were re-run alone and merged in; each file names them. Before that: **149/155, held-out 64/66, 2026-10-08** (`evals/results/2026-10-08-claude-sonnet-4-5-get-my-requests-key.json`). **The answer key changed for that run, and here is why.** On 2026-10-03 the planner was told (`src/sim/host.ts`, commit cc42789) that a short answer with no subject - "I've got it", "Handled it", "No, skip that one" - should first check whether someone asked them (`get_my_requests`), because then it is a reply to that request. The key still counted that as wrong, so the same day's run under the old key scored **139/155 (89.7%), held-out 57/66**. We added `get_my_requests` as accepted for those ten cases (listed in `src/evals/corpus.ts`) and re-ran. Before that: 148/155 (95.5%), held-out 63/66, 2026-10-02 (`evals/results/2026-10-02-claude-sonnet-4-5-question-not-report.json`). The run below is the one written up in detail.
 
 **Result: 94.8% first-tool accuracy (147 / 155, 0 errored) - Claude Sonnet 4.5 on Amazon
 Bedrock, 2026-09-23, with 28 tools.** That is one run, and every case of it is in
@@ -799,6 +811,7 @@ Every tool exists because a person says a sentence that needs it.
 | `raise_urgent` | "Daddy has fallen" - every phone at once, and "call 112" |
 | `get_promises` | "What did everyone say yes to this week?" - each yes, each "still on?", each done, and what the doorbell saw beside it |
 | `set_routine` | "Someone needs to bring Daddy lunch every day at one" - each time goes on the board a day ahead, and someone free is asked to take it on |
+| `record_order` | "I ordered Daddy's lunch from Mama Titi's, it'll be there at one" - on their name until someone says it reached him; if they live far away, someone nearby is asked to take it in |
 
 Tool design follows four rules, because the model is the user:
 
@@ -831,6 +844,11 @@ Product feedback, written while building. Full detail in
    available - and explicitly unknown when it is not, rather than assumed.
 5. **Ambient state.** The most valuable moment is not a conversation. It is someone
    walking past the kitchen Echo and noticing Thursday still has no driver.
+6. **Hand a purchase to Alexa's own shopping, and hear back where it is.** When nobody
+   nearby is free, the brother abroad can order Daddy's lunch in. Alexa already shops and
+   already knows where an order is. An add-on that could pass "order this, for this
+   address" to Alexa's shopping, with the customer confirming there, and later read "on its
+   way, due at one", would never need a checkout of its own.
 
 ---
 
@@ -852,7 +870,7 @@ speak, and **2026-07-28** alongside it.
    a server built for that request alone (v2 TypeScript SDK, `createMcpHandler`), for the member
    its credential names. 2025-era requests, told apart by the SDK's own `isLegacyRequest`, keep
    the session-based path unchanged, so no 2025-11-25 client, Alexa's bridge included, loses
-   anything. One registration fills both, so they offer the same 30 tools word for word. Tested
+   anything. One registration fills both, so they offer the same 31 tools word for word. Tested
    with two instances over one table: a dose logged through one is read back through the other.
 
 **What still holds it to one instance.** Some state still lives in one process: 2025-11-25

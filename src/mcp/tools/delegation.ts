@@ -7,6 +7,7 @@ import { runAgentOnce, takenOnTimes } from '../../domain/agent-runner.js';
 import { deliberate } from '../../domain/agent.js';
 import { require as requireCap } from '../../domain/auth.js';
 import { candidatesFor } from '../../domain/delegation.js';
+import { AFTER_ORDER_YES, askedToOrder } from '../../domain/orders.js';
 import { asTask, dueSpoken } from '../../domain/local-time.js';
 import type { Member, Obligation } from '../../domain/types.js';
 import { OUT } from '../output-schemas.js';
@@ -318,11 +319,15 @@ export function registerRespondToRequest({
             ...(note ? { detail: note } : {}),
             data: { obligationId, accepted: true, ...form },
           });
-          return reply(`Thanks, that's yours now: ${asTask(o.what)}.`, {
-            obligationId,
-            ownerId: me.id,
-            status: 'ASSIGNED',
-          });
+          const toOrder = askedToOrder(o, me.id, state());
+          return reply(
+            `Thanks, that's yours now: ${asTask(o.what)}.${toOrder ? ` ${AFTER_ORDER_YES}` : ''}`,
+            {
+              obligationId,
+              ownerId: me.id,
+              status: 'ASSIGNED',
+            },
+          );
         }
 
         const declinedBy = [...(o.declinedBy ?? []), me.id];

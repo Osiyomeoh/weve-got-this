@@ -3,6 +3,7 @@ import { AGENT_ID } from './agent.js';
 import type { CareState, ConsequenceClass, Obligation } from './types.js';
 import { localParts, parseHHMM, spokenClock } from './gaps.js';
 import { clockTime, isLocalToday } from './local-time.js';
+import { orderOn, type Order } from './orders.js';
 import { toInstant } from './time.js';
 
 /**
@@ -63,6 +64,11 @@ export interface Routine {
    * someone else's name; everyone else is asked, day by day.
    */
   ownerId?: string;
+  /**
+   * Where it can be ordered from when nobody nearby is free, as the family says it: a place,
+   * a service, a link they use. Only ever passed on to whoever orders; nothing is bought here.
+   */
+  orderFrom?: string;
   stoppedAt?: string;
   stoppedBy?: string;
 }
@@ -87,6 +93,7 @@ export function routinesOf(state: Pick<CareState, 'events'>): Routine[] {
         setBy: e.reportedBy,
         since: e.occurredAt,
         ...(typeof d['ownerId'] === 'string' ? { ownerId: d['ownerId'] } : {}),
+        ...(typeof d['orderFrom'] === 'string' ? { orderFrom: d['orderFrom'] } : {}),
       });
     } else if (e.kind === 'routine_stopped') {
       const r = byId.get(String(e.data['routineId']));
@@ -262,6 +269,26 @@ export function routineDaysToday(state: CareState, now: Date): RoutineDay[] {
     .map((day) => ({ day, routine: routines.get(day.routineId!) }));
 }
 
+/** "; Funmi is taking it in": the half of an order someone nearby does. */
+function takingIn(order: Order, state: CareState, who: (id: string | null | undefined) => string) {
+  const t = state.obligations.find((o) => o.id === order.takeInId);
+  if (!t) return '';
+  switch (t.status) {
+    case 'ASSIGNED': {
+      const name = who(t.ownerId);
+      return `; ${name} ${name === 'you' ? 'are' : 'is'} taking it in`;
+    }
+    case 'REQUESTED': {
+      const name = who(t.request?.askedOfId);
+      return `; ${name} ${name === 'you' ? 'were' : 'was'} asked to take it in`;
+    }
+    case 'OPEN':
+      return '; nobody is taking it in yet';
+    default:
+      return '';
+  }
+}
+
 /** "1 PM", "8:30 AM": an instant as the household's clock says it. */
 function spokenAt(iso: string, timezone: string): string {
   const { minutes } = localParts(new Date(iso), timezone);
@@ -288,18 +315,36 @@ export function sayRoutineDay(
     return m?.spokenAs ?? m?.name ?? 'someone';
   };
   const head = `${day.what} at ${spokenAt(day.dueAt!, tz)}`;
+  // Ordered in: who ordered it and from where, and who is taking it in when they can't.
+  const order = orderOn(day.id, state);
+  const ordered =
+    order?.obligationId === day.id
+      ? `${who(order.orderedBy)} ordered it${order.from ? ` from ${order.from}` : ''}`
+      : undefined;
   switch (day.status) {
     case 'RESOLVED': {
       const marked = [...state.events]
         .reverse()
         .find((e) => e.kind === 'obligation_resolved' && e.data['obligationId'] === day.id);
       const at = day.resolvedAt ? ` at ${clockTime(day.resolvedAt, tz)}` : '';
-      return `${head}: ${marked ? `${who(marked.reportedBy)} marked it done` : 'marked done'}${at}`;
+      const did = marked?.data['takenIn'] ? 'took it in' : 'marked it done';
+      const by = marked ? `${who(marked.reportedBy)} ${did}` : 'marked done';
+      return ordered ? `${head}: ${ordered}, and ${by}${at}` : `${head}: ${by}${at}`;
     }
     case 'ASSIGNED': {
       const has = day.ownerId === readerId ? 'you have it' : `${who(day.ownerId)} has it`;
       const past = Date.parse(day.dueAt!) < now.getTime();
-      return `${head}: ${has}${past ? ", and nothing's marked yet" : ''}`;
+      const marked = past ? ", and nothing's marked yet" : '';
+      if (ordered && order) {
+        // Due at the routine's own time goes without saying.
+        const due =
+          order.arrivesAt && Date.parse(order.arrivesAt) !== Date.parse(day.dueAt!)
+            ? `, due at ${spokenAt(order.arrivesAt, tz)}`
+            : '';
+        const mine = day.ownerId === order.orderedBy;
+        return `${head}: ${mine ? '' : `${has}, and `}${ordered}${due}${takingIn(order, state, who)}${marked}`;
+      }
+      return `${head}: ${has}${marked}`;
     }
     case 'REQUESTED': {
       const asked = day.request?.askedOfId;

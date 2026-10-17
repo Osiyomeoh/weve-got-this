@@ -41,6 +41,7 @@ import {
 } from './tools/insight.js';
 import { registerIngestSignal } from './tools/signals.js';
 import { registerSetRoutine } from './tools/routines.js';
+import { registerRecordOrder } from './tools/orders.js';
 import { registerConfirmPurchase, registerReorderPrescription } from './tools/commerce.js';
 import {
   registerAddMedication,
@@ -213,6 +214,7 @@ function populate(server: McpServer, { store, actorId, ...opts }: ServerContext)
   registerGetPromises(ctx);
   // After it, for the same reason.
   registerSetRoutine(ctx);
+  registerRecordOrder(ctx);
 
   registerMeResource(ctx);
   registerCareStateResource(ctx);

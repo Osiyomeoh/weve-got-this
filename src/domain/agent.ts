@@ -1,6 +1,7 @@
 import type { CareState, Member, Obligation } from './types.js';
 import { detectCareGaps, promiseRisk, spokenDue } from './gaps.js';
-import { candidatesFor, type Candidate } from './delegation.js';
+import { candidatesFor, loadOf, type Candidate } from './delegation.js';
+import { awayToOrder, orderable } from './orders.js';
 import { routineDayPassed } from './routines.js';
 
 /**
@@ -64,6 +65,11 @@ export interface AgentAction {
    * is time to find somebody else. Always alongside `followUp`.
    */
   ahead?: true;
+  /**
+   * Set when nobody nearby can do the work but it could be bought in. On an ASK, the person
+   * far away is asked to order it; on an ESCALATE, the primary caregiver is told it could be.
+   */
+  order?: true;
   /** The arithmetic, exposed so the decision can be audited like a gap score. */
   value: {
     harmAvoided: number;
@@ -355,6 +361,14 @@ export function deliberate(state: CareState, opts: PolicyOptions): Deliberation 
       continue;
     }
 
+    // Nobody nearby left. Work that can be bought in can still be done from far away.
+    const buy = orderAsk(o, state, opts, risk);
+    if (buy) {
+      if ('kind' in buy) actions.push(buy);
+      else restraint.push(buy);
+      continue;
+    }
+
     // Nobody left to ask. Tell the person who can actually decide, once, then stop.
     if (boss && boss.id !== asked) {
       const gain = (risk.get(o.id) ?? 0) * ASK_RELIEF;
@@ -362,7 +376,14 @@ export function deliberate(state: CareState, opts: PolicyOptions): Deliberation 
       const value = { harmAvoided: gain, interruptionCost: cost, net: gain - cost };
       const because = `Everyone I could ask about "${o.what}" has declined or is unavailable.`;
       if (value.net > 0)
-        actions.push({ kind: 'ESCALATE', obligationId: o.id, memberId: boss.id, because, value });
+        actions.push({
+          kind: 'ESCALATE',
+          obligationId: o.id,
+          memberId: boss.id,
+          because,
+          value,
+          ...(orderable(o, state) ? { order: true as const } : {}),
+        });
       else restraint.push({ obligationId: o.id, because, value });
       continue;
     }
@@ -458,6 +479,12 @@ export function deliberate(state: CareState, opts: PolicyOptions): Deliberation 
   for (const o of pursuable(state, opts.now)) {
     const best = candidatesFor(o, state)[0];
     if (!best) {
+      const buy = orderAsk(o, state, opts, risk);
+      if (buy) {
+        if ('kind' in buy) actions.push(buy);
+        else restraint.push(buy);
+        continue;
+      }
       restraint.push({
         obligationId: o.id,
         because: `There is nobody I can ask about "${o.what}".`,
@@ -540,6 +567,42 @@ export function deliberate(state: CareState, opts: PolicyOptions): Deliberation 
   // the ones that matter most, for the same reason the board ranks gaps.
   actions.sort((a, b) => b.value.net - a.value.net);
   return { actions: actions.slice(0, max), restraint };
+}
+
+/**
+ * The step after everyone nearby: someone far away who could order the work in, asked as a
+ * question like any other ask. Ordering is how they would take it on, so a yes puts it on
+ * their name, and whoever is at home is then asked to take it in once it is ordered. Only
+ * for work that can be bought (a meal, the diesel, a refill); a ride or a night in the house
+ * needs someone there, and nobody far away is ever asked for that.
+ */
+function orderAsk(
+  o: Obligation,
+  state: CareState,
+  opts: PolicyOptions,
+  risk: Map<string, number>,
+): AgentAction | Restraint | undefined {
+  if (!orderable(o, state)) return undefined;
+  const away = awayToOrder(o, state)[0];
+  if (!away) return undefined;
+  const name = away.spokenAs ?? away.name;
+  const gain = valueOfAsk(risk.get(o.id) ?? 0, { load: loadOf(away.id, state) });
+  const cost = interruptionCost(away.id, state, opts);
+  const value = { harmAvoided: gain, interruptionCost: cost, net: gain - cost };
+  if (value.net <= 0)
+    return {
+      obligationId: o.id,
+      because: `Not asking ${name} to order "${o.what}" in yet: ${reasonForQuiet(opts)}`,
+      value,
+    };
+  return {
+    kind: 'ASK',
+    obligationId: o.id,
+    memberId: away.id,
+    because: `Nobody nearby is free for "${o.what}", so I asked ${name}, who lives in ${away.livesAway}, if they could order it in.`,
+    value,
+    order: true,
+  };
 }
 
 /** Why the agent is staying quiet, in words rather than numbers. */

@@ -154,7 +154,9 @@ export type EventKind =
   /** Work that comes round again was set up: lunch every day, someone there at night. */
   | 'routine_set'
   /** A routine ended. The days already past stay as they were. */
-  | 'routine_stopped';
+  | 'routine_stopped'
+  /** Someone ordered the work in, wherever they shop: who, from where, when it is due. */
+  | 'order_placed';
 
 /**
  * Where an observation entered the graph. This is the *channel*, distinct from the

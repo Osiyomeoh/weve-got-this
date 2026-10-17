@@ -5,7 +5,7 @@ to call what, and how to run your own.
 
 We've Got This is a **self-hosted MCP server** over **Streamable HTTP**. It speaks spec
 **2025-11-25** (sessions, `@modelcontextprotocol/sdk` 1.30.0) and **2026-07-28** (stateless,
-the v2 SDK 2.1.0) on the same endpoint, with the same tools. It exposes 30 tools,
+the v2 SDK 2.1.0) on the same endpoint, with the same tools. It exposes 31 tools,
 4 resources, 2 prompts, and two interactive views via the
 [MCP Apps extension](#the-care-board-mcp-apps).
 
@@ -185,7 +185,7 @@ to do next, and should be acted on rather than reported as a failure.
 
 ## Tools
 
-30 tools. Every one exists because a person says a sentence that needs it; there is
+31 tools. Every one exists because a person says a sentence that needs it; there is
 no tool here that mirrors a database table for its own sake.
 
 `?` marks an optional argument.
@@ -214,7 +214,7 @@ getting around and the house's diesel, water and electricity are others.
 
 | Tool | Arguments | Notes |
 |---|---|---|
-| `set_routine` | `what`, `area`, `times?`, `days?`, `forMemberId?`, `mine?`, `stop?` | `area` is `meal` \| `safety` \| `personal` \| `household`. `times` are 24-hour `"HH:MM"`; `days` (`monday`...`sunday`) limits it to those days. `mine` makes every time the speaker's own. `stop` ends it; only whoever set it up, or `manage_circle`, can. Needs `create_obligation`. Not for medicine: that is `add_medication`. |
+| `set_routine` | `what`, `area`, `times?`, `days?`, `forMemberId?`, `mine?`, `orderFrom?`, `stop?` | `area` is `meal` \| `safety` \| `personal` \| `household`. `times` are 24-hour `"HH:MM"`; `days` (`monday`...`sunday`) limits it to those days. `mine` makes every time the speaker's own. `orderFrom` is where it can be ordered from when nobody nearby is free, as the family says it ("Mama Titi's kitchen"); it is only words, never a link to a shop. `stop` ends it; only whoever set it up, or `manage_circle`, can. Needs `create_obligation`. Not for medicine: that is `add_medication`. |
 
 - **Each time is work on the board.** It goes on a day ahead as its own obligation, with no
   owner unless the routine is someone's own. An unowned time is a care gap like any other, and
@@ -283,6 +283,13 @@ rather than the same one twice.
   - "yes" keeps the work with them. "can't" hands it back with no owner, records the
     decline, and the agent asks the next free person.
   - Until they answer, `get_promises` reads "there's no answer yet".
+- **Ordering in, last.** When nobody nearby can take on a meal, groceries, the diesel, water
+  or a refill (a routine with `area` `meal` or `household`, or one with `orderFrom`, counts as
+  orderable), the agent asks a family member who lives away "Could you order it in instead?",
+  with where it usually comes from. Someone nearby is always asked first, a ride or a visit is
+  never offered this way, and the ask is weighed like any other. A yes puts the work on them;
+  they then order it wherever they shop and say so with `record_order`. If nobody away can
+  either, the heads-up to the primary caregiver says it could be ordered in.
 - **Answers over chat.** A "yes" or "can't" to a check-in is answered directly on
   WhatsApp, and on Telegram when the message is to the bot (a DM, a mention, or a reply
   to its message), so family chatter in the group never hands work back. A "yes" after
@@ -339,6 +346,39 @@ cannot fill that form in.
 Purchase follows the same discipline as everything else: the offer is a proposal,
 and only a confirmation makes it happen. Storefronts are simulated - no real
 payment is taken - but the shape is what a real merchant integration would return.
+
+### Ordering in, wherever the family shops
+
+Most of what a family orders in for someone is bought somewhere else: a delivery app, a
+pharmacy that delivers, a kitchen down the road, the assistant's own shopping. We've Got
+This does not sell, check out, take payment or track a parcel. It records who ordered what
+for whom, and keeps the work on a person until someone says it reached them.
+
+| Tool | Arguments | Notes |
+|---|---|---|
+| `record_order` | `obligationId?`, `what?`, `from?`, `arrives?`, `forMemberId?` | "I ordered Daddy's lunch from Mama Titi's, it'll be there at one." `obligationId` is the work it covers (an id or its words); `what` is the thing ordered when nothing on the board is for it, and becomes new work. `from` defaults to the routine's `orderFrom`. `arrives` is 24-hour `"HH:MM"` (on the covered work's day) or a local date and time. Needs `claim_obligation`. Not for a refill offered by `reorder_prescription`: that is `confirm_purchase`. |
+
+- **On whose name.** The covered work goes to whoever ordered it, unless someone already
+  has it; then it stays theirs and the order is only noted.
+- **Someone to take it in.** If whoever ordered lives away, a new piece of work goes on the
+  board, "Take the delivery from Mama Titi's kitchen in to Daddy", due when it arrives, and
+  the agent asks someone nearby, as for any other unowned work.
+- **One answer closes both.** Marking the take-in done marks the meal done too, on that
+  person's word ("Sandra took it in"). Marking the meal done takes the take-in off the board.
+- **The doorbell asks, never closes.** A Ring `delivery_arrived` within 3 hours of the
+  arrival time (or within a day of an order with no time) is matched to it: "A delivery
+  arrived at Daddy's door. It may be "Bring Daddy lunch", which Kunle ordered from Mama Titi's
+  kitchen, due today at 1 PM. Has it reached Daddy?" Ring can say a delivery came; only a
+  person can say it reached him.
+- **Read back.** The routine's day reads "Bring Daddy lunch at 1 PM: Kunle ordered it from
+  Mama Titi's kitchen; Sandra is taking it in", and afterwards "..., and Sandra took it in at
+  12:58 PM".
+- **Said, not recorded.** An order already on record, work already done or taken off the
+  board, a suggestion nobody has confirmed, and a time it can't read are each answered with
+  what to tell the person, and nothing is written.
+- **Quiet hours are the household's.** An ask to order in is not sent between 9 pm and 8 am
+  where the person cared for lives. Members carry no timezone of their own, so a brother in
+  Houston can be asked during his night.
 
 ### Managing the circle
 

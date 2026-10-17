@@ -5,6 +5,7 @@
 import { z } from 'zod';
 import { require as requireCap } from '../../domain/auth.js';
 import { happenedAt } from '../../domain/local-time.js';
+import { deliveryFor } from '../../domain/orders.js';
 import { type CareSignal, interpretSignal } from '../../domain/signals.js';
 import { OUT } from '../output-schemas.js';
 import { describeError, guidance, reply, type ToolContext } from '../toolkit.js';
@@ -62,7 +63,14 @@ export function registerIngestSignal({ server, store, now, actor, state }: ToolC
         // If the signal is evidence toward open work, name the match so the model can
         // ask about the specific item - it does not resolve anything itself.
         let candidate: string | null = null;
-        if (outcome.resolvesObligationLike) {
+        // A delivery around when an order is due is most likely that order.
+        const ordered =
+          kind === 'delivery_arrived'
+            ? deliveryFor(s, new Date(when.at), recipient.spokenAs ?? recipient.name)
+            : undefined;
+        if (ordered) {
+          candidate = ordered.obligationId;
+        } else if (outcome.resolvesObligationLike) {
           const pattern = outcome.resolvesObligationLike.match;
           const open = s.obligations.find(
             (o) => pattern.test(o.what) && o.status !== 'RESOLVED' && o.status !== 'DISMISSED',
@@ -91,7 +99,8 @@ export function registerIngestSignal({ server, store, now, actor, state }: ToolC
 
         // The ask, when present, already carries the observation - speak it alone to
         // avoid repeating the same fact twice.
-        const ask = outcome.resolvesObligationLike?.ask ?? outcome.proposeObligation?.ask;
+        const ask =
+          ordered?.ask ?? outcome.resolvesObligationLike?.ask ?? outcome.proposeObligation?.ask;
         return reply(ask ?? outcome.spoken, {
           eventId: event.id,
           resolvesCandidate: candidate,

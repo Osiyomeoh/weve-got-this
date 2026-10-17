@@ -134,4 +134,9 @@ export const OUT = {
   add_medication: { medicationId: z.string().optional() },
   remove_member: { memberId: z.string().optional(), released: z.number().optional() },
   set_routine: { routineId: z.string().optional(), stopped: z.number().optional() },
+  record_order: {
+    obligationId: z.string(),
+    orderId: z.string(),
+    takeInId: z.string().nullable(),
+  },
 } satisfies Record<string, z.ZodRawShape>;

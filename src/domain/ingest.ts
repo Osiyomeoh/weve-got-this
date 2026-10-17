@@ -1,4 +1,5 @@
 import type { CareStore } from '../store/store.js';
+import { deliveryFor } from './orders.js';
 import { interpretSignal, type CareSignal } from './signals.js';
 
 /**
@@ -44,7 +45,14 @@ export async function applySignal(
   // Name the work this is evidence toward; do not touch it. A sensor never closes
   // a medical obligation.
   let resolvesCandidate: string | null = null;
-  if (outcome.resolvesObligationLike) {
+  // A delivery around when an order is due is most likely that order.
+  const ordered =
+    signal.kind === 'delivery_arrived'
+      ? deliveryFor(state, new Date(signal.at), recipient.spokenAs ?? recipient.name)
+      : undefined;
+  if (ordered) {
+    resolvesCandidate = ordered.obligationId;
+  } else if (outcome.resolvesObligationLike) {
     const pattern = outcome.resolvesObligationLike.match;
     const open = state.obligations.find(
       (o) => pattern.test(o.what) && o.status !== 'RESOLVED' && o.status !== 'DISMISSED',
@@ -70,6 +78,7 @@ export async function applySignal(
     proposalId = created.id;
   }
 
-  const ask = outcome.resolvesObligationLike?.ask ?? outcome.proposeObligation?.ask ?? null;
+  const ask =
+    ordered?.ask ?? outcome.resolvesObligationLike?.ask ?? outcome.proposeObligation?.ask ?? null;
   return { eventId: event.id, proposalId, resolvesCandidate, spoken: outcome.spoken, ask };
 }

@@ -1,6 +1,7 @@
 import type { CareStore } from '../store/store.js';
 import type { CareState, EventSource, Obligation } from './types.js';
 import { AGENT_ID } from './agent.js';
+import { AFTER_ORDER_YES, askedToOrder } from './orders.js';
 
 /**
  * Applying a member's answer to the request that was made of them.
@@ -77,9 +78,10 @@ export async function applyRequestResponse(
       ...(input.note ? { detail: input.note } : {}),
       data: { obligationId: o.id, accepted: true },
     });
+    const toOrder = askedToOrder(o, input.memberId, state);
     return {
       ok: true,
-      spoken: `Thanks - "${o.what}" is yours now.`,
+      spoken: `Thanks - "${o.what}" is yours now.${toOrder ? ` ${AFTER_ORDER_YES}` : ''}`,
       obligationId: o.id,
       status: 'ASSIGNED',
     };
