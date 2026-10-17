@@ -133,7 +133,7 @@ reported yet, so no pilot number appears anywhere in this submission.
 The demo family (Daddy, his children Tolu and Funmi, Kunle in London, and Musa the
 driver) is fictional and modelled on mine. No real names or medical details are used.
 
-**And it is real - not a mockup.** A live MCP server you can hit right now, **811 tests**
+**And it is real - not a mockup.** A live MCP server you can hit right now, **814 tests**
 (`npm test`, including property-based proofs of the risk model), and one headline number:
 the planner picks the right one of all 31 tools **89.8%** of the time on Amazon Bedrock
 (168/187; 75/87 on held-out phrasings never tuned against; 2026-10-17,
@@ -625,7 +625,7 @@ git clone https://github.com/Osiyomeoh/weve-got-this && cd weve-got-this
 npm ci
 npm run lint      # eslint (typescript-eslint, strict) - 0 findings
 npm run typecheck # tsc under strict + noUncheckedIndexedAccess + exactOptionalPropertyTypes
-npm test          # 811 tests (unit, adversarial, and property-based)
+npm test          # 814 tests (unit, adversarial, and property-based)
 npm run story     # the whole one-day story, end to end, over real MCP
 ```
 

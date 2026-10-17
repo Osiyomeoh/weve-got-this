@@ -126,7 +126,7 @@
   </g>
 
   <!-- footer metric -->
-  <text x="40" y="662" class="s" font-weight="700" fill="#22a45d">811 tests · property-based proofs · ~90% tool-selection · 0% false accusations</text>
+  <text x="40" y="662" class="s" font-weight="700" fill="#22a45d">814 tests · property-based proofs · ~90% tool-selection · 0% false accusations</text>
   <g transform="translate(40,678)">
     <rect class="box sig" x="0" y="0" width="13" height="13"/><text x="20" y="11" class="xs">surface</text>
     <rect class="box mcp" x="78" y="0" width="13" height="13"/><text x="98" y="11" class="xs">MCP / security</text>
