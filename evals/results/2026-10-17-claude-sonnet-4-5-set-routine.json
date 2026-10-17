@@ -1,0 +1,337 @@
+{
+  "modelId": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+  "total": 176,
+  "passed": 163,
+  "accuracy": 0.9261363636363636,
+  "errored": 0,
+  "byCategory": [
+    {
+      "category": "log",
+      "passed": 7,
+      "total": 8
+    },
+    {
+      "category": "appt",
+      "passed": 6,
+      "total": 6
+    },
+    {
+      "category": "medchange",
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "category": "move",
+      "passed": 3,
+      "total": 3
+    },
+    {
+      "category": "urgent",
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "category": "note",
+      "passed": 5,
+      "total": 6
+    },
+    {
+      "category": "gap",
+      "passed": 8,
+      "total": 8
+    },
+    {
+      "category": "claim",
+      "passed": 6,
+      "total": 6
+    },
+    {
+      "category": "assign",
+      "passed": 5,
+      "total": 5
+    },
+    {
+      "category": "confirm",
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "category": "resolve",
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "category": "sum",
+      "passed": 5,
+      "total": 5
+    },
+    {
+      "category": "shift",
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "category": "notify",
+      "passed": 3,
+      "total": 4
+    },
+    {
+      "category": "cons",
+      "passed": 3,
+      "total": 4
+    },
+    {
+      "category": "prom",
+      "passed": 3,
+      "total": 3
+    },
+    {
+      "category": "rout",
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "category": "h",
+      "passed": 61,
+      "total": 67
+    },
+    {
+      "category": "h2",
+      "passed": 8,
+      "total": 9
+    },
+    {
+      "category": "h3",
+      "passed": 6,
+      "total": 7
+    },
+    {
+      "category": "h4",
+      "passed": 6,
+      "total": 7
+    },
+    {
+      "category": "none",
+      "passed": 4,
+      "total": 4
+    }
+  ],
+  "splits": [
+    {
+      "split": "authored",
+      "passed": 82,
+      "total": 86
+    },
+    {
+      "split": "held-out",
+      "passed": 72,
+      "total": 80
+    },
+    {
+      "split": "seen",
+      "passed": 9,
+      "total": 10
+    }
+  ],
+  "failures": [
+    {
+      "case": {
+        "id": "log-05",
+        "member": "m_margaret",
+        "utterance": "I'm feeling alright today.",
+        "expect": [
+          "log_care_event",
+          "add_note"
+        ]
+      },
+      "chosen": null,
+      "args": {},
+      "pass": false,
+      "reason": "called nothing; expected log_care_event or add_note"
+    },
+    {
+      "case": {
+        "id": "note-02",
+        "member": "m_david",
+        "utterance": "The doctor changed his dose to twice a day.",
+        "expect": [
+          "add_note",
+          "change_medication"
+        ],
+        "note": "change_medication was added 2026-09-23; without the new times it may still ask or note it."
+      },
+      "chosen": null,
+      "args": {},
+      "pass": false,
+      "reason": "called nothing; expected add_note or change_medication"
+    },
+    {
+      "case": {
+        "id": "notify-03",
+        "member": "m_david",
+        "utterance": "Message Funmi about the appointment change.",
+        "expect": [
+          "notify_member"
+        ]
+      },
+      "chosen": null,
+      "args": {},
+      "pass": false,
+      "reason": "called nothing; expected notify_member"
+    },
+    {
+      "case": {
+        "id": "cons-01",
+        "member": "m_renee",
+        "utterance": "I can't drive Thursday, I'm out of town.",
+        "expect": [
+          "add_note"
+        ],
+        "args": {}
+      },
+      "chosen": "get_my_requests",
+      "args": {},
+      "pass": false,
+      "reason": "chose get_my_requests; expected add_note"
+    },
+    {
+      "case": {
+        "id": "h-log-03",
+        "member": "m_aide",
+        "utterance": "He had everything that was due before noon.",
+        "expect": [
+          "log_care_event",
+          "add_note"
+        ]
+      },
+      "chosen": "get_care_gaps",
+      "args": {
+        "withinDays": 1
+      },
+      "pass": false,
+      "reason": "chose get_care_gaps; expected log_care_event or add_note"
+    },
+    {
+      "case": {
+        "id": "h-appt-01",
+        "member": "m_renee",
+        "utterance": "Move his eye check-up to Friday instead.",
+        "expect": [
+          "record_appointment",
+          "add_note",
+          "change_appointment"
+        ],
+        "seen": "2026-09-23: answer key widened after the run that added change_appointment",
+        "note": "Chose change_appointment in the 2026-09-23 run, which is right; the key predated the tool."
+      },
+      "chosen": null,
+      "args": {},
+      "pass": false,
+      "reason": "called nothing; expected record_appointment or add_note or change_appointment"
+    },
+    {
+      "case": {
+        "id": "h-appt-03",
+        "member": "m_margaret",
+        "utterance": "My grandson's graduation is on the 20th.",
+        "expect": [
+          "record_appointment"
+        ],
+        "note": "Non-medical dated commitment."
+      },
+      "chosen": "add_note",
+      "args": {
+        "note": "My grandson's graduation is on the 20th"
+      },
+      "pass": false,
+      "reason": "chose add_note; expected record_appointment"
+    },
+    {
+      "case": {
+        "id": "h-appt-04",
+        "member": "m_david",
+        "utterance": "Schedule his flu shot for next week sometime.",
+        "expect": [
+          "record_appointment"
+        ]
+      },
+      "chosen": null,
+      "args": {},
+      "pass": false,
+      "reason": "called nothing; expected record_appointment"
+    },
+    {
+      "case": {
+        "id": "h-sum-02",
+        "member": "m_david",
+        "utterance": "Is he okay today?",
+        "expect": [
+          "get_care_summary",
+          "get_care_gaps"
+        ]
+      },
+      "chosen": "get_care_summary\" />",
+      "args": {},
+      "pass": false,
+      "reason": "chose get_care_summary\" />; expected get_care_summary or get_care_gaps"
+    },
+    {
+      "case": {
+        "id": "h-cons-02",
+        "member": "m_renee",
+        "utterance": "Count me out this weekend.",
+        "expect": [
+          "add_note"
+        ],
+        "args": {}
+      },
+      "chosen": null,
+      "args": {},
+      "pass": false,
+      "reason": "called nothing; expected add_note"
+    },
+    {
+      "case": {
+        "id": "h2-buy-05",
+        "member": "m_david",
+        "utterance": "Okay, order it.",
+        "expect": [
+          "confirm_purchase"
+        ]
+      },
+      "chosen": "get_care_gaps",
+      "args": {},
+      "pass": false,
+      "reason": "chose get_care_gaps; expected confirm_purchase"
+    },
+    {
+      "case": {
+        "id": "h3-prom-07",
+        "member": "m_david",
+        "utterance": "Remind me what I promised the plumber.",
+        "expectNone": true,
+        "note": "Says \"promised\", but it is not care."
+      },
+      "chosen": "get_promises",
+      "args": {},
+      "pass": false,
+      "reason": "called get_promises when it should have just answered"
+    },
+    {
+      "case": {
+        "id": "h4-rout-03",
+        "member": "m_margaret",
+        "utterance": "I'd like someone to help me bathe on Tuesday and Friday mornings.",
+        "expect": [
+          "set_routine"
+        ],
+        "note": "Daddy asks for his own help: a participant, not a subject."
+      },
+      "chosen": null,
+      "args": {},
+      "pass": false,
+      "reason": "called nothing; expected set_routine"
+    }
+  ],
+  "errors": []
+}
