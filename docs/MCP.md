@@ -237,6 +237,34 @@ rather than the same one twice.
 | `get_my_requests` | – | "What have I been asked to do?" Read-only. Use before `respond_to_request` when the id is not known. |
 | `run_care_agent` | `dryRun?` | Lets the agent look for slipping work itself and ask an owner - never assigns. `dryRun` reports what it would do without doing it. |
 
+#### The agent's legwork
+
+- **Who's free.** The family calendar is the care record: the work each person has
+  already said yes to. Someone with other work due within 2 hours of this is busy then.
+  - Free people are asked first, then busy ones; within that, family before paid help,
+    then whoever has least on.
+  - Busy only ranks a person lower, and never rules them out. Nobody's private calendar
+    is read, and silence about the rest of their day is not evidence either way.
+  - The reason says so: "already has "Pick up the refill" around then", or "has one
+    other thing on, but nothing around then".
+  - A busy person is also less likely to say yes, so the agent counts asking them as
+    worth less.
+- **The day before.** When work someone said yes to is due in the next 24 hours, the
+  agent asks them "Still on?" once, by the same arithmetic as any other ask.
+  - It asks only about a yes more than 12 hours old, and never about work due within 2
+    hours.
+  - It never asks between 9 pm and 8 am, or about a social plan like a visit. A
+    day-before ask is worth at most 0.3 (0.06 for a social plan); an ask costs at least
+    0.12 by day and 1.08 at night.
+  - A new yes is a new promise, so it can be asked about again.
+  - "yes" keeps the work with them. "can't" hands it back with no owner, records the
+    decline, and the agent asks the next free person.
+  - Until they answer, `get_promises` reads "there's no answer yet".
+- **Answers over chat.** A "yes" or "can't" to a check-in is answered directly on
+  WhatsApp, and on Telegram when the message is to the bot (a DM, a mention, or a reply
+  to its message), so family chatter in the group never hands work back. A "yes" after
+  the work's time could mean still on or done, so it goes to the model instead.
+
 #### The yes comes from the person (elicitation)
 
 A yes makes a promise, so on a client that can show forms the person gives it themselves.
@@ -399,7 +427,7 @@ git clone https://github.com/Osiyomeoh/weve-got-this && cd weve-got-this
 npm ci
 npm run story      # the whole scenario end to end, no AWS and no keys
 npm run dev        # the MCP server on :8787 (override with PORT)
-npm test           # 311 tests, including adversarial and property-based
+npm test           # 775 tests, including adversarial and property-based
 ```
 
 `npm run story` is the fastest way to understand the system: it plays the demo

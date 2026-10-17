@@ -21,7 +21,10 @@ import { afterOn, asTask, clockTime, dueSpoken, isLocalToday } from './local-tim
 export type PromiseStage =
   /** Said yes, and it is not due yet, or nobody has checked in. */
   | 'promised'
-  /** Past its time with nothing marked; the app asked "still on?" and has no answer. */
+  /**
+   * The app asked "still on?" and has no answer: the day before, or once it was past its
+   * time with nothing marked.
+   */
   | 'checking'
   /** The person said it is still on. */
   | 'still_on'
@@ -59,6 +62,8 @@ export interface PromiseStep {
   via?: string;
   /** The person pressed it on their own client's form; no model gave this answer for them. */
   onForm?: true;
+  /** A "still on?" asked before the work was due, not after. */
+  ahead?: true;
   /** One line, safe to read aloud. */
   detail: string;
 }
@@ -140,6 +145,7 @@ function eventSteps(
         steps.push({
           kind: 'still_on_asked',
           ...base,
+          ...(e.data['ahead'] === true ? { ahead: true as const } : {}),
           detail: `${by} checked in with ${askedOf}${on} to ask if it's still on.`,
         });
       } else {
@@ -278,8 +284,12 @@ function stageOf(o: Obligation, steps: PromiseStep[]): PromiseStage {
   if (o.status !== 'ASSIGNED') return 'open';
   const yesAt = steps.filter((s) => YES_KINDS.has(s.kind)).at(-1)?.at ?? '';
   const since = steps.filter((s) => s.at >= yesAt);
-  if (since.some((s) => s.kind === 'still_on')) return 'still_on';
-  if (since.some((s) => s.kind === 'still_on_asked')) return 'checking';
+  // The latest question decides: "still on" the day before does not answer the check-in
+  // after the time.
+  const asked = last(since, 'still_on_asked');
+  const said = last(since, 'still_on');
+  if (said && (!asked || asked.at <= said.at)) return 'still_on';
+  if (asked) return 'checking';
   return 'promised';
 }
 
@@ -319,9 +329,10 @@ function speak(
     case 'checking': {
       const asked = last(steps, 'still_on_asked');
       const told = last(steps, 'told');
+      // Before the time there is nothing to mark yet, only a question waiting for an answer.
       return (
         `${head}${dueClause}. ${capital(asked?.who ?? 'the app')} checked in${at(asked)} to ask if ` +
-        `it's still on, and nothing's been marked yet.` +
+        `it's still on, and ${asked?.ahead ? "there's no answer yet" : "nothing's been marked yet"}.` +
         (told ? ` ${capital(told.who ?? 'the app')} also let ${told.to} know${at(told)}.` : '')
       );
     }

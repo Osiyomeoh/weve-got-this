@@ -210,7 +210,7 @@ export const PROMISES_HTML = String.raw`<!doctype html>
   /** Where each promise stands, as a word and a colour. Nothing here is an alarm. */
   var STAGE = {
     checking: { label: "Checking in", tone: "waiting",
-      title: "Past its time with nothing marked yet. The app asked if it's still on." },
+      title: "The app asked if it's still on, and there's no answer yet." },
     open: { label: "Back with nobody", tone: "waiting", title: "Handed back. Nobody has it right now." },
     asking: { label: "Asking someone", tone: "waiting", title: "Handed back, and someone new has been asked." },
     still_on: { label: "Still on", tone: "kept", title: "They said it's still on." },

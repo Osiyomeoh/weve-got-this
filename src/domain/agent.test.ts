@@ -421,3 +421,125 @@ test('done is done: resolved work is never chased', () => {
   const resolved = state({ obligations: [promised({ status: 'RESOLVED' })] });
   assert.deepEqual(deliberate(resolved, opts(DAYTIME)).actions, []);
 });
+
+test('somebody with other work at the same hour is worth less to ask', () => {
+  // The family calendar lowers the chance of a yes, so the agent values the ask the way
+  // the ranking does.
+  const s = state();
+  const first = candidatesFor(s.obligations[0]!, s)[0]!;
+  const free = harmAvoided(s.obligations[0]!, first, s, DAYTIME);
+  const busy = harmAvoided(
+    s.obligations[0]!,
+    { ...first, clashesWith: 'Pick up the refill' },
+    s,
+    DAYTIME,
+  );
+  assert.ok(busy < free, 'a clash at the same hour was valued the same as a free hour');
+});
+
+// --- The day before: "still on?" while there is time to find somebody else ------
+
+/** Renee said yes to tomorrow's 10 AM drive on Monday; it is Wednesday 10 AM. */
+const tomorrow = (over: Partial<Obligation> = {}) =>
+  promised({ dueAt: '2026-10-15T14:00:00Z', ...over });
+const takenOn = (at = '2026-10-12T12:00:00Z') => new Map([['o1', at]]);
+const ahead = (now: Date, at?: string) => ({ ...opts(now), takenOnAt: takenOn(at) });
+
+function aheadEvent(memberId: string, at: string): CareEvent {
+  return {
+    ...askEvent(memberId, at),
+    data: { obligationId: 'o1', askedOfId: memberId, followUp: true, ahead: true },
+  };
+}
+
+test('the day before, the person who said yes is asked if it is still on', () => {
+  const { actions } = deliberate(state({ obligations: [tomorrow()] }), ahead(DAYTIME));
+  assert.equal(actions.length, 1);
+  assert.equal(actions[0]!.kind, 'CHECK_IN');
+  assert.equal(actions[0]!.memberId, 'm_renee');
+  assert.equal(actions[0]!.ahead, true);
+  assert.equal(actions[0]!.followUp, true);
+  assert.equal(
+    actions[0]!.because,
+    '"Drive Margaret to cardiology" is tomorrow at 10 AM, so I asked Renee, who took it on, if it\'s still on.',
+  );
+  assert.ok(actions[0]!.value.net > 0);
+});
+
+test('not knowing when the yes was given, the agent does not ask ahead', () => {
+  assert.deepEqual(deliberate(state({ obligations: [tomorrow()] }), opts(DAYTIME)).actions, []);
+});
+
+test('a yes given this morning needs no checking', () => {
+  const { actions, restraint } = deliberate(
+    state({ obligations: [tomorrow()] }),
+    ahead(DAYTIME, '2026-10-14T12:30:00Z'),
+  );
+  assert.deepEqual(actions, []);
+  assert.match(restraint.find((r) => r.obligationId === 'o1')!.because, /took on .* recently/);
+});
+
+test('asked once per yes; a new yes is a new promise to check', () => {
+  const asked = state({
+    obligations: [tomorrow()],
+    events: [aheadEvent('m_renee', '2026-10-12T15:00:00Z')],
+  });
+  assert.deepEqual(deliberate(asked, ahead(DAYTIME, '2026-10-12T12:00:00Z')).actions, []);
+  // Handed back and taken on again after that question: the new yes has not been asked about.
+  assert.equal(deliberate(asked, ahead(DAYTIME, '2026-10-13T16:00:00Z')).actions.length, 1);
+});
+
+test('nobody is asked about tomorrow in the middle of the night', () => {
+  // 02:00 New York; the drive is at 4 PM the same day.
+  const { actions, restraint } = deliberate(
+    state({ obligations: [tomorrow({ dueAt: '2026-10-14T20:00:00Z' })] }),
+    ahead(NIGHT),
+  );
+  assert.deepEqual(actions, []);
+  assert.match(restraint.find((r) => r.obligationId === 'o1')!.because, /night/);
+});
+
+test('a social visit is not worth the question; a medical drive is', () => {
+  const visit = deliberate(
+    state({ obligations: [tomorrow({ consequence: 'social' })] }),
+    ahead(DAYTIME),
+  );
+  assert.deepEqual(visit.actions, []);
+  assert.ok(visit.restraint.some((r) => r.obligationId === 'o1'));
+});
+
+test('too far off, or too close to change anything, is not the day-before question', () => {
+  const at = (hours: number) =>
+    deliberate(
+      state({
+        obligations: [
+          tomorrow({ dueAt: new Date(DAYTIME.getTime() + hours * 3_600_000).toISOString() }),
+        ],
+      }),
+      ahead(DAYTIME),
+    ).actions;
+  assert.deepEqual(at(30), []);
+  assert.deepEqual(at(1), []);
+  assert.equal(at(20).length, 1);
+});
+
+test('"still on" the day before does not stand in for the check-in after the time', () => {
+  // Renee said yesterday that today's 9 AM drive was still on. It is now past it with
+  // nothing marked: that yes says nothing about whether it happened.
+  const said: CareEvent = {
+    ...askEvent('m_renee', '2026-10-13T14:05:00Z'),
+    kind: 'request_answered',
+    reportedBy: 'm_renee',
+    data: { obligationId: 'o1', accepted: true, stillOn: true },
+  };
+  const { actions } = deliberate(
+    state({
+      obligations: [promised()],
+      events: [aheadEvent('m_renee', '2026-10-13T14:00:00Z'), said],
+    }),
+    ahead(DAYTIME),
+  );
+  assert.equal(actions.length, 1);
+  assert.equal(actions[0]!.kind, 'CHECK_IN');
+  assert.equal(actions[0]!.ahead, undefined);
+});

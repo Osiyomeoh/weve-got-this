@@ -131,6 +131,8 @@ export function createWhatsAppWebhook(opts: WhatsAppWebhookOptions) {
             accepted: intent === 'accepted',
             note: msg.text,
             channel: 'whatsapp',
+            // Every WhatsApp message here is one person writing to the app.
+            checkIns: true,
           },
           now(),
         );

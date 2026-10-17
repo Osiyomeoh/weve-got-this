@@ -3,7 +3,7 @@
  */
 
 import { z } from 'zod';
-import { runAgentOnce } from '../../domain/agent-runner.js';
+import { runAgentOnce, takenOnTimes } from '../../domain/agent-runner.js';
 import { deliberate } from '../../domain/agent.js';
 import { require as requireCap } from '../../domain/auth.js';
 import { candidatesFor } from '../../domain/delegation.js';
@@ -465,7 +465,11 @@ export function registerRunCareAgent({
         const s = state();
 
         if (dryRun) {
-          const d = deliberate(s, { now: now(), timezone: s.household.timezone });
+          const d = deliberate(s, {
+            now: now(),
+            timezone: s.household.timezone,
+            takenOnAt: takenOnTimes(store, s),
+          });
           const lines = d.actions.map((a) => a.because);
           const spoken = d.actions.length
             ? `I would reach out about ${d.actions.length === 1 ? 'one thing' : `${d.actions.length} things`}. ${lines.join(' ')}`

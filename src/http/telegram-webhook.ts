@@ -570,6 +570,8 @@ export function createTelegramWebhook(opts: TelegramWebhookOptions) {
               accepted: intent === 'accepted',
               note: msg.text,
               channel: 'telegram',
+              // Family chatter in the group never answers a check-in; a message to the bot can.
+              checkIns: msg.addressedToBot,
             },
             now(),
           );

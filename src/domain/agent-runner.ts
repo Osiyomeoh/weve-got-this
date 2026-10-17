@@ -1,8 +1,10 @@
 import type { CareStore } from '../store/store.js';
 import type { Notifier } from '../notify/notifier.js';
+import type { CareState } from './types.js';
 import { checkInEvidence } from './evidence.js';
 import { deliberate, AGENT_ID, type AgentAction, type Deliberation } from './agent.js';
 import { BRAND } from './brand.js';
+import { spokenDue } from './gaps.js';
 import { isLiveAgentCopy } from './sandbox-id.js';
 
 /**
@@ -45,7 +47,11 @@ export interface RunnerDeps {
 export async function runAgentOnce(householdId: string, deps: RunnerDeps): Promise<AgentRun> {
   const now = deps.now?.() ?? new Date();
   const state = deps.store.getCareState(householdId);
-  const deliberation = deliberate(state, { now, timezone: state.household.timezone });
+  const deliberation = deliberate(state, {
+    now,
+    timezone: state.household.timezone,
+    takenOnAt: takenOnTimes(deps.store, state),
+  });
 
   const performed: AgentRun['performed'] = [];
   for (const action of deliberation.actions) {
@@ -74,13 +80,15 @@ export async function runAgentOnce(householdId: string, deps: RunnerDeps): Promi
       );
     }
 
+    // The doorbell's view of the due time means nothing before the work is due.
     const message = messageFor(
       action,
       obligation.what,
       state.members.find((m) => m.id === obligation.ownerId),
-      action.followUp
+      action.followUp && !action.ahead
         ? checkInEvidence(obligation, state.events, now, state.household.timezone)
         : '',
+      spokenDue(obligation.dueAt, state.household.timezone, now),
     );
     const delivery = await deps.notifier.deliver({
       to: member.id,
@@ -106,6 +114,7 @@ export async function runAgentOnce(householdId: string, deps: RunnerDeps): Promi
         askedOfId: member.id,
         escalation: action.kind === 'ESCALATE',
         ...(action.followUp ? { followUp: true } : {}),
+        ...(action.ahead ? { ahead: true } : {}),
         delivered: delivery.delivered,
         // What the person was actually sent, so the board can show it as they saw it.
         message,
@@ -123,6 +132,29 @@ export async function runAgentOnce(householdId: string, deps: RunnerDeps): Promi
 }
 
 /**
+ * When each piece of work now on somebody's name went there: the latest move to ASSIGNED.
+ * The agent needs it to tell a yes given an hour ago from one given on Monday.
+ */
+export function takenOnTimes(
+  store: Pick<CareStore, 'getTransitions'>,
+  state: CareState,
+): Map<string, string> {
+  const at = new Map<string, string>();
+  for (const o of state.obligations) {
+    if (o.status !== 'ASSIGNED') continue;
+    const last = store
+      .getTransitions(o.id)
+      .filter((t) => t.to === 'ASSIGNED')
+      .reduce<string | undefined>(
+        (latest, t) => (!latest || t.at > latest ? t.at : latest),
+        undefined,
+      );
+    if (last) at.set(o.id, last);
+  }
+  return at;
+}
+
+/**
  * What the person reads. A follow-up is a question, never a verdict: nothing being
  * recorded does not mean it did not happen, so the wording cannot say it did not.
  */
@@ -131,7 +163,11 @@ function messageFor(
   what: string,
   owner?: { name: string; spokenAs?: string },
   seen = '',
+  due = '',
 ): string {
+  if (action.kind === 'CHECK_IN' && action.ahead) {
+    return `"${what}" is${due}. Still on?\n\nReply "yes" if it is, or "can't" and I'll find someone.`;
+  }
   if (action.kind === 'CHECK_IN') {
     return `"${what}" was due a little while ago and nothing's been marked yet.${seen} Still on?\n\nReply "done" if it's handled, or "can't" and I'll find someone.`;
   }

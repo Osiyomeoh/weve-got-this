@@ -1,5 +1,5 @@
 import type { CareState, Member, Obligation } from './types.js';
-import { detectCareGaps } from './gaps.js';
+import { detectCareGaps, promiseRisk, spokenDue } from './gaps.js';
 import { candidatesFor, type Candidate } from './delegation.js';
 
 /**
@@ -58,6 +58,11 @@ export interface AgentAction {
   because: string;
   /** Set when the work had an owner and slipped past its time: a broken promise, not a gap. */
   followUp?: true;
+  /**
+   * Set on a check-in before the work is due: "is tomorrow still on?", asked while there
+   * is time to find somebody else. Always alongside `followUp`.
+   */
+  ahead?: true;
   /** The arithmetic, exposed so the decision can be audited like a gap score. */
   value: {
     harmAvoided: number;
@@ -93,6 +98,13 @@ export interface PolicyOptions {
    * is - but a hard stop against a bug becoming a flood.
    */
   maxActions?: number;
+  /**
+   * When each piece of work last went on somebody's name, by obligation id. The yes is in
+   * the transition log, not the care state, so the caller reads it there (`takenOnTimes`
+   * in agent-runner.ts). Without it the agent cannot tell a yes given an hour ago from one
+   * given on Monday, so it does not check in ahead at all.
+   */
+  takenOnAt?: ReadonlyMap<string, string>;
 }
 
 /**
@@ -203,9 +215,10 @@ function riskIndex(state: CareState, now: Date): Map<string, number> {
  * Harm avoided by asking this candidate.
  *
  * The relief an ask provides is discounted by how likely this person is to be able
- * to say yes. Load is the only honest proxy we hold - somebody already carrying four
- * things is less likely to take a fifth - and it is the same number `candidatesFor`
- * ranks on, so the agent and the ranking cannot disagree.
+ * to say yes. The record holds two honest proxies: load - somebody already carrying four
+ * things is less likely to take a fifth - and the family calendar, which shows when they
+ * already have other work around the same time. Both are what `candidatesFor` ranks on,
+ * so the agent and the ranking cannot disagree.
  */
 export function harmAvoided(
   obligation: Obligation,
@@ -213,12 +226,20 @@ export function harmAvoided(
   state: CareState,
   now: Date,
 ): number {
-  return valueOfAsk(riskIndex(state, now).get(obligation.id) ?? 0, candidate.load);
+  return valueOfAsk(riskIndex(state, now).get(obligation.id) ?? 0, candidate);
 }
 
+/**
+ * How a yes is discounted when the person already has other work around the same time.
+ * A judgement, like the others here: having the refill at six does not rule out the ride
+ * at seven, but it makes a yes about half as likely.
+ */
+const CLASH_YES = 0.5;
+
 /** The same arithmetic, on a risk already in hand. */
-function valueOfAsk(risk: number, load: number): number {
-  return risk * ASK_RELIEF * (1 / (1 + load));
+function valueOfAsk(risk: number, candidate: Pick<Candidate, 'load' | 'clashesWith'>): number {
+  const clash = candidate.clashesWith ? CLASH_YES : 1;
+  return risk * ASK_RELIEF * (1 / (1 + candidate.load)) * clash;
 }
 
 /** Obligations the agent may pursue: real work, nobody on it, not already asked. */
@@ -246,7 +267,11 @@ function slipping(obligation: Obligation, now: Date): boolean {
   return now.getTime() - new Date(obligation.dueAt).getTime() >= FOLLOW_UP_GRACE_MINUTES * 60_000;
 }
 
-/** The agent's own follow-ups on one piece of work, oldest first. */
+/**
+ * The agent's own follow-ups on one piece of work once it was past its time, oldest first.
+ * A "still on?" asked the day before is not one of them: a yes the day before says nothing
+ * about whether it happened, so it never stands in for the check-in after.
+ */
 function followUpsOn(obligationId: string, state: CareState): CareState['events'] {
   return state.events
     .filter(
@@ -254,9 +279,34 @@ function followUpsOn(obligationId: string, state: CareState): CareState['events'
         e.kind === 'owner_requested' &&
         e.reportedBy === AGENT_ID &&
         e.data['followUp'] === true &&
+        e.data['ahead'] !== true &&
         e.data['obligationId'] === obligationId,
     )
     .sort((a, b) => a.occurredAt.localeCompare(b.occurredAt));
+}
+
+/**
+ * The day-before "still on?". Due within this many hours, a promise is worth asking about,
+ * while there is still a day to find somebody else.
+ */
+const AHEAD_HOURS = 24;
+/** Closer than this, there is no time left to find anyone else, and asking is only nagging. */
+const AHEAD_MIN_HOURS = 2;
+/** A yes this recent needs no checking: they have only just said it. */
+const FRESH_YES_HOURS = 12;
+/**
+ * What the day-before question is worth, as a share of what a lapse would cost. Less than
+ * an ask's relief: the work already has someone, and most promises keep. What it buys is a
+ * day's notice when one does not. A medical ride clears the cost of asking; a social visit
+ * never does, and the agent leaves those to the person who promised.
+ */
+const AHEAD_RELIEF = 0.3;
+
+/** Work somebody took on, due within the day but not so soon that nothing could change. */
+function dueSoon(obligation: Obligation, now: Date): boolean {
+  if (obligation.status !== 'ASSIGNED' || !obligation.ownerId || !obligation.dueAt) return false;
+  const hours = (new Date(obligation.dueAt).getTime() - now.getTime()) / 3_600_000;
+  return hours > AHEAD_MIN_HOURS && hours <= AHEAD_HOURS;
 }
 
 function primaryCaregiver(state: CareState): Member | undefined {
@@ -286,7 +336,7 @@ export function deliberate(state: CareState, opts: PolicyOptions): Deliberation 
     const boss = primaryCaregiver(state);
 
     if (next) {
-      const gain = valueOfAsk(risk.get(o.id) ?? 0, next.load);
+      const gain = valueOfAsk(risk.get(o.id) ?? 0, next);
       const cost = interruptionCost(next.memberId, state, opts);
       const value = { harmAvoided: gain, interruptionCost: cost, net: gain - cost };
       const because = `Nobody answered about "${o.what}", so I asked ${next.name} instead.`;
@@ -400,7 +450,7 @@ export function deliberate(state: CareState, opts: PolicyOptions): Deliberation 
       });
       continue;
     }
-    const gain = valueOfAsk(risk.get(o.id) ?? 0, best.load);
+    const gain = valueOfAsk(risk.get(o.id) ?? 0, best);
     const cost = interruptionCost(best.memberId, state, opts);
     const value = { harmAvoided: gain, interruptionCost: cost, net: gain - cost };
 
@@ -419,6 +469,56 @@ export function deliberate(state: CareState, opts: PolicyOptions): Deliberation 
         value,
       });
     }
+  }
+
+  // Work somebody promised, due within the day. The agent asks the owner whether it is
+  // still on while there is time to find somebody else if it is not: once per yes, never
+  // straight after one, and only when a lapse would cost more than the interruption.
+  // Ownership never moves, and a "can't" is answered like any hand-back.
+  for (const o of state.obligations.filter((x) => dueSoon(x, opts.now))) {
+    const owner = state.members.find((m) => m.id === o.ownerId);
+    const takenOn = opts.takenOnAt?.get(o.id);
+    if (!owner || !takenOn) continue;
+    const name = owner.spokenAs ?? owner.name;
+    const asked = state.events.some(
+      (e) =>
+        e.kind === 'owner_requested' &&
+        e.reportedBy === AGENT_ID &&
+        e.data['ahead'] === true &&
+        e.data['obligationId'] === o.id &&
+        e.occurredAt >= takenOn,
+    );
+    if (asked) continue;
+    const zero = { harmAvoided: 0, interruptionCost: 0, net: 0 };
+    const sinceYes = (opts.now.getTime() - new Date(takenOn).getTime()) / 3_600_000;
+    if (sinceYes < FRESH_YES_HOURS) {
+      restraint.push({
+        obligationId: o.id,
+        because: `${name} took on "${o.what}" recently, so there is no need to ask if it's still on.`,
+        value: zero,
+      });
+      continue;
+    }
+    const gain = promiseRisk(o, state, opts.now) * AHEAD_RELIEF;
+    const cost = interruptionCost(owner.id, state, opts);
+    const value = { harmAvoided: gain, interruptionCost: cost, net: gain - cost };
+    const due = spokenDue(o.dueAt, opts.timezone, opts.now);
+    if (value.net > 0)
+      actions.push({
+        kind: 'CHECK_IN',
+        obligationId: o.id,
+        memberId: owner.id,
+        because: `"${o.what}" is${due}, so I asked ${name}, who took it on, if it's still on.`,
+        value,
+        followUp: true,
+        ahead: true,
+      });
+    else
+      restraint.push({
+        obligationId: o.id,
+        because: `Not asking ${name} if "${o.what}" is still on: ${reasonForQuiet(opts)}`,
+        value,
+      });
   }
 
   // Highest net value first: when the agent can only do a few things, it should do

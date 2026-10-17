@@ -1,10 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { candidatesFor, loadOf, statedUnavailable } from './delegation.ts';
+import { candidatesFor, clashFor, loadOf, statedUnavailable } from './delegation.ts';
 import { detectCareGaps } from './gaps.ts';
 import type { CareEvent, CareState, Obligation } from './types.ts';
 
 const NOW = new Date('2026-10-15T18:00:00Z');
+/** Other work, on a day that does not touch the cardiology drive's. */
+const ANOTHER_DAY = '2026-10-18T14:00:00Z';
 
 function baseState(over: Partial<CareState> = {}): CareState {
   return {
@@ -72,9 +74,9 @@ test('the person carrying least ranks first', () => {
   const state = baseState({
     obligations: [
       obligation(),
-      obligation({ id: 'o2', status: 'ASSIGNED', ownerId: 'm_david' }),
-      obligation({ id: 'o3', status: 'ASSIGNED', ownerId: 'm_david' }),
-      obligation({ id: 'o4', status: 'ASSIGNED', ownerId: 'm_renee' }),
+      obligation({ id: 'o2', status: 'ASSIGNED', ownerId: 'm_david', dueAt: ANOTHER_DAY }),
+      obligation({ id: 'o3', status: 'ASSIGNED', ownerId: 'm_david', dueAt: ANOTHER_DAY }),
+      obligation({ id: 'o4', status: 'ASSIGNED', ownerId: 'm_renee', dueAt: ANOTHER_DAY }),
     ],
   });
   const ranked = candidatesFor(obligation(), state);
@@ -88,8 +90,8 @@ test('the paid aide is asked only after the family has run out', () => {
   // cardiology drive ahead of both of Margaret's children.
   const busyFamily = baseState({
     obligations: [
-      obligation({ id: 'o2', status: 'ASSIGNED', ownerId: 'm_david' }),
-      obligation({ id: 'o3', status: 'ASSIGNED', ownerId: 'm_renee' }),
+      obligation({ id: 'o2', status: 'ASSIGNED', ownerId: 'm_david', dueAt: ANOTHER_DAY }),
+      obligation({ id: 'o3', status: 'ASSIGNED', ownerId: 'm_renee', dueAt: ANOTHER_DAY }),
     ],
   });
   const ranked = candidatesFor(obligation(), busyFamily);
@@ -218,4 +220,117 @@ test('a fresh ask lowers the risk; a stale one gives the relief back', () => {
   assert.ok(fresh.score < stale.score, 'a fresh ask should rank below a stale one');
   assert.ok(stale.score <= unowned.score, 'relief must never exceed simply being unowned');
   assert.ok(fresh.score < unowned.score, 'asking someone should count for something');
+});
+
+// The family calendar: who already holds other work around the time this is due.
+// The drive is at 14:00Z; the refill an hour later is "around then", one at 17:00Z is not.
+const refill = (over: Partial<Obligation> = {}): Obligation =>
+  obligation({
+    id: 'o_refill',
+    what: 'Pick up the refill',
+    status: 'ASSIGNED',
+    ownerId: 'm_renee',
+    dueAt: '2026-10-16T15:00:00Z',
+    ...over,
+  });
+
+test('somebody free at the time is asked before somebody who already has work then', () => {
+  // Renee is least loaded on paper next to David's two things on other days, but she has
+  // the refill an hour after the drive. David has nothing around then.
+  const state = baseState({
+    obligations: [
+      obligation(),
+      refill(),
+      obligation({ id: 'o2', status: 'ASSIGNED', ownerId: 'm_david', dueAt: ANOTHER_DAY }),
+      obligation({ id: 'o3', status: 'ASSIGNED', ownerId: 'm_david', dueAt: ANOTHER_DAY }),
+    ],
+  });
+  const ranked = candidatesFor(obligation(), state);
+  assert.equal(ranked[0]!.name, 'David');
+  assert.equal(ranked[0]!.because, 'has 2 other things on, but nothing around then');
+  const renee = ranked.find((c) => c.name === 'Renee')!;
+  assert.equal(renee.clashesWith, 'Pick up the refill');
+  assert.match(renee.because, /already has "Pick up the refill" around then/);
+});
+
+test('free before busy reaches across to the paid aide, but busy never rules anyone out', () => {
+  // Both of Margaret's children hold work at the drive's hour; Tasha is free then.
+  const state = baseState({
+    obligations: [
+      obligation(),
+      refill(),
+      refill({
+        id: 'o_pharm',
+        what: 'Call the pharmacy',
+        ownerId: 'm_david',
+        dueAt: '2026-10-16T13:30:00Z',
+      }),
+    ],
+  });
+  const ranked = candidatesFor(obligation(), state);
+  assert.deepEqual(
+    ranked.map((c) => c.name),
+    ['Tasha', 'David', 'Renee'],
+  );
+  assert.equal(ranked[0]!.clashesWith, undefined);
+});
+
+test('when everyone who could has something then, the reason says so', () => {
+  const state = baseState({
+    members: baseState().members.filter((m) => m.id !== 'm_tasha'),
+    obligations: [
+      obligation(),
+      refill(),
+      refill({
+        id: 'o_pharm',
+        what: 'Call the pharmacy',
+        ownerId: 'm_david',
+        dueAt: '2026-10-16T13:30:00Z',
+      }),
+    ],
+  });
+  const top = candidatesFor(obligation(), state)[0]!;
+  assert.equal(
+    top.because,
+    'already has "Call the pharmacy" around then, as does everyone else who could take it on',
+  );
+});
+
+test('work three hours away, unowned work, or finished work is not a clash', () => {
+  const state = (o: Obligation) => baseState({ obligations: [obligation(), o] });
+  assert.equal(
+    clashFor('m_renee', obligation(), state(refill({ dueAt: '2026-10-16T17:00:00Z' }))),
+    undefined,
+  );
+  assert.equal(
+    clashFor('m_renee', obligation(), state(refill({ status: 'REQUESTED', ownerId: null }))),
+    undefined,
+  );
+  assert.equal(clashFor('m_renee', obligation(), state(refill({ status: 'RESOLVED' }))), undefined);
+  assert.equal(clashFor('m_renee', obligation(), state(refill({ dueAt: undefined }))), undefined);
+  // Undated work has no time to clash with.
+  assert.equal(clashFor('m_renee', obligation({ dueAt: undefined }), state(refill())), undefined);
+  assert.equal(clashFor('m_renee', obligation(), state(refill()))?.what, 'Pick up the refill');
+});
+
+test('undated work keeps the plain reason: there is no "around then" to speak of', () => {
+  const state = baseState({
+    obligations: [obligation({ dueAt: undefined }), refill({ ownerId: 'm_david' })],
+  });
+  const david = candidatesFor(obligation({ dueAt: undefined }), state).find(
+    (c) => c.name === 'David',
+  )!;
+  assert.equal(david.because, 'has one other thing on');
+});
+
+test('after a no, the next free person reads as next, with the comma where it belongs', () => {
+  const state = baseState({
+    obligations: [obligation(), refill({ ownerId: 'm_david', dueAt: ANOTHER_DAY })],
+  });
+  const next = candidatesFor(obligation({ declinedBy: ['m_renee'] }), state)[0]!;
+  assert.equal(next.name, 'David');
+  assert.equal(
+    next.because,
+    'has one other thing on, but nothing around then, and is next after the people already asked',
+  );
 });

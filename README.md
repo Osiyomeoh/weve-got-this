@@ -60,11 +60,12 @@ what happened          what must happen        who has it
 - **It notices work nobody said out loud.** A medical appointment implies a ride, and someone
   to go along and take notes. Each inference says it is a guess, and counts only once a person
   confirms it.
-- **It asks; it never assigns.** It picks who has room (whoever has least on the care board),
-  asks them, and the work stays unowned until they say yes. Left alone, it only interrupts
-  someone when arithmetic you can read says it's worth it: the harm a slipped task would do,
-  against the cost of the interruption. If they can't, it names who to ask next, and it asks the
-  same person less often the more it has already asked them.
+- **It asks; it never assigns.** It picks who is free around then, from what each person has
+  already said yes to (then whoever has least on), asks them, and the work stays unowned until
+  they say yes. The day before, it asks whoever said yes "still on?", and if they can't, it asks
+  the next free person. Left alone, it only interrupts someone when arithmetic you can read says
+  it's worth it: the harm a slipped task would do, against the cost of the interruption. It asks
+  the same person less often the more it has already asked them.
 - **It never turns silence into blame.** A missing record is "there's no record", never "he
   missed it": **0%** false accusations, where the raw model it plans with makes them **50-58%** of
   the time on the same cases.
@@ -119,7 +120,7 @@ reported yet, so no pilot number appears anywhere in this submission.
 The demo family (Daddy, his children Tolu and Funmi, Kunle in London, and Musa the
 driver) is fictional and modelled on mine. No real names or medical details are used.
 
-**And it is real - not a mockup.** A live MCP server you can hit right now, **722 tests**
+**And it is real - not a mockup.** A live MCP server you can hit right now, **775 tests**
 (`npm test`, including property-based proofs of the risk model), and one headline number:
 the planner picks the right tool **96.1%** of the time on Amazon Bedrock (149/155; 64/66 on
 held-out phrasings never tuned against; 2026-10-16,
@@ -602,7 +603,7 @@ git clone https://github.com/Osiyomeoh/weve-got-this && cd weve-got-this
 npm ci
 npm run lint      # eslint (typescript-eslint, strict) - 0 findings
 npm run typecheck # tsc under strict + noUncheckedIndexedAccess + exactOptionalPropertyTypes
-npm test          # 722 tests (unit, adversarial, and property-based)
+npm test          # 775 tests (unit, adversarial, and property-based)
 npm run story     # the whole one-day story, end to end, over real MCP
 ```
 

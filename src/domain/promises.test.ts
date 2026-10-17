@@ -156,6 +156,40 @@ test('"on my way" after a check-in reads as still on', () => {
   assert.equal(p!.steps.filter((s) => s.kind === 'yes').length, 1);
 });
 
+test('asked the day before: a question waiting for an answer, not "nothing marked"', () => {
+  const events = [
+    ...askedAndYes.events,
+    asked('m_funmi', '2026-10-16T19:16:00Z', { followUp: true, ahead: true }),
+  ];
+  const [p] = week(obligation({ dueAt: '2026-10-17T19:00:00Z' }), events, askedAndYes.transitions);
+  assert.equal(p!.stage, 'checking');
+  assert.equal(
+    p!.spoken,
+    "Funmi said yes to pick up Daddy's eye drops refill, due tomorrow at 8 PM. The app checked in at 8:16 PM to ask if it's still on, and there's no answer yet.",
+  );
+  assert.equal(p!.steps.at(-1)!.ahead, true);
+});
+
+test('still on the day before, then the check-in after the time: the latest question decides', () => {
+  const events = [
+    asked('m_funmi', '2026-10-14T08:00:00Z'),
+    answered('m_funmi', '2026-10-14T08:05:00Z', true),
+    asked('m_funmi', '2026-10-15T19:16:00Z', { followUp: true, ahead: true }),
+    answered('m_funmi', '2026-10-15T19:18:00Z', true, { stillOn: true }),
+    asked('m_funmi', '2026-10-16T19:16:00Z', { followUp: true }),
+  ];
+  const transitions = [
+    move('OPEN', 'REQUESTED', AGENT, '2026-10-14T08:00:00Z'),
+    move('REQUESTED', 'ASSIGNED', 'm_funmi', '2026-10-14T08:05:00Z'),
+  ];
+  const [p] = week(obligation(), events, transitions);
+  assert.equal(p!.stage, 'checking');
+  assert.match(
+    p!.spoken,
+    /checked in at 8:16 PM to ask if it's still on, and nothing's been marked yet\.$/,
+  );
+});
+
 test('done, with what the doorbell saw beside it and never as it', () => {
   const ring = event(
     'external_signal',

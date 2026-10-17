@@ -4,6 +4,7 @@ import { CareStore } from '../store/store.ts';
 import { RecordOnlyNotifier } from '../notify/notifier.ts';
 import { runAgentAll, runAgentOnce } from './agent-runner.ts';
 import { AGENT_ID } from './agent.ts';
+import { applyRequestResponse } from './request-response.ts';
 
 const HH = 'h1';
 const DAYTIME = new Date('2026-10-14T14:00:00Z'); // 10:00 New York
@@ -161,6 +162,57 @@ test('a slipped promise: the owner gets a question, keeps the work, and silence 
     now: () => new Date(later.getTime() + 60 * 60_000),
   });
   assert.equal(sent.length, 2, 'the primary caregiver hears once');
+});
+
+test('the day before: "still on?", a "can\'t", and the next person asked', async () => {
+  // Renee said yes on Monday to Thursday's 10 AM drive. On Wednesday morning the agent asks
+  // her if it is still on; she can't; the next pass asks David. Nobody is ever assigned.
+  const id = store.getCareState(HH).obligations[0]!.id;
+  store.useClock(() => new Date('2026-10-12T12:00:00Z'));
+  try {
+    await store.transition(id, HH, 'ASSIGNED', 'm_renee', { ownerId: 'm_renee' });
+  } finally {
+    store.useClock(() => new Date());
+  }
+  const sent: Array<{ to: string; message: string }> = [];
+  const spy = {
+    channel: 'spy',
+    deliver: async (m: { to: string; message: string }) => {
+      sent.push(m);
+      return { delivered: true };
+    },
+  };
+
+  await runAgentOnce(HH, { store, notifier: spy as never, now: () => DAYTIME });
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0]!.to, 'm_renee');
+  assert.equal(
+    sent[0]!.message,
+    '"Drive Margaret to cardiology" is tomorrow at 10 AM. Still on?\n\n' +
+      'Reply "yes" if it is, or "can\'t" and I\'ll find someone.',
+  );
+  const asked = store.getCareState(HH).events.find((e) => e.kind === 'owner_requested')!;
+  assert.equal(asked.data['ahead'], true);
+  assert.equal(asked.data['followUp'], true);
+  assert.equal(store.getObligation(id, HH).ownerId, 'm_renee', 'a check-in moves no work');
+
+  // Once per yes, not every pass.
+  const hourLater = new Date(DAYTIME.getTime() + 3_600_000);
+  await runAgentOnce(HH, { store, notifier: spy as never, now: () => hourLater });
+  assert.equal(sent.length, 1);
+
+  const r = await applyRequestResponse(
+    store,
+    { householdId: HH, memberId: 'm_renee', accepted: false, note: "can't", checkIns: true },
+    hourLater,
+  );
+  assert.equal(r.status, 'OPEN');
+  const twoHours = new Date(DAYTIME.getTime() + 2 * 3_600_000);
+  await runAgentOnce(HH, { store, notifier: spy as never, now: () => twoHours });
+  assert.equal(sent.length, 2);
+  assert.equal(sent[1]!.to, 'm_david');
+  assert.match(sent[1]!.message, /Can you take it on\?/);
+  assert.equal(store.getObligation(id, HH).ownerId, null);
 });
 
 test("the background pass leaves a visitor's sandbox copy to its own story clock", async () => {

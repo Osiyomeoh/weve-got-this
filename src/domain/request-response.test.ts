@@ -85,3 +85,80 @@ test('a reply from someone who was not asked assigns nothing', async () => {
   const o = store.getCareState(HH).obligations[0]!;
   assert.equal(o.status, 'REQUESTED'); // untouched
 });
+
+// --- Answering the app's "still on?" about work the sender already holds ----------
+
+/** Renee holds the drive, and the app has asked her about it. */
+async function checkedIn(ahead: boolean): Promise<string> {
+  const id = store.getCareState(HH).obligations[0]!.id;
+  await store.transition(id, HH, 'ASSIGNED', 'm_renee', { ownerId: 'm_renee', clearRequest: true });
+  await store.appendEvent({
+    householdId: HH,
+    kind: 'owner_requested',
+    reportedBy: 'system:carecircle',
+    occurredAt: NOW.toISOString(),
+    source: 'system',
+    confidence: 'inferred',
+    data: { obligationId: id, askedOfId: 'm_renee', followUp: true, ...(ahead ? { ahead } : {}) },
+  });
+  return id;
+}
+
+test('"yes" to the day-before question keeps it theirs, and is recorded as still on', async () => {
+  const id = await checkedIn(true);
+  const r = await applyRequestResponse(
+    store,
+    { householdId: HH, memberId: 'm_renee', accepted: true, note: 'yes', checkIns: true },
+    NOW,
+  );
+  assert.equal(r.ok, true);
+  assert.equal(r.status, 'ASSIGNED');
+  assert.equal(store.getObligation(id, HH).ownerId, 'm_renee');
+  const said = store.getCareState(HH).events.find((e) => e.kind === 'request_answered')!;
+  assert.equal(said.data['stillOn'], true);
+  assert.equal(said.reportedBy, 'm_renee');
+
+  // Answered: a second "yes" answers nothing.
+  const again = await applyRequestResponse(
+    store,
+    { householdId: HH, memberId: 'm_renee', accepted: true, checkIns: true },
+    NOW,
+  );
+  assert.equal(again.ok, false);
+});
+
+test('"can\'t" to a check-in hands it back like any decline', async () => {
+  const id = await checkedIn(false);
+  const r = await applyRequestResponse(
+    store,
+    { householdId: HH, memberId: 'm_renee', accepted: false, note: "can't", checkIns: true },
+    NOW,
+  );
+  assert.equal(r.status, 'OPEN');
+  const o = store.getObligation(id, HH);
+  assert.equal(o.ownerId, null);
+  assert.deepEqual(o.declinedBy, ['m_renee']);
+});
+
+test('after the time, "yes" is not guessed into "still on" or "done"', async () => {
+  await checkedIn(false);
+  const r = await applyRequestResponse(
+    store,
+    { householdId: HH, memberId: 'm_renee', accepted: true, checkIns: true },
+    NOW,
+  );
+  assert.equal(r.ok, false);
+  assert.ok(!store.getCareState(HH).events.some((e) => e.kind === 'request_answered'));
+});
+
+test('a message not meant for the app never answers a check-in', async () => {
+  // "Sorry, can't make dinner" in the family group is not handing back the drive.
+  const id = await checkedIn(true);
+  const r = await applyRequestResponse(
+    store,
+    { householdId: HH, memberId: 'm_renee', accepted: false, note: "sorry, can't make dinner" },
+    NOW,
+  );
+  assert.equal(r.ok, false);
+  assert.equal(store.getObligation(id, HH).ownerId, 'm_renee');
+});

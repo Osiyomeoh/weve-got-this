@@ -24,6 +24,8 @@ export interface Candidate {
   because: string;
   /** How many pieces of work they already hold. Lower is why they ranked higher. */
   load: number;
+  /** Other work they already hold around the time this is due, from the family calendar. */
+  clashesWith?: string;
 }
 
 /**
@@ -33,7 +35,7 @@ export interface Candidate {
  * limits them to what they own. Ranking purely by who is least busy would hand the
  * driver the eye-clinic run ahead of the family simply because he starts the
  * week empty, which is neither what the family means nor what they are paying for.
- * Helpers are asked only once the family has run out.
+ * Helpers are asked only once the family members free at that time have run out.
  */
 function tierOf(role: Member['role']): number {
   return role === 'helper' ? 1 : 0;
@@ -79,6 +81,38 @@ export function statedUnavailable(
   });
 }
 
+/**
+ * How near two pieces of work have to be to clash, in hours. A ride at ten and a refill
+ * at eleven cannot both be one person's morning; a ride at ten and a visit at four can.
+ */
+const CLASH_HOURS = 2;
+
+/**
+ * The family calendar, read from the record: the work this person has already said yes
+ * to nearest the time this is due, if it is within `CLASH_HOURS`. The calendar is the
+ * care record (see calendar-view.ts), so this sees the family's promises, not anyone's
+ * private diary. Silence about the rest of someone's day is not evidence they are free,
+ * which is why a clash only ranks a person lower and never rules them out.
+ */
+export function clashFor(
+  memberId: string,
+  obligation: Obligation,
+  state: CareState,
+): Obligation | undefined {
+  const due = obligation.dueAt ? Date.parse(obligation.dueAt) : NaN;
+  if (Number.isNaN(due)) return undefined;
+  let nearest: { o: Obligation; apart: number } | undefined;
+  for (const o of state.obligations) {
+    if (o.id === obligation.id || o.ownerId !== memberId || o.status !== 'ASSIGNED') continue;
+    const at = o.dueAt ? Date.parse(o.dueAt) : NaN;
+    const apart = Math.abs(at - due);
+    if (apart <= CLASH_HOURS * 3_600_000 && (!nearest || apart < nearest.apart)) {
+      nearest = { o, apart };
+    }
+  }
+  return nearest?.o;
+}
+
 /** How much work someone is already carrying. */
 export function loadOf(memberId: string, state: CareState): number {
   return state.obligations.filter((o) => o.ownerId === memberId && o.status === 'ASSIGNED').length;
@@ -99,9 +133,12 @@ export function loadOf(memberId: string, state: CareState): number {
  *    here needs someone present, so they are never picked automatically. A person can
  *    still ask them by name, and they can still take anything on themselves.
  *
- * Ordering is family before paid help, then existing load, then role, then name.
- * Load ahead of role within a tier is what stops the system quietly dumping
- * everything on whoever answers fastest - the failure mode families actually have.
+ * Ordering is free before busy, then family before paid help, then existing load, then
+ * role, then name. Free means nothing else on the family calendar around the time this is
+ * due (`clashFor`): the sister who already has the refill at eleven is asked about the ten
+ * o'clock ride only once nobody free is left. Load ahead of role within a tier is what
+ * stops the system quietly dumping everything on whoever answers fastest - the failure
+ * mode families actually have.
  */
 export function candidatesFor(
   obligation: Obligation,
@@ -118,26 +155,44 @@ export function candidatesFor(
     .filter((m) => !statedUnavailable(m, state, obligation.dueAt))
     .filter((m) => !m.livesAway);
 
-  return eligible
-    .map((m) => ({ member: m, load: loadOf(m.id, state) }))
+  const placed = eligible.map((m) => ({
+    member: m,
+    load: loadOf(m.id, state),
+    clash: clashFor(m.id, obligation, state),
+  }));
+  const allBusy = placed.length > 0 && placed.every((p) => p.clash);
+  return placed
     .sort(
       (a, b) =>
+        Number(!!a.clash) - Number(!!b.clash) ||
         tierOf(a.member.role) - tierOf(b.member.role) ||
         a.load - b.load ||
         ROLE_ORDER[a.member.role] - ROLE_ORDER[b.member.role] ||
         a.member.name.localeCompare(b.member.name),
     )
-    .map(({ member, load }) => ({
+    .map(({ member, load, clash }) => ({
       memberId: member.id,
       name: member.spokenAs ?? member.name,
       load,
-      because: reasonFor(load, declined.size),
+      because: reasonFor(load, declined.size, !!obligation.dueAt, clash?.what, allBusy),
+      ...(clash ? { clashesWith: clash.what } : {}),
     }));
 }
 
-function reasonFor(load: number, declinedCount: number): string {
+function reasonFor(
+  load: number,
+  declinedCount: number,
+  dated: boolean,
+  clash: string | undefined,
+  allBusy: boolean,
+): string {
+  if (clash && allBusy) {
+    return `already has "${clash}" around then, as does everyone else who could take it on`;
+  }
   const after = declinedCount > 0 ? ' and is next after the people already asked' : '';
+  if (clash) return `already has "${clash}" around then${after}`;
   if (load === 0) return `has nothing else on the care board right now${after}`;
-  if (load === 1) return `has one other thing on${after}`;
-  return `has ${load} other things on${after}`;
+  const free = dated ? `, but nothing around then${after ? ',' : ''}` : '';
+  if (load === 1) return `has one other thing on${free}${after}`;
+  return `has ${load} other things on${free}${after}`;
 }

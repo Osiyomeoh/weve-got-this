@@ -326,6 +326,24 @@ function followUpGap(
 }
 
 /**
+ * What it would cost if work somebody has promised quietly lapsed, read before it is due:
+ * the same three terms as a gap, with the deadline hazard looking forward. It is not a gap
+ * and never reaches the board, because the work has an owner and nothing has slipped. The
+ * agent reads it to decide whether "still on?" the day before is worth the interruption.
+ */
+export function promiseRisk(
+  o: Obligation,
+  state: Pick<CareState, 'members' | 'entities'>,
+  now: Date,
+): number {
+  const pDrop = probOr(
+    imminenceHazard(o.dueAt, now),
+    accessibilityUplift(resolveSubjectAttributes(state, o)),
+  );
+  return HARM_COST[o.consequence] * pDrop * confidenceOf(o.provenance.kind);
+}
+
+/**
  * The record of one scheduled dose today, if there is one: a `medication_taken` for
  * that medication, on the household's local date, within three hours of the time.
  * Shared by gap detection and the daily update, so they can never disagree about
