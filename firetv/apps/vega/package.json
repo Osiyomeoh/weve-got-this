@@ -70,7 +70,7 @@
   },
   "kepler": {
     "projectType": "application",
-    "appName": "MultiTVVega",
+    "appName": "WeveGotThis",
     "targets": [
       "tv"
     ]

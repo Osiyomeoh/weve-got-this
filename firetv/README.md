@@ -14,7 +14,7 @@ focus handling and build setup are theirs.
 | Path | What it is |
 |---|---|
 | `app/` | The Fire OS app: a small native shell (`MainActivity.java`) that opens the live `/tv` board in a WebView and turns a care gap into a heads-up Fire TV notification |
-| `packages/shared-ui/` | The React Native screens shared by every target. `screens/CareCircleScreen.tsx` is the ambient care board; `data/careState.ts` polls `/api/state` every 4 seconds |
+| `packages/shared-ui/` | The React Native screens shared by every target. `screens/CareBoardScreen.tsx` is the ambient care board; `data/careState.ts` polls `/api/state` every 4 seconds |
 | `apps/expo-multi-tv/` | The Expo app for Android TV, Apple TV and web. Its web export is what the server hosts at `/tv-native/` |
 | `apps/vega/` | The same screens built for Fire TV on Vega OS |
 

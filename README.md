@@ -580,7 +580,7 @@ of the demo family, as a browser does, so a press never touches a real record. B
 cd firetv && corepack yarn install && cd apps/vega
 CI=true corepack yarn build:debug      # CI=true: watchman can't watch ~/Documents
 vega virtual-device start
-vega run-app build/aarch64-debug/vega_aarch64.vpkg com.giolaq.multitv.vega.main
+vega run-app build/aarch64-debug/vega_aarch64.vpkg com.wevegotthis.tv.main
 ```
 
 What it took, error by error: [`docs/FRICTION-LOG.md`](docs/FRICTION-LOG.md).

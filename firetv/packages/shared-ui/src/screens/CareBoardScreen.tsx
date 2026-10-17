@@ -42,7 +42,7 @@ function headline(spoken: string): string {
   return spoken.replace(/\s-\s.*$/, '').trim() || spoken;
 }
 
-export default function CareCircleScreen() {
+export default function CareBoardScreen() {
   const { width } = useWindowDimensions();
   const s = useMemo(() => (n: number) => (n * width) / 1920, [width]);
   const styles = useMemo(() => makeStyles(s), [s]);

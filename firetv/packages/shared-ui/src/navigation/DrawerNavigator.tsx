@@ -9,7 +9,7 @@ import { scaledPixels } from '../hooks/useScale';
 import { DrawerParamList } from './types';
 
 // Import screens
-import CareCircleScreen from '../screens/CareCircleScreen';
+import CareBoardScreen from '../screens/CareBoardScreen';
 import ExploreScreen from '../screens/ExploreScreen';
 import TVScreen from '../screens/TVScreen';
 import SettingsScreen from '../screens/SettingsScreen';
@@ -64,7 +64,7 @@ export default function DrawerNavigator() {
           {() => (
             <>
               <DrawerSyncWrapper drawerNavRef={drawerNavRef} />
-              <CareCircleScreen />
+              <CareBoardScreen />
             </>
           )}
         </Drawer.Screen>

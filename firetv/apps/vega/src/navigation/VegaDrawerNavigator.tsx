@@ -4,7 +4,7 @@ import { createDrawerNavigator } from '@amazon-devices/react-navigation__drawer'
 import { useNavigation, DrawerActions } from '@amazon-devices/react-navigation__native';
 import { SpatialNavigationRoot } from 'react-tv-space-navigation';
 import { Direction } from '@bam.tech/lrud';
-import { useMenuContext, scaledPixels, CareCircleScreen, ExploreScreen, TVScreen, SettingsScreen } from '@multi-tv/shared-ui';
+import { useMenuContext, scaledPixels, CareBoardScreen, ExploreScreen, TVScreen, SettingsScreen } from '@multi-tv/shared-ui';
 import VegaCustomDrawerContent from '../components/VegaCustomDrawerContent';
 import { DrawerParamList } from './types';
 
@@ -70,7 +70,7 @@ export default function VegaDrawerNavigator() {
               drawerLabel: 'Care Board',
             }}
           >
-            {() => <CareCircleScreen />}
+            {() => <CareBoardScreen />}
           </Drawer.Screen>
           <Drawer.Screen
             name="Explore"

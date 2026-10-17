@@ -5,9 +5,9 @@
 schema-version = 1
 
 [package]
-title = "Multi TV Vega App"
+title = "We've Got This"
 version = "0.1.0"
-id = "com.giolaq.multitv.vega"
+id = "com.wevegotthis.tv"
 
 [os.version]
 min = "1.2"
@@ -15,7 +15,7 @@ target = "1.2"
 
 [components]
 [[components.interactive]]
-id = "com.giolaq.multitv.vega.main"
+id = "com.wevegotthis.tv.main"
 runtime-module = "/com.amazon.kepler.keplerscript.runtime.loader_2@IKeplerScript_2_0"
 launch-type = "singleton"
 categories = [
@@ -28,7 +28,7 @@ categories = [
 ## ------------------------------------------------------------------------------
 [processes]
 [[processes.group]]
-component-ids = ["com.giolaq.multitv.vega.main"]
+component-ids = ["com.wevegotthis.tv.main"]
 
 ## ------------------------------------------------------------------------------
 ## Wants - Optional capabilities
@@ -201,19 +201,19 @@ id = "/com.amazon.kepler.webview_3@IWebview_3"
 id = "com.amazon.gipc.uuid.*"
 
 [[offers.interaction]]
-id = "com.giolaq.multitv.vega.main"
+id = "com.wevegotthis.tv.main"
 
 [[offers.module]]
-id = "/com.giolaq.multitv.vega.main@IMod1"
+id = "/com.wevegotthis.tv.main@IMod1"
 includes-messages = [
-    "pkg://com.giolaq.multitv.vega.main"
+    "pkg://com.wevegotthis.tv.main"
 ]
 
 ## ------------------------------------------------------------------------------
 ## Message
 ## ------------------------------------------------------------------------------
 [[message]]
-uri = "pkg://com.giolaq.multitv.vega.main"
+uri = "pkg://com.wevegotthis.tv.main"
 sender-privileges = ["*"]
 receiver-privileges = ["self"]
 
@@ -222,7 +222,7 @@ receiver-privileges = ["self"]
 ## ------------------------------------------------------------------------------
 [[extras]]
 key = "interface.provider"
-component-id = "com.giolaq.multitv.vega.main"
+component-id = "com.wevegotthis.tv.main"
 
 [extras.value.application]
 # ------------------------------------------------------------------------------
@@ -231,7 +231,7 @@ component-id = "com.giolaq.multitv.vega.main"
 [[extras.value.application.interface]]
 interface_name = "com.amazon.kepler.media.IContentLauncherServer"
 attribute_options = ["partner-id"]
-static-values = { partner-id = "MULTI_TV" }
+static-values = { partner-id = "WEVE_GOT_THIS" }
 
 # ------------------------------------------------------------------------------
 # Vega Media Controls (VMC)
