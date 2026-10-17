@@ -46,7 +46,7 @@
   <text x="230" y="120" class="lbl">CAPTURE · MCP tools</text>
   <rect class="box mcp" x="230" y="140" width="180" height="200"/>
   <text x="248" y="166" class="tb">MCP Server</text>
-  <text x="248" y="183" class="xs">Streamable HTTP · 29 tools</text>
+  <text x="248" y="183" class="xs">Streamable HTTP · 31 tools</text>
   <g font-size="10.5" font-weight="600" text-anchor="middle" fill="#2c5fa8">
     <rect x="246" y="196" width="148" height="24" rx="6" fill="#e4eefc" stroke="#bcd3f2"/><text x="320" y="212">log_care_event</text>
     <rect x="246" y="226" width="148" height="24" rx="6" fill="#e4eefc" stroke="#bcd3f2"/><text x="320" y="242">record_appointment</text>
@@ -126,7 +126,7 @@
   </g>
 
   <!-- footer metric -->
-  <text x="40" y="662" class="s" font-weight="700" fill="#22a45d">740 tests · property-based proofs · ~94% tool-selection · 0% false accusations</text>
+  <text x="40" y="662" class="s" font-weight="700" fill="#22a45d">811 tests · property-based proofs · ~90% tool-selection · 0% false accusations</text>
   <g transform="translate(40,678)">
     <rect class="box sig" x="0" y="0" width="13" height="13"/><text x="20" y="11" class="xs">surface</text>
     <rect class="box mcp" x="78" y="0" width="13" height="13"/><text x="98" y="11" class="xs">MCP / security</text>

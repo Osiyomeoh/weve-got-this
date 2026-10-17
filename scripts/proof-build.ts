@@ -44,6 +44,8 @@ const corpus = latest(
   '2026-10-16-claude-sonnet-4-5-asks-not-assigns.json',
   '2026-10-16-claude-sonnet-4-5-weve-got-this.json',
   '2026-10-16-claude-sonnet-4-5-get-promises.json',
+  '2026-10-17-claude-sonnet-4-5-set-routine.json',
+  '2026-10-17-claude-sonnet-4-5-record-order.json',
 );
 const dialects = latest(
   '2026-09-24-zod4-dialects-sonnet-4-5.json',
@@ -59,6 +61,7 @@ const bridge = latest(
   '2026-10-16-nova-pro-alexa-bridge-prompt-asks-not-assigns.json',
   '2026-10-16-nova-pro-alexa-bridge-prompt-weve-got-this.json',
   '2026-10-16-nova-pro-alexa-bridge-prompt-get-promises.json',
+  '2026-10-17-nova-pro-alexa-bridge-prompt-record-order.json',
 );
 const languages = read('2026-09-24-zod4-languages-named-sonnet-4-5.json');
 const massiveBefore = read('2026-09-23-massive-nova-pro-alexa-bridge-prompt.json');

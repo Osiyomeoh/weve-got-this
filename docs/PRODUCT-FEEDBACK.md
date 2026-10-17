@@ -15,7 +15,7 @@ Mini-challenge: **AWS Builder** (Bedrock + Nova + Strands Agents + AgentCore Run
 member says "Daddy has his eye check-up tomorrow at ten" or "I can't do Thursday", and
 our MCP server works out who has taken responsibility for what, and who to ask next.
 We started building it for my own family, after my dad's eye surgery, and Alexa+ is
-what lets my mum ask for help without opening an app.
+what lets a parent ask for help without opening an app.
 
 **What worked well:** building on plain MCP was the right call, and we're grateful for
 it. We didn't have to learn a proprietary skill format. The same server answers Claude
@@ -61,7 +61,7 @@ call our server, and we'd build the next one on day one.
 
 ## MCP TypeScript SDK (`@modelcontextprotocol/sdk`)
 
-**Used for:** the whole server — 23 tools, resources, prompts, and the Streamable HTTP
+**Used for:** the whole server — 31 tools, resources, prompts, and the Streamable HTTP
 transport that Alexa+ requires at spec 2025-11-25.
 
 **What worked well:** the tool/resource/prompt registration API is clean, and once the
@@ -94,8 +94,9 @@ sound; the friction is documentation and one unreleased type fix, not the design
 ## Amazon Bedrock (Claude Sonnet 4.5, `Converse`)
 
 **Used for:** the Alexa+ planner — turning a spoken sentence into a tool call. Measured at
-~92–93% first-tool accuracy (124–126/135 across runs) and used to generate the raw-LLM
-baseline in the trust benchmark.
+89.8% first-tool accuracy across all 31 tools (168/187, held-out 75/87, 2026-10-17; 96.1% on
+the 155 cases and 28 tools of 2026-10-16), and used to generate the raw-LLM baseline in the
+trust benchmark.
 
 **What worked well:** `Converse` is a genuinely simple, uniform API, and Sonnet 4.5's
 tool-selection quality is strong straight out of the box — most of our accuracy came from
@@ -295,10 +296,13 @@ error (friction log, 2026-10-02). Cold starts of ~13 s are long for a voice turn
 action guard (Nova Micro).
 
 **What worked well:** Nova Pro chooses tools close to the frontier models we measured: 94.4% on the
-earlier 144-case corpus, and it held up on Amazon's MASSIVE dev set, never read before the run: 87.3%
-of non-care requests left alone, 4.7% wrote.
+earlier 144-case corpus, and 86.6% across all 31 tools under the Alexa bridge's prompt (162/187,
+2026-10-17), against 89.8% for Claude Sonnet 4.5 under ours. It held up on Amazon's MASSIVE dev set,
+never read before the run: 87.3% of non-care requests left alone, 4.7% wrote.
 
-**What needs work:** Nova 2 Lite, the bridge's default, was our weakest planner: 81.3%, and 73.5% on held-out phrasings. As a yes/no
+**What needs work:** Nova 2 Lite, the bridge's default, was our weakest planner: 83.3%, and 77.6% on held-out
+phrasings. Nova Pro sent two lines that are not care to our newest tools, where Sonnet left them alone
+("water my plants every Sunday" to `set_routine`, a phone case to `record_order`). As a yes/no
 guard, Nova Micro scored almost every call 0.95, so it could not separate harmful writes from fine ones;
 we did not wire it in (`evals/results/README.md`).
 

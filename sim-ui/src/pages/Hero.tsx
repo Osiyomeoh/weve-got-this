@@ -21,7 +21,7 @@ const STORIES = [
     src: '/people/alone.jpg',
     alt: 'A grandmother knits in an armchair beside her granddaughter',
     title: 'What today holds, on the TV.',
-    body: 'Who is coming, and what is done. Nobody has to keep it all in their head.',
+    body: 'Lunch, the medicine, someone there tonight: who is coming, and what is done. Nobody has to keep it all in their head.',
     pos: 'center 30%',
   },
   {
@@ -37,6 +37,10 @@ const STEPS = [
   ['Someone says it', '“Dad’s eye check-up is Thursday at ten.”'],
   ['It notices', 'He will need a ride, and nobody has it yet.'],
   ['It asks, never assigns', 'The right person says yes, and everyone can see it.'],
+  [
+    'Far away? Order it in',
+    'A brother abroad orders lunch wherever he already shops, and someone nearby takes it in.',
+  ],
 ];
 
 const CREDITS = [
@@ -177,11 +181,11 @@ export default function Hero() {
         </section>
       ))}
 
-      {/* ---------- How it works, in three lines ---------- */}
+      {/* ---------- How it works, in four lines ---------- */}
       <section id="how" className="border-t border-black/10 bg-white">
         <div className="mx-auto max-w-6xl px-6 py-20 md:px-10 md:py-28">
           <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">How it works</h2>
-          <ol className="mt-12 grid gap-10 md:grid-cols-3">
+          <ol className="mt-12 grid gap-10 md:grid-cols-2 lg:grid-cols-4">
             {STEPS.map(([t, b], i) => (
               <li key={t}>
                 <div className="text-sm font-semibold" style={{ color: ACCENT }}>

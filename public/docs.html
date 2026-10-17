@@ -137,7 +137,7 @@ const PAGES = [
     body:`
     <div class="tag">We've Got This · MCP 2026-07-28 and 2025-11-25</div>
     <h1>The care layer, as an MCP server</h1>
-    <p class="lead">We've Got This tracks what needs to happen for someone being cared for, and who is responsible for it - and exposes that as <b>29 MCP tools</b> an AI assistant (Alexa+, or any MCP client) calls. Real events flow in from real accounts and devices; every one enters as a guess a human confirms, never a fact written by a machine.</p>
+    <p class="lead">We've Got This tracks what needs to happen for someone being cared for, and who is responsible for it - and exposes that as <b>31 MCP tools</b> an AI assistant (Alexa+, or any MCP client) calls. Real events flow in from real accounts and devices; every one enters as a guess a human confirms, never a fact written by a machine.</p>
     <h2 id="what">What it is</h2>
     <div class="cards">
       <div class="card"><h4>Self-hosted MCP</h4><p>Streamable HTTP, live on AWS App Runner. It speaks MCP 2025-11-25 (sessions) and 2026-07-28 (stateless) on the same endpoint, with the same tools.</p></div>
@@ -217,6 +217,8 @@ an expected record that is missing, or something now past its time.</div>
       <div class="card"><h4>add_note</h4><p>Add a note to the care record.</p></div>
       <div class="card"><h4>change_appointment</h4><p>An appointment moved or was cancelled. The ride moves with it, and whoever had it is told.</p></div>
       <div class="card"><h4>change_medication</h4><p>The doctor changed a dose, a time, or when to stop.</p></div>
+      <div class="card"><h4>set_routine</h4><p>Care that comes round again - lunch, someone there at night, the diesel. Set up once; each time it asks who has it.</p></div>
+      <div class="card"><h4>record_order</h4><p>Someone ordered it in, wherever they already shop. Records who ordered it and who takes it in; nothing is bought here.</p></div>
       <div class="card"><h4>ingest_signal</h4><p>The single source-agnostic front door: record something a device observed.</p></div>
     </div>
     <h2 id="act">Act outward &nbsp;·&nbsp; the agent</h2>
@@ -344,7 +346,7 @@ AWS_PROFILE=conductor aws apprunner start-deployment \
     <h1>Testing</h1>
     <p class="lead">The suite runs on the Node test runner (not vitest).</p>
     <h2 id="run">Run the suite</h2>
-    <pre><code class="language-bash">npm test               # 722 tests: unit, adversarial and property-based
+    <pre><code class="language-bash">npm test               # 811 tests: unit, adversarial and property-based
 npm run typecheck      # tsc --noEmit
 npm run lint
 npm run format:check   # Prettier, also checked in CI
