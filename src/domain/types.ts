@@ -150,7 +150,11 @@ export type EventKind =
   /** Someone told the whole family something serious is happening. */
   | 'urgent_raised'
   /** A reminder went out: a dose due, an appointment coming. Kept so it is sent once. */
-  | 'reminder_sent';
+  | 'reminder_sent'
+  /** Work that comes round again was set up: lunch every day, someone there at night. */
+  | 'routine_set'
+  /** A routine ended. The days already past stay as they were. */
+  | 'routine_stopped';
 
 /**
  * Where an observation entered the graph. This is the *channel*, distinct from the
@@ -282,6 +286,8 @@ export interface Obligation {
    * stays visible rather than evaporating.
    */
   declinedBy?: string[];
+  /** The routine this is one day of (its `routine_set` event), when it comes round again. */
+  routineId?: string;
 }
 
 export type GapKind =

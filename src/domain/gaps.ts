@@ -235,7 +235,9 @@ function unclaimedGap(
   const base =
     o.provenance.kind === 'INFERRED'
       ? `Confirmed as needed, originally inferred from ${o.provenance.from}. No owner assigned.`
-      : 'This was recorded as needed and no one has claimed it.';
+      : o.routineId
+        ? 'This comes round regularly, and no one has claimed this time yet.'
+        : 'This was recorded as needed and no one has claimed it.';
   const note = dignityNote(attrs);
   return {
     id: `gap_unclaimed_${o.id}`,
@@ -443,7 +445,12 @@ export function detectCareGaps(state: CareState, options: GapOptions = {}): Care
   const { timezone } = state.household;
   const gaps: CareGap[] = [];
 
+  const today = localParts(now, timezone).date;
   for (const o of state.obligations) {
+    // A routine's days before today are history, not work: yesterday's lunch cannot be
+    // brought now, and left on the board they would pile up a day at a time. What the
+    // record says of each stays as it was.
+    if (o.routineId && o.dueAt && localParts(new Date(o.dueAt), timezone).date < today) continue;
     // Standing accessibility facts about who the work is for, if any. Undefined for the
     // vast majority of obligations, which leaves their risk untouched.
     const attrs = resolveSubjectAttributes(state, o);

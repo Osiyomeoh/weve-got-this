@@ -135,6 +135,7 @@ export function createSandboxRoute(opts: SandboxOptions) {
         now: at,
         refillDueTonight: true,
         skipMorningEyeDrops: liveMorning,
+        routines: 'today',
         ...careCase,
       });
 
@@ -215,7 +216,12 @@ export function agentCopies(opts: {
       const suffix = sandboxSuffix(at, 'agent');
       const householdId = `${DEMO_HOUSEHOLD_ID}${suffix}`;
       await seedDemoHousehold(opts.store, { suffix });
-      await seedScenario(opts.store, householdId, { suffix, now: at, refillDueTonight: true });
+      await seedScenario(opts.store, householdId, {
+        suffix,
+        now: at,
+        refillDueTonight: true,
+        routines: 'ahead',
+      });
       const id = memberIn(householdId, memberId);
       if (!id) throw new Error('That person is not in the demo family.');
       return { memberId: id, expiresAt: at.getTime() + ttlMs };

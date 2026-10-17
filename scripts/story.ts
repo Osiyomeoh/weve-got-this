@@ -15,6 +15,7 @@
  * What is BUILT and exercised here: Alexa+ voice logging, appointment inference,
  * constraint discovery, the Care Gap engine, ownership, the Ring signal adapter,
  * the agent following up a slipping promise with the door's evidence beside it,
+ * care beyond medicine (lunch every day, set up once and asked about each time),
  * the Known != Assumed trust model, and the shared record read from four roles.
  * What is deliberately NOT here: Bee (architecturally ready via the same signal
  * adapter, not integrated) and the Fire TV surface (the existing web board). The
@@ -213,6 +214,27 @@ async function main(): Promise<void> {
     }),
   );
 
+  // ── Beat 2b · 10:05am - care is more than medicine ───────────────────────
+  clockAt = wallClockToday(10, 5, TZ);
+  beat('10:05am', 'Not only medicine: lunch comes round every day, and needs a person');
+  say('Funmi (phone)', 'Someone needs to bring Daddy lunch every day at one.');
+  alexa(
+    await call(funmi, 'set_routine', {
+      what: 'Bring Daddy lunch',
+      area: 'meal',
+      times: ['13:00'],
+    }),
+  );
+  const lunch = store
+    .getCareState(HOUSEHOLD)
+    .obligations.find((o) => o.what === 'Bring Daddy lunch' && o.status === 'OPEN')!;
+  say('Musa', "I'll bring it today.");
+  alexa(await call(musa, 'claim_obligation', { obligationId: lunch.id }));
+
+  clockAt = wallClockToday(13, 10, TZ);
+  say('Musa (1:10pm)', "Daddy's had his lunch.");
+  alexa(await call(musa, 'resolve_obligation', { obligationId: lunch.id }));
+
   // ── Beat 3 · 2:14pm - a doorbell becomes evidence, never a conclusion ────
   clockAt = wallClockToday(14, 14, TZ);
   beat('2:14pm', 'Ring sees a delivery - evidence toward the refill, not proof');
@@ -296,6 +318,8 @@ async function main(): Promise<void> {
 
   // ── Coda · one record, four roles ───────────────────────────────────────
   beat('-', 'One record, four people reach it differently');
+  say('Daddy (Echo at home)', 'Alexa, what does today look like for me?');
+  alexa(await call(daddy, 'get_shift_brief'));
   say('Musa (driver)', 'What do I need to know for today?');
   alexa(await call(musa, 'get_shift_brief'));
   say('Funmi (caregiver)', "Put Daddy's check-up ride on Tolu's name.");

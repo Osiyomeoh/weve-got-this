@@ -1,3 +1,4 @@
+import type { RoutineArea } from '../domain/routines.js';
 import type { EntityAttributes } from '../domain/types.js';
 
 /**
@@ -30,6 +31,27 @@ export const CARE_CASES: readonly CareCaseId[] = [
   'independent',
 ];
 
+/** Who in the demo family a routine belongs to (the ids in seed.ts). */
+export type CaseMember = 'primary' | 'caregiver' | 'helper' | 'away' | 'recipient';
+
+/**
+ * Care that comes round again (routines.ts). With an `owner`, that person set it up and said
+ * it is theirs every time; without one, it was set up by `by` (the coordinator, unless said)
+ * and the agent finds someone each day. Each case leaves one unowned, so the agent has one
+ * day's ask to make beside the ride and the refill, and never crowds them out.
+ */
+export interface CaseRoutine {
+  what: string;
+  area: RoutineArea;
+  times: string[];
+  /** 0 = Sunday. Every day when absent. */
+  days?: number[];
+  owner?: CaseMember;
+  by?: CaseMember;
+}
+
+const WEEKDAYS = [1, 2, 3, 4, 5];
+
 export interface CareCase {
   household: string;
   recipient: { name: string; spokenAs: string; attributes: EntityAttributes };
@@ -59,6 +81,8 @@ export interface CareCase {
     caregiver: { name: string; livesAway?: string };
     away: { name: string; livesAway: string };
   };
+  /** Care beyond medicine: meals, someone there, getting around, the house. */
+  routines: CaseRoutine[];
 }
 
 export const CASES: Record<CareCaseId, CareCase> = {
@@ -83,6 +107,17 @@ export const CASES: Record<CareCaseId, CareCase> = {
     },
     refill: "Pick up Daddy's eye drops refill",
     note: 'Daddy asked who is taking him on Thursday.',
+    // Only what Daddy really needed after the surgery: meals, someone nearby, getting around.
+    routines: [
+      { what: 'Bring Daddy lunch', area: 'meal', times: ['13:00'] },
+      { what: 'Someone with Daddy at night', area: 'safety', times: ['21:00'], owner: 'caregiver' },
+      {
+        what: 'Help Daddy get around the house',
+        area: 'personal',
+        times: ['10:00'],
+        owner: 'helper',
+      },
+    ],
   },
   memory: {
     household: "Mama's care circle",
@@ -99,6 +134,16 @@ export const CASES: Record<CareCaseId, CareCase> = {
     },
     refill: "Pick up Mama's blood pressure tablets refill",
     note: 'Mama asked who is taking her on Thursday.',
+    routines: [
+      { what: 'Sit with Mama while she has lunch', area: 'meal', times: ['13:00'] },
+      {
+        what: "Check the cooker is off at Mama's",
+        area: 'safety',
+        times: ['19:00'],
+        owner: 'helper',
+      },
+      { what: 'Call Mama to say goodnight', area: 'safety', times: ['20:30'], owner: 'away' },
+    ],
   },
   wheelchair: {
     household: "Baba's care circle",
@@ -118,6 +163,17 @@ export const CASES: Record<CareCaseId, CareCase> = {
     },
     refill: "Pick up Baba's blood pressure tablets refill",
     note: 'Baba asked who is taking him on Thursday.',
+    routines: [
+      { what: 'Help Baba with his physio exercises', area: 'personal', times: ['17:00'] },
+      { what: "Cook Baba's dinner", area: 'meal', times: ['18:30'], owner: 'caregiver' },
+      {
+        what: 'Buy diesel for the generator',
+        area: 'household',
+        times: ['10:00'],
+        days: [6],
+        owner: 'primary',
+      },
+    ],
   },
   // Mummy stays in her hometown; her children work in Lagos. The family's hands near
   // her are a neighbour's, and the house's own devices are the only witnesses.
@@ -137,6 +193,17 @@ export const CASES: Record<CareCaseId, CareCase> = {
     note: 'Mummy asked who is taking her on Thursday.',
     helper: 'Bisi',
     childrenLiveIn: 'Lagos',
+    routines: [
+      { what: 'Check on Mummy in the evening', area: 'safety', times: ['18:00'] },
+      { what: 'Take Mummy her lunch', area: 'meal', times: ['13:00'], owner: 'helper' },
+      {
+        what: "Pay for Mummy's electricity token",
+        area: 'household',
+        times: ['10:00'],
+        days: [1],
+        owner: 'primary',
+      },
+    ],
   },
   // An American family: Mom lives alone in Dayton, Ohio. Her daughter coordinates from
   // Chicago between meetings; her son lives fifteen minutes away and is the one who ends up
@@ -162,6 +229,17 @@ export const CASES: Record<CareCaseId, CareCase> = {
       caregiver: { name: 'Jen', livesAway: 'Seattle' },
       away: { name: 'Tom', livesAway: 'Phoenix' },
     },
+    routines: [
+      { what: 'Bring Mom dinner', area: 'meal', times: ['18:00'] },
+      { what: 'Call Mom to check in', area: 'safety', times: ['19:30'], owner: 'primary' },
+      {
+        what: "Pick up Mom's groceries",
+        area: 'household',
+        times: ['11:00'],
+        days: [6],
+        owner: 'helper',
+      },
+    ],
   },
   // Mummy in Ibadan; her children left: Tolu to London, Funmi to Toronto, Kunle to Houston.
   // Segun, her nephew in Ibadan, is the family's only hands nearby.
@@ -185,6 +263,17 @@ export const CASES: Record<CareCaseId, CareCase> = {
       caregiver: { name: 'Funmi', livesAway: 'Toronto' },
       away: { name: 'Kunle', livesAway: 'Houston' },
     },
+    routines: [
+      { what: 'Bring Mummy lunch', area: 'meal', times: ['13:00'] },
+      { what: 'Call Mummy to check in', area: 'safety', times: ['19:00'], owner: 'primary' },
+      {
+        what: "Buy the electricity token for Mummy's house",
+        area: 'household',
+        times: ['10:00'],
+        days: [1],
+        owner: 'caregiver',
+      },
+    ],
   },
   // A Kenyan family: Mum at home in Nyeri, her daughter coordinating from Nairobi, a son
   // working in Dubai. Njeri, the neighbour, is the one who is there.
@@ -209,6 +298,17 @@ export const CASES: Record<CareCaseId, CareCase> = {
       caregiver: { name: 'Kamau', livesAway: 'Nairobi' },
       away: { name: 'Mwangi', livesAway: 'Dubai' },
     },
+    routines: [
+      { what: 'Make sure Mum has lunch', area: 'meal', times: ['13:00'] },
+      { what: 'Check on Mum in the evening', area: 'safety', times: ['18:00'], owner: 'helper' },
+      {
+        what: "Top up Mum's electricity tokens",
+        area: 'household',
+        times: ['10:00'],
+        days: [1],
+        owner: 'primary',
+      },
+    ],
   },
   // A child with Down syndrome in Columbus, Ohio. Her mom coordinates from work, her dad
   // works shifts, and Grandpa Luis, ten minutes away, does most of the driving.
@@ -233,6 +333,17 @@ export const CASES: Record<CareCaseId, CareCase> = {
       caregiver: { name: 'Marcus' },
       away: { name: 'Aunt Priya', livesAway: 'Austin' },
     },
+    routines: [
+      { what: 'Pick Maya up from school', area: 'personal', times: ['15:00'], days: WEEKDAYS },
+      {
+        what: 'Someone home when Maya gets back',
+        area: 'safety',
+        times: ['15:30'],
+        days: WEEKDAYS,
+        owner: 'helper',
+      },
+      { what: "Make Maya's dinner", area: 'meal', times: ['18:00'], owner: 'caregiver' },
+    ],
   },
   // A woman who uses a wheelchair and lives on her own in Philadelphia. Her brother
   // coordinates from Boston; her friend Sam, nearby, has a van that takes the chair.
@@ -261,6 +372,23 @@ export const CASES: Record<CareCaseId, CareCase> = {
       caregiver: { name: 'Nadia' },
       away: { name: 'Carol', livesAway: 'Tampa' },
     },
+    // Erin lives on her own and sets these up herself: help with the heavy things, nothing more.
+    routines: [
+      {
+        what: "Pick up Erin's groceries",
+        area: 'household',
+        times: ['11:00'],
+        days: [6],
+        by: 'recipient',
+      },
+      {
+        what: 'Help Erin with the laundry',
+        area: 'household',
+        times: ['14:00'],
+        days: [0],
+        owner: 'helper',
+      },
+    ],
   },
 };
 

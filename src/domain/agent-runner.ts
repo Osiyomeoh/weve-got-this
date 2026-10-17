@@ -6,6 +6,7 @@ import { deliberate, AGENT_ID, type AgentAction, type Deliberation } from './age
 import { BRAND } from './brand.js';
 import { spokenDue } from './gaps.js';
 import { isLiveAgentCopy } from './sandbox-id.js';
+import { putRoutinesOnRecord } from './routines.js';
 
 /**
  * Carrying out what the policy decided.
@@ -46,6 +47,9 @@ export interface RunnerDeps {
  */
 export async function runAgentOnce(householdId: string, deps: RunnerDeps): Promise<AgentRun> {
   const now = deps.now?.() ?? new Date();
+  // The day ahead of every routine goes on the record first, so tomorrow's lunch is work
+  // the agent can find someone for, like any other.
+  await putRoutinesOnRecord(deps.store, householdId, now);
   const state = deps.store.getCareState(householdId);
   const deliberation = deliberate(state, {
     now,

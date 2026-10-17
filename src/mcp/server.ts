@@ -40,6 +40,7 @@ import {
   registerGetShiftBrief,
 } from './tools/insight.js';
 import { registerIngestSignal } from './tools/signals.js';
+import { registerSetRoutine } from './tools/routines.js';
 import { registerConfirmPurchase, registerReorderPrescription } from './tools/commerce.js';
 import {
   registerAddMedication,
@@ -210,6 +211,8 @@ function populate(server: McpServer, { store, actorId, ...opts }: ServerContext)
   registerRaiseUrgent(ctx);
   // Last, so adding it left every earlier tool where the selection evals measured it.
   registerGetPromises(ctx);
+  // After it, for the same reason.
+  registerSetRoutine(ctx);
 
   registerMeResource(ctx);
   registerCareStateResource(ctx);

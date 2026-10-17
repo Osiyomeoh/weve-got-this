@@ -79,6 +79,7 @@ export const OUT = {
     medications: arr.optional(),
     notes: arr.optional(),
     gaps: arr.optional(),
+    routinesToday: arr.optional(),
     pendingProposals: arr.optional(),
   },
   get_shift_brief: {
@@ -86,6 +87,7 @@ export const OUT = {
     assignedToMe: arr.optional(),
     appointments: arr.optional(),
     recordedToday: arr.optional(),
+    routinesToday: arr.optional(),
   },
   notify_member: {
     eventId: z.string().optional(),
@@ -131,4 +133,5 @@ export const OUT = {
   add_member: { memberId: z.string().optional() },
   add_medication: { medicationId: z.string().optional() },
   remove_member: { memberId: z.string().optional(), released: z.number().optional() },
+  set_routine: { routineId: z.string().optional(), stopped: z.number().optional() },
 } satisfies Record<string, z.ZodRawShape>;

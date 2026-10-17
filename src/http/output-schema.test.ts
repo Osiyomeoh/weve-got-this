@@ -152,6 +152,7 @@ test('tools/list keeps the order the tool-selection evals measured', async () =>
         'change_appointment',
         'raise_urgent',
         'get_promises',
+        'set_routine',
       ],
     );
   } finally {

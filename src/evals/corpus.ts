@@ -568,6 +568,40 @@ export const CORPUS: EvalCase[] = [
     expect: ['get_promises'],
   },
 
+  // --- Care that comes round again (added 2026-10-17 with set_routine) ----
+  {
+    id: 'rout-01',
+    member: 'm_renee',
+    utterance: 'Someone needs to bring Daddy lunch every day at one.',
+    expect: ['set_routine'],
+    args: {
+      area: (v) => v === 'meal',
+      times: (v) => Array.isArray(v) && v.includes('13:00'),
+    },
+    note: "Funmi's line in the story.",
+  },
+  {
+    id: 'rout-02',
+    member: 'm_david',
+    utterance: "Can we make sure someone's with Daddy at night from nine?",
+    expect: ['set_routine'],
+    args: { area: (v) => v === 'safety' },
+  },
+  {
+    id: 'rout-03',
+    member: 'm_david',
+    utterance: 'We need diesel for the generator every Saturday morning.',
+    expect: ['set_routine'],
+    args: { area: (v) => v === 'household' },
+  },
+  {
+    id: 'rout-04',
+    member: 'm_renee',
+    utterance: "We don't need the lunch run any more, stop it.",
+    expect: ['set_routine'],
+    args: { stop: (v) => v === true },
+  },
+
   // ======================================================================
   // HELD-OUT SET. Written after the descriptions were tuned, and never tuned
   // against: harder phrasings, distractors, multi-intent, wrong-role attempts,
@@ -1140,6 +1174,62 @@ export const CORPUS: EvalCase[] = [
     utterance: 'Remind me what I promised the plumber.',
     expectNone: true,
     note: 'Says "promised", but it is not care.',
+  },
+
+  // ======================================================================
+  // HELD-OUT, FOURTH SET (2026-10-17). Written with set_routine, before any run
+  // against it: meals, someone there, memory, washing and the house, said the way
+  // a family says them, beside medicine and a one-off that must not become routines.
+  // ======================================================================
+  {
+    id: 'h4-rout-01',
+    member: 'm_renee',
+    utterance: "I'll make his dinner every evening at seven.",
+    expect: ['set_routine'],
+    args: { mine: (v) => v === true },
+  },
+  {
+    id: 'h4-rout-02',
+    member: 'm_renee',
+    utterance:
+      "Daddy forgets whether he's eaten, so somebody should ring him at lunchtime every day.",
+    expect: ['set_routine'],
+    note: 'Memory, said as what the family does about it.',
+  },
+  {
+    id: 'h4-rout-03',
+    member: 'm_margaret',
+    utterance: "I'd like someone to help me bathe on Tuesday and Friday mornings.",
+    expect: ['set_routine'],
+    note: 'Daddy asks for his own help: a participant, not a subject.',
+  },
+  {
+    id: 'h4-rout-04',
+    member: 'm_david',
+    utterance: 'Somebody has to buy the electricity token every Monday.',
+    expect: ['set_routine'],
+    args: { area: (v) => v === 'household' },
+  },
+  {
+    id: 'h4-rout-05',
+    member: 'm_david',
+    utterance: 'Daddy starts a new tablet tomorrow, one every morning at nine.',
+    expect: ['add_medication'],
+    note: 'Comes round every day, but medicine has its own tool.',
+  },
+  {
+    id: 'h4-rout-06',
+    member: 'm_margaret',
+    utterance: 'Musa brought my lunch.',
+    expect: ['log_care_event', 'resolve_obligation'],
+    note: 'Something that happened once is a record, not a routine.',
+  },
+  {
+    id: 'h4-rout-07',
+    member: 'm_david',
+    utterance: 'Remind me to water my plants every Sunday.',
+    expectNone: true,
+    note: 'Comes round every week, but it is not care.',
   },
 
   // --- Nothing to call ----------------------------------------------------

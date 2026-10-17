@@ -1,6 +1,7 @@
 import type { CareState, Member, Obligation } from './types.js';
 import { detectCareGaps, promiseRisk, spokenDue } from './gaps.js';
 import { candidatesFor, type Candidate } from './delegation.js';
+import { routineDayPassed } from './routines.js';
 
 /**
  * The agent: what the app does when nobody is talking to it.
@@ -243,13 +244,16 @@ function valueOfAsk(risk: number, candidate: Pick<Candidate, 'load' | 'clashesWi
 }
 
 /** Obligations the agent may pursue: real work, nobody on it, not already asked. */
-function pursuable(state: CareState): Obligation[] {
-  return state.obligations.filter((o) => o.status === 'OPEN' && !o.ownerId);
+function pursuable(state: CareState, now: Date): Obligation[] {
+  return state.obligations.filter(
+    (o) => o.status === 'OPEN' && !o.ownerId && !routineDayPassed(o, now),
+  );
 }
 
 /** An ask that has gone unanswered long enough to move on from. */
 function stalled(obligation: Obligation, now: Date): boolean {
   if (obligation.status !== 'REQUESTED' || !obligation.request) return false;
+  if (routineDayPassed(obligation, now)) return false;
   const waited = (now.getTime() - new Date(obligation.request.askedAt).getTime()) / 3_600_000;
   // TAU_REPLY in gaps.ts is 12h: by then an outstanding ask has decayed to ~37% of
   // its relief and is no longer doing much for anybody.
@@ -378,6 +382,17 @@ export function deliberate(state: CareState, opts: PolicyOptions): Deliberation 
     const owner = state.members.find((m) => m.id === o.ownerId);
     if (!owner) continue;
     const name = owner.spokenAs ?? owner.name;
+    // A routine someone said is theirs every time is a habit, not a promise made for today:
+    // checking in on it every day would be nagging. It is shown, as medicine is, as
+    // "nothing's marked yet". A day they said yes to when asked is checked on like any other.
+    if (o.routineId && !opts.takenOnAt?.has(o.id)) {
+      restraint.push({
+        obligationId: o.id,
+        because: `"${o.what}" is ${name}'s every time, so I leave it to them. It shows as nothing marked yet.`,
+        value: { harmAvoided: 0, interruptionCost: 0, net: 0 },
+      });
+      continue;
+    }
     const done = followUpsOn(o.id, state);
     const gain = (risk.get(o.id) ?? 0) * ASK_RELIEF;
 
@@ -440,7 +455,7 @@ export function deliberate(state: CareState, opts: PolicyOptions): Deliberation 
   }
 
   // Unowned work nobody has been asked about yet.
-  for (const o of pursuable(state)) {
+  for (const o of pursuable(state, opts.now)) {
     const best = candidatesFor(o, state)[0];
     if (!best) {
       restraint.push({

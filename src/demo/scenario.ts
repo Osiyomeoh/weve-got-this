@@ -1,6 +1,7 @@
+import { putRoutinesOnRecord } from '../domain/routines.js';
 import { toInstant } from '../domain/time.js';
 import type { CareStore } from '../store/store.js';
-import { careCaseFor, type CareCaseId, type FamilyNames } from './cases.js';
+import { careCaseFor, type CareCaseId, type CaseMember, type FamilyNames } from './cases.js';
 
 /**
  * The demo scenario.
@@ -65,6 +66,14 @@ export interface ScenarioOptions {
   careCase?: CareCaseId;
   /** The visitor's own family names over the case ("Make it yours"). */
   names?: FamilyNames;
+  /**
+   * Put the case's routines on the record (meals, someone there, the house). `today` puts
+   * every time of today on it, for a copy the world plays from the morning on its own
+   * clock, whatever the real time it was made; `ahead` only the times still to come, for a
+   * copy that lives on the server's clock. Off by default, so the video's opening state and
+   * everything measured against it stay as they were.
+   */
+  routines?: 'today' | 'ahead';
 }
 
 /**
@@ -197,6 +206,43 @@ export async function seedScenario(
     detail: onRideDay(c.note),
     data: { aboutMemberId: sid('m_margaret') },
   });
+
+  if (options.routines) {
+    const ids: Record<CaseMember, string> = {
+      primary: 'm_david',
+      caregiver: 'm_renee',
+      helper: 'm_aide',
+      away: 'm_kunle',
+      recipient: 'm_margaret',
+    };
+    // Set up the evening before, so today's times all count.
+    const since = todayAt(18, 0, new Date(now.getTime() - 86_400_000), TZ).toISOString();
+    for (const r of c.routines) {
+      const by = sid(ids[r.owner ?? r.by ?? 'primary'] ?? 'm_david');
+      await store.appendEvent({
+        householdId,
+        kind: 'routine_set',
+        reportedBy: by,
+        occurredAt: since,
+        source: 'voice',
+        confidence: 'reported',
+        detail: r.what,
+        data: {
+          what: r.what,
+          area: r.area,
+          times: r.times,
+          ...(r.days ? { days: r.days } : {}),
+          forMemberId: sid('m_margaret'),
+          ...(r.owner ? { ownerId: by } : {}),
+        },
+      });
+    }
+    await putRoutinesOnRecord(
+      store,
+      householdId,
+      options.routines === 'today' ? todayAt(0, 0, now, TZ) : now,
+    );
+  }
 
   return { checkUpAt, rideObligationId: ride.id };
 }

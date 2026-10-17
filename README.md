@@ -60,6 +60,11 @@ what happened          what must happen        who has it
 - **It notices work nobody said out loud.** A medical appointment implies a ride, and someone
   to go along and take notes. Each inference says it is a guess, and counts only once a person
   confirms it.
+- **It looks after more than medicine.** Lunch every day, someone with him at night, help
+  getting around the house, diesel for the generator on Saturdays: each is set up once, goes on
+  the board a day ahead each time, and someone free is asked to take it on. Whoever said "I'll
+  do it every day" isn't checked on every day. Daddy can ask "did someone bring my lunch?" and
+  hear who marked it done, or that nothing's marked yet, never that nobody came.
 - **It asks; it never assigns.** It picks who is free around then, from what each person has
   already said yes to (then whoever has least on), asks them, and the work stays unowned until
   they say yes. The day before, it asks whoever said yes "still on?", and if they can't, it asks
@@ -120,7 +125,7 @@ reported yet, so no pilot number appears anywhere in this submission.
 The demo family (Daddy, his children Tolu and Funmi, Kunle in London, and Musa the
 driver) is fictional and modelled on mine. No real names or medical details are used.
 
-**And it is real - not a mockup.** A live MCP server you can hit right now, **775 tests**
+**And it is real - not a mockup.** A live MCP server you can hit right now, **794 tests**
 (`npm test`, including property-based proofs of the risk model), and one headline number:
 the planner picks the right tool **96.1%** of the time on Amazon Bedrock (149/155; 64/66 on
 held-out phrasings never tuned against; 2026-10-16,
@@ -173,7 +178,7 @@ MCP endpoint (for your own client): `https://ypq2dfq2p7.us-east-1.awsapprunner.c
 
 **Want to point your own client at it?** [`docs/MCP.md`](docs/MCP.md) is the
 integration guide: endpoint and handshake, ready-made Claude Desktop and MCPJam
-configuration, all 29 tools with their arguments, the resources and prompts, the
+configuration, all 30 tools with their arguments, the resources and prompts, the
 role/capability matrix, and how to run your own instance.
 
 **Bring your own agent.** Add the endpoint as a custom connector in Claude, or in any other
@@ -309,7 +314,7 @@ and a human always confirms an inferred obligation - the dashed feedback loop.
        +-------------+------+------+--------------+
        v             v             v              v
    Resources       Tools        Prompts      MCP Apps
-   who I am,     29 tools    daily check    the Care Board and
+   who I am,     30 tools    daily check    the Care Board and
    care state                weekly review  the week's promises,
                                             drawn in the host
        |             |
@@ -436,8 +441,8 @@ src/
     daily-update.ts    the evening update for family far away
   mcp/
     server.ts          assembles one server per session (tools listed in order)
-    tools/             the 29 tools, grouped: record, ownership, delegation,
-                       insight, signals, commerce, onboarding
+    tools/             the 30 tools, grouped: record, ownership, delegation,
+                       insight, signals, commerce, onboarding, routines
     output-schemas.ts  every tool's output contract, strictly enforced
   http/          Streamable HTTP, OAuth 2.1 + PKCE, Ring and Telegram webhooks
   store/         append-only event log; DynamoDB or a local file
@@ -603,7 +608,7 @@ git clone https://github.com/Osiyomeoh/weve-got-this && cd weve-got-this
 npm ci
 npm run lint      # eslint (typescript-eslint, strict) - 0 findings
 npm run typecheck # tsc under strict + noUncheckedIndexedAccess + exactOptionalPropertyTypes
-npm test          # 775 tests (unit, adversarial, and property-based)
+npm test          # 794 tests (unit, adversarial, and property-based)
 npm run story     # the whole one-day story, end to end, over real MCP
 ```
 
@@ -793,6 +798,7 @@ Every tool exists because a person says a sentence that needs it.
 | `change_appointment` | "The check-up has moved to Friday at two" - the ride moves with it, and whoever had it is told |
 | `raise_urgent` | "Daddy has fallen" - every phone at once, and "call 112" |
 | `get_promises` | "What did everyone say yes to this week?" - each yes, each "still on?", each done, and what the doorbell saw beside it |
+| `set_routine` | "Someone needs to bring Daddy lunch every day at one" - each time goes on the board a day ahead, and someone free is asked to take it on |
 
 Tool design follows four rules, because the model is the user:
 
@@ -846,7 +852,7 @@ speak, and **2026-07-28** alongside it.
    a server built for that request alone (v2 TypeScript SDK, `createMcpHandler`), for the member
    its credential names. 2025-era requests, told apart by the SDK's own `isLegacyRequest`, keep
    the session-based path unchanged, so no 2025-11-25 client, Alexa's bridge included, loses
-   anything. One registration fills both, so they offer the same 29 tools word for word. Tested
+   anything. One registration fills both, so they offer the same 30 tools word for word. Tested
    with two instances over one table: a dose logged through one is read back through the other.
 
 **What still holds it to one instance.** Some state still lives in one process: 2025-11-25

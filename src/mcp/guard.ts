@@ -39,6 +39,7 @@ export const GUARDED = new Set([
   'change_medication',
   'change_appointment',
   'raise_urgent',
+  'set_routine',
 ]);
 
 export const GUARD_STATEMENT =

@@ -18,6 +18,7 @@ import { asReadBy } from '../../domain/language.js';
 import { asTask, clockTime, dueSpoken, isLocalToday } from '../../domain/local-time.js';
 import { promisesThisWeek } from '../../domain/promises.js';
 import { explainProvenance } from '../../domain/provenance.js';
+import { routineDaysToday, sayRoutineDay, type RoutineDay } from '../../domain/routines.js';
 import { appToolMeta } from '../app/protocol.js';
 import { OUT } from '../output-schemas.js';
 import { countPhrase, joinSpoken, sentence, speakGaps } from '../text.js';
@@ -241,6 +242,13 @@ export function registerGetCareSummary({ server, now, actor, state, nameOf }: To
         for (const n of notes.slice(0, 2)) {
           parts.push(`${nameOf(n.reportedBy) ?? 'Someone'} noted: ${n.detail}`);
         }
+        // Care is not only doses. Today's lunch, tonight's company: what came of each so far.
+        // Anything nobody has, or past its time with nothing marked, the gaps below say.
+        const routineDays = routineDaysToday(s, now());
+        const gapIds = new Set(gaps.map((g) => g.obligationId));
+        for (const { day } of routineDays.filter((d) => !gapIds.has(d.day.id)).slice(0, 3)) {
+          parts.push(sentence(`${sayRoutineDay(day, s, now(), me.id)}.`));
+        }
         const coming = upcomingAppointments(s, now(), 7);
         if (coming.length > 0)
           parts.push(
@@ -274,6 +282,7 @@ export function registerGetCareSummary({ server, now, actor, state, nameOf }: To
           })),
           notes: notes.map((n) => ({ by: nameOf(n.reportedBy), text: n.detail })),
           gaps: gaps.map((g) => ({ severity: g.severity, spoken: g.spoken })),
+          routinesToday: routineDays.map((d) => routineDayOut(d, s, now(), me.id)),
           pendingProposals: proposals.map((p) => ({ id: p.id, what: p.what })),
         });
       } catch (err) {
@@ -345,6 +354,16 @@ export function registerGetShiftBrief({ server, actor, state, now }: ToolContext
           return `${s.members.find((m) => m.id === o.request!.askedById)?.name ?? 'Someone'} asked if you can ${asTask(o.what)}${due ? ` ${due}` : ''}`;
         };
 
+        // "Did someone bring my lunch?" Today's routine days as recorded: the person cared for
+        // hears their own, whoever is on duty hears all of them, including any nobody has yet,
+        // since they cannot read the gaps. What is theirs, or what they were asked, is said above.
+        const routineDays = routineDaysToday(s, now()).filter(
+          ({ day, routine }) =>
+            (!mineOnly || !routine?.forMemberId || routine.forMemberId === me.id) &&
+            !(day.status === 'ASSIGNED' && day.ownerId === me.id) &&
+            !(day.status === 'REQUESTED' && day.request?.askedOfId === me.id),
+        );
+
         const parts: string[] = [];
         parts.push(
           meds.length > 0 ? `Medications today: ${joinSpoken(meds)}.` : 'No medications scheduled.',
@@ -361,6 +380,8 @@ export function registerGetShiftBrief({ server, actor, state, now }: ToolContext
         );
         if (asked.length > 0)
           parts.push(`${joinSpoken(asked.map(askedLine))}. You haven't answered yet.`);
+        for (const { day } of routineDays)
+          parts.push(sentence(`${sayRoutineDay(day, s, now(), me.id)}.`));
         if (coming.length > 0)
           parts.push(`Coming up: ${joinSpoken(coming.map((a) => sayAppointment(a, s, now())))}.`);
         if (recentNote?.detail) parts.push(`Latest note: ${recentNote.detail}`);
@@ -369,12 +390,25 @@ export function registerGetShiftBrief({ server, actor, state, now }: ToolContext
           recordedToday: dosesToday.map((e) => ({ line: doseLine(e), at: e.occurredAt })),
           medications: active.map((m) => ({ name: m.name, times: m.times })),
           assignedToMe: mine.map((o) => ({ id: o.id, what: o.what, dueAt: o.dueAt ?? null })),
+          routinesToday: routineDays.map((d) => routineDayOut(d, s, now(), me.id)),
         });
       } catch (err) {
         return guidance(describeError(err));
       }
     },
   );
+}
+
+/** One routine day for a client to show: what, when, where it stands, and how to say it. */
+function routineDayOut({ day }: RoutineDay, s: CareState, now: Date, readerId: string) {
+  return {
+    obligationId: day.id,
+    what: day.what,
+    dueAt: day.dueAt ?? null,
+    time: day.dueAt ? clockTime(day.dueAt, s.household.timezone) : null,
+    status: day.status,
+    spoken: sayRoutineDay(day, s, now, readerId),
+  };
 }
 
 /** "Dad's eye check-up tomorrow at 10 AM". */

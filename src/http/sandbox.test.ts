@@ -5,6 +5,7 @@ import { createCareCircleApp } from './app.ts';
 import { CareStore } from '../store/store.ts';
 import { seedDemoHousehold, DEMO_TOKENS } from '../demo/seed.ts';
 import { seedScenario } from '../demo/scenario.ts';
+import { CASES } from '../demo/cases.ts';
 import { sandboxCreatedAt, sandboxSuffix, sweepSandboxes } from './sandbox.ts';
 
 /**
@@ -297,6 +298,39 @@ test("make it yours: a copy carries the visitor's own names, and odd ones are re
       .members.find((x) => x.id === `m_margaret${d.suffix}`)!;
     assert.equal(m.spokenAs, 'Mom', `refused: ${JSON.stringify(bad)}`);
   }
+});
+
+test("every copy carries care beyond medicine, and today's times are all on it, whatever the hour", async () => {
+  for (const careCase of [
+    'memory',
+    'wheelchair',
+    'hometown',
+    'us',
+    'abroad',
+    'ke',
+    'child',
+  ] as const) {
+    const c = (await create(KEY, { careCase, liveMorning: true })).json;
+    const s = store.getCareState(c.householdId);
+    assert.ok(s.events.filter((e) => e.kind === 'routine_set').length >= 3, careCase);
+    // A school run is not on a Saturday, so only a routine that comes round daily is sure to be.
+    if (CASES[careCase].routines.some((r) => !r.owner && !r.days))
+      assert.ok(
+        s.obligations.some((o) => o.routineId && o.status === 'OPEN'),
+        `${careCase}: one day for the agent to find someone for`,
+      );
+  }
+  const c = (await create(KEY, { careCase: 'eyes', liveMorning: true })).json;
+  const days = store.getCareState(c.householdId).obligations.filter((o) => o.routineId);
+  // The world plays the day from 7:42, so 1 PM's lunch is on the record even if the copy
+  // was made at 3 in the afternoon.
+  const lunch = days.find((o) => o.what === 'Bring Daddy lunch')!;
+  assert.equal(lunch.status, 'OPEN');
+  assert.equal(lunch.ownerId, null);
+  const night = days.find((o) => o.what === 'Someone with Daddy at night')!;
+  assert.equal(night.status, 'ASSIGNED');
+  assert.equal(night.ownerId, `m_renee${c.suffix}`, 'Funmi said the nights are hers');
+  assert.equal(days.length, 3);
 });
 
 test('a press on the Fire TV remote is still her word: recorded as pressed on the TV, reported not observed', async () => {

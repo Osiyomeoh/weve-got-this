@@ -5,7 +5,7 @@ to call what, and how to run your own.
 
 We've Got This is a **self-hosted MCP server** over **Streamable HTTP**. It speaks spec
 **2025-11-25** (sessions, `@modelcontextprotocol/sdk` 1.30.0) and **2026-07-28** (stateless,
-the v2 SDK 2.1.0) on the same endpoint, with the same tools. It exposes 29 tools,
+the v2 SDK 2.1.0) on the same endpoint, with the same tools. It exposes 30 tools,
 4 resources, 2 prompts, and two interactive views via the
 [MCP Apps extension](#the-care-board-mcp-apps).
 
@@ -185,7 +185,7 @@ to do next, and should be acted on rather than reported as a failure.
 
 ## Tools
 
-29 tools. Every one exists because a person says a sentence that needs it; there is
+30 tools. Every one exists because a person says a sentence that needs it; there is
 no tool here that mirrors a database table for its own sake.
 
 `?` marks an optional argument.
@@ -206,6 +206,29 @@ no tool here that mirrors a database table for its own sake.
 | `change_medication` | `medicationName`, `forMemberId?`, `times?`, `until?`, `stopNow?`, `newName?`, `alsoCalled?` | New dose times, a last day, stopped now, or a corrected name. The record keeps what it was; it is just no longer expected. |
 | `change_appointment` | `appointment`, `forMemberId?`, `newStartsAt?`, `cancel?` | Moves or cancels one already on the record. What was arranged for it, like a ride, moves or is called off with it, and whoever had it is told. Needs `create_obligation`. |
 | `raise_urgent` | `what`, `forMemberId?` | A fall, chest pain, can't be reached: tells everyone in the family at once. It does not call emergency services; it tells the person to, with the local number. |
+
+### Care that comes round again
+
+Medicine is one thing that comes round every day; a meal, someone there at night, help
+getting around and the house's diesel, water and electricity are others.
+
+| Tool | Arguments | Notes |
+|---|---|---|
+| `set_routine` | `what`, `area`, `times?`, `days?`, `forMemberId?`, `mine?`, `stop?` | `area` is `meal` \| `safety` \| `personal` \| `household`. `times` are 24-hour `"HH:MM"`; `days` (`monday`...`sunday`) limits it to those days. `mine` makes every time the speaker's own. `stop` ends it; only whoever set it up, or `manage_circle`, can. Needs `create_obligation`. Not for medicine: that is `add_medication`. |
+
+- **Each time is work on the board.** It goes on a day ahead as its own obligation, with no
+  owner unless the routine is someone's own. An unowned time is a care gap like any other, and
+  the agent asks someone free to take it on.
+- **A time that has passed is left alone.** The agent doesn't ask about it, and an ask nobody
+  answered before its time is taken back. A day that is over drops off the gaps; its record
+  stays.
+- **A standing promise isn't nagged.** Whoever said "I'll do it every day" is not checked on
+  each time; a time with nothing marked shows as that. A time someone said yes to when asked
+  gets the day-before "still on?" and the follow-up like any other yes.
+- **Read back without blame.** `get_care_summary` and `get_shift_brief` say each of today's
+  times (`routinesToday`): "Bring Daddy lunch at 1 PM: Musa marked it done at 1:10 PM",
+  "Funmi has it, and nothing's marked yet", never "nobody came". The person being cared for
+  hears the ones that are for them.
 
 ### Finding and moving responsibility
 
@@ -427,7 +450,7 @@ git clone https://github.com/Osiyomeoh/weve-got-this && cd weve-got-this
 npm ci
 npm run story      # the whole scenario end to end, no AWS and no keys
 npm run dev        # the MCP server on :8787 (override with PORT)
-npm test           # 775 tests, including adversarial and property-based
+npm test           # 794 tests, including adversarial and property-based
 ```
 
 `npm run story` is the fastest way to understand the system: it plays the demo
