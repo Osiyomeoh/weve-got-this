@@ -24,6 +24,9 @@ export interface Obligation {
   what: string;
   status: 'PROPOSED' | 'ASSIGNED' | 'RESOLVED' | 'DISMISSED';
   owner?: string;
+  dueAt?: string | null;
+  /** Set on one day of a routine: "Bring Daddy lunch" today, and again tomorrow. */
+  routineId?: string;
   provenance: Provenance;
 }
 export interface Offer {

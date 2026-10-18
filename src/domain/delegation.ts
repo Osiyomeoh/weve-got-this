@@ -186,8 +186,10 @@ function reasonFor(
   clash: string | undefined,
   allBusy: boolean,
 ): string {
+  // Read aloud after a name: "Funmi already has ... around then, as does everyone else" came
+  // back from the model as "so does everyone else", spliced onto the next sentence.
   if (clash && allBusy) {
-    return `already has "${clash}" around then, as does everyone else who could take it on`;
+    return `already has "${clash}" around then - everyone who could take it on has something then`;
   }
   const after = declinedCount > 0 ? ' and is next after the people already asked' : '';
   if (clash) return `already has "${clash}" around then${after}`;

@@ -20,6 +20,15 @@ export function isLocalToday(iso: string, now: Date, timezone: string): boolean 
   return localParts(at, timezone).date === localParts(now, timezone).date;
 }
 
+/** Whether an instant falls on the household's local day before today. */
+export function isLocalYesterday(iso: string, now: Date, timezone: string): boolean {
+  const at = new Date(iso);
+  if (Number.isNaN(at.getTime())) return false;
+  const today = new Date(localParts(now, timezone).date);
+  const yesterday = new Date(today.getTime() - 86_400_000).toISOString().slice(0, 10);
+  return localParts(at, timezone).date === yesterday;
+}
+
 /** "8:10 AM" in the household's timezone. */
 export function clockTime(iso: string, timezone: string): string {
   return new Intl.DateTimeFormat('en-US', {

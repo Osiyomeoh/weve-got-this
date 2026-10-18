@@ -292,7 +292,7 @@ test('when everyone who could has something then, the reason says so', () => {
   const top = candidatesFor(obligation(), state)[0]!;
   assert.equal(
     top.because,
-    'already has "Call the pharmacy" around then, as does everyone else who could take it on',
+    'already has "Call the pharmacy" around then - everyone who could take it on has something then',
   );
 });
 

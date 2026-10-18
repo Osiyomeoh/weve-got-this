@@ -416,10 +416,16 @@ function DayScore({ view }: { view: WorldView }) {
   if (!state) return null;
   const doses = state.schedule ?? [];
   const recorded = doses.filter((d) => d.recorded).length;
-  const work = (state.obligations ?? []).filter((o) => o.status !== 'DISMISSED');
-  const owned = work.filter((o) => o.owner && o.status !== 'PROPOSED');
+  // The day's own work. A routine's next day goes on the record a day ahead, so by evening
+  // tomorrow's lunch is there too, and was listed as "still nobody's" under today's, done.
+  const dayEnds = homeToday(23, 59, view.clock).getTime() + 60_000;
+  const work = (state.obligations ?? []).filter(
+    (o) => o.status !== 'DISMISSED' && !(o.routineId && o.dueAt && Date.parse(o.dueAt) >= dayEnds),
+  );
+  // Done is nobody's no longer, owner or not: anyone but a helper can mark unowned work done.
   const done = work.filter((o) => o.status === 'RESOLVED');
-  const open = work.filter((o) => !o.owner || o.status === 'PROPOSED');
+  const owned = work.filter((o) => o.status === 'RESOLVED' || (o.owner && o.status !== 'PROPOSED'));
+  const open = work.filter((o) => o.status !== 'RESOLVED' && (!o.owner || o.status === 'PROPOSED'));
   const covered = recorded + owned.length;
   const score = 10 * covered - 10 * open.length - view.interrupts;
   const promises = state.promises ?? [];

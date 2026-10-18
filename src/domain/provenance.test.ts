@@ -336,6 +336,18 @@ test('what happened today is said by the clock, earlier days by the date', () =>
   assert.match(later.spoken, /David marked it done on March 12\./);
 });
 
+test('the evening before is "yesterday", the way the promises say it', () => {
+  // A visitor's copy seeds the refill as noticed by Funmi at 6:30 the evening before.
+  const o = obligation({
+    provenance: { kind: 'CONFIRMED', byMemberId: 'm_renee', at: '2026-03-11T17:30:00Z' },
+  });
+  const at = (now: string) =>
+    explainProvenance(o, [], [], nameOf, 'Africa/Lagos', new Date(now)).spoken;
+  assert.match(at('2026-03-12T19:20:00Z'), /Renee confirmed this yesterday at 6:30 PM\./);
+  // Half past midnight in Lagos is already the next day there, though not yet in UTC.
+  assert.match(at('2026-03-12T23:30:00Z'), /Renee confirmed this on March 11\./);
+});
+
 test('a decline is recorded as information, never as a failure', () => {
   const transitions: ObligationTransition[] = [
     {

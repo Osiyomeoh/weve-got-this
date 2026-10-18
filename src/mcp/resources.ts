@@ -126,6 +126,7 @@ export function registerCareStateResource({
                   status: o.status,
                   owner: nameOf(o.ownerId) ?? null,
                   dueAt: o.dueAt ?? null,
+                  ...(o.routineId ? { routineId: o.routineId } : {}),
                   provenance: o.provenance.kind,
                 })),
                 // Doses recorded today, each carrying who says so. A surface that draws

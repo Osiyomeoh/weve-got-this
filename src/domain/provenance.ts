@@ -13,7 +13,7 @@
 import type { CareEvent, Obligation, ObligationStatus, Provenance } from './types.ts';
 import type { ObligationTransition } from '../store/store.ts';
 import { evidenceLine } from './evidence.js';
-import { afterOn, clockTime, isLocalToday } from './local-time.js';
+import { afterOn, clockTime, isLocalToday, isLocalYesterday } from './local-time.js';
 
 /** How sure the record is at a given link. Deliberately not a single scalar - a chain
  *  can mix a confirmed origin with an inferred source, and flattening that loses the point. */
@@ -51,9 +51,10 @@ interface Clock {
 }
 
 /**
- * "at 8:16 PM" for something earlier today, "on March 12" otherwise. Kept coarse on
- * purpose: a full timestamp does not read aloud, and "on October 7" three times over says
- * nothing when all of it happened this evening.
+ * "at 8:16 PM" for something earlier today, "yesterday at 6:30 PM" for the evening before,
+ * "on March 12" otherwise. Kept coarse on purpose: a full timestamp does not read aloud,
+ * and "on October 7" three times over says nothing when all of it happened this evening.
+ * "On October 17" for last night read like a date to look up; the promises say "yesterday".
  */
 function fmt(at: string | undefined, clock: Clock): { text: string; phrase: string } | undefined {
   if (!at) return undefined;
@@ -62,6 +63,10 @@ function fmt(at: string | undefined, clock: Clock): { text: string; phrase: stri
   if (clock.now && isLocalToday(at, clock.now, clock.timezone)) {
     const text = clockTime(at, clock.timezone);
     return { text, phrase: ` at ${text}` };
+  }
+  if (clock.now && isLocalYesterday(at, clock.now, clock.timezone)) {
+    const text = `yesterday at ${clockTime(at, clock.timezone)}`;
+    return { text, phrase: ` ${text}` };
   }
   const text = d.toLocaleDateString('en-US', {
     month: 'long',
