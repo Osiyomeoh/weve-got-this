@@ -3,7 +3,7 @@
 [![CI](https://github.com/Osiyomeoh/weve-got-this/actions/workflows/ci.yml/badge.svg)](https://github.com/Osiyomeoh/weve-got-this/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![MCP spec 2025-11-25](https://img.shields.io/badge/MCP-2025--11--25-6f42c1)
-![Tests: 815](https://img.shields.io/badge/tests-815-2f9e5e)
+![Tests: 816](https://img.shields.io/badge/tests-816-2f9e5e)
 
 **An Alexa+ add-on for families looking after a parent.** It notices the care nobody has
 taken on yet, like the ride to Dad's eye check-up, and asks the right person. It never
@@ -293,7 +293,7 @@ and how each was measured are in [`docs/EVALS.md`](docs/EVALS.md).
 | Right first tool, Amazon Nova Pro under the Alexa bridge's prompt | **86.6%** (162/187); held-out 73/87 | [`2026-10-17-nova-pro-alexa-bridge-prompt-record-order.json`](evals/results/2026-10-17-nova-pro-alexa-bridge-prompt-record-order.json) |
 | False accusations on a missing record | **0%** for the engine; 50-58% for raw Sonnet 4.5 on the same cases | `npm run trust-benchmark` |
 | Accusing replies under 22 leading questions, Strands + NoBlame | **0/22** on Sonnet 4.5 and Nova Pro | `evals/results/2026-10-02-blame-pressure-*.json` |
-| Automated tests | **815**, including adversarial and property-based | `npm test` |
+| Automated tests | **816**, including adversarial and property-based | `npm test` |
 
 The tool-selection corpus is split so the number cannot be gamed: authored cases used while
 tuning the descriptions, and held-out cases written before any run against them, reported
@@ -329,7 +329,7 @@ or see the [TV board](https://krqi2tpsif.us-east-1.awsapprunner.com/tv-native/).
 git clone https://github.com/Osiyomeoh/weve-got-this && cd weve-got-this
 npm ci
 npm run story     # the whole one-day story, end to end, over real MCP
-npm test          # 815 tests (unit, adversarial, and property-based)
+npm test          # 816 tests (unit, adversarial, and property-based)
 npm run lint      # eslint (typescript-eslint, strict)
 npm run typecheck # tsc: strict, noUncheckedIndexedAccess, exactOptionalPropertyTypes
 ```

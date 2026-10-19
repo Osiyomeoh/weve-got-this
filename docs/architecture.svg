@@ -225,5 +225,5 @@
   <text x="234" y="904" class="xs">built, not on a family's path</text>
   <rect x="420" y="893" width="16" height="14" rx="3" class="eng"/>
   <text x="444" y="904" class="xs">the part that decides: plain code, tested, no model</text>
-  <text x="24" y="934" class="s" font-weight="700" fill="#15803d">815 tests · 31 MCP tools · first tool right 168/187 on Claude Sonnet 4.5, 162/187 on Nova Pro under the Alexa bridge's prompt · 0 false accusations</text>
+  <text x="24" y="934" class="s" font-weight="700" fill="#15803d">816 tests · 31 MCP tools · first tool right 168/187 on Claude Sonnet 4.5, 162/187 on Nova Pro under the Alexa bridge's prompt · 0 false accusations</text>
 </svg>

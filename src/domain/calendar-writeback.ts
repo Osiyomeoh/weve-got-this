@@ -32,6 +32,14 @@ function nameOf(members: Member[], id: string | null | undefined): string | null
   return m ? (m.spokenAs ?? m.name) : null;
 }
 
+/** Whether two calendar times are the same moment, however each is written. */
+function sameInstant(a: string | undefined, b: string | undefined): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  const ta = Date.parse(a);
+  return !Number.isNaN(ta) && ta === Date.parse(b);
+}
+
 /** The one-hour default an appointment/obligation occupies when only a start is known. */
 const DEFAULT_DURATION_MS = 3_600_000;
 
@@ -104,7 +112,11 @@ export function planCalendarWriteback(
       plan.creates.push({ obligationId: o.id, body });
       continue;
     }
-    const changed = existing.summary !== body.summary || existing.start !== body.start?.dateTime;
+    // Compare instants, not strings: we write "18:00:00.000Z" and Google reads it back as
+    // "18:00:00Z" (or in the calendar's own offset), which as text never matches, so every
+    // event was patched again on every sync.
+    const changed =
+      existing.summary !== body.summary || !sameInstant(existing.start, body.start?.dateTime);
     if (changed) {
       plan.updates.push({ eventId: existing.eventId, obligationId: o.id, body });
     }

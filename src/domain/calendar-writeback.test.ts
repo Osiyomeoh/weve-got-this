@@ -98,3 +98,28 @@ test('an unchanged obligation is left untouched (idempotent)', () => {
   assert.equal(plan.creates.length, 0);
   assert.equal(plan.updates.length, 0);
 });
+
+test('the same time written differently by Google is not a change', () => {
+  // The record keeps milliseconds; Google reads the time back without them, or in the
+  // calendar's own offset. Prod patched the same two events every five minutes over this.
+  const owned = base({ dueAt: '2026-10-16T18:00:00.000Z' });
+  for (const start of ['2026-10-16T18:00:00Z', '2026-10-16T19:00:00+01:00']) {
+    const existing = new Map([
+      ['obl_ride', { eventId: 'gc_1', summary: 'Drive Margaret to cardiology — David', start }],
+    ]);
+    const plan = planCalendarWriteback([owned], members, existing);
+    assert.equal(plan.updates.length, 0, `${start} is the same moment`);
+  }
+
+  const moved = new Map([
+    [
+      'obl_ride',
+      {
+        eventId: 'gc_1',
+        summary: 'Drive Margaret to cardiology — David',
+        start: '2026-10-16T17:00:00Z',
+      },
+    ],
+  ]);
+  assert.equal(planCalendarWriteback([owned], members, moved).updates.length, 1);
+});
