@@ -175,8 +175,8 @@ rules are the product rather than a convenience.
 **Denials are written for a model to speak, not for a developer to debug.** They
 say what the caller *can* do instead, so a refusal moves the conversation forward:
 
-> *"Only the primary caregiver can assign work to someone else. You can take it on
-> yourself instead."*
+> *"Only the primary caregiver can give work to someone else, and even then I ask them
+> first. You can take it on yourself, or I can ask them whether they will."*
 
 Treat every `isError` result the same way - the text is an instruction about what
 to do next, and should be acted on rather than reported as a failure.

@@ -17,12 +17,15 @@ Start with the [project README](../README.md). This folder is grouped by who it'
 | [DESIGN.md](DESIGN.md) | The model: events, obligations, ownership, and the trust rule |
 | [RESPONSIBILITY-GRAPH.md](RESPONSIBILITY-GRAPH.md) | The responsibility graph in depth |
 | [EVIDENCE.md](EVIDENCE.md) | The research and economics it rests on, with sources |
+| [EVALS.md](EVALS.md) | Every measurement: tool selection, Nova under the bridge's prompt, the planner loops |
+| [architecture.svg](architecture.svg) | What runs in production, service by service |
+| [responsibility-flow.svg](responsibility-flow.svg) | The logical view: from evidence to owned work |
 
 ## Using and connecting it
 
 | Doc | What it is |
 |---|---|
-| [MCP.md](MCP.md) | Point any MCP client at it: endpoint, OAuth, all 29 tools |
+| [MCP.md](MCP.md) | Point any MCP client at it: endpoint, OAuth, all 31 tools |
 | [USING-THE-UI.md](USING-THE-UI.md) | The Alexa+ console, the TV board and the setup flow |
 | [PILOT.md](PILOT.md) | Running a real family on it for a week or two |
 

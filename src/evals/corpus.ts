@@ -15,7 +15,7 @@
  * 139/155 with it counted wrong. It is the route the planner was told to take on 2026-10-03
  * (cc42789, src/sim/host.ts): a short "I've got it" first checks whether someone asked them,
  * because then it is respond_to_request. shift-04 ("Anything assigned to me?") is the same
- * question that tool's description has named since it was written. Disclosed in the README.
+ * question that tool's description has named since it was written. Disclosed in docs/EVALS.md.
  *
  * `expectNone` marks utterances where reaching for a tool at all is the error.
  */

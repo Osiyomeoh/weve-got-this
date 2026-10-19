@@ -1,137 +1,229 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1360 720" font-family="'Segoe UI',Arial,sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 950" font-family="-apple-system,'Segoe UI',Helvetica,Arial,sans-serif">
   <defs>
-    <marker id="arw" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
-      <path d="M0,0 L8,3 L0,6 Z" fill="#5b6472"/>
-    </marker>
-    <marker id="arwg" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
-      <path d="M0,0 L8,3 L0,6 Z" fill="#22a45d"/>
-    </marker>
-    <marker id="arwf" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
-      <path d="M0,0 L8,3 L0,6 Z" fill="#e0a52a"/>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L9,4 L0,8 Z" fill="#475569"/>
     </marker>
     <style>
-      .box{rx:12;stroke-width:2}
-      .t{fill:#1f2733;font-size:14px;font-weight:600}
-      .tb{fill:#1f2733;font-size:15px;font-weight:700}
-      .s{fill:#5b6472;font-size:11px}
-      .xs{fill:#8a93a2;font-size:10.5px}
-      .lbl{fill:#8a93a2;font-size:11px;font-weight:700;letter-spacing:.09em}
-      .aws{fill:#fff5ec;stroke:#ff9900}
-      .mcp{fill:#eef4ff;stroke:#3b82f6}
-      .eng{fill:#eafaf1;stroke:#22a45d}
-      .sig{fill:#f4f6f9;stroke:#c3cad6}
-      .trust{fill:#fff8ec;stroke:#e0a52a}
-      .hub{fill:#f2fbf6;stroke:#22a45d}
-      .n-ev{fill:#eef4ff;stroke:#3b82f6}
-      .n-ob{fill:#eafaf1;stroke:#22a45d}
-      .n-ow{fill:#fff5ec;stroke:#ff9900}
-      .ic{fill:none;stroke:#5b6472;stroke-width:1.6}
+      .title{fill:#0f172a;font-size:22px;font-weight:700}
+      .h{fill:#0f172a;font-size:15px;font-weight:700}
+      .t{fill:#0f172a;font-size:13.5px;font-weight:700}
+      .s{fill:#475569;font-size:12px}
+      .xs{fill:#64748b;font-size:11.5px}
+      .lbl{fill:#64748b;font-size:11px;font-weight:700;letter-spacing:.08em}
+      .al{fill:#475569;font-size:11px;font-weight:600;paint-order:stroke;stroke:#fcfcfd;stroke-width:5px;stroke-linejoin:round}
+      .client{fill:#f6f7f9;stroke:#cbd2db;stroke-width:1.2}
+      .svc{fill:#ffffff;stroke:#cbd2db;stroke-width:1.2}
+      .chip{fill:#f3f6fa;stroke:#d5dce6;stroke-width:1}
+      .eng{fill:#ecf8f1;stroke:#2f9e5e;stroke-width:1.4}
+      .ln{fill:none;stroke:#475569;stroke-width:1.5}
+      .dash{stroke-dasharray:6 5}
+      .acc{stroke-width:4;stroke-linecap:round}
     </style>
   </defs>
 
-  <rect width="1360" height="720" fill="#ffffff"/>
-  <text x="40" y="46" fill="#1f2733" font-size="24" font-weight="700">We've Got This - System Architecture</text>
-  <text x="40" y="68" class="s" font-size="12.5">One responsibility graph — evidence in, accountability out.</text>
+  <rect width="1280" height="950" fill="#ffffff"/>
 
-  <!-- ============ IN: signals ============ -->
-  <text x="40" y="120" class="lbl">SIGNALS</text>
-  <rect class="box sig" x="40" y="140" width="150" height="60"/>
-  <g class="ic" transform="translate(58,158)"><rect x="0" y="0" width="10" height="16" rx="5"/><path d="M-3 10 a8 8 0 0 0 16 0 M5 18 v4 M0 24 h10"/></g>
-  <text x="86" y="166" class="t">Alexa+</text><text x="86" y="184" class="xs">voice</text>
-  <rect class="box sig" x="40" y="214" width="150" height="60"/>
-  <g class="ic" transform="translate(56,230)"><rect x="0" y="0" width="16" height="22" rx="4"/><circle cx="8" cy="9" r="3.2"/></g>
-  <text x="86" y="240" class="t">Ring</text><text x="86" y="258" class="xs">doorbell · HMAC</text>
+  <text x="24" y="42" class="title">We've Got This · system architecture</text>
+  <text x="24" y="66" class="s">What runs in production today. Solid lines are live; dashed lines are built but not on a family's path.</text>
 
-  <!-- ============ CAPTURE: MCP write ============ -->
-  <text x="230" y="120" class="lbl">CAPTURE · MCP tools</text>
-  <rect class="box mcp" x="230" y="140" width="180" height="200"/>
-  <text x="248" y="166" class="tb">MCP Server</text>
-  <text x="248" y="183" class="xs">Streamable HTTP · 31 tools</text>
-  <g font-size="10.5" font-weight="600" text-anchor="middle" fill="#2c5fa8">
-    <rect x="246" y="196" width="148" height="24" rx="6" fill="#e4eefc" stroke="#bcd3f2"/><text x="320" y="212">log_care_event</text>
-    <rect x="246" y="226" width="148" height="24" rx="6" fill="#e4eefc" stroke="#bcd3f2"/><text x="320" y="242">record_appointment</text>
-    <rect x="246" y="256" width="148" height="24" rx="6" fill="#e4eefc" stroke="#bcd3f2"/><text x="320" y="272">ingest_signal</text>
-    <rect x="246" y="286" width="148" height="24" rx="6" fill="#e4eefc" stroke="#bcd3f2"/><text x="320" y="302">claim / confirm</text>
-  </g>
+  <!-- People and devices -->
+  <text x="24" y="98" class="lbl">PEOPLE AND DEVICES</text>
 
-  <!-- ============ HUB: the graph ============ -->
-  <text x="450" y="120" class="lbl">SHARED STATE · responsibility graph</text>
-  <rect class="box hub" x="450" y="132" width="350" height="238"/>
-  <rect class="box n-ev" x="470" y="156" width="96" height="52"/><text x="518" y="178" class="t" text-anchor="middle">Event</text><text x="518" y="195" class="xs" text-anchor="middle">provenance</text>
-  <rect class="box n-ob" x="578" y="156" width="112" height="52"/><text x="634" y="178" class="t" text-anchor="middle">Obligation</text><text x="634" y="195" class="xs" text-anchor="middle">must happen</text>
-  <rect class="box n-ow" x="702" y="156" width="82" height="52"/><text x="743" y="178" class="t" text-anchor="middle">Owner</text><text x="743" y="195" class="xs" text-anchor="middle">or gap</text>
-  <path d="M566 182 H578" stroke="#22a45d" stroke-width="1.8" fill="none" marker-end="url(#arwg)"/>
-  <path d="M690 182 H702" stroke="#22a45d" stroke-width="1.8" fill="none" marker-end="url(#arwg)"/>
-  <!-- provenance chips -->
-  <g font-size="10" font-weight="700" text-anchor="middle">
-    <rect x="470" y="224" width="98" height="24" rx="6" fill="#e4eefc" stroke="#3b82f6"/><text x="519" y="240" fill="#2c5fa8">CONFIRMED</text>
-    <rect x="576" y="224" width="86" height="24" rx="6" fill="#e7f6ee" stroke="#22a45d"/><text x="619" y="240" fill="#1c8049">INFERRED</text>
-    <rect x="670" y="224" width="114" height="24" rx="6" fill="#fff1e0" stroke="#ff9900"/><text x="727" y="240" fill="#c67f14">NOT_LOGGED</text>
-  </g>
-  <!-- DynamoDB base -->
-  <g transform="translate(470,270)">
-    <ellipse cx="16" cy="6" rx="15" ry="5" fill="#fff5ec" stroke="#ff9900" stroke-width="1.6"/>
-    <path d="M1 6 v22 a15 5 0 0 0 30 0 v-22" fill="#fff5ec" stroke="#ff9900" stroke-width="1.6"/>
-    <ellipse cx="16" cy="6" rx="15" ry="5" fill="#fff5ec" stroke="#ff9900" stroke-width="1.6"/>
-  </g>
-  <text x="512" y="286" class="t">DynamoDB</text><text x="512" y="303" class="xs">append-only log · single table</text>
-  <rect class="box trust" x="470" y="322" width="314" height="34"/>
-  <text x="627" y="343" class="tb" font-size="13.5" text-anchor="middle" fill="#c67f14">Known ≠ Assumed</text>
+  <rect x="24" y="108" width="150" height="78" rx="10" class="client"/>
+  <text x="38" y="135" class="t">Fire TV</text>
+  <text x="38" y="155" class="s">Vega app + remote</text>
+  <text x="38" y="172" class="xs">Vega Virtual Device</text>
 
-  <!-- ============ REASON: engines read ============ -->
-  <text x="840" y="120" class="lbl">REASON · deterministic, no LLM</text>
-  <rect class="box eng" x="840" y="140" width="220" height="56"/>
-  <text x="858" y="164" class="tb">Gap engine</text><text x="858" y="182" class="s">Cost × P(drop) × Confidence</text>
-  <rect class="box eng" x="840" y="206" width="220" height="56"/>
-  <text x="858" y="230" class="tb">Agent policy</text><text x="858" y="248" class="s">asks family first · only asks</text>
-  <rect class="box trust" x="840" y="272" width="220" height="56"/>
-  <text x="858" y="296" class="tb">Trust guard</text><text x="858" y="314" class="s">"no record", never "missed"</text>
+  <rect x="186" y="108" width="150" height="78" rx="10" class="client"/>
+  <text x="200" y="135" class="t">Web browser</text>
+  <text x="200" y="155" class="s">console, 3D world</text>
+  <text x="200" y="172" class="xs">/proof, /docs</text>
 
-  <!-- ============ OUT: act / display ============ -->
-  <text x="1100" y="120" class="lbl">ACT / DISPLAY</text>
-  <rect class="box sig" x="1100" y="140" width="150" height="56"/>
-  <g class="ic" transform="translate(1116,152)"><rect x="0" y="0" width="26" height="17" rx="2.5"/><path d="M9 22 h8 M13 17 v5"/></g>
-  <text x="1152" y="164" class="t">Fire TV</text><text x="1152" y="182" class="xs">ambient board</text>
-  <rect class="box aws" x="1100" y="206" width="150" height="56"/>
-  <g class="ic" transform="translate(1118,218)" stroke="#c67f14"><path d="M4 14 a8 8 0 0 1 16 0 v3 l2 3 H2 l2-3 z M9 22 a3 3 0 0 0 6 0"/></g>
-  <text x="1152" y="230" class="t">SNS</text><text x="1152" y="248" class="xs">notify a member</text>
-  <rect class="box aws" x="1100" y="272" width="150" height="56"/>
-  <g class="ic" transform="translate(1116,286)" stroke="#c67f14"><path d="M0 5 h5 l6-5 v18 l-6-5 H0 z M16 5 a5 5 0 0 1 0 8"/></g>
-  <text x="1152" y="296" class="t">Polly</text><text x="1152" y="314" class="xs">voice out</text>
+  <rect x="348" y="108" width="200" height="78" rx="10" class="client"/>
+  <text x="362" y="135" class="t">Amazon Echo</text>
+  <text x="362" y="155" class="s">Alexa skill "care circle"</text>
+  <text x="362" y="172" class="xs">voice</text>
 
-  <!-- ===== main flow arrows ===== -->
-  <path d="M190 200 C210 200 210 218 230 224" stroke="#5b6472" stroke-width="2" fill="none" marker-end="url(#arw)"/>
-  <path d="M190 244 C210 244 210 250 230 256" stroke="#5b6472" stroke-width="2" fill="none" marker-end="url(#arw)"/>
-  <path d="M410 240 H450" stroke="#5b6472" stroke-width="2.2" fill="none" marker-end="url(#arw)"/><text x="430" y="232" class="xs" text-anchor="middle">write</text>
-  <path d="M800 234 H840" stroke="#22a45d" stroke-width="2.2" fill="none" marker-end="url(#arwg)"/><text x="820" y="226" class="xs" text-anchor="middle">read</text>
-  <path d="M1060 168 C1080 168 1082 168 1100 168" stroke="#5b6472" stroke-width="2" fill="none" marker-end="url(#arw)"/>
-  <path d="M1060 234 H1100" stroke="#5b6472" stroke-width="2" fill="none" marker-end="url(#arw)"/>
-  <path d="M1060 300 C1080 300 1082 300 1100 300" stroke="#5b6472" stroke-width="2" fill="none" marker-end="url(#arw)"/>
+  <rect x="560" y="108" width="160" height="78" rx="10" class="client"/>
+  <text x="574" y="135" class="t">Any MCP client</text>
+  <text x="574" y="155" class="s">Claude, MCPJam,</text>
+  <text x="574" y="172" class="xs">MCP Inspector</text>
 
-  <!-- ===== human feedback loop ===== -->
-  <path d="M1175 328 C1175 430 627 470 627 388" stroke="#e0a52a" stroke-width="2" stroke-dasharray="6 5" fill="none" marker-end="url(#arwf)"/>
-  <rect class="box trust" x="720" y="430" width="230" height="34"/>
-  <text x="835" y="451" class="t" text-anchor="middle" fill="#c67f14">human confirms / declines</text>
+  <rect x="732" y="108" width="170" height="78" rx="10" class="client"/>
+  <text x="746" y="135" class="t">Telegram</text>
+  <text x="746" y="155" class="s">the family's phones,</text>
+  <text x="746" y="172" class="xs">in any country</text>
 
-  <!-- ============ SUBSTRATE: runtime + security ============ -->
-  <text x="40" y="512" class="lbl">RUNTIME &amp; SECURITY</text>
-  <rect x="40" y="524" width="1210" height="86" rx="12" fill="#fafbfc" stroke="#e3e8ef"/>
-  <g class="tb" font-size="13" text-anchor="middle">
-    <rect class="box aws" x="60" y="544" width="150" height="48"/><text x="135" y="566">Bedrock</text><text x="135" y="582" class="xs" text-anchor="middle">Sonnet 4.5 · planner</text>
-    <rect class="box aws" x="228" y="544" width="150" height="48"/><text x="303" y="566">App Runner</text><text x="303" y="582" class="xs" text-anchor="middle">2 services · HTTPS</text>
-    <rect class="box aws" x="396" y="544" width="150" height="48"/><text x="471" y="566">Transcribe</text><text x="471" y="582" class="xs" text-anchor="middle">voice in</text>
-    <rect class="box mcp" x="600" y="544" width="150" height="48"/><text x="675" y="566">OAuth 2.1</text><text x="675" y="582" class="xs" text-anchor="middle">PKCE · per member</text>
-    <rect class="box mcp" x="768" y="544" width="170" height="48"/><text x="853" y="566">Capability gate</text><text x="853" y="582" class="xs" text-anchor="middle">role-scoped tools</text>
-    <rect class="box eng" x="956" y="544" width="274" height="48"/><text x="1093" y="566">Free text = data, never instruction</text><text x="1093" y="582" class="xs" text-anchor="middle">injection defense · human-confirmed writes</text>
-  </g>
+  <rect x="914" y="108" width="160" height="78" rx="10" class="client"/>
+  <text x="928" y="135" class="t">Ring doorbell</text>
+  <text x="928" y="155" class="s">door events</text>
+  <text x="928" y="172" class="xs">simulated device</text>
 
-  <!-- footer metric -->
-  <text x="40" y="662" class="s" font-weight="700" fill="#22a45d">815 tests · property-based proofs · ~90% tool-selection · 0% false accusations</text>
-  <g transform="translate(40,678)">
-    <rect class="box sig" x="0" y="0" width="13" height="13"/><text x="20" y="11" class="xs">surface</text>
-    <rect class="box mcp" x="78" y="0" width="13" height="13"/><text x="98" y="11" class="xs">MCP / security</text>
-    <rect class="box eng" x="210" y="0" width="13" height="13"/><text x="230" y="11" class="xs">engine</text>
-    <rect class="box aws" x="300" y="0" width="13" height="13"/><text x="320" y="11" class="xs">AWS</text>
-    <rect class="box trust" x="378" y="0" width="13" height="13"/><text x="398" y="11" class="xs">trust · feedback</text>
-  </g>
+  <rect x="1086" y="108" width="170" height="78" rx="10" class="client"/>
+  <text x="1100" y="135" class="t">Google</text>
+  <text x="1100" y="155" class="s">Calendar, Gmail invites</text>
+  <text x="1100" y="172" class="xs">needs a linked account</text>
+
+  <!-- AWS cloud -->
+  <rect x="12" y="208" width="1256" height="664" rx="14" fill="#fcfcfd" stroke="#232f3e" stroke-width="1.5"/>
+  <text x="28" y="860" class="lbl" fill="#232f3e">AWS CLOUD · US-EAST-1</text>
+
+  <!-- The Alexa path: skill, Lambda, the bridge on AgentCore -->
+  <rect x="348" y="244" width="200" height="38" rx="8" class="svc"/>
+  <line x1="360" y1="253" x2="360" y2="273" stroke="#ED7100" class="acc"/>
+  <text x="372" y="268"><tspan class="t">AWS Lambda</tspan><tspan class="s"> · skill endpoint</tspan></text>
+
+  <rect x="348" y="296" width="200" height="66" rx="8" class="svc"/>
+  <line x1="360" y1="306" x2="360" y2="352" stroke="#01A88D" class="acc"/>
+  <text x="372" y="317" class="t">AgentCore Runtime</text>
+  <text x="372" y="335" class="s">alexa-skill-mcp-bridge</text>
+  <text x="372" y="351" class="xs">Strands agent on Nova Pro</text>
+
+  <!-- carecircle-sim -->
+  <rect x="36" y="392" width="290" height="276" rx="12" class="svc"/>
+  <rect x="48" y="404" width="266" height="44" rx="7" class="chip"/>
+  <text x="60" y="422" class="t">React app</text>
+  <text x="60" y="439" class="xs">console, 3D world, /tv, /proof</text>
+  <rect x="48" y="456" width="266" height="44" rx="7" class="chip"/>
+  <text x="60" y="474" class="t">Planner loop</text>
+  <text x="60" y="491" class="xs">an MCP host, on Bedrock</text>
+  <rect x="48" y="508" width="266" height="44" rx="7" class="chip"/>
+  <text x="60" y="526" class="t">Speech</text>
+  <text x="60" y="543" class="xs">Transcribe in, Polly out</text>
+  <rect x="48" y="560" width="266" height="44" rx="7" class="chip"/>
+  <text x="60" y="578" class="t">Per-visitor sandboxes</text>
+  <text x="60" y="595" class="xs">each its own copy of the demo family</text>
+  <line x1="52" y1="626" x2="52" y2="656" stroke="#ED7100" class="acc"/>
+  <text x="64" y="638" class="h">carecircle-sim</text>
+  <text x="64" y="656" class="xs">AWS App Runner · Node.js, Express</text>
+
+  <!-- carecircle-mcp -->
+  <rect x="372" y="392" width="872" height="276" rx="12" class="svc"/>
+
+  <rect x="384" y="404" width="324" height="46" rx="7" class="chip"/>
+  <text x="396" y="423" class="t">/mcp · Streamable HTTP</text>
+  <text x="396" y="440" class="xs">MCP 2025-11-25 and 2026-07-28 · OAuth 2.1 + PKCE</text>
+  <rect x="732" y="404" width="170" height="46" rx="7" class="chip"/>
+  <text x="744" y="423" class="t">/telegram/webhook</text>
+  <text x="744" y="440" class="xs">the sender is the member</text>
+  <rect x="914" y="404" width="152" height="46" rx="7" class="chip"/>
+  <text x="926" y="423" class="t">/ring/webhook</text>
+  <text x="926" y="440" class="xs">HMAC-verified</text>
+  <rect x="1078" y="404" width="154" height="46" rx="7" class="chip"/>
+  <text x="1090" y="423" class="t">Connector sync</text>
+  <text x="1090" y="440" class="xs">on a heartbeat</text>
+
+  <rect x="384" y="462" width="324" height="56" rx="7" class="chip"/>
+  <text x="396" y="481" class="t">MCP server</text>
+  <text x="396" y="497" class="xs">31 tools · resources · prompts</text>
+  <text x="396" y="511" class="xs">2 MCP Apps: the Care Board, the week's promises</text>
+  <rect x="732" y="462" width="170" height="56" rx="7" class="chip"/>
+  <text x="744" y="481" class="t">Telegram planner</text>
+  <text x="744" y="497" class="xs">Strands agent + NoBlame</text>
+  <text x="744" y="511" class="xs">same tools, in-process</text>
+  <rect x="914" y="462" width="318" height="56" rx="7" class="chip"/>
+  <text x="926" y="481" class="t">Background loops</text>
+  <text x="926" y="497" class="xs">agent pass: asks the free person, never assigns</text>
+  <text x="926" y="511" class="xs">reminders · routines a day ahead · connectors</text>
+
+  <rect x="384" y="530" width="518" height="76" rx="7" class="eng"/>
+  <text x="396" y="550" class="t" fill="#14532d">Domain engine · deterministic, no LLM</text>
+  <text x="396" y="568" class="xs" fill="#2f6b45">provenance: a missing record is "no record", never "missed"</text>
+  <text x="396" y="583" class="xs" fill="#2f6b45">gap ranking: cost × P(dropped) × confidence</text>
+  <text x="396" y="598" class="xs" fill="#2f6b45">agent policy: act only when harm avoided outweighs the interruption</text>
+  <rect x="914" y="530" width="152" height="76" rx="7" class="chip"/>
+  <text x="926" y="550" class="t">Notifier</text>
+  <text x="926" y="568" class="xs">Telegram: live</text>
+  <text x="926" y="583" class="xs">WhatsApp, SNS: built,</text>
+  <text x="926" y="598" class="xs">not in use</text>
+  <rect x="1078" y="530" width="154" height="76" rx="7" class="chip"/>
+  <text x="1090" y="550" class="t">Event store</text>
+  <text x="1090" y="568" class="xs">append-only</text>
+  <text x="1090" y="583" class="xs">every write carries</text>
+  <text x="1090" y="598" class="xs">who said so</text>
+
+  <line x1="388" y1="626" x2="388" y2="656" stroke="#ED7100" class="acc"/>
+  <text x="400" y="638" class="h">carecircle-mcp</text>
+  <text x="400" y="656" class="xs">AWS App Runner · Node.js, Express</text>
+
+  <!-- Managed services -->
+  <rect x="36" y="706" width="638" height="94" rx="10" fill="#f2fbf9" stroke="#01A88D" stroke-width="1.2"/>
+  <text x="50" y="724" class="lbl" fill="#017a67">AI AND SPEECH · USED BY BOTH SERVICES</text>
+  <rect x="48" y="734" width="300" height="56" rx="7" class="svc"/>
+  <text x="60" y="753" class="t">Amazon Bedrock</text>
+  <text x="60" y="769" class="xs">Claude Sonnet 4.5: the planner</text>
+  <text x="60" y="783" class="xs">Amazon Nova Pro: the Alexa bridge, evals</text>
+  <rect x="360" y="734" width="150" height="56" rx="7" class="svc"/>
+  <text x="372" y="753" class="t">Amazon Transcribe</text>
+  <text x="372" y="769" class="xs">voice in, with the</text>
+  <text x="372" y="783" class="xs">family's own names</text>
+  <rect x="522" y="734" width="140" height="56" rx="7" class="svc"/>
+  <text x="534" y="753" class="t">Amazon Polly</text>
+  <text x="534" y="769" class="xs">voice out: replies</text>
+  <text x="534" y="783" class="xs">and voice notes</text>
+
+  <rect x="686" y="706" width="166" height="94" rx="10" class="svc dash"/>
+  <line x1="698" y1="716" x2="698" y2="790" stroke="#01A88D" class="acc"/>
+  <text x="710" y="728" class="t">AgentCore Runtime</text>
+  <text x="710" y="746" class="s">carecircle_planner</text>
+  <text x="710" y="763" class="xs">deployed; not on a</text>
+  <text x="710" y="778" class="xs">family's path yet</text>
+
+  <rect x="864" y="706" width="156" height="94" rx="10" class="svc dash"/>
+  <line x1="876" y1="716" x2="876" y2="790" stroke="#E7157B" class="acc"/>
+  <text x="888" y="728" class="t">Amazon SNS</text>
+  <text x="888" y="746" class="s">fallback channel</text>
+  <text x="888" y="763" class="xs">when Telegram is</text>
+  <text x="888" y="778" class="xs">not configured</text>
+
+  <rect x="1032" y="706" width="212" height="94" rx="10" class="svc"/>
+  <line x1="1044" y1="716" x2="1044" y2="790" stroke="#C925D1" class="acc"/>
+  <text x="1056" y="728" class="t">Amazon DynamoDB</text>
+  <text x="1056" y="746" class="s">one table: the care record</text>
+  <text x="1056" y="763" class="xs">append-only events</text>
+  <text x="1056" y="778" class="xs">transactional version check</text>
+
+  <!-- Into the sim -->
+  <line x1="99" y1="186" x2="99" y2="402" class="ln" marker-end="url(#a)"/>
+  <text x="107" y="300" class="al">HTTPS</text>
+  <line x1="261" y1="186" x2="261" y2="402" class="ln" marker-end="url(#a)"/>
+  <text x="269" y="300" class="al">HTTPS</text>
+
+  <!-- The Alexa path -->
+  <line x1="448" y1="186" x2="448" y2="242" class="ln" marker-end="url(#a)"/>
+  <line x1="448" y1="282" x2="448" y2="294" class="ln" marker-end="url(#a)"/>
+  <line x1="538" y1="362" x2="538" y2="402" class="ln" marker-end="url(#a)"/>
+  <text x="546" y="384" class="al">MCP + OAuth</text>
+
+  <!-- Straight into the MCP server -->
+  <line x1="660" y1="186" x2="660" y2="402" class="ln" marker-end="url(#a)"/>
+  <text x="668" y="300" class="al">OAuth 2.1 + PKCE</text>
+  <line x1="817" y1="188" x2="817" y2="402" class="ln" marker-start="url(#a)" marker-end="url(#a)"/>
+  <text x="825" y="292" class="al">webhook in</text>
+  <text x="825" y="307" class="al">Bot API out</text>
+  <line x1="990" y1="186" x2="990" y2="402" class="ln" marker-end="url(#a)"/>
+  <text x="998" y="300" class="al">HMAC-signed</text>
+  <line x1="1155" y1="188" x2="1155" y2="402" class="ln dash" marker-start="url(#a)" marker-end="url(#a)"/>
+  <text x="1163" y="300" class="al">OAuth</text>
+
+  <!-- Between the services -->
+  <line x1="314" y1="482" x2="382" y2="482" class="ln" marker-end="url(#a)"/>
+  <text x="348" y="474" class="al" text-anchor="middle">MCP</text>
+
+  <!-- Down to the managed services -->
+  <line x1="300" y1="668" x2="300" y2="704" class="ln" marker-end="url(#a)"/>
+  <line x1="640" y1="668" x2="640" y2="704" class="ln" marker-end="url(#a)"/>
+  <line x1="990" y1="606" x2="990" y2="704" class="ln dash" marker-end="url(#a)"/>
+  <line x1="1155" y1="606" x2="1155" y2="704" class="ln" marker-start="url(#a)" marker-end="url(#a)"/>
+  <path d="M769,800 V826 H1138 V802" class="ln dash" marker-end="url(#a)"/>
+  <text x="950" y="842" class="al" text-anchor="middle">reads the same record</text>
+
+  <!-- Legend -->
+  <line x1="24" y1="900" x2="60" y2="900" class="ln"/>
+  <text x="68" y="904" class="xs">live in production</text>
+  <line x1="190" y1="900" x2="226" y2="900" class="ln dash"/>
+  <text x="234" y="904" class="xs">built, not on a family's path</text>
+  <rect x="420" y="893" width="16" height="14" rx="3" class="eng"/>
+  <text x="444" y="904" class="xs">the part that decides: plain code, tested, no model</text>
+  <text x="24" y="934" class="s" font-weight="700" fill="#15803d">815 tests · 31 MCP tools · first tool right 168/187 on Claude Sonnet 4.5, 162/187 on Nova Pro under the Alexa bridge's prompt · 0 false accusations</text>
 </svg>
