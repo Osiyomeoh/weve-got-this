@@ -40,6 +40,7 @@ assigns.
 | Live console, your own private copy of the demo family | https://krqi2tpsif.us-east-1.awsapprunner.com/console.html |
 | Every measured number, with the file it came from | https://krqi2tpsif.us-east-1.awsapprunner.com/proof.html |
 | Live MCP endpoint (OAuth 2.1; 401 without a token) | https://ypq2dfq2p7.us-east-1.awsapprunner.com/mcp |
+| MCP surface | 31 tools, 4 resources, 2 prompts (`daily-check`, `weekly-review`), the person's own yes on a form (elicitation), the Care Board as an MCP App, OAuth 2.1, Streamable HTTP on 2025-11-25 and 2026-07-28 ([`src/mcp/`](src/mcp/)) |
 | Friction log, dated while building | [`docs/FRICTION-LOG.md`](docs/FRICTION-LOG.md) |
 | Product feedback per tool, and feature requests | [`docs/PRODUCT-FEEDBACK.md`](docs/PRODUCT-FEEDBACK.md) · [`docs/FEATURE-REQUESTS.md`](docs/FEATURE-REQUESTS.md) |
 | Open Source mini entry | [household-sim](https://github.com/Osiyomeoh/household-sim): this repo's simulator, released as a test harness for any MCP server |
