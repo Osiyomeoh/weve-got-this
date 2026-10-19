@@ -30,7 +30,7 @@
   </defs>
 
   <rect width="1360" height="720" fill="#ffffff"/>
-  <text x="40" y="46" fill="#1f2733" font-size="24" font-weight="700">We've Got This - System Architecture</text>
+  <text x="40" y="46" fill="#1f2733" font-size="24" font-weight="700">We've Got This - From evidence to owned work</text>
   <text x="40" y="68" class="s" font-size="12.5">One responsibility graph — evidence in, accountability out.</text>
 
   <!-- ============ IN: signals ============ -->
@@ -92,9 +92,9 @@
   <rect class="box sig" x="1100" y="140" width="150" height="56"/>
   <g class="ic" transform="translate(1116,152)"><rect x="0" y="0" width="26" height="17" rx="2.5"/><path d="M9 22 h8 M13 17 v5"/></g>
   <text x="1152" y="164" class="t">Fire TV</text><text x="1152" y="182" class="xs">ambient board</text>
-  <rect class="box aws" x="1100" y="206" width="150" height="56"/>
-  <g class="ic" transform="translate(1118,218)" stroke="#c67f14"><path d="M4 14 a8 8 0 0 1 16 0 v3 l2 3 H2 l2-3 z M9 22 a3 3 0 0 0 6 0"/></g>
-  <text x="1152" y="230" class="t">SNS</text><text x="1152" y="248" class="xs">notify a member</text>
+  <rect class="box sig" x="1100" y="206" width="150" height="56"/>
+  <g class="ic" transform="translate(1118,218)"><path d="M4 14 a8 8 0 0 1 16 0 v3 l2 3 H2 l2-3 z M9 22 a3 3 0 0 0 6 0"/></g>
+  <text x="1152" y="230" class="t">Telegram</text><text x="1152" y="248" class="xs">ask a member</text>
   <rect class="box aws" x="1100" y="272" width="150" height="56"/>
   <g class="ic" transform="translate(1116,286)" stroke="#c67f14"><path d="M0 5 h5 l6-5 v18 l-6-5 H0 z M16 5 a5 5 0 0 1 0 8"/></g>
   <text x="1152" y="296" class="t">Polly</text><text x="1152" y="314" class="xs">voice out</text>
