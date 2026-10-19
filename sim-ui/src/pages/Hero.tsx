@@ -50,7 +50,7 @@ const CREDITS = [
   ['Antoni Shkraba', 'https://www.pexels.com/photo/6288114/'],
 ];
 
-const VIDEO_ID = '6IwNvse9Gfk';
+const VIDEO_ID = 'c2v6KnTsZXo';
 
 /** The demo video. YouTube loads only on a click, so the page stays fast and nobody is tracked
  *  just for visiting. */
