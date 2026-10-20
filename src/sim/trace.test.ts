@@ -7,7 +7,7 @@ import { CareStore } from '../store/store.ts';
 import { createTelegramChat } from '../http/telegram-chat.ts';
 import { traceFields } from '../obs/trace.ts';
 import { NOTHING_SAID } from '../domain/speakable.ts';
-import { SimulatedAlexa, type TurnTrace } from './host.ts';
+import { SimulatedAlexa, STALE_NOTE, type TurnTrace } from './host.ts';
 import type { Conversation, ModelProvider, ToolUse, TurnOutput } from './providers.ts';
 
 /**
@@ -193,4 +193,21 @@ test('a reply with nothing in it, and no tool to speak for it, still says someth
   const host = await hostFor(await dad(), new Scripted(['']));
   const { spoken } = await host.say('hello?');
   assert.equal(spoken, NOTHING_SAID);
+});
+
+test('the first turn goes to the model as said; later ones carry the reminder', async () => {
+  const heard: string[] = [];
+  const provider: ModelProvider = {
+    name: 'recording',
+    modelId: 'recording-1',
+    start: () => ({
+      say: async (utterance) => (heard.push(utterance), { text: 'Okay.', toolUses: [] }),
+      report: async () => ({ text: 'Okay.', toolUses: [] }),
+    }),
+  };
+  const host = await hostFor(await dad(), provider);
+  await host.say('How is Daddy doing today?');
+  await host.say('And tonight?');
+  assert.equal(heard[0], 'How is Daddy doing today?');
+  assert.equal(heard[1], `${STALE_NOTE}\nAnd tonight?`);
 });

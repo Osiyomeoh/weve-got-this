@@ -389,7 +389,7 @@ export class SimulatedAlexa {
     // A later turn is where the model is tempted to answer from its own earlier reply. Other
     // people write to the record in between (a dose said on the Echo, a yes from Musa), so
     // every turn after the first carries that reminder with it.
-    const later = this.#conversation !== undefined;
+    const later = this.#conversation !== null;
     const conversation = (this.#conversation ??= this.#provider.start(
       systemPrompt(this.#context()),
       this.#tools,

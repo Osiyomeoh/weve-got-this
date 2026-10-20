@@ -387,6 +387,8 @@ app.post('/api/say', async (req, res) => {
     res.json({ ...turn, ...(corrections.length ? { heard, corrections } : {}) });
   } catch (err) {
     const message = (err as Error).message;
+    // The name only, as the Telegram chat logs it: the message can quote what was said.
+    log.warn('console turn failed', { channel: 'voice', error: (err as Error).name });
 
     // Throttling is the ambiguous one: it means either "you used your budget" or
     // "you never had one", and Bedrock reports both identically. Ask Service

@@ -67,6 +67,21 @@ export interface ModelProvider {
 
 // --- Bedrock -------------------------------------------------------------
 
+/**
+ * A tool name Bedrock will take back in the history. Sonnet 4.5 has answered "how is
+ * Daddy doing today" by calling `get_care_summary" />`: a known tool with markup after
+ * it. Bedrock returns that name but refuses it inside `messages` ([a-zA-Z0-9_-]+), so
+ * every later request in the conversation failed. A name that starts with a known tool
+ * is that tool; anything else keeps only its valid characters and fails as an unknown
+ * tool, which the model can recover from.
+ */
+export function repairToolName(name: string, known: ReadonlySet<string>): string {
+  if (known.has(name)) return name;
+  const lead = /^[a-zA-Z0-9_-]+/.exec(name)?.[0] ?? '';
+  if (known.has(lead)) return lead;
+  return name.replace(/[^a-zA-Z0-9_-]/g, '') || 'unknown_tool';
+}
+
 export class BedrockProvider implements ModelProvider {
   readonly name = 'bedrock';
   readonly modelId: string;
@@ -79,6 +94,7 @@ export class BedrockProvider implements ModelProvider {
 
   start(system: string, tools: ToolSpec[]): Conversation {
     const history: Message[] = [];
+    const known = new Set(tools.map((t) => t.name));
     const toolConfig: { tools: BedrockTool[] } = {
       tools: tools.map((t) => ({
         toolSpec: {
@@ -100,7 +116,13 @@ export class BedrockProvider implements ModelProvider {
           inferenceConfig: { maxTokens: 512, temperature: 0 },
         }),
       );
-      const content = response.output?.message?.content ?? [];
+      const content = (response.output?.message?.content ?? []).map((c) =>
+        c.toolUse?.name !== undefined && !known.has(c.toolUse.name)
+          ? ({
+              toolUse: { ...c.toolUse, name: repairToolName(c.toolUse.name, known) },
+            } as ContentBlock)
+          : c,
+      );
       history.push({ role: 'assistant', content });
       return {
         text: content
