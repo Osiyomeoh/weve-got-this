@@ -30,6 +30,10 @@ output schema, and that discipline caught real bugs.
   the open-source alexa-skill-mcp-bridge running on AgentCore. We'd have loved a sandbox,
   even a rate-limited one, where the real planner calls a developer's server. Without
   one, every builder in this track is guessing at the most important part.
+- **The add-on CLI isn't on npm.** `npm view @alexa-ai/cli` returns E404 (checked
+  2026-10-20). That fits the organisers' "select partners only" ruling, but a builder who
+  doesn't know it reads a 404 as a typo. A "request access" page at that name would help.
+  Steps to reproduce are in the [friction log](FRICTION-LOG.md#alexa---the-add-on-cli-isnt-on-npm-so-you-cant-try-the-real-path).
 - **The guide doesn't tell you what planners actually do.** In our testing, planners
   sent an item's spoken description where its id belonged ("his eye check-up tomorrow
   at 10 AM" instead of `obl_123`). They also read a UTC timestamp as the family's local
@@ -333,6 +337,12 @@ video for the sim.
   which helped; the sample should carry it.
 - **Watchman can't read `~/Documents` on macOS** without Full Disk Access, and the build
   died with "Operation not permitted". `CI=true` (no watchman) got us through.
+- **`vega project install --fix` says "npm install" in a Yarn workspace.** It raised the
+  `@amazon-devices/*` ranges in `package.json` but left `yarn.lock` behind, so a later clean
+  offline install stopped on `kepler-media-controls` and the rebuild needed the registry.
+  Printing the right package manager's command, and an offline cache of the JavaScript
+  packages inside the SDK, would fix it
+  ([steps](FRICTION-LOG.md#vega-sdk---vega-project-install---fix-says-npm-install-in-a-yarn-workspace)).
 - **The template is a lot to strip.** The media screens (Explore, Details, Player, Settings)
   and their data still sit in `packages/shared-ui`. A minimal "one screen, focus, build"
   starter next to the full sample would help apps that aren't media players.

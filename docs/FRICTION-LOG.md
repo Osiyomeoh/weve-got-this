@@ -718,3 +718,43 @@ Template:
 - **Suggestion:** Let Developer Mode skip the app's setup, or give hackathon builders a
   sandbox account or token, and say in the CLI docs what hardware you really need.
 - **Date:** 2026-10-08
+
+### Vega SDK - `vega project install --fix` says "npm install" in a Yarn workspace
+- **Task attempted:** Rebuild the Vega Care Board for one small change, the day before
+  recording the Fire TV shot, with the network off.
+- **Steps taken:** On 2026-10-15, `vega project install --fix` in `firetv/apps/vega` (SDK
+  0.24.12112) raised the `@amazon-devices/*` ranges in `package.json`, for example
+  `kepler-media-controls` from `^1.0.0` to `~1.0.25`, and listed its next step as
+  "npm install - Install the updated dependencies". The sample is a Yarn 4 workspace. On
+  2026-10-19, with `node_modules` cleaned: `YARN_ENABLE_NETWORK=0 CI=true corepack yarn
+  install --immutable` in `firetv/`.
+- **Expected:** The install resolves from `yarn.lock` and Yarn's local cache (1.0 GB, most of
+  the 1,866 packages).
+- **Actual:** `YN0080: @amazon-devices/kepler-media-controls@npm:~1.0.25: Request to
+  'https://registry.yarnpkg.com/@amazon-devices%2fkepler-media-controls' has been blocked`.
+  `yarn.lock` still pinned 1.0.17 and only 1.0.17 was in the cache, so the rebuild needed
+  the registry. The installed SDK's `packages/` folder (78 native interface packages) does
+  not carry the JavaScript packages.
+- **Severity:** minor. Nothing was broken; we had no network budget for it that evening.
+- **Workaround:** We kept the 2026-10-17 build (`vega run-app` on the existing `.vpkg`) and
+  recorded with that.
+- **Suggestion:** Have `vega project install --fix` detect Yarn or pnpm and print the
+  matching install command (or update the lockfile itself), and ship the
+  `@amazon-devices/*` JavaScript packages for each SDK version as an offline cache.
+- **Date:** 2026-10-19
+
+### Alexa+ - the add-on CLI isn't on npm, so you can't try the real path
+- **Task attempted:** Try the Alexa+ add-on CLI (`alexa-ai new mcp`, `alexa-ai deploy`, as it
+  appears in public hackathon material) against our MCP server.
+- **Steps taken:** `npm view @alexa-ai/cli` (npm 11.5.1).
+- **Expected:** A package page, or a note saying how to get access.
+- **Actual:** `npm error 404 Not Found - GET https://registry.npmjs.org/@alexa-ai%2fcli`. That
+  matches the organisers' ruling that the add-on tools are "available to select partners
+  only", with no way to apply.
+- **Severity:** major for the track: the real Alexa+ planner never called our server.
+- **Workaround:** We measured our tools against stand-ins (Claude Sonnet 4.5, Amazon Nova Pro,
+  and the open-source alexa-skill-mcp-bridge's prompt on AgentCore) and a real Echo through a
+  classic Skill bridge. See [EVALS.md](EVALS.md).
+- **Suggestion:** Publish the CLI, even read-only or rate-limited, or put a "request access"
+  link where a builder will look for it. A 404 reads as a typo, not as "partners only".
+- **Date:** 2026-10-20
