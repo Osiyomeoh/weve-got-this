@@ -342,7 +342,7 @@ or see the [TV board](https://krqi2tpsif.us-east-1.awsapprunner.com/tv-native/).
 git clone https://github.com/Osiyomeoh/weve-got-this && cd weve-got-this
 npm ci
 npm run story     # the whole one-day story, end to end, over real MCP
-npm test          # 817 tests (unit, adversarial, and property-based)
+npm test          # 842 tests (unit, adversarial, and property-based)
 npm run lint      # eslint (typescript-eslint, strict)
 npm run typecheck # tsc: strict, noUncheckedIndexedAccess, exactOptionalPropertyTypes
 ```
