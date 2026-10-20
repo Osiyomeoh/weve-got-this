@@ -6,7 +6,7 @@ Start with the [project README](../README.md). This folder is grouped by who it'
 
 | Doc | What it is |
 |---|---|
-| [FRICTION-LOG.md](FRICTION-LOG.md) | Where we got stuck, in the format the rules ask for |
+| [FRICTION-LOG.md](FRICTION-LOG.md) | Where we got stuck: the rules' fields, laid out as Chris Trag's Friction Log Guide |
 | [FEATURE-REQUESTS.md](FEATURE-REQUESTS.md) | What Alexa+, MCP and AWS would need to make this better |
 | [PRODUCT-FEEDBACK.md](PRODUCT-FEEDBACK.md) | Feedback on the AWS services used |
 

@@ -262,9 +262,22 @@ verification are clearly specified, and idempotency via `request_id` is well tho
   with the **real partner HMAC key**, so signature verification, idempotency and inference all
   run exactly as they would for real Ring traffic. What's simulated is the device; what's
   exercised is the integration — and we say so.
+  *Update, 2026-10-20:* the Developer Playground now gives a token and a virtual doorbell with
+  no hardware, and our client read devices, Event History and a picture from the real API with
+  it. It makes only live views and sends no webhooks, so this ask stands
+  ([steps](FRICTION-LOG.md#ring-developer-playground---it-can-only-make-a-live-view-so-motion-a-ring-or-a-package-cant-be-tested)).
+- **The Playground's Event History ignores `event_types`.** Every filter, `nonsense` included,
+  answered 200 with the same live view, where the reference documents a 400. A client that
+  trusts the filter calls every motion a person. Ours now names a subtype only when exactly one
+  filter returned the event
+  ([steps](FRICTION-LOG.md#ring-developer-playground---event-history-ignores-event_types-even-an-unknown-one)).
+  The record itself says only `motion`, so the subtype costs one more query per type.
 
 **Onboarding:** blocked without hardware or a simulator; a Stripe-style test-event button per
 type (signed with the partner key) would be the single biggest improvement.
+*Update, 2026-10-20:* the Playground fixed the first hour (a token and a doorbell in one
+click). Motion, bell and package buttons there, with signed webhooks, are now the biggest
+improvement.
 
 **Would you build with it again?** **Yes**, for non-security care/accessibility use cases — but
 only after a published payload schema and a synthetic-event generator land.
