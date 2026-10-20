@@ -161,7 +161,7 @@ thing someone forgot. It's the thing nobody knew was theirs. The deep dive is
   guessed at.
 - **Holds up under an assistant it did not write.** Tool choice is measured under the system
   prompt of an Alexa Skill bridge as well as our own: **86.6%** on Amazon Nova Pro across all
-  31 tools, against **89.8%** for Claude Sonnet 4.5 under ours. The tool descriptions do the
+  31 tools, against **90.9%** for Claude Sonnet 4.5 under ours. The tool descriptions do the
   work, so it should carry to Alexa+.
 
 ---
@@ -302,8 +302,8 @@ and how each was measured are in [`docs/EVALS.md`](docs/EVALS.md).
 
 | Measure | Result | Source |
 |---|---|---|
-| Right first tool, Claude Sonnet 4.5, all 31 tools | **89.8%** (168/187); held-out, never tuned against, 75/87 | [`2026-10-17-claude-sonnet-4-5-record-order.json`](evals/results/2026-10-17-claude-sonnet-4-5-record-order.json) |
-| Right first tool, Amazon Nova Pro under the Alexa bridge's prompt | **86.6%** (162/187); held-out 73/87 | [`2026-10-17-nova-pro-alexa-bridge-prompt-record-order.json`](evals/results/2026-10-17-nova-pro-alexa-bridge-prompt-record-order.json) |
+| Right first tool, Claude Sonnet 4.5, all 31 tools | **90.9%** (170/187); held-out, never tuned against, 73/84 | [`2026-10-20-claude-sonnet-4-5-not-care.json`](evals/results/2026-10-20-claude-sonnet-4-5-not-care.json) |
+| Right first tool, Amazon Nova Pro under the Alexa bridge's prompt | **86.6%** (162/187); held-out 68/84 | [`2026-10-20-nova-pro-alexa-bridge-prompt-not-care.json`](evals/results/2026-10-20-nova-pro-alexa-bridge-prompt-not-care.json) |
 | False accusations on a missing record | **0%** for the engine; 50-58% for raw Sonnet 4.5 on the same cases | `npm run trust-benchmark` |
 | Accusing replies under 22 leading questions, Strands + NoBlame | **0/22** on Sonnet 4.5 and Nova Pro | `evals/results/2026-10-02-blame-pressure-*.json` |
 | Automated tests | **817**, including adversarial and property-based | `npm test` |

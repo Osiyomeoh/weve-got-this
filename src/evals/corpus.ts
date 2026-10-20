@@ -50,6 +50,7 @@ export interface EvalCase {
 const PURCHASE_FIX = '2026-09-23: used to fix the purchase tools';
 const CARE_CHANGES = '2026-09-23: answer key widened after the run that added change_appointment';
 const RESOLVE_FIX = '2026-09-23: looked at while fixing resolve vs log, from the Alexa bridge run';
+const NOT_CARE_FIX = '2026-10-20: used to say what is not care on the three newest tools';
 
 const contains = (needle: string) => (v: unknown) =>
   typeof v === 'string' && v.toLowerCase().includes(needle);
@@ -1203,6 +1204,7 @@ export const CORPUS: EvalCase[] = [
     utterance: 'Remind me what I promised the plumber.',
     expectNone: true,
     note: 'Says "promised", but it is not care.',
+    seen: NOT_CARE_FIX,
   },
 
   // ======================================================================
@@ -1259,6 +1261,7 @@ export const CORPUS: EvalCase[] = [
     utterance: 'Remind me to water my plants every Sunday.',
     expectNone: true,
     note: 'Comes round every week, but it is not care.',
+    seen: NOT_CARE_FIX,
   },
 
   // ======================================================================
@@ -1311,6 +1314,7 @@ export const CORPUS: EvalCase[] = [
     utterance: 'I ordered a new phone case, it comes on Tuesday.',
     expectNone: true,
     note: 'Says "ordered", but it is not care.',
+    seen: NOT_CARE_FIX,
   },
 
   // --- Nothing to call ----------------------------------------------------

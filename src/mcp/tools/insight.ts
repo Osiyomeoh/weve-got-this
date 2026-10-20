@@ -117,7 +117,9 @@ export function registerGetPromises({
         'on this week?". For each one: who said yes and when, any "still on?" check-in and ' +
         'its answer, whether it was handed back, and whether it was marked done, with what ' +
         'the doorbell saw around then. Read-only. Speak the result as written: work that is ' +
-        'due with nothing marked is "nothing\'s been marked yet", never a promise broken.',
+        'due with nothing marked is "nothing\'s been marked yet", never a promise broken. ' +
+        'Only care the family took on: a promise to someone outside it, like a tradesperson, ' +
+        'is not on the record, so say so without a tool.',
       inputSchema: {},
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
       outputSchema: OUT.get_promises,

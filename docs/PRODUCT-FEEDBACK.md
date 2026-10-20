@@ -94,7 +94,7 @@ sound; the friction is documentation and one unreleased type fix, not the design
 ## Amazon Bedrock (Claude Sonnet 4.5, `Converse`)
 
 **Used for:** the Alexa+ planner — turning a spoken sentence into a tool call. Measured at
-89.8% first-tool accuracy across all 31 tools (168/187, held-out 75/87, 2026-10-17; 96.1% on
+90.9% first-tool accuracy across all 31 tools (170/187, held-out 73/84, 2026-10-20; 96.1% on
 the 155 cases and 28 tools of 2026-10-16), and used to generate the raw-LLM baseline in the
 trust benchmark.
 
@@ -297,7 +297,7 @@ action guard (Nova Micro).
 
 **What worked well:** Nova Pro chooses tools close to the frontier models we measured: 94.4% on the
 earlier 144-case corpus, and 86.6% across all 31 tools under the Alexa bridge's prompt (162/187,
-2026-10-17), against 89.8% for Claude Sonnet 4.5 under ours. It held up on Amazon's MASSIVE dev set,
+2026-10-20), against 90.9% for Claude Sonnet 4.5 under ours. It held up on Amazon's MASSIVE dev set,
 never read before the run: 87.3% of non-care requests left alone, 4.7% wrote.
 
 **What needs work:** Nova 2 Lite, the bridge's default, was our weakest planner: 83.3%, and 77.6% on held-out

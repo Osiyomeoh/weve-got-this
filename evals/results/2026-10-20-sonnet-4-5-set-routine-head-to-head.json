@@ -1,0 +1,196 @@
+{
+  "modelId": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+  "note": "rout-03 (\"We need diesel for the generator every Saturday morning\") missed once in the 2026-10-20 full run. Three rounds each of rout-01..04 and h4-rout-07, on the same server code with set_routine worded as kept and as an alternative. Every row.",
+  "wordings": {
+    "kept": "Only for the person cared for: the speaker's own chores and reminders are not care, so answer them without a tool.",
+    "alternative": "Only for the person cared for and their home: the speaker's own chores and reminders are not care, so answer them without a tool."
+  },
+  "rounds": [
+    {
+      "round": 1,
+      "wording": "kept",
+      "results": [
+        {
+          "id": "rout-01",
+          "chosen": "set_routine",
+          "pass": true
+        },
+        {
+          "id": "rout-02",
+          "chosen": "set_routine",
+          "pass": true
+        },
+        {
+          "id": "rout-03",
+          "chosen": "set_routine",
+          "pass": true
+        },
+        {
+          "id": "rout-04",
+          "chosen": "set_routine",
+          "pass": true
+        },
+        {
+          "id": "h4-rout-07",
+          "chosen": null,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "round": 1,
+      "wording": "alternative",
+      "results": [
+        {
+          "id": "rout-01",
+          "chosen": "set_routine",
+          "pass": true
+        },
+        {
+          "id": "rout-02",
+          "chosen": "set_routine",
+          "pass": true
+        },
+        {
+          "id": "rout-03",
+          "chosen": "set_routine",
+          "pass": true
+        },
+        {
+          "id": "rout-04",
+          "chosen": "set_routine",
+          "pass": true
+        },
+        {
+          "id": "h4-rout-07",
+          "chosen": null,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "wording": "kept",
+      "results": [
+        {
+          "id": "rout-01",
+          "chosen": "set_routine",
+          "pass": true
+        },
+        {
+          "id": "rout-02",
+          "chosen": "set_routine",
+          "pass": true
+        },
+        {
+          "id": "rout-03",
+          "chosen": "set_routine",
+          "pass": true
+        },
+        {
+          "id": "rout-04",
+          "chosen": "set_routine",
+          "pass": true
+        },
+        {
+          "id": "h4-rout-07",
+          "chosen": null,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "wording": "alternative",
+      "results": [
+        {
+          "id": "rout-01",
+          "chosen": "set_routine",
+          "pass": true
+        },
+        {
+          "id": "rout-02",
+          "chosen": "set_routine",
+          "pass": true
+        },
+        {
+          "id": "rout-03",
+          "chosen": "set_routine",
+          "pass": true
+        },
+        {
+          "id": "rout-04",
+          "chosen": "set_routine",
+          "pass": true
+        },
+        {
+          "id": "h4-rout-07",
+          "chosen": null,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "round": 3,
+      "wording": "kept",
+      "results": [
+        {
+          "id": "rout-01",
+          "chosen": "set_routine",
+          "pass": true
+        },
+        {
+          "id": "rout-02",
+          "chosen": "set_routine",
+          "pass": true
+        },
+        {
+          "id": "rout-03",
+          "chosen": "set_routine",
+          "pass": true
+        },
+        {
+          "id": "rout-04",
+          "chosen": "set_routine",
+          "pass": true
+        },
+        {
+          "id": "h4-rout-07",
+          "chosen": null,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "round": 3,
+      "wording": "alternative",
+      "results": [
+        {
+          "id": "rout-01",
+          "chosen": "set_routine",
+          "pass": true
+        },
+        {
+          "id": "rout-02",
+          "chosen": "set_routine",
+          "pass": true
+        },
+        {
+          "id": "rout-03",
+          "chosen": "set_routine",
+          "pass": true
+        },
+        {
+          "id": "rout-04",
+          "chosen": "set_routine",
+          "pass": true
+        },
+        {
+          "id": "h4-rout-07",
+          "chosen": null,
+          "pass": true
+        }
+      ]
+    }
+  ]
+}

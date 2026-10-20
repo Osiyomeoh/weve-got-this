@@ -1,27 +1,27 @@
 {
-  "built": "2026-10-19T11:28:22.700Z",
-  "tests": 816,
+  "built": "2026-10-20T07:05:39.470Z",
+  "tests": 817,
   "selection": [
     {
-      "file": "2026-10-17-claude-sonnet-4-5-record-order.json",
+      "file": "2026-10-20-claude-sonnet-4-5-not-care.json",
       "planner": "Claude Sonnet 4.5 (Bedrock)",
       "prompt": "our console",
-      "passed": 168,
+      "passed": 170,
       "total": 187,
       "heldOut": {
-        "passed": 75,
-        "total": 87
+        "passed": 73,
+        "total": 84
       }
     },
     {
-      "file": "2026-10-17-nova-pro-alexa-bridge-prompt-record-order.json",
+      "file": "2026-10-20-nova-pro-alexa-bridge-prompt-not-care.json",
       "planner": "Amazon Nova Pro (Bedrock)",
       "prompt": "an Alexa Skill bridge's, not ours",
       "passed": 162,
       "total": 187,
       "heldOut": {
-        "passed": 73,
-        "total": 87
+        "passed": 68,
+        "total": 84
       }
     }
   ],

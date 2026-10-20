@@ -30,7 +30,8 @@ export function registerRecordOrder({ server, store, actor, state, now }: ToolCo
         'ordered what, from where, and when it is due at the door, and puts the work on their ' +
         'name until a person says it reached them. If the speaker lives far away, someone ' +
         'nearby is asked to take it in. Not for a refill offered by reorder_prescription: ' +
-        'confirm that with confirm_purchase.',
+        'confirm that with confirm_purchase. Only for what was ordered for the person cared ' +
+        "for: the speaker's own shopping is not care, so answer it without a tool.",
       inputSchema: {
         obligationId: z
           .string()

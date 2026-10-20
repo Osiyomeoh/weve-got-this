@@ -1,0 +1,223 @@
+{
+  "modelId": "us.amazon.nova-pro-v1:0",
+  "hostPrompt": "evals/results/alexa-bridge-system-prompt.txt",
+  "note": "Same day, same code, same 187 cases; the only difference is three sentences in get_promises, set_routine and record_order. Two runs per side. Every case that differed in any run is listed.",
+  "runs": {
+    "with the three sentences, run 1": {
+      "passed": 162,
+      "total": 187,
+      "errored": 0,
+      "splits": [
+        {
+          "split": "authored",
+          "passed": 83,
+          "total": 90
+        },
+        {
+          "split": "held-out",
+          "passed": 68,
+          "total": 84
+        },
+        {
+          "split": "seen",
+          "passed": 11,
+          "total": 13
+        }
+      ]
+    },
+    "with the three sentences, run 2": {
+      "passed": 160,
+      "total": 186,
+      "errored": 1,
+      "splits": [
+        {
+          "split": "authored",
+          "passed": 83,
+          "total": 90
+        },
+        {
+          "split": "held-out",
+          "passed": 66,
+          "total": 83
+        },
+        {
+          "split": "seen",
+          "passed": 11,
+          "total": 13
+        }
+      ]
+    },
+    "without them, run 1": {
+      "passed": 161,
+      "total": 187,
+      "errored": 0,
+      "splits": [
+        {
+          "split": "authored",
+          "passed": 82,
+          "total": 90
+        },
+        {
+          "split": "held-out",
+          "passed": 70,
+          "total": 84
+        },
+        {
+          "split": "seen",
+          "passed": 9,
+          "total": 13
+        }
+      ]
+    },
+    "without them, run 2": {
+      "passed": 164,
+      "total": 187,
+      "errored": 0,
+      "splits": [
+        {
+          "split": "authored",
+          "passed": 83,
+          "total": 90
+        },
+        {
+          "split": "held-out",
+          "passed": 72,
+          "total": 84
+        },
+        {
+          "split": "seen",
+          "passed": 9,
+          "total": 13
+        }
+      ]
+    }
+  },
+  "casesThatDiffered": {
+    "resolve-04": {
+      "utterance": "That's sorted now.",
+      "with the three sentences, run 1": "pass",
+      "with the three sentences, run 2": "pass",
+      "without them, run 1": "pass",
+      "without them, run 2": "miss (get_my_requests)"
+    },
+    "sum-05": {
+      "utterance": "Did Daddy use his evening eye drops?",
+      "with the three sentences, run 1": "pass",
+      "with the three sentences, run 2": "miss (log_care_event)",
+      "without them, run 1": "miss (log_care_event)",
+      "without them, run 2": "pass"
+    },
+    "notify-03": {
+      "utterance": "Message Funmi about the appointment change.",
+      "with the three sentences, run 1": "miss (get_care_summary)",
+      "with the three sentences, run 2": "pass",
+      "without them, run 1": "miss (get_care_summary)",
+      "without them, run 2": "pass"
+    },
+    "h-log-01": {
+      "utterance": "I already had my tablets, don't fuss.",
+      "with the three sentences, run 1": "pass",
+      "with the three sentences, run 2": "pass",
+      "without them, run 1": "pass",
+      "without them, run 2": "miss (no tool)"
+    },
+    "h-appt-04": {
+      "utterance": "Schedule his flu shot for next week sometime.",
+      "with the three sentences, run 1": "miss (no tool)",
+      "with the three sentences, run 2": "miss (no tool)",
+      "without them, run 1": "pass",
+      "without them, run 2": "pass"
+    },
+    "h-note-04": {
+      "utterance": "He’s in good spirits today.",
+      "with the three sentences, run 1": "pass",
+      "with the three sentences, run 2": "pass",
+      "without them, run 1": "miss (log_care_event)",
+      "without them, run 2": "pass"
+    },
+    "h-gap-02": {
+      "utterance": "Are we covered for the week?",
+      "with the three sentences, run 1": "miss (get_promises)",
+      "with the three sentences, run 2": "pass",
+      "without them, run 1": "pass",
+      "without them, run 2": "pass"
+    },
+    "h-claim-04": {
+      "utterance": "I'll cover the shopping.",
+      "with the three sentences, run 1": "pass",
+      "with the three sentences, run 2": "miss (set_routine)",
+      "without them, run 1": "pass",
+      "without them, run 2": "pass"
+    },
+    "h-claim-05": {
+      "utterance": "I'll be the one driving.",
+      "with the three sentences, run 1": "pass",
+      "with the three sentences, run 2": "pass",
+      "without them, run 1": "miss (no tool)",
+      "without them, run 2": "pass"
+    },
+    "h-resolve-02": {
+      "utterance": "Handled it.",
+      "with the three sentences, run 1": "miss (no tool)",
+      "with the three sentences, run 2": "pass",
+      "without them, run 1": "pass",
+      "without them, run 2": "pass"
+    },
+    "h-resolve-03": {
+      "utterance": "Took care of that already.",
+      "with the three sentences, run 1": "pass",
+      "with the three sentences, run 2": "miss (no tool)",
+      "without them, run 1": "pass",
+      "without them, run 2": "pass"
+    },
+    "h-shift-01": {
+      "utterance": "Bring me up to speed for my shift.",
+      "with the three sentences, run 1": "miss (get_care_summary)",
+      "with the three sentences, run 2": "pass",
+      "without them, run 1": "miss (get_care_summary)",
+      "without them, run 2": "pass"
+    },
+    "h-notify-04": {
+      "utterance": "Text the family that Daddy's home safe.",
+      "with the three sentences, run 1": "miss (get_connections)",
+      "with the three sentences, run 2": "miss (get_connections)",
+      "without them, run 1": "pass",
+      "without them, run 2": "pass"
+    },
+    "h2-buy-07": {
+      "utterance": "No, don't buy it.",
+      "with the three sentences, run 1": "pass",
+      "with the three sentences, run 2": "miss (no tool)",
+      "without them, run 1": "pass",
+      "without them, run 2": "pass"
+    },
+    "h2-buy-08": {
+      "utterance": "Order his supplement.",
+      "with the three sentences, run 1": "pass",
+      "with the three sentences, run 2": "miss (get_care_gaps)",
+      "without them, run 1": "pass",
+      "without them, run 2": "pass"
+    },
+    "h4-rout-07": {
+      "utterance": "Remind me to water my plants every Sunday.",
+      "with the three sentences, run 1": "pass",
+      "with the three sentences, run 2": "pass",
+      "without them, run 1": "miss (set_routine)",
+      "without them, run 2": "miss (set_routine)"
+    },
+    "h5-ord-05": {
+      "utterance": "The food came, Funmi took it in to him.",
+      "with the three sentences, run 1": "pass",
+      "with the three sentences, run 2": "miss (get_care_gaps)",
+      "without them, run 1": "pass",
+      "without them, run 2": "pass"
+    },
+    "h5-ord-07": {
+      "utterance": "I ordered a new phone case, it comes on Tuesday.",
+      "with the three sentences, run 1": "pass",
+      "with the three sentences, run 2": "pass",
+      "without them, run 1": "miss (record_order)",
+      "without them, run 2": "miss (record_order)"
+    }
+  }
+}

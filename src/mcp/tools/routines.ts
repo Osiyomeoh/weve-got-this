@@ -59,7 +59,8 @@ export function registerSetRoutine({ server, store, actor, state, now }: ToolCon
         'around, diesel for the generator, water, the electricity token. Each time it comes round ' +
         'goes on the board a day ahead and someone free is asked to take it on. Times are 24-hour ' +
         '"HH:MM" in the household timezone. Not for medicine: use add_medication. Set stop to end ' +
-        'a routine the family no longer needs.',
+        "a routine the family no longer needs. Only for the person cared for: the speaker's own " +
+        'chores and reminders are not care, so answer them without a tool.',
       inputSchema: {
         what: z
           .string()
