@@ -65,6 +65,7 @@ export function registerGetStarted({ server, actorId, now, state }: ToolContext)
           done: progress.done,
           complete: progress.complete,
           ...(progress.firstGap ? { firstGap: progress.firstGap } : {}),
+          ...(progress.question ? { question: progress.question } : {}),
           ...(familyCode ? { familyCode } : {}),
         });
       } catch (err) {

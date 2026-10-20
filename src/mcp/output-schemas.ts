@@ -127,6 +127,7 @@ export const OUT = {
     done: arr.optional(),
     complete: z.boolean().optional(),
     firstGap: z.unknown().optional(),
+    question: z.unknown().optional(),
     familyCode: z.string().optional(),
   },
   create_household: { householdId: z.string().optional(), memberId: z.string().optional() },

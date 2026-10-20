@@ -3,7 +3,7 @@
 [![CI](https://github.com/Osiyomeoh/weve-got-this/actions/workflows/ci.yml/badge.svg)](https://github.com/Osiyomeoh/weve-got-this/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![MCP spec 2025-11-25](https://img.shields.io/badge/MCP-2025--11--25-6f42c1)
-![Tests: 816](https://img.shields.io/badge/tests-816-2f9e5e)
+![Tests: 817](https://img.shields.io/badge/tests-817-2f9e5e)
 
 **An Alexa+ add-on for families looking after a parent.** It notices the care nobody has
 taken on yet, like the ride to Dad's eye check-up, and asks the right person. It never
@@ -34,9 +34,21 @@ assigns.
 
 ### For judges
 
+**Judge it in 60 seconds:**
+
+1. **[Open a family's day](https://krqi2tpsif.us-east-1.awsapprunner.com/world).** Pick a
+   family, then pick one person to play. Every word goes to the real Alexa+ planner, on your
+   own copy of their care record.
+2. **Say yes or no when it asks you.** It never hands anyone a job. It asks someone who is
+   free and says why, and nobody abroad is asked to drive.
+3. **[Set up your own family](https://krqi2tpsif.us-east-1.awsapprunner.com/setup).** A name,
+   the parent, one appointment. It asks whether they will need a ride, and you can take it.
+   Please use made-up names: it is a public demo.
+
 | What | Where |
 |---|---|
 | Demo video (2:58) | https://youtu.be/c2v6KnTsZXo |
+| Set up a circle of your own, the way a new family would | https://krqi2tpsif.us-east-1.awsapprunner.com/setup |
 | Live console, your own private copy of the demo family | https://krqi2tpsif.us-east-1.awsapprunner.com/console.html |
 | Every measured number, with the file it came from | https://krqi2tpsif.us-east-1.awsapprunner.com/proof.html |
 | Live MCP endpoint (OAuth 2.1; 401 without a token) | https://ypq2dfq2p7.us-east-1.awsapprunner.com/mcp |
@@ -294,7 +306,7 @@ and how each was measured are in [`docs/EVALS.md`](docs/EVALS.md).
 | Right first tool, Amazon Nova Pro under the Alexa bridge's prompt | **86.6%** (162/187); held-out 73/87 | [`2026-10-17-nova-pro-alexa-bridge-prompt-record-order.json`](evals/results/2026-10-17-nova-pro-alexa-bridge-prompt-record-order.json) |
 | False accusations on a missing record | **0%** for the engine; 50-58% for raw Sonnet 4.5 on the same cases | `npm run trust-benchmark` |
 | Accusing replies under 22 leading questions, Strands + NoBlame | **0/22** on Sonnet 4.5 and Nova Pro | `evals/results/2026-10-02-blame-pressure-*.json` |
-| Automated tests | **816**, including adversarial and property-based | `npm test` |
+| Automated tests | **817**, including adversarial and property-based | `npm test` |
 
 The tool-selection corpus is split so the number cannot be gamed: authored cases used while
 tuning the descriptions, and held-out cases written before any run against them, reported
@@ -330,7 +342,7 @@ or see the [TV board](https://krqi2tpsif.us-east-1.awsapprunner.com/tv-native/).
 git clone https://github.com/Osiyomeoh/weve-got-this && cd weve-got-this
 npm ci
 npm run story     # the whole one-day story, end to end, over real MCP
-npm test          # 816 tests (unit, adversarial, and property-based)
+npm test          # 817 tests (unit, adversarial, and property-based)
 npm run lint      # eslint (typescript-eslint, strict)
 npm run typecheck # tsc: strict, noUncheckedIndexedAccess, exactOptionalPropertyTypes
 ```

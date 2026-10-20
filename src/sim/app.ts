@@ -70,11 +70,13 @@ const tokenFor = new Map(Object.entries(DEMO_TOKENS).map(([token, member]) => [m
 const FOUNDER_ID = '__founder__';
 // A fresh token per onboarding run, so each begins as an unmapped bootstrap
 // principal. Once a token creates a circle it maps to that member for good and can
-// never bootstrap again - so "set up another" mints a new one.
+// never bootstrap again - so "set up another" mints a new one. Each visitor has a run
+// of their own, so one judge starting over never resets another's half-made circle.
 function newFounderToken(): string {
   return `founder-${randomUUID()}`;
 }
-tokenFor.set(FOUNDER_ID, newFounderToken());
+const founderTokens = new Map<string, string>();
+const MAX_FOUNDERS = 2_000;
 
 /**
  * Whose copy of the demo a request acts on. `live` is the shared demo household (and
@@ -133,12 +135,40 @@ async function contextFor(req: express.Request): Promise<Ctx> {
 const MAX_HOSTS = 2_000;
 
 const hostKeyOf = (ctx: Ctx, memberId: string): string => `${ctx.key}|${memberId}`;
-/** The founder's session. Onboarding always runs in the live context, never a sandbox. */
-const FOUNDER_HOST = hostKeyOf(LIVE, FOUNDER_ID);
+
+/** Whose setup run a request is part of: the visitor's, or one shared by cookie-less callers. */
+function founderOf(req: express.Request): string {
+  const visitor = parseCookies(req.header('cookie'))[VISITOR_COOKIE];
+  return isVisitorId(visitor) ? visitor : 'anonymous';
+}
+
+/**
+ * A visitor's setup run, as a context of its own. Onboarding is not part of the demo
+ * story: it acts on the brand-new circle the founder token makes, never on the demo
+ * family or a copy of it, and always on the real clock.
+ */
+function founderContext(founder: string): Ctx {
+  return {
+    key: `founder:${founder}`,
+    suffix: '',
+    token: (m) => {
+      if (m !== FOUNDER_ID) return undefined;
+      let token = founderTokens.get(founder);
+      if (!token) {
+        token = newFounderToken();
+        founderTokens.set(founder, token);
+        while (founderTokens.size > MAX_FOUNDERS) {
+          const oldest = founderTokens.keys().next().value;
+          if (oldest === undefined) break;
+          founderTokens.delete(oldest);
+        }
+      }
+      return token;
+    },
+  };
+}
 
 async function hostFor(ctx: Ctx, memberId: string): Promise<SimulatedAlexa> {
-  // Onboarding is not part of the demo story; it always runs as the founder.
-  if (memberId === FOUNDER_ID) ctx = LIVE;
   const hostKey = hostKeyOf(ctx, memberId);
   const existing = hosts.get(hostKey);
   if (existing) return existing;
@@ -397,9 +427,10 @@ app.post('/api/say', async (req, res) => {
  */
 // Start onboarding over with a brand-new family: a fresh bootstrap token, and no
 // cached session, so the next call begins at "create your circle".
-app.post('/api/setup/reset', async (_req, res) => {
-  hosts.delete(FOUNDER_HOST);
-  tokenFor.set(FOUNDER_ID, newFounderToken());
+app.post('/api/setup/reset', async (req, res) => {
+  const founder = founderOf(req);
+  hosts.delete(hostKeyOf(founderContext(founder), FOUNDER_ID));
+  founderTokens.set(founder, newFounderToken());
   res.json({ ok: true });
 });
 
@@ -407,8 +438,8 @@ app.post('/api/setup/reset', async (_req, res) => {
 // open session is still bound to the bootstrap principal - and the server refuses
 // a mid-session identity change (its credential-swap guard). So drop the session,
 // keeping the now-mapped token, and the next call reconnects as that member.
-app.post('/api/setup/rebind', async (_req, res) => {
-  hosts.delete(FOUNDER_HOST);
+app.post('/api/setup/rebind', async (req, res) => {
+  hosts.delete(hostKeyOf(founderContext(founderOf(req)), FOUNDER_ID));
   res.json({ ok: true });
 });
 
@@ -425,9 +456,10 @@ app.post('/api/act', async (req, res) => {
     return;
   }
   try {
-    const ctx = await contextFor(req);
+    const founding = memberId === FOUNDER_ID;
+    const ctx = founding ? founderContext(founderOf(req)) : await contextFor(req);
     const host = await hostFor(ctx, memberId);
-    host.setStoryTime(storyTimeOf(ctx, storyTime));
+    host.setStoryTime(founding ? null : storyTimeOf(ctx, storyTime));
     // The Fire TV page says when a call is a press on its remote (see src/mcp/channel.ts).
     const out = await withRetry(() =>
       host.callToolDirect(

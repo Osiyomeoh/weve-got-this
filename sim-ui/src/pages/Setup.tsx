@@ -41,6 +41,8 @@ export default function Setup() {
   const [progress, setProgress] = useState<OnboardingProgress | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // What the app said back to the last yes, no or "I'll take it", in its own words.
+  const [said, setSaid] = useState<string | null>(null);
 
   const refresh = async () => {
     try {
@@ -68,6 +70,7 @@ export default function Setup() {
         setError(call.result);
         return false;
       }
+      setSaid(tool === 'confirm_proposal' || tool === 'claim_obligation' ? call.result : null);
       // Creating the circle maps the founder's token to a real member; the open
       // session is still the bootstrap principal, so refresh it before continuing.
       if (tool === 'create_household') await api.rebindSetup().catch(() => undefined);
@@ -111,8 +114,11 @@ export default function Setup() {
         })}
       </ol>
 
-      {/* What the server says next, spoken aloud in the voice flow - shown here. */}
-      {progress && <p className="mb-6 text-lg leading-relaxed text-ink/90">{progress.spoken}</p>}
+      {/* What the server says next, spoken aloud in the voice flow - shown here. The last
+          screen says it in its cards instead. */}
+      {progress && step !== 'ready' && (
+        <p className="mb-6 text-lg leading-relaxed text-ink/90">{progress.spoken}</p>
+      )}
 
       {error && (
         <div className="mb-5 rounded-lg border border-norecord/40 bg-norecord/10 px-3 py-2 text-sm text-norecord">
@@ -126,9 +132,13 @@ export default function Setup() {
       {step === 'ready' && (
         <Ready
           progress={progress!}
+          said={said}
           busy={busy}
           onSubmit={run}
-          onReset={() => void api.resetSetup().then(refresh)}
+          onReset={() => {
+            setSaid(null);
+            void api.resetSetup().then(refresh);
+          }}
         />
       )}
     </div>
@@ -188,7 +198,10 @@ function CreateCircle({ busy, onSubmit }: StepProps) {
           placeholder="e.g. Ada"
         />
       </Field>
-      <p className="text-xs text-muted">Times will be read in {tz}.</p>
+      <p className="text-xs text-muted">
+        Times will be read in {tz}. This is a public demo, so please use made-up names and details:
+        the circle is kept on our server.
+      </p>
       <button className={btnCls} disabled={!ok || busy}>
         {busy ? 'Setting up…' : 'Create the circle'}
       </button>
@@ -236,7 +249,95 @@ function AddRecipient({ busy, onSubmit }: StepProps) {
   );
 }
 
+/** Tomorrow's date in this browser's time zone, as an <input type="date"> value. */
+function tomorrow(): string {
+  const d = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  const two = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}`;
+}
+
+/**
+ * One thing to watch: an appointment coming up, or a medication and its times. The
+ * appointment comes first because it shows the product working on day one: the app
+ * guesses what it will need, asks before treating the guess as work, and then finds
+ * out who has it.
+ */
 function AddCareDetail({ busy, onSubmit }: StepProps) {
+  const [kind, setKind] = useState<'appointment' | 'medication'>('appointment');
+  return (
+    <div className="space-y-5">
+      <div className="flex gap-2">
+        {(['appointment', 'medication'] as const).map((k) => (
+          <button
+            key={k}
+            type="button"
+            onClick={() => setKind(k)}
+            className={`rounded-full border px-4 py-1.5 text-sm ${
+              kind === k ? 'border-alexa bg-alexa/15 text-ink' : 'border-white/15 text-muted'
+            }`}
+          >
+            {k === 'appointment' ? 'An appointment' : 'A medication'}
+          </button>
+        ))}
+      </div>
+      {kind === 'appointment' ? (
+        <AddAppointment busy={busy} onSubmit={onSubmit} />
+      ) : (
+        <AddMedication busy={busy} onSubmit={onSubmit} />
+      )}
+    </div>
+  );
+}
+
+function AddAppointment({ busy, onSubmit }: StepProps) {
+  const [what, setWhat] = useState('');
+  const [day, setDay] = useState(tomorrow);
+  const [time, setTime] = useState('10:00');
+  const ok = what.trim() && day && time;
+  return (
+    <form
+      className="space-y-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        // The household's local time, which is this browser's (set on the first step).
+        if (ok)
+          onSubmit('record_appointment', { kind: what.trim(), startsAt: `${day}T${time}:00` });
+      }}
+    >
+      <Field label="An appointment coming up">
+        <input
+          className={inputCls}
+          value={what}
+          onChange={(e) => setWhat(e.target.value)}
+          placeholder="e.g. eye check-up"
+        />
+      </Field>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Day">
+          <input
+            type="date"
+            className={inputCls}
+            value={day}
+            onChange={(e) => setDay(e.target.value)}
+          />
+        </Field>
+        <Field label="Time">
+          <input
+            type="time"
+            className={inputCls}
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+          />
+        </Field>
+      </div>
+      <button className={btnCls} disabled={!ok || busy}>
+        {busy ? 'Adding…' : 'Add it'}
+      </button>
+    </form>
+  );
+}
+
+function AddMedication({ busy, onSubmit }: StepProps) {
   const [name, setName] = useState('');
   const [times, setTimes] = useState('08:00, 20:00');
   const parsed = times
@@ -275,37 +376,94 @@ function AddCareDetail({ busy, onSubmit }: StepProps) {
   );
 }
 
+const ghostCls = 'rounded-lg border border-white/15 px-5 py-2.5 text-ink/80 disabled:opacity-50';
+
+/**
+ * Set up, and the product's first move: a guess put to them as a question, then the
+ * work nobody has yet, which they can take. Each button is the same tool the voice
+ * flow calls, and what the app says back is shown as it said it.
+ */
 function Ready({
   progress,
+  said,
   busy,
   onSubmit,
   onReset,
-}: StepProps & { progress: OnboardingProgress; onReset: () => void }) {
+}: StepProps & { progress: OnboardingProgress; said: string | null; onReset: () => void }) {
+  const { question, firstGap } = progress;
   return (
     <div className="space-y-5">
-      {progress.firstGap ? (
+      {said && (
+        <div className="rounded-lg border border-confirmed/40 bg-confirmed/10 px-4 py-3 text-ink">
+          {said}
+        </div>
+      )}
+      {question ? (
+        <div className="rounded-2xl border border-white/12 bg-white/5 p-5">
+          <div className="mb-1 text-[0.7rem] uppercase tracking-wide text-alexa">
+            One question first
+          </div>
+          <div className="text-lg font-medium">{question.ask}</div>
+          <div className="mt-4 flex gap-3">
+            <button
+              className={btnCls}
+              disabled={busy}
+              onClick={() =>
+                void onSubmit('confirm_proposal', {
+                  obligationId: question.obligationId,
+                  confirmed: true,
+                })
+              }
+            >
+              Yes, it's needed
+            </button>
+            <button
+              className={ghostCls}
+              disabled={busy}
+              onClick={() =>
+                void onSubmit('confirm_proposal', {
+                  obligationId: question.obligationId,
+                  confirmed: false,
+                })
+              }
+            >
+              No
+            </button>
+          </div>
+        </div>
+      ) : firstGap ? (
         <div className="rounded-2xl border border-white/12 bg-white/5 p-5">
           <div className="mb-1 text-[0.7rem] uppercase tracking-wide text-norecord">
             First thing that needs someone
           </div>
-          <div className="text-lg font-medium">{progress.firstGap.what}</div>
-          <div className="mt-1.5 text-sm text-[#c3cad9]">{progress.firstGap.because}</div>
+          <div className="text-lg font-medium">{firstGap.what}</div>
+          <div className="mt-1.5 text-sm text-[#c3cad9]">{firstGap.because}</div>
+          {firstGap.obligationId && (
+            <button
+              className={`${btnCls} mt-4`}
+              disabled={busy}
+              onClick={() =>
+                void onSubmit('claim_obligation', { obligationId: firstGap.obligationId })
+              }
+            >
+              I'll take it
+            </button>
+          )}
         </div>
       ) : (
-        <div className="rounded-2xl border border-white/12 bg-white/5 p-5 text-ink/80">
-          Nothing needs anyone yet. The app will keep watch and let the circle know the moment
-          something does.
-        </div>
+        !said && (
+          <div className="rounded-2xl border border-white/12 bg-white/5 p-5 text-ink/80">
+            Nothing needs anyone yet. The app will keep watch and let the circle know the moment
+            something does.
+          </div>
+        )
       )}
       <AddFamily busy={busy} onSubmit={onSubmit} />
-      <div className="flex gap-3">
-        <Link to="/console" className={btnCls}>
-          Open the care board
+      <div className="flex flex-wrap gap-3">
+        <Link to="/world" className={btnCls}>
+          See a family's whole day
         </Link>
-        <button
-          onClick={onReset}
-          className="rounded-lg border border-white/15 px-5 py-2.5 text-ink/80"
-        >
+        <button onClick={onReset} className={ghostCls}>
           Set up another
         </button>
       </div>

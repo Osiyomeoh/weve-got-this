@@ -310,15 +310,19 @@ export interface OnboardingProgress {
   done: OnboardingStep[];
   complete: boolean;
   spoken: string;
-  firstGap?: { what: string; because: string };
+  firstGap?: { what: string; because: string; obligationId?: string };
+  question?: { obligationId: string; what: string; ask: string };
 }
 
 /** Read where setup is, straight from the server's get_started tool. */
 export async function getStarted(memberId: string = FOUNDER_ID): Promise<OnboardingProgress> {
   const call = await api.act(memberId, 'get_started', {});
-  const s = call.structured as OnboardingProgress | undefined;
-  // Fall back to a minimal shape if structured content is absent.
-  return s ?? { step: 'create_circle', done: [], complete: false, spoken: call.result };
+  const s = call.structured as Omit<OnboardingProgress, 'spoken'> | undefined;
+  // The sentence to say is the tool's text; the structure says where setup is. Fall
+  // back to a minimal shape if structured content is absent.
+  return s
+    ? { ...s, spoken: call.result }
+    : { step: 'create_circle', done: [], complete: false, spoken: call.result };
 }
 
 export interface Member {

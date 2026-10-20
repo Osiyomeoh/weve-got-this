@@ -148,6 +148,12 @@ export default function Hero() {
               Play a family’s week →
             </Link>
             <Link
+              to="/setup"
+              className={`${button} border border-white/40 text-white hover:bg-white/10`}
+            >
+              Set up your own family
+            </Link>
+            <Link
               to="/console"
               className={`${button} border border-white/40 text-white hover:bg-white/10`}
             >
@@ -212,7 +218,13 @@ export default function Hero() {
         >
           Try the simulation →
         </Link>
-        <p className="mt-3 text-sm text-[#6b7078]">Type, speak, or send a voice note.</p>
+        <p className="mt-3 text-sm text-[#6b7078]">
+          Type, speak, or send a voice note. Or{' '}
+          <Link to="/setup" className="underline hover:text-[#16181d]">
+            set up your own family
+          </Link>
+          .
+        </p>
       </section>
 
       <footer className="border-t border-black/10">
@@ -220,6 +232,9 @@ export default function Hero() {
           <span className="font-semibold text-[#16181d]">We’ve Got This</span>
           <Link to="/world" className="hover:text-[#16181d]">
             Simulation
+          </Link>
+          <Link to="/setup" className="hover:text-[#16181d]">
+            Set up
           </Link>
           <Link to="/console" className="hover:text-[#16181d]">
             Console

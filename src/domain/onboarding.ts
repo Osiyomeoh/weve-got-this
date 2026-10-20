@@ -1,5 +1,6 @@
-import type { CareState } from './types.js';
-import { detectCareGaps } from './gaps.js';
+import type { CareState, Obligation } from './types.js';
+import { detectCareGaps, pendingProposals } from './gaps.js';
+import { RULES } from './inference.js';
 
 /**
  * First run — walking a real family in, not making them guess a magic phrase.
@@ -35,6 +36,19 @@ export type OnboardingStep =
 export interface FirstGap {
   what: string;
   because: string;
+  /** The work behind the gap, so a screen can offer "I'll take it". */
+  obligationId?: string;
+}
+
+/**
+ * A guess the app made from what was just set up ("will Mum need a ride?"). It is not
+ * work until someone says yes, so it is asked, never shown as a gap.
+ */
+export interface FirstQuestion {
+  obligationId: string;
+  what: string;
+  /** The question, worded as the appointment flow first asked it. */
+  ask: string;
 }
 
 export interface OnboardingProgress {
@@ -45,6 +59,8 @@ export interface OnboardingProgress {
   spoken: string;
   /** On `ready`, the first thing nobody owns - the reason to keep the product. */
   firstGap?: FirstGap;
+  /** On `ready` with no gap yet, the guess to put to them first. */
+  question?: FirstQuestion;
   /** True once setup is complete; a caller can stop prompting for it. */
   complete: boolean;
 }
@@ -53,6 +69,17 @@ const ORDER: OnboardingStep[] = ['create_circle', 'add_recipient', 'add_care_det
 
 function priorSteps(step: OnboardingStep): OnboardingStep[] {
   return ORDER.slice(0, ORDER.indexOf(step));
+}
+
+/** Ask about a proposal in the words its rule used when it was made (inference.ts). */
+function askAbout(state: CareState, o: Obligation, subject: string): string {
+  if (o.provenance.kind !== 'INFERRED') return `${o.what}?`;
+  const { rule: ruleId, from } = o.provenance;
+  const rule = RULES.find((r) => r.id === ruleId);
+  const kind = state.events.find((e) => e.id === o.sourceEventId)?.data['appointmentKind'];
+  return rule && typeof kind === 'string'
+    ? rule.ask(subject, kind)
+    : `${o.what}? I'm guessing from ${from}, not from anything anyone told me.`;
 }
 
 /**
@@ -109,14 +136,26 @@ export function onboardingProgress(
   const gaps = detectCareGaps(state, opts.now ? { now: opts.now } : {});
   const top = gaps[0];
   const firstGap: FirstGap | undefined = top
-    ? { what: top.spoken, because: top.because }
+    ? {
+        what: top.spoken,
+        because: top.because,
+        ...(top.obligationId ? { obligationId: top.obligationId } : {}),
+      }
+    : undefined;
+  // With nothing to take yet, a guess the setup produced is the next thing to settle:
+  // an appointment's ride is asked about, never put on the board unconfirmed.
+  const pending = top ? undefined : pendingProposals(state)[0];
+  const question: FirstQuestion | undefined = pending
+    ? { obligationId: pending.id, what: pending.what, ask: askAbout(state, pending, name) }
     : undefined;
 
   const spoken = top
     ? `You're all set. Here's the first thing that needs someone: ${top.spoken} ` +
       `Say "I'll take it", or ask me to find who's free.`
-    : `You're all set up for ${name}. Nothing needs anyone yet - I'll keep watch and ` +
-      `let the circle know the moment something does.`;
+    : question
+      ? `You're all set up for ${name}. One question first: ${question.ask}`
+      : `You're all set up for ${name}. Nothing needs anyone yet - I'll keep watch and ` +
+        `let the circle know the moment something does.`;
 
   return {
     step: 'ready',
@@ -124,5 +163,6 @@ export function onboardingProgress(
     complete: true,
     spoken,
     ...(firstGap ? { firstGap } : {}),
+    ...(question ? { question } : {}),
   };
 }

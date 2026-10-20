@@ -89,7 +89,51 @@ test('setup ends the moment there is a real gap to act on - it does not chase a 
   assert.equal(p.step, 'ready');
   assert.ok(p.firstGap, 'ready without surfacing the first gap defeats the point');
   assert.match(p.firstGap!.what, /clinic/i);
+  assert.equal(p.firstGap!.obligationId, 'o1', 'a screen needs the id to offer "I\'ll take it"');
   assert.match(p.spoken, /needs someone/i);
+});
+
+test("an appointment's guessed ride is asked about, never shown as work", () => {
+  const p = onboardingProgress(
+    state({
+      members: [state().members[0]!, recipient],
+      events: [
+        {
+          id: 'e1',
+          householdId: 'h1',
+          kind: 'appointment_scheduled',
+          reportedBy: 'm_ada',
+          occurredAt: '2026-10-16T14:00:00Z',
+          recordedAt: '2026-10-15T17:00:00Z',
+          data: { appointmentKind: 'eye check-up', forMemberId: 'm_mum' },
+        },
+      ],
+      obligations: [
+        {
+          id: 'o_ride',
+          householdId: 'h1',
+          what: 'Drive Mum to the eye check-up',
+          status: 'PROPOSED',
+          consequence: 'medical',
+          ownerId: null,
+          createdAt: '2026-10-15T17:00:00Z',
+          dueAt: '2026-10-16T14:00:00Z',
+          sourceEventId: 'e1',
+          provenance: {
+            kind: 'INFERRED',
+            rule: 'medical-appointment-transport',
+            from: 'the eye check-up appointment',
+          },
+        },
+      ],
+    }),
+    { now: NOW },
+  );
+  assert.equal(p.step, 'ready');
+  assert.equal(p.firstGap, undefined, 'a guess is not a gap until someone says yes');
+  assert.equal(p.question?.obligationId, 'o_ride');
+  assert.match(p.question!.ask, /Will Mum need a ride to the eye check-up\? I'm guessing/);
+  assert.match(p.spoken, /One question first/);
 });
 
 test('ready with nothing outstanding reassures rather than inventing work', () => {
