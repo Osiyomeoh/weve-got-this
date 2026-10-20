@@ -25,7 +25,7 @@ jobs:
           }
           ok=0
           check https://krqi2tpsif.us-east-1.awsapprunner.com/ 200 || ok=1
-          check https://krqi2tpsif.us-east-1.awsapprunner.com/console.html 200 || ok=1
+          check https://krqi2tpsif.us-east-1.awsapprunner.com/console 200 || ok=1
           check https://krqi2tpsif.us-east-1.awsapprunner.com/proof.html 200 || ok=1
           check https://ypq2dfq2p7.us-east-1.awsapprunner.com/health 200 || ok=1
           # OAuth-protected: 401 without a token means the server is up.

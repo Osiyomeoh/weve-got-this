@@ -14,7 +14,7 @@ assigns.
 **[See every number](https://krqi2tpsif.us-east-1.awsapprunner.com/proof.html)** ·
 **[Connect your own MCP client](docs/MCP.md)**
 
-[![The console: the family and a mic on the left, and on the right the pieces of Daddy's care that still need someone, each saying how the system knows, with "I'll take it"](docs/console.png)](https://krqi2tpsif.us-east-1.awsapprunner.com/console.html)
+[![The console: the family and a mic on the left, and on the right the pieces of Daddy's care that still need someone, each saying how the system knows, with "I'll take it"](docs/console.png)](https://krqi2tpsif.us-east-1.awsapprunner.com/console)
 
 ## Contents
 
@@ -49,7 +49,7 @@ assigns.
 |---|---|
 | Demo video (2:58) | https://youtu.be/c2v6KnTsZXo |
 | Set up a circle of your own, the way a new family would | https://krqi2tpsif.us-east-1.awsapprunner.com/setup |
-| Live console, your own private copy of the demo family | https://krqi2tpsif.us-east-1.awsapprunner.com/console.html |
+| Live console, your own private copy of the demo family | https://krqi2tpsif.us-east-1.awsapprunner.com/console |
 | Every measured number, with the file it came from | https://krqi2tpsif.us-east-1.awsapprunner.com/proof.html |
 | Live MCP endpoint (OAuth 2.1; 401 without a token) | https://ypq2dfq2p7.us-east-1.awsapprunner.com/mcp |
 | MCP surface | 31 tools, 4 resources, 2 prompts (`daily-check`, `weekly-review`), the person's own yes on a form (elicitation), the Care Board as an MCP App, OAuth 2.1, Streamable HTTP on 2025-11-25 and 2026-07-28 ([`src/mcp/`](src/mcp/)) |

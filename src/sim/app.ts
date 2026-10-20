@@ -260,8 +260,13 @@ app.use((_req, res, next) => {
   res.setHeader('Access-Control-Allow-Headers', 'content-type');
   next();
 });
+// The console used to be a static page at /console.html. It is the React /console now;
+// old links (a judge's bookmark, an earlier README) land there, query string and all.
+app.get('/console.html', (req, res) => {
+  res.redirect(301, req.originalUrl.replace(/^\/console\.html/, '/console'));
+});
 // The built React UI (Vite) comes first; public/ holds the pages it links to that are
-// not part of it: the console, the docs page, /proof and the React Native TV web build.
+// not part of it: the docs page, /proof and the React Native TV web build.
 const uiDir = join(here, '../../sim-ui/dist');
 app.use(express.static(uiDir));
 app.use(express.static(join(here, '../../public')));

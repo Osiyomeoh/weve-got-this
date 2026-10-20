@@ -1,6 +1,7 @@
 // The live care state - the SAME MCP resource the web console reads.
 // This is the fourth surface: the ambient care board on the living-room TV.
-// No new backend; we poll the live sim's /api/state, exactly like public/console.html.
+// No new backend; we poll the live sim's /api/state, exactly like the web console
+// (sim-ui/src/pages/Console.tsx).
 
 // Live sim URL by default. On the web dev target a CORS proxy can be supplied via
 // EXPO_PUBLIC_CARE_API_BASE (the deployed sim allows same-origin; the TV app is same
@@ -82,7 +83,8 @@ export function provKey(p?: Provenance): ChipKey {
   return p === 'INFERRED' ? 'inferred' : p === 'NOT_LOGGED' ? 'norecord' : 'confirmed';
 }
 
-// Mirror console.html: UNCONFIRMED gaps read NO RECORD; otherwise follow the
+// Mirror the web console (sim-ui/src/components/ProvChip.tsx): UNCONFIRMED gaps read
+// NO RECORD; otherwise follow the
 // linked obligation's provenance.
 export function gapChip(gap: Gap, obById: Record<string, Obligation>): ChipKey {
   if (gap.kind === 'UNCONFIRMED') return 'norecord';
