@@ -517,6 +517,13 @@ Template:
   when publishing `additionalProperties: false`, or publish `additionalProperties: true`
   when checking loosely. One SDK shouldn't have two ideas of "valid". A dev-mode warning
   naming the extra field would have saved us every time.
+- **Upstream:** already reported as
+  [typescript-sdk#2464](https://github.com/modelcontextprotocol/typescript-sdk/issues/2464),
+  with a fix open for `main` in
+  [#2556](https://github.com/modelcontextprotocol/typescript-sdk/pull/2556). On 2026-10-20 it
+  still happens in 1.32.1, the current release on npm: a tool with
+  `outputSchema: { count: z.number() }` that returns `{ count: 1, extra: true }` is sent by
+  the server and refused by the SDK's own `Client` with the same `-32602`.
 - **Date:** 2026-09-22
 
 ### MCP / Alexa+ planning - the planner asks the family things the server already knows
@@ -757,4 +764,35 @@ Template:
   classic Skill bridge. See [EVALS.md](EVALS.md).
 - **Suggestion:** Publish the CLI, even read-only or rate-limited, or put a "request access"
   link where a builder will look for it. A 404 reads as a typo, not as "partners only".
+- **Date:** 2026-10-20
+
+### Amazon Bedrock Converse - it returns a tool name that its next request refuses
+- **Task attempted:** Answer a visitor's first question on our web console ("How is Daddy
+  doing today?") with Claude Sonnet 4.5 through the Converse API
+  (`us.anthropic.claude-sonnet-4-5-20250929-v1:0`), passing our MCP tools in `toolConfig`.
+- **Steps taken:** Our own bug put a bracketed note ("[Others may have changed the care
+  record since your last reply...]") in front of the very first message. The model answered
+  with `stopReason: tool_use` and a `toolUse` named `get_care_summary" />`: a real tool
+  name with markup after it. We kept the assistant message as Converse returned it, answered
+  the call with an "unknown tool" result, and sent the conversation back.
+- **Expected:** Either Converse only returns tool names that are in `toolConfig` (or at
+  least ones it accepts as input), or the next request accepts the history it produced.
+- **Actual:** `ValidationException: 1 validation error detected: Value at
+  'messages.2.member.content.1.member.toolUse.name' failed to satisfy constraint: Member
+  must satisfy regular expression pattern: [a-zA-Z0-9_-]+`. The name came from Bedrock, so
+  every later request in that conversation failed the same way and the visitor got an error
+  on their first question. Nothing in the Converse docs says the returned `toolUse.name` can
+  be outside the pattern the same API enforces on input.
+- **Severity:** major. One odd model reply kills the whole conversation, and the error points
+  at our request, not at the response that caused it.
+- **Workaround:** We fixed our bug (the note now waits for the second turn), and before a
+  reply goes into the history we repair any name that isn't one of our tools: a known tool
+  with junk after it becomes that tool, and anything else keeps only the allowed characters,
+  so it fails as an unknown tool the model can recover from (`repairToolName` in
+  `src/sim/providers.ts`, with a test that replays the two Bedrock responses). The family's
+  Telegram chat runs on Strands and was not affected; its logs showed no failed turn in 14
+  days.
+- **Suggestion:** Validate `toolUse.name` against the request's `toolConfig` before
+  returning it, or at least against the input pattern, and say so in the docs. If a name
+  can't be fixed, return a clear error then, while the caller can still retry the turn.
 - **Date:** 2026-10-20

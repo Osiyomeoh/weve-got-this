@@ -85,6 +85,12 @@ itself is coherent and the SDK tracks it closely.
   non-authoritative speaker hint from a shared device, or (c) mark tool-result text as
   user-supplied rather than trusted. Each is a real gap for a multi-user, date-sensitive,
   free-text product — see the friction log; the date gap produced a wrong medical date.
+- **The server sends a result its own client refuses.** The server checks `outputSchema`
+  loosely but publishes it with `additionalProperties: false`, so one extra field in a
+  result passes every server test and fails in every strict host. Six of our 25 tools had
+  it. It is already reported upstream (#2464, fix open in #2556 for `main`) and still
+  happens in 1.32.1 on 2026-10-20
+  ([steps](FRICTION-LOG.md#mcp-typescript-sdk---the-server-sends-a-result-its-own-client-rejects)).
 
 **Onboarding (zero → hello world):** fast for a single stdio tool; slower for stateful
 Streamable HTTP, because the session-reuse requirement is discovered through an opaque error
@@ -120,6 +126,12 @@ operational, not modelling:
 - **No invoke-scoped way to discover** which models you can call or how much daily budget
   remains; reading quotas needs a separate `servicequotas:*` grant your inference role won't
   have.
+- **`Converse` can return a tool name that its next request refuses.** Sonnet 4.5 once
+  called `get_care_summary" />`. Bedrock returned it, then refused the conversation that
+  carried it (`toolUse.name` must match `[a-zA-Z0-9_-]+`), so every later turn failed and the
+  error pointed at our request, not at Bedrock's response. We now repair the name before it
+  goes into the history. Checking returned names against `toolConfig` would stop it for
+  everyone ([steps](FRICTION-LOG.md#amazon-bedrock-converse---it-returns-a-tool-name-that-its-next-request-refuses)).
 
 **Onboarding:** the modelling path is excellent; the *readiness* path (quota, access, correct
 id, correct IAM resource) is where days go, and every failure mode looks like every other.
