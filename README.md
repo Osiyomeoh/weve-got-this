@@ -3,7 +3,7 @@
 [![CI](https://github.com/Osiyomeoh/weve-got-this/actions/workflows/ci.yml/badge.svg)](https://github.com/Osiyomeoh/weve-got-this/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![MCP spec 2025-11-25](https://img.shields.io/badge/MCP-2025--11--25-6f42c1)
-![Tests: 817](https://img.shields.io/badge/tests-817-2f9e5e)
+![Tests: 836](https://img.shields.io/badge/tests-836-2f9e5e)
 
 **An Alexa+ add-on for families looking after a parent.** It notices the care nobody has
 taken on yet, like the ride to Dad's eye check-up, and asks the right person. It never
@@ -14,7 +14,7 @@ assigns.
 **[See every number](https://krqi2tpsif.us-east-1.awsapprunner.com/proof.html)** ·
 **[Connect your own MCP client](docs/MCP.md)**
 
-[![The console: the family on the left, and on the right two pieces of Daddy's care that nobody has taken yet, each with "I'll take it"](docs/console.png)](https://krqi2tpsif.us-east-1.awsapprunner.com/console.html)
+[![The console: the family and a mic on the left, and on the right the pieces of Daddy's care that still need someone, each saying how the system knows, with "I'll take it"](docs/console.png)](https://krqi2tpsif.us-east-1.awsapprunner.com/console.html)
 
 ## Contents
 
