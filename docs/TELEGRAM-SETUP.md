@@ -79,7 +79,7 @@ No platform verification, no lead time — this is the one to demo live.
 ## Family-group mode (the demo scene) — LIVE
 
 Instead of private DMs, the app can run in a **Telegram group** so the whole circle sees
-the loop. Verified live in the group **"Magaret's CareCircle"**.
+the loop. Verified live in the family pilot's group.
 
 **Setup:**
 1. Create a Telegram group, add the bot and the family members.
