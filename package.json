@@ -34,6 +34,7 @@
     "calendar:push": "tsx --env-file-if-exists=.env scripts/calendar-push.ts",
     "email:sync": "tsx --env-file-if-exists=.env scripts/email-sync.ts",
     "ring:check": "tsx --env-file-if-exists=.env scripts/ring-check.ts",
+    "ring:watch": "tsx scripts/ring-watch.ts",
     "lint": "eslint \"src/**/*.ts\" \"scripts/**/*.ts\"",
     "lint:fix": "eslint \"src/**/*.ts\" \"scripts/**/*.ts\" --fix",
     "format": "prettier --write \"src/**/*.ts\" \"scripts/**/*.ts\" \"packages/care-events/src/**/*.ts\" \"sim-ui/src/**/*.{ts,tsx}\"",

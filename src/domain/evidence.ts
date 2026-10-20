@@ -65,14 +65,22 @@ function clockAt(at: string, timezone: string): string {
     .replace(/\s/g, ' ');
 }
 
+/** What Ring classified motion as, when it did: a person or a vehicle, never who. */
+const CLASSIFIED: Record<string, string> = {
+  human: 'a person at the door',
+  vehicle: 'a vehicle at the door',
+};
+
 /** One signal as a plain line: what was seen and when, nothing about what it means. */
 export function evidenceLine(e: CareEvent, timezone: string): string {
+  const subType = (e.data['raw'] as { subType?: unknown } | undefined)?.subType;
   const what =
     e.data['signalKind'] === 'delivery_arrived'
       ? 'a delivery at the door'
       : e.data['signalKind'] === 'door_activity'
         ? 'the doorbell pressed'
-        : 'activity at the door';
+        : ((typeof subType === 'string' ? CLASSIFIED[subType] : undefined) ??
+          'activity at the door');
   return `${what} at ${clockAt(e.occurredAt, timezone)}`;
 }
 

@@ -20,18 +20,24 @@ export interface SimEvent {
   data: {
     type: string;
     id: string;
-    attributes: { created_at: string; sub_type?: string };
-    relationships: { device: { data: { id: string } } };
+    attributes: {
+      source: string;
+      source_type: 'devices';
+      timestamp: number;
+      timestamp_readable: string;
+      sub_type?: string;
+    };
+    relationships: { devices: { links: { self: string } } };
   };
-  meta: { request_id: string; account_id: string };
+  meta: { version: string; time: string; request_id: string; account_id: string };
 }
 
-/** Build an event in Ring's documented shape. */
+/** Build an event in Ring's documented shape (webhook payload version 1.1). */
 export function buildEvent(
   kind: SimEventKind,
   opts: { requestId: string; deviceId?: string; at?: Date },
 ): SimEvent {
-  const created_at = (opts.at ?? new Date()).toISOString();
+  const at = opts.at ?? new Date();
   const device = opts.deviceId ?? 'dev_front_door';
   const type =
     kind === 'button'
@@ -39,15 +45,27 @@ export function buildEvent(
       : kind === 'device_online'
         ? 'device_online'
         : 'motion_detected';
-  const subType = kind === 'package' ? 'package' : kind === 'motion' ? 'human' : undefined;
+  // Ring's Smart Alerts classifications: package_delivery, human, vehicle, other_motion.
+  const subType = kind === 'package' ? 'package_delivery' : kind === 'motion' ? 'human' : undefined;
   return {
     data: {
       type,
-      id: `evt_${opts.requestId}`,
-      attributes: { created_at, ...(subType ? { sub_type: subType } : {}) },
-      relationships: { device: { data: { id: device } } },
+      id: `${device}_${subType ?? type}_${at.getTime()}`,
+      attributes: {
+        source: device,
+        source_type: 'devices',
+        timestamp: at.getTime(),
+        timestamp_readable: at.toISOString().slice(0, 19).replace('T', ' '),
+        ...(subType ? { sub_type: subType } : {}),
+      },
+      relationships: { devices: { links: { self: `/v1/devices/${device}` } } },
     },
-    meta: { request_id: opts.requestId, account_id: 'acct_carecircle_demo' },
+    meta: {
+      version: '1.1',
+      time: new Date().toISOString(),
+      request_id: opts.requestId,
+      account_id: 'acct_carecircle_demo',
+    },
   };
 }
 

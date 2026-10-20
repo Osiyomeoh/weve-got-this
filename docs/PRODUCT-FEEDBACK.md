@@ -252,6 +252,10 @@ verification are clearly specified, and idempotency via `request_id` is well tho
 - **The webhook payload schema is not published** — only the event *types* and the envelope.
   Exact field names and nesting aren't given, so you cannot parse events reliably from the docs
   alone. One concrete filled-in `motion_detected` example would remove the guesswork.
+  *Update, 2026-10-20:* the reference now has a full example per event, and it showed two of
+  our guesses were wrong (the time is `attributes.timestamp`, the device `attributes.source`).
+  Fixed. Linking each row of the event-type table to its example would stop the next team
+  guessing as we did.
 - **Staging tests against real hardware only** — there's no "send test event" control, so
   end-to-end verification is gated behind buying a doorbell, even though the hackathon rules
   explicitly permit a simulator. We built one (`src/demo/ring-simulate.ts`) that signs events

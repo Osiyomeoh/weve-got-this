@@ -406,6 +406,8 @@ CARECIRCLE_HOUSEHOLD=h_margaret npm run email:sync      # invite email -> appoin
 
 # Ring: verify the account link and list real devices
 npm run ring:check     # needs RING_ACCESS_TOKEN or a refresh token
+# Ring: read the doorbell's Event History and play it through a copy of the demo family
+npm run ring:watch     # a Ring Developer Playground token is enough; --once, --pictures <dir>
 ```
 
 Set `CARECIRCLE_CONNECTOR_INTERVAL_MS` (e.g. `300000`) and the server syncs the Google doors on

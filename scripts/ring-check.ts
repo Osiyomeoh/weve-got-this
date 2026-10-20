@@ -4,9 +4,9 @@
  *   npm run ring:check
  *
  * This confirms the outbound half of the Ring integration: it authenticates with the
- * credentials in .env and reads /v1/devices. Device events themselves arrive by
- * webhook (see http/ring-webhook.ts) - Ring has no polling API - so this does not
- * fetch events; it verifies the link and shows what is behind it.
+ * credentials in .env and reads /v1/devices. Device events arrive by webhook (see
+ * http/ring-webhook.ts) once the app is installed on an account; to read them from a
+ * token alone, with Ring's Event History, use `npm run ring:watch`.
  *
  * Needs either RING_ACCESS_TOKEN (from the Ring Developer Playground) or
  * RING_REFRESH_TOKEN + RING_CLIENT_ID + RING_CLIENT_SECRET.
@@ -30,7 +30,8 @@ async function main(): Promise<void> {
 
   console.log(`\nRing account connected. ${devices.length} device(s):`);
   for (const d of devices) {
-    console.log(`  - ${d.description ?? '(unnamed)'} [${d.kind ?? 'device'}] ${d.id}`);
+    const online = d.online === undefined ? '' : d.online ? ' online' : ' offline';
+    console.log(`  - ${d.description ?? '(unnamed)'} [${d.kind ?? 'device'}${online}] ${d.id}`);
   }
   if (devices.length === 0) {
     console.log('  (no devices returned — the account may have none, or the token lacks scope)');

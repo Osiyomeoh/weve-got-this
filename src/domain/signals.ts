@@ -104,11 +104,16 @@ export function interpretSignal(
     case 'door_activity':
     case 'motion': {
       // A sign of life. Recorded, not acted on - it clears a "no activity" worry
-      // simply by existing in the log.
-      return {
-        event: baseEvent,
-        spoken: `There's been activity at ${context.recipientName}'s door.`,
-      };
+      // simply by existing in the log. Said as plainly as the device can say it: a
+      // doorbell press, or a person if the camera classified one - never who.
+      const subType = signal.raw?.['subType'];
+      const spoken =
+        signal.kind === 'door_activity'
+          ? `Someone rang ${context.recipientName}'s doorbell.`
+          : subType === 'human'
+            ? `The doorbell camera saw a person at ${context.recipientName}'s door.`
+            : `There's been activity at ${context.recipientName}'s door.`;
+      return { event: baseEvent, spoken };
     }
     case 'no_activity': {
       // The inverse beat: an obligation CREATED by an absence. Phrased as absence,

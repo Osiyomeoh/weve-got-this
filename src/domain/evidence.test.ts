@@ -45,6 +45,16 @@ test('door activity near the due time is evidence; activity far from it is not',
   );
 });
 
+test('Ring classifying motion as a person is said as a person, never as who', () => {
+  const person: CareEvent = {
+    ...door('2026-10-14T08:04:00Z'),
+    data: { source: 'ring', signalKind: 'motion', raw: { subType: 'human' } },
+  };
+  const line = checkInEvidence(ride, [person], new Date('2026-10-14T08:30:00Z'), TZ);
+  assert.match(line, /The doorbell saw a person at the door at 9:04/);
+  assert.doesNotMatch(line, /Musa/);
+});
+
 test('only presence counts: a note or a dose is not something the doorbell saw', () => {
   const note: CareEvent = { ...door('2026-10-14T08:01:00Z'), kind: 'note_added' };
   assert.deepEqual(evidenceFor(ride, [note], new Date('2026-10-14T08:30:00Z')), []);

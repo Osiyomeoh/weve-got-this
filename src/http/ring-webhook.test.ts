@@ -6,6 +6,7 @@ import { createCareCircleApp } from './app.ts';
 import { CareStore } from '../store/store.ts';
 import { seedDemoHousehold, DEMO_TOKENS } from '../demo/seed.ts';
 import { SeenEvents, verifySignature } from './ring-webhook.ts';
+import { buildEvent } from '../demo/ring-simulate.ts';
 
 /**
  * The Ring webhook is a PUBLIC, unauthenticated URL that writes into a family's
@@ -182,4 +183,15 @@ test('the idempotency cache is bounded', () => {
   seen.admit('c');
   seen.admit('d');
   assert.equal(seen.admit('a'), true, 'the oldest key should have been evicted');
+});
+
+test("an event in Ring's documented shape is recorded at the time Ring saw it", async () => {
+  const at = new Date('2026-10-20T07:58:00Z');
+  const body = JSON.stringify(buildEvent('package', { requestId: 'r-documented', at }));
+  const { status, json } = await post(body, sign(body));
+  assert.equal(status, 200);
+  assert.equal(json.kind, 'delivery_arrived');
+  const recorded = store.getCareState('h_margaret').events.find((e) => e.id === json.eventId);
+  assert.equal(recorded?.occurredAt, at.toISOString());
+  assert.equal((recorded?.data['raw'] as { deviceId?: string }).deviceId, 'dev_front_door');
 });

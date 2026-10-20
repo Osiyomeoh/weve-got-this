@@ -277,6 +277,16 @@ Template:
 - **Suggestion:** Publish one full example payload per event type, or a JSON Schema, next to
   the type table. A single `motion_detected` example with `attributes` and `relationships`
   filled in would answer it.
+- **Update (2026-10-20):** The reference now has a full example for each event, under
+  Notifications. We can't tell when they were added: the examples are dated February 2026,
+  so we may have missed them in September. Reading them showed two of our guessed fields were
+  wrong. The time is `attributes.timestamp` in epoch milliseconds, not `created_at`, and the
+  device is `attributes.source`, not `relationships.device`. So a real doorbell event would
+  have reached the record with no device, timed by when it arrived rather than when Ring saw
+  it. That is the quiet failure this entry was afraid of. We now read the documented fields
+  (the old ones are still accepted), our simulator sends the documented shape, and the tests
+  use Ring's own examples. The suggestion stands in a smaller form: link each row of the
+  event-type table to its example.
 - **Date:** 2026-09-16
 
 > *We cared about matching Ring's real format, not inventing one. The docs tell you which
