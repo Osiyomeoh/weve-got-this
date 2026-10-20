@@ -173,7 +173,7 @@ export async function listRingDevices(accessToken: string): Promise<RingDevice[]
  * One entry in a device's Event History: what happened and when, never a picture and
  * never who. `type` is Ring's event type (`motion`, `ding` for the doorbell button,
  * `on_demand` for a live view someone opened); `subType` is the motion classification
- * when Ring gives one (`human`, `vehicle`, `animal`, `other_motion`).
+ * when Ring gives one (`human`, `vehicle`, `other_motion`).
  */
 export interface RingHistoryEvent {
   id: string;
@@ -237,12 +237,45 @@ export async function listRingHistory(
   const res = await fetch(url, { headers: { authorization: `Bearer ${accessToken}` } });
   if (!res.ok) throw await failure(res, 'history fetch');
   const page = parseHistory(await res.json());
-  // A filtered query names the subtype even when the event record does not.
+  // A filtered query names the subtype even when the event record does not, but only when
+  // Ring applied the filter: the Developer Playground ignores it and answers with everything.
   const only = options.eventTypes?.length === 1 ? options.eventTypes[0]!.split('.', 2) : [];
-  if (only[1]) {
-    for (const e of page.events) if (e.type === only[0] && !e.subType) e.subType = only[1];
+  if (only[1] && page.events.every((e) => e.type === only[0])) {
+    for (const e of page.events) if (!e.subType) e.subType = only[1];
   }
   return page;
+}
+
+/** The motion classifications Ring documents for the Event History filter. */
+export const RING_MOTION_SUBTYPES = ['human', 'vehicle', 'other_motion'] as const;
+
+/**
+ * Name the classification of motion whose record says only `motion`, by asking the history
+ * again with each documented subtype as the filter. An event is named only when exactly one
+ * filter returned it, since a filter Ring ignored returns it for all of them, and a guess
+ * there would call any motion "a person". Unnamed motion is spoken as activity at the door.
+ */
+export async function classifyRingMotion(
+  accessToken: string,
+  deviceId: string,
+  events: RingHistoryEvent[],
+): Promise<void> {
+  const open = new Map(
+    events.filter((e) => e.type === 'motion' && !e.subType).map((e) => [e.id, e]),
+  );
+  if (!open.size) return;
+  const matched = new Map<string, string[]>();
+  for (const subType of RING_MOTION_SUBTYPES) {
+    const page = await listRingHistory(accessToken, deviceId, {
+      eventTypes: [`motion.${subType}`],
+    });
+    for (const e of page.events) {
+      if (open.has(e.id)) matched.set(e.id, [...(matched.get(e.id) ?? []), subType]);
+    }
+  }
+  for (const [id, subTypes] of matched) {
+    if (subTypes.length === 1) open.get(id)!.subType = subTypes[0]!;
+  }
 }
 
 /** A still from the doorbell: the image Ring returned and what Ring says it is. */

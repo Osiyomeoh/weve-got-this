@@ -5,8 +5,10 @@ import {
   parseDevices,
   parseHistory,
   listRingHistory,
+  classifyRingMotion,
   fetchRingSnapshot,
   getRingAccessToken,
+  type RingHistoryEvent,
 } from './ring.ts';
 
 test('a direct access token is the preferred auth mode', () => {
@@ -160,6 +162,59 @@ test('history asks Ring for the filtered events, and a one-subtype filter names 
   assert.equal(new Headers(calls[0]!.init?.headers).get('authorization'), 'Bearer tok');
   assert.equal(page.events[0]!.subType, 'human');
   assert.equal(page.next, null);
+});
+
+// What the Developer Playground answered on 2026-10-20 for event_types=motion.human, and for
+// every other filter, `nonsense` included: the one live view, unfiltered.
+const motion = (id: string) => ({ id, attributes: { event_type: 'motion', start: 1700000000000 } });
+const live = { id: 'live', attributes: { event_type: 'on_demand', start: 1700000000000 } };
+
+test('a filter Ring ignored names no subtype', async (t) => {
+  stubFetch(t, [() => json({ data: [live, motion('m1')] })]);
+  const page = await listRingHistory('tok', 'dev_front', { eventTypes: ['motion.human'] });
+  assert.deepEqual(
+    page.events.map((e) => [e.type, e.subType]),
+    [
+      ['on_demand', undefined],
+      ['motion', undefined],
+    ],
+  );
+});
+
+test('motion is named by the one documented subtype filter that returned it', async (t) => {
+  const calls = stubFetch(t, [
+    () => json({ data: [motion('m1')] }),
+    () => json({ data: [] }),
+    () => json({ data: [motion('m2')] }),
+  ]);
+  const events: RingHistoryEvent[] = [
+    { id: 'm1', type: 'motion', start: 1700000000000 },
+    { id: 'm2', type: 'motion', start: 1700000000000 },
+    { id: 'm3', type: 'motion', start: 1700000000000 },
+    { id: 'live', type: 'on_demand', start: 1700000000000 },
+  ];
+  await classifyRingMotion('tok', 'dev_front', events);
+  assert.deepEqual(
+    calls.map((c) => new URL(c.url).searchParams.get('event_types')),
+    ['motion.human', 'motion.vehicle', 'motion.other_motion'],
+  );
+  assert.deepEqual(
+    events.map((e) => e.subType),
+    ['human', 'other_motion', undefined, undefined],
+  );
+});
+
+test('motion every filter returned stays unnamed, and no motion asks nothing', async (t) => {
+  const everything = () => json({ data: [motion('m1'), live] });
+  const calls = stubFetch(t, [everything, everything, everything]);
+  const events: RingHistoryEvent[] = [{ id: 'm1', type: 'motion', start: 1700000000000 }];
+  await classifyRingMotion('tok', 'dev_front', events);
+  assert.equal(events[0]!.subType, undefined);
+  assert.equal(calls.length, 3);
+  await classifyRingMotion('tok', 'dev_front', [
+    { id: 'live', type: 'on_demand', start: 1700000000000 },
+  ]);
+  assert.equal(calls.length, 3);
 });
 
 test("history follows Ring's own cursor, and refuses one that points anywhere else", async (t) => {

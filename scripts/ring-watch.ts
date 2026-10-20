@@ -27,6 +27,7 @@ import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 
 import {
+  classifyRingMotion,
   fetchRingSnapshot,
   getRingAccessToken,
   listRingDevices,
@@ -39,8 +40,6 @@ import { applySignal } from '../src/domain/ingest.ts';
 import { CareStore } from '../src/store/store.ts';
 import { seedDemoHousehold, DEMO_HOUSEHOLD_ID } from '../src/demo/seed.ts';
 
-/** The motion classifications Event History can be filtered by. */
-const MOTION_SUBTYPES = ['human', 'vehicle', 'animal', 'other_motion'];
 /** How many of the events already in the history to show on the first read. */
 const FIRST_READ = 5;
 
@@ -119,7 +118,7 @@ async function main(): Promise<void> {
     for (const e of page.events) seen.add(e.id);
     const shown = first ? fresh.slice(0, FIRST_READ) : fresh;
     first = false;
-    await classify(token, device.id, shown);
+    await classifyRingMotion(token, device.id, shown);
     // History is newest first; the family hears it in the order it happened.
     for (const e of [...shown].reverse()) await report(e);
   };
@@ -184,31 +183,6 @@ async function main(): Promise<void> {
     });
   } else {
     finish();
-  }
-}
-
-/**
- * Ring's history record may say only `motion`; asking with each subtype as the filter
- * tells which classification it carried. Only done when there is unclassified motion.
- */
-async function classify(
-  token: string,
-  deviceId: string,
-  events: RingHistoryEvent[],
-): Promise<void> {
-  const open = new Map(
-    events.filter((e) => e.type === 'motion' && !e.subType).map((e) => [e.id, e]),
-  );
-  for (const subType of MOTION_SUBTYPES) {
-    if (!open.size) return;
-    const page = await listRingHistory(token, deviceId, { eventTypes: [`motion.${subType}`] });
-    for (const e of page.events) {
-      const match = open.get(e.id);
-      if (match) {
-        match.subType = subType;
-        open.delete(e.id);
-      }
-    }
   }
 }
 

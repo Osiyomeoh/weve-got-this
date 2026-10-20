@@ -3,7 +3,7 @@
 [![CI](https://github.com/Osiyomeoh/weve-got-this/actions/workflows/ci.yml/badge.svg)](https://github.com/Osiyomeoh/weve-got-this/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![MCP spec 2025-11-25](https://img.shields.io/badge/MCP-2025--11--25-6f42c1)
-![Tests: 836](https://img.shields.io/badge/tests-836-2f9e5e)
+![Tests: 839](https://img.shields.io/badge/tests-839-2f9e5e)
 
 **An Alexa+ add-on for families looking after a parent.** It notices the care nobody has
 taken on yet, like the ride to Dad's eye check-up, and asks the right person. It never
