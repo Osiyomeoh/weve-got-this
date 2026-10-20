@@ -265,6 +265,11 @@ app.use((_req, res, next) => {
 app.get('/console.html', (req, res) => {
   res.redirect(301, req.originalUrl.replace(/^\/console\.html/, '/console'));
 });
+// The docs page and /proof are plain pages in public/. Typed without .html, they would
+// fall through to the React app, which has no such page.
+app.get(['/docs', '/proof'], (req, res) => {
+  res.redirect(301, req.originalUrl.replace(/^\/(docs|proof)\/?/, '/$1.html'));
+});
 // The built React UI (Vite) comes first; public/ holds the pages it links to that are
 // not part of it: the docs page, /proof and the React Native TV web build.
 const uiDir = join(here, '../../sim-ui/dist');

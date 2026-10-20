@@ -409,7 +409,7 @@ export function createCareCircleApp({
         res,
         401,
         -32001,
-        'Unauthorized: this server needs to know which member of the care circle you are.',
+        'Unauthorized: this server needs to know which member of the circle you are.',
       );
       return;
     }
@@ -438,12 +438,7 @@ export function createCareCircleApp({
       }
       // The credential and the session must agree for the whole life of the session.
       if (session.actorId !== actorId) {
-        rpcError(
-          res,
-          403,
-          -32001,
-          'This session belongs to a different member of the care circle.',
-        );
+        rpcError(res, 403, -32001, 'This session belongs to a different member of the circle.');
         return;
       }
       await withAgent(session.agent, () => session.transport.handleRequest(req, res, req.body));

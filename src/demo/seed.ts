@@ -35,11 +35,19 @@ export async function seedDemoHousehold(
   // A suffix gives a per-visitor sandbox copy ids of its own; ids are global keys.
   const sid = (id: string): string => `${id}${options.suffix ?? ''}`;
   const HOUSEHOLD_ID = sid(DEMO_HOUSEHOLD_ID);
+  let seeded;
   try {
-    store.getCareState(HOUSEHOLD_ID);
-    return; // already seeded
+    seeded = store.getCareState(HOUSEHOLD_ID).household;
   } catch {
     /* not seeded yet */
+  }
+  if (seeded) {
+    // The demo families were "Daddy's care circle" and so on until 2026-10-20. A copy
+    // seeded before then keeps its stored name, so that name, and only that one, is
+    // brought in line; a name someone chose stays.
+    if (seeded.name === c.household.replace(/ circle$/, ' care circle'))
+      await store.renameHousehold(HOUSEHOLD_ID, c.household);
+    return; // already seeded
   }
 
   await store.addHousehold({

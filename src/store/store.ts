@@ -403,6 +403,15 @@ export class CareStore {
     });
   }
 
+  renameHousehold(householdId: string, name: string): Promise<Household> {
+    return this.#write(() => {
+      const h = this.#snapshot.households.find((x) => x.id === householdId);
+      if (!h) throw new NotFoundError('household', householdId);
+      h.name = name;
+      return h;
+    });
+  }
+
   addMember(m: Member): Promise<Member> {
     return this.#write(() => {
       this.#snapshot.members.push(m);
