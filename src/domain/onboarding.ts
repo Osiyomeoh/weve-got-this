@@ -99,7 +99,7 @@ export function onboardingProgress(
       done: [],
       complete: false,
       spoken:
-        "Let's set up your care circle. What would you like to call it, and who are " +
+        "Let's set up your family's circle. What would you like to call it, and who are " +
         'you looking after?',
     };
   }

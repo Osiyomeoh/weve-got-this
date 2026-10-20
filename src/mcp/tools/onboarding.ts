@@ -107,7 +107,7 @@ export function registerCreateHousehold({ server, store, actorId }: ToolContext)
         const subject = bootstrapSubject(actorId);
         if (!subject) {
           return guidance(
-            "You already belong to a care circle, so I can't start a new one for you here.",
+            "You already belong to a circle, so I can't start a new one for you here.",
           );
         }
         if (!isValidTimeZone(timezone)) {

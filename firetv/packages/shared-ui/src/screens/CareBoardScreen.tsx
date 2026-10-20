@@ -50,8 +50,8 @@ export default function CareBoardScreen() {
   const [gaps, setGaps] = useState<Gap[]>([]);
   const [online, setOnline] = useState(true);
   // The household's own name from the live state, so the set shows whichever family the
-  // sim is running ("Daddy's care circle"), not a name baked into the app.
-  const [household, setHousehold] = useState("Daddy's care circle");
+  // sim is running ("Daddy's circle"), not a name baked into the app.
+  const [household, setHousehold] = useState("Daddy's circle");
   const [now, setNow] = useState(() => new Date());
   // A monotonic cycle counter, not an index: it advances every cycle even when
   // there is a single gap, so the notification keeps re-showing (idx % 1 stays 0

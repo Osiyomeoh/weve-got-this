@@ -28,7 +28,7 @@ test('an unmapped caller is asked to create a circle first', () => {
   const p = onboardingProgress(null);
   assert.equal(p.step, 'create_circle');
   assert.equal(p.complete, false);
-  assert.match(p.spoken, /set up your care circle/i);
+  assert.match(p.spoken, /set up your family's circle/i);
 });
 
 test('a circle with no care recipient asks who it is for', () => {

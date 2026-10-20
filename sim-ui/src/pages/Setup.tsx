@@ -187,7 +187,7 @@ function CreateCircle({ busy, onSubmit }: StepProps) {
           className={inputCls}
           value={circle}
           onChange={(e) => setCircle(e.target.value)}
-          placeholder="Mum's care circle"
+          placeholder="Mum's circle"
         />
       </Field>
       <Field label="Your name">

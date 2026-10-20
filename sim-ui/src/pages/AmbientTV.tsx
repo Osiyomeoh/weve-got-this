@@ -566,7 +566,7 @@ export default function AmbientTV() {
           <span
             className={`h-[0.6vw] w-[0.6vw] rounded-full ${online ? 'bg-confirmed' : 'bg-sevHigh'} animate-beat`}
           />
-          {state?.household?.name ?? "Daddy's care circle"}
+          {state?.household?.name ?? "Daddy's circle"}
         </div>
       </div>
 

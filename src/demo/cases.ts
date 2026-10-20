@@ -87,7 +87,7 @@ export interface CareCase {
 
 export const CASES: Record<CareCaseId, CareCase> = {
   eyes: {
-    household: "Daddy's care circle",
+    household: "Daddy's circle",
     // Getting around is no longer easy for him, so a ride to a check-up needs care and
     // an accessible vehicle. A logistics fact the graph carries so a dropped ride ranks
     // with the weight it deserves - never a label the system may editorialise about.
@@ -120,7 +120,7 @@ export const CASES: Record<CareCaseId, CareCase> = {
     ],
   },
   memory: {
-    household: "Mama's care circle",
+    household: "Mama's circle",
     // Someone has to go in with her and hear what the doctor says, not just drop her off.
     recipient: { name: 'Grace', spokenAs: 'Mama', attributes: { requiresAssistance: true } },
     medication: 'blood pressure tablet',
@@ -146,7 +146,7 @@ export const CASES: Record<CareCaseId, CareCase> = {
     ],
   },
   wheelchair: {
-    household: "Baba's care circle",
+    household: "Baba's circle",
     recipient: {
       name: 'Adewale',
       spokenAs: 'Baba',
@@ -178,7 +178,7 @@ export const CASES: Record<CareCaseId, CareCase> = {
   // Mummy stays in her hometown; her children work in Lagos. The family's hands near
   // her are a neighbour's, and the house's own devices are the only witnesses.
   hometown: {
-    household: "Mummy's care circle",
+    household: "Mummy's circle",
     recipient: { name: 'Adunni', spokenAs: 'Mummy', attributes: {} },
     medication: 'blood pressure tablet',
     supplement: 'supplement',
@@ -209,7 +209,7 @@ export const CASES: Record<CareCaseId, CareCase> = {
   // Chicago between meetings; her son lives fifteen minutes away and is the one who ends up
   // doing everything; another daughter is in Seattle, a brother in Phoenix.
   us: {
-    household: "Mom's care circle",
+    household: "Mom's circle",
     recipient: { name: 'Linda', spokenAs: 'Mom', attributes: {} },
     medication: 'blood pressure pill',
     supplement: 'vitamin D',
@@ -244,7 +244,7 @@ export const CASES: Record<CareCaseId, CareCase> = {
   // Mummy in Ibadan; her children left: Tolu to London, Funmi to Toronto, Kunle to Houston.
   // Segun, her nephew in Ibadan, is the family's only hands nearby.
   abroad: {
-    household: "Mummy's care circle",
+    household: "Mummy's circle",
     recipient: { name: 'Folake', spokenAs: 'Mummy', attributes: { requiresAssistance: true } },
     medication: 'blood pressure tablet',
     supplement: 'supplement',
@@ -278,7 +278,7 @@ export const CASES: Record<CareCaseId, CareCase> = {
   // A Kenyan family: Mum at home in Nyeri, her daughter coordinating from Nairobi, a son
   // working in Dubai. Njeri, the neighbour, is the one who is there.
   ke: {
-    household: "Mum's care circle",
+    household: "Mum's circle",
     recipient: { name: 'Wambui', spokenAs: 'Mum', attributes: {} },
     medication: 'diabetes tablet',
     supplement: 'supplement',
@@ -313,7 +313,7 @@ export const CASES: Record<CareCaseId, CareCase> = {
   // A child with Down syndrome in Columbus, Ohio. Her mom coordinates from work, her dad
   // works shifts, and Grandpa Luis, ten minutes away, does most of the driving.
   child: {
-    household: "Maya's care circle",
+    household: "Maya's circle",
     recipient: { name: 'Maya', spokenAs: 'Maya', attributes: { requiresAssistance: true } },
     medication: 'morning medicine',
     supplement: 'vitamin',
@@ -348,7 +348,7 @@ export const CASES: Record<CareCaseId, CareCase> = {
   // A woman who uses a wheelchair and lives on her own in Philadelphia. Her brother
   // coordinates from Boston; her friend Sam, nearby, has a van that takes the chair.
   independent: {
-    household: "Erin's care circle",
+    household: "Erin's circle",
     recipient: {
       name: 'Erin',
       spokenAs: 'Erin',

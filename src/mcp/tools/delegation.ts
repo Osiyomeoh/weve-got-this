@@ -83,7 +83,7 @@ export function registerRequestOwner({
           if (!named) {
             const others = s.members.filter((m) => m.id !== me.id).map((m) => m.spokenAs ?? m.name);
             return guidance(
-              `There's nobody called "${assigneeName}" in this care circle. ` +
+              `There's nobody called "${assigneeName}" in this circle. ` +
                 `The people here are ${joinSpoken(others)}. Ask which one they meant.`,
             );
           }
@@ -545,7 +545,7 @@ export function registerNotifyMember({
             .members.filter((m) => m.id !== me.id)
             .map((m) => m.spokenAs ?? m.name);
           return guidance(
-            `There's nobody called "${recipientName}" in this care circle. ` +
+            `There's nobody called "${recipientName}" in this circle. ` +
               `The people here are ${joinSpoken(others)}. Ask which one they meant.`,
           );
         }

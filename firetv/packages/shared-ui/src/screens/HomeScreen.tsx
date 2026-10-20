@@ -203,7 +203,7 @@ export default function HomeScreen() {
           <View>
             <Text style={styles.brand}>We’ve Got This</Text>
             <Text style={styles.household}>
-              {state?.household?.name ?? 'Care circle'}
+              {state?.household?.name ?? 'The circle'}
             </Text>
           </View>
           <View style={styles.headerRight}>

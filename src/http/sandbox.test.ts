@@ -281,7 +281,7 @@ test("make it yours: a copy carries the visitor's own names, and odd ones are re
   const c = (await create(KEY, { careCase: 'us', liveMorning: true, names })).json;
   const s = store.getCareState(c.householdId);
   const by = (id: string) => s.members.find((m) => m.id === `${id}${c.suffix}`)!;
-  assert.equal(s.household.name, "Mum's care circle");
+  assert.equal(s.household.name, "Mum's circle");
   assert.deepEqual([by('m_margaret').name, by('m_margaret').spokenAs], ['Mum', 'Mum']);
   // Renamed all at once: the visitor's "Tolu" is the caregiver, never renamed again.
   assert.deepEqual(

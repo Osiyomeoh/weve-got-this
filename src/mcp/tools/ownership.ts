@@ -262,7 +262,7 @@ export function registerAssignObligation({
             .members.filter((m) => m.id !== me.id)
             .map((m) => m.spokenAs ?? m.name);
           return guidance(
-            `There's nobody called "${assigneeName}" in this care circle. ` +
+            `There's nobody called "${assigneeName}" in this circle. ` +
               `The people here are ${joinSpoken(others)}. Ask which one they meant.`,
           );
         }
