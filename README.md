@@ -176,8 +176,8 @@ and what may be said is decided by plain code.
 
 | Component | Runs on | What it does |
 |---|---|---|
-| `carecircle-mcp` | AWS App Runner | The MCP server (Streamable HTTP, MCP 2025-11-25 and 2026-07-28, OAuth 2.1 + PKCE per member), the Telegram and Ring webhooks, the Telegram planner, and the background loops: the agent's pass, reminders, routines and connector sync |
-| `carecircle-sim` | AWS App Runner | The web app (console, 3D world, `/tv`, `/proof`), its own planner loop as an MCP host, speech, and a private copy of the demo family for each visitor |
+| MCP server | AWS App Runner | The MCP server (Streamable HTTP, MCP 2025-11-25 and 2026-07-28, OAuth 2.1 + PKCE per member), the Telegram and Ring webhooks, the Telegram planner, and the background loops: the agent's pass, reminders, routines and connector sync |
+| Web app | AWS App Runner | The web app (console, 3D world, `/tv`, `/proof`), its own planner loop as an MCP host, speech, and a private copy of the demo family for each visitor |
 | Alexa path | AWS Lambda, Amazon Bedrock AgentCore Runtime | A classic Alexa skill whose endpoint hands each turn to [alexa-skill-mcp-bridge](https://github.com/KayLerch/alexa-skill-mcp-bridge), a Strands agent on Nova Pro, which calls the MCP server |
 | Care record | Amazon DynamoDB | One table, append-only; every save is one transaction that checks the version it read |
 | Planner models | Amazon Bedrock | Claude Sonnet 4.5 in production; Amazon Nova Pro for the bridge and the evals |
