@@ -10,7 +10,7 @@ taken on yet, like the ride to Dad's eye check-up, and asks the right person. It
 assigns.
 
 **[Try the live demo](https://krqi2tpsif.us-east-1.awsapprunner.com/world)** ·
-**[Watch the 3-minute video](https://youtu.be/c2v6KnTsZXo)** ·
+**[Watch the 3-minute video](https://youtu.be/MiZ5TYDT6jM)** ·
 **[See every number](https://krqi2tpsif.us-east-1.awsapprunner.com/proof.html)** ·
 **[Connect your own MCP client](docs/MCP.md)**
 
@@ -47,7 +47,7 @@ assigns.
 
 | What | Where |
 |---|---|
-| Demo video (2:58) | https://youtu.be/c2v6KnTsZXo |
+| Demo video (2:59) | https://youtu.be/MiZ5TYDT6jM |
 | Set up a circle of your own, the way a new family would | https://krqi2tpsif.us-east-1.awsapprunner.com/setup |
 | Live console, your own private copy of the demo family | https://krqi2tpsif.us-east-1.awsapprunner.com/console |
 | Every measured number, with the file it came from | https://krqi2tpsif.us-east-1.awsapprunner.com/proof.html |
